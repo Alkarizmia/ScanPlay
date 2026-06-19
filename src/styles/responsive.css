@@ -1,0 +1,330 @@
+/**
+ * ScanPlay — responsive layout (mobile + desktop)
+ * Single source of truth for shell width, padding, and content max-width.
+ */
+
+:root {
+  --shell-mobile: 480px;
+  --shell-desktop: 1120px;
+  --shell-wide: 1320px;
+  --shell-ultra: 1480px;
+  --content-narrow: 440px;
+  --content-wide: 680px;
+  --content-max: 760px;
+  --pad-screen-x: 16px;
+  --pad-screen-x-desktop: 32px;
+  --camera-size: clamp(128px, 36vw, 148px);
+}
+
+/* ── Shell ── */
+.app-shell {
+  max-width: min(100%, var(--shell-mobile));
+  margin-inline: auto;
+}
+
+.screen {
+  padding-inline: max(var(--pad-screen-x), env(safe-area-inset-left))
+    max(var(--pad-screen-x), env(safe-area-inset-right));
+}
+
+/* ── Home — mobile ── */
+.home-screen--premium .home-main {
+  width: 100%;
+  max-width: none;
+  align-items: stretch;
+}
+
+.home-main .plan-card,
+.home-screen--premium .plan-card {
+  width: 100%;
+  max-width: none;
+  margin-top: var(--space-4, 16px);
+}
+
+.home-scan-hero .tagline,
+.home-scan-hero .subtagline {
+  max-width: none;
+  width: 100%;
+}
+
+.home-scan-hero .tagline {
+  font-size: clamp(1.2rem, 4.5vw, 1.45rem);
+}
+
+.home-scan-hero .subtagline {
+  font-size: clamp(0.85rem, 3.2vw, 0.95rem);
+}
+
+.camera-btn {
+  width: var(--camera-size);
+  height: var(--camera-size);
+}
+
+.camera-inner {
+  inset: calc(var(--camera-size) * 0.1);
+}
+
+.camera-inner svg {
+  width: clamp(36px, 10vw, 44px);
+  height: clamp(36px, 10vw, 44px);
+}
+
+/* Progress + hero cards full width */
+.home-progress-card,
+.home-scan-hero,
+.home-section--premium {
+  width: 100%;
+}
+
+.home-recent-card {
+  flex: 0 0 clamp(120px, 38vw, 160px);
+}
+
+/* Plan card perks readable width */
+.plan-card {
+  width: 100%;
+}
+
+.plan-card-head {
+  align-items: center;
+}
+
+.home-screen--premium .text-link,
+.home-screen--premium .home-install-btn,
+.home-screen--premium .home-install-done {
+  align-self: center;
+  text-align: center;
+}
+
+.home-screen--premium .gamification-hud-wrap {
+  width: 100%;
+}
+
+/* Bottom nav mobile — 7 tabs fit */
+[data-device='mobile'] .bottom-nav-item {
+  padding-inline: 1px;
+  min-width: 0;
+}
+
+[data-device='mobile'] .bottom-nav-label {
+  font-size: 0.56rem;
+  letter-spacing: -0.02em;
+}
+
+[data-device='mobile'] .bottom-nav-icon {
+  padding: 4px 8px;
+}
+
+[data-device='mobile'] .nav-icon-svg {
+  width: 20px;
+  height: 20px;
+}
+
+[data-device='mobile'] .bottom-nav-item.active .bottom-nav-icon {
+  padding: 4px 10px;
+}
+
+/* Top bar compact on small screens */
+@media (max-width: 380px) {
+  .top-bar {
+    padding-block: 8px;
+  }
+
+  .wordmark-text {
+    font-size: 1.15rem;
+  }
+
+  .scanplay-logo {
+    height: 32px !important;
+  }
+}
+
+/* ── Desktop ── */
+[data-device='desktop'] {
+  --shell-max: var(--shell-desktop);
+  --nav-h: 0px;
+}
+
+[data-device='desktop'] .app-shell {
+  max-width: var(--shell-desktop);
+}
+
+@media (min-width: 1280px) {
+  [data-device='desktop'] {
+    --shell-max: var(--shell-wide);
+  }
+
+  [data-device='desktop'] .app-shell {
+    max-width: var(--shell-wide);
+  }
+
+  [data-device='desktop'] .home-screen--desktop .home-main {
+    max-width: 960px;
+  }
+
+  [data-device='desktop'] .settings-main,
+  [data-device='desktop'] .history-main,
+  [data-device='desktop'] .mode-main-path {
+    max-width: 920px;
+  }
+}
+
+@media (min-width: 1536px) {
+  [data-device='desktop'] {
+    --shell-max: var(--shell-ultra);
+  }
+
+  [data-device='desktop'] .app-shell {
+    max-width: var(--shell-ultra);
+  }
+}
+
+[data-device='desktop'] .screen {
+  padding-inline: var(--pad-screen-x-desktop);
+}
+
+[data-device='desktop'] .app-main .screen {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+/* Home desktop — single centered column (premium layout) */
+[data-device='desktop'] .home-screen--premium.home-screen--desktop .home-main,
+[data-device='desktop'] .home-screen--desktop .home-main {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  max-width: var(--content-wide);
+  margin-inline: auto;
+  width: 100%;
+  text-align: left;
+  gap: var(--space-5, 20px);
+}
+
+[data-device='desktop'] .home-screen--desktop .home-scan-hero {
+  padding: var(--space-8, 32px) var(--space-6, 24px);
+}
+
+[data-device='desktop'] .home-screen--desktop .camera-btn {
+  --camera-size: 160px;
+}
+
+[data-device='desktop'] .home-screen--desktop .tagline {
+  font-size: 1.65rem;
+  max-width: none;
+}
+
+[data-device='desktop'] .home-screen--desktop .subtagline {
+  font-size: 1rem;
+  max-width: 42ch;
+  margin-inline: auto;
+}
+
+[data-device='desktop'] .home-screen--desktop .text-link {
+  align-self: center;
+}
+
+[data-device='desktop'] .home-recent-scroll {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  overflow: visible;
+  gap: var(--space-3, 12px);
+}
+
+[data-device='desktop'] .home-recent-card {
+  flex: none;
+  width: auto;
+}
+
+[data-device='desktop'] .home-ach-grid {
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+}
+
+/* Main content areas — consistent max width on PC */
+[data-device='desktop'] .gamification-hud-wrap,
+[data-device='desktop'] .gamification-hud,
+[data-device='desktop'] .mode-main-path,
+[data-device='desktop'] .settings-main,
+[data-device='desktop'] .history-main,
+[data-device='desktop'] .achievements-main,
+[data-device='desktop'] .friends-main,
+[data-device='desktop'] .shop-main,
+[data-device='desktop'] .mistakes-main,
+[data-device='desktop'] .import-main {
+  max-width: var(--content-max);
+  margin-inline: auto;
+  width: 100%;
+}
+
+[data-device='desktop'] .plan-card {
+  max-width: none;
+}
+
+/* Desktop sidebar nav — align active state with row highlight */
+[data-device='desktop'] .bottom-nav-item.active .bottom-nav-icon {
+  background: transparent;
+  padding: 0;
+}
+
+[data-device='desktop'] .bottom-nav-icon {
+  padding: 0;
+  width: 24px;
+  flex-shrink: 0;
+}
+
+[data-device='desktop'] .bottom-nav-item.active {
+  color: var(--accent);
+}
+
+[data-device='desktop'] .bottom-nav-item.active .nav-icon-svg {
+  stroke-width: 2;
+}
+
+/* Games & modals scale on desktop */
+[data-device='desktop'] .flashcard {
+  max-width: 400px;
+}
+
+[data-device='desktop'] .modal-card,
+[data-device='desktop'] .synthesis-sheet {
+  width: min(440px, calc(100vw - 48px));
+}
+
+[data-device='desktop'] .notification-panel {
+  right: max(24px, calc(50% - var(--shell-desktop) / 2 + 24px));
+}
+
+/* Wide desktop — two columns for home hero block only */
+@media (min-width: 960px) {
+  [data-device='desktop'] .home-screen--premium .home-main {
+    max-width: var(--content-max);
+  }
+
+  [data-device='desktop'] .home-screen--premium .home-progress-card {
+    order: 1;
+  }
+
+  [data-device='desktop'] .home-screen--premium .home-scan-hero {
+    order: 2;
+  }
+}
+
+@media (min-width: 1536px) {
+  [data-device='desktop'] .home-screen--premium .home-main {
+    max-width: 1100px;
+  }
+
+  [data-device='desktop'] .plan-card {
+    padding: 18px 20px;
+  }
+
+  [data-device='desktop'] .plan-card-perks {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 16px;
+  }
+
+  [data-device='desktop'] .notification-panel {
+    right: max(24px, calc(50% - var(--shell-ultra) / 2 + 24px));
+  }
+}

@@ -1,0 +1,5 @@
+-- ============================================================
+-- OBSOLÈTE — Utiliser plutôt :
+--   supabase/migration-scan-coins-system.sql
+-- (version complète : portefeuille, historique, sync, transferts)
+-- ============================================================
