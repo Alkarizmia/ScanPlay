@@ -114,7 +114,7 @@ function applyStatsBlob(data: Record<string, unknown>): void {
     localStorage.setItem('scanplay-achievement-unlocks', JSON.stringify(data.achievementUnlocks));
   }
   if (data.profile && typeof data.profile === 'object') {
-    localStorage.setItem('scanplay-profile', JSON.stringify(data.profile));
+    /* profile merged in pullUserData() — avoids race with public_profiles */
   }
   if (Array.isArray(data.examHistory)) {
     localStorage.setItem('scanplay-exam-history', JSON.stringify(data.examHistory));
@@ -368,7 +368,23 @@ export async function pullUserData(options?: {
       ]);
 
     if (statsRow?.data && typeof statsRow.data === 'object') {
-      applyStatsBlob(statsRow.data as Record<string, unknown>);
+      const statsData = statsRow.data as Record<string, unknown>;
+      applyStatsBlob(statsData);
+
+      const statsProfile = statsData.profile;
+      if (statsProfile && typeof statsProfile === 'object') {
+        const p = statsProfile as Record<string, unknown>;
+        const { mergeProfileFromCloud } = await import('./profile');
+        mergeProfileFromCloud({
+          displayName: typeof p.displayName === 'string' ? p.displayName : null,
+          avatarId: typeof p.avatar === 'string' ? p.avatar : null,
+          avatarUrl: typeof p.customAvatarData === 'string' ? p.customAvatarData : null,
+          updatedAt:
+            typeof p.profileUpdatedAt === 'number'
+              ? new Date(p.profileUpdatedAt).toISOString()
+              : null,
+        });
+      }
     }
 
     if (profile) {

@@ -33,6 +33,14 @@ export function defaultDisplayName(userId: string): string {
   return `ID-${hashSuffix(userId)}`;
 }
 
+/** Auto-generated fallback name (ID-1234) — not a user-chosen pseudo. */
+export function isDefaultDisplayName(name: string, userId?: string | null): boolean {
+  const trimmed = name.trim();
+  if (/^ID-\d{4}$/i.test(trimmed)) return true;
+  if (userId && trimmed === defaultDisplayName(userId)) return true;
+  return false;
+}
+
 export function loadProfileRaw(): UserProfileData | null {
   try {
     return JSON.parse(localStorage.getItem(KEY) ?? 'null');
@@ -96,7 +104,10 @@ export async function trySetDisplayName(name: string): Promise<SetDisplayNameRes
   }
 
   saveProfileRaw({ ...profile, displayName: trimmed, profileUpdatedAt: Date.now() });
-  void import('./sync').then((m) => m.scheduleSync());
+  const { pushUserData } = await import('./sync');
+  await pushUserData();
+  const { refreshProfileCacheFromProfile } = await import('./auth');
+  refreshProfileCacheFromProfile();
   return { ok: true };
 }
 
@@ -145,8 +156,17 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
   let changed = false;
 
   if (patch.displayName?.trim() && patch.displayName.trim() !== local.displayName) {
-    next.displayName = patch.displayName.trim().slice(0, 24);
-    changed = true;
+    const cloudName = patch.displayName.trim().slice(0, 24);
+    const localCustom = !isDefaultDisplayName(local.displayName, userId);
+    const cloudDefault = isDefaultDisplayName(cloudName, userId);
+    const cloudNewer = cloudTime > localTime || localTime === 0;
+
+    if (cloudDefault && localCustom) {
+      /* keep user-chosen name — ignore stale ID-xxxx from cloud */
+    } else if (cloudNewer || !localCustom || !cloudDefault) {
+      next.displayName = cloudName;
+      changed = true;
+    }
   }
 
   if (patch.avatarId && isAvatarId(patch.avatarId) && patch.avatarId !== local.avatar) {
@@ -170,6 +190,7 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
 
   next.profileUpdatedAt = cloudTime > 0 ? cloudTime : Date.now();
   saveProfileRaw(next);
+  void import('./auth').then((m) => m.refreshProfileCacheFromProfile());
 }
 
 export function getAvatarEmoji(profile: UserProfileData): string {

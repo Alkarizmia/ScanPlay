@@ -1,7 +1,11 @@
 import { getUserId, isLoggedIn } from '../auth';
 import { getGamification } from '../gamification';
 import { getHistory } from '../history';
-import { getProfile } from '../profile';
+import {
+  getProfile,
+  isDefaultDisplayName,
+  mergeProfileFromCloud,
+} from '../profile';
 import { getPlan } from '../planLimits';
 import { getSupabase, isSupabaseConfigured } from '../supabase';
 
@@ -20,8 +24,30 @@ function profileAvatarUrl(profile: NonNullable<ReturnType<typeof getProfile>>): 
   return profile.avatar === 'custom' && profile.customAvatarData ? profile.customAvatarData : null;
 }
 
+export async function pullPublicProfileFromCloud(): Promise<void> {
+  if (!isSupabaseConfigured || !isLoggedIn()) return;
+  const supabase = getSupabase();
+  const userId = getUserId();
+  if (!supabase || !userId) return;
+
+  const { data } = await supabase
+    .from('scanplay_public_profiles')
+    .select('display_name, avatar_id, avatar_url, updated_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (!data) return;
+
+  mergeProfileFromCloud({
+    displayName: data.display_name as string | null,
+    avatarId: data.avatar_id as string | null,
+    avatarUrl: data.avatar_url as string | null,
+    updatedAt: data.updated_at as string | null,
+  });
+}
+
 export async function syncPublicProfileWithDisplayName(displayName: string): Promise<SyncProfileResult> {
-  if (!isSupabaseConfigured || !isLoggedIn()) return { ok: false, code: 'not_logged_in' };
+  if (!isSupabaseConfigured || !isLoggedIn()) return { ok: false, code: 'not_configured' };
   const supabase = getSupabase();
   const profile = getProfile();
   if (!supabase || !profile) return { ok: false, code: 'no_profile' };
@@ -54,17 +80,23 @@ export async function syncPublicProfile(): Promise<SyncProfileResult> {
 }
 
 export async function syncPublicProfileResolvingConflicts(): Promise<SyncProfileResult> {
-  const first = await syncPublicProfile();
-  if (first.ok || first.code !== 'display_name_taken') return first;
-
   const userId = getUserId();
-  const profile = getProfile();
-  if (!userId || !profile) return first;
+  let profile = getProfile();
+  if (!profile) return { ok: false, code: 'no_profile' };
 
-  const { defaultDisplayName, saveProfileRaw } = await import('../profile');
-  const fallback = defaultDisplayName(userId);
-  saveProfileRaw({ ...profile, displayName: fallback });
-  return syncPublicProfileWithDisplayName(fallback);
+  if (userId && isDefaultDisplayName(profile.displayName, userId)) {
+    await pullPublicProfileFromCloud();
+    profile = getProfile();
+    if (!profile) return { ok: false, code: 'no_profile' };
+  }
+
+  const first = await syncPublicProfileWithDisplayName(profile.displayName);
+  if (first.ok) return first;
+  if (first.code === 'display_name_taken') {
+    await pullPublicProfileFromCloud();
+    return { ok: true };
+  }
+  return first;
 }
 
 export async function isDisplayNameAvailable(name: string): Promise<boolean | null> {

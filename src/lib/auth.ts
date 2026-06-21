@@ -27,6 +27,18 @@ function setCache(session: Session | null): void {
   void import('./planLimits').then((m) => m.setPlanUserId(nextId));
 }
 
+export function refreshProfileCacheFromProfile(): void {
+  if (!cachedUser.isLoggedIn) return;
+  const localProfile = loadProfileRaw();
+  if (!localProfile) return;
+  cachedUser = {
+    ...cachedUser,
+    displayName: localProfile.displayName,
+    avatar: localProfile.avatar,
+    customAvatarData: localProfile.customAvatarData,
+  };
+}
+
 export function getUser(): UserProfile {
   return cachedUser;
 }
@@ -108,16 +120,19 @@ function runPostAuth(session: Session, freshLogin: boolean): void {
 
   void (async () => {
     try {
-      await ensureProfile(session.user.id);
-      void import('./social/publicProfile')
-        .then((m) => m.syncPublicProfileResolvingConflicts())
-        .catch(() => {});
-      void import('./social/presence').then((m) => m.touchPresence()).catch(() => {});
       if (freshLogin) {
         await syncAfterLogin();
       } else {
         await syncOnSessionRestore();
       }
+      await ensureProfileDb(session.user.id);
+      if (!loadProfileRaw()?.displayName) {
+        ensureUserProfile(session.user.id);
+      }
+      const { syncPublicProfileResolvingConflicts } = await import('./social/publicProfile');
+      await syncPublicProfileResolvingConflicts();
+      refreshProfileCacheFromProfile();
+      void import('./social/presence').then((m) => m.touchPresence()).catch(() => {});
     } catch {
       /* offline or slow Supabase — login still succeeds */
     } finally {
@@ -287,14 +302,7 @@ export async function signIn(email: string, password: string): Promise<AuthResul
   }
 }
 
-async function ensureProfile(userId: string): Promise<void> {
-  const local = ensureUserProfile(userId);
-  cachedUser = {
-    ...cachedUser,
-    displayName: local.displayName,
-    avatar: local.avatar,
-    customAvatarData: local.customAvatarData,
-  };
+async function ensureProfileDb(userId: string): Promise<void> {
   const supabase = getSupabase();
   if (!supabase) return;
 
