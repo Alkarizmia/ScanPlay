@@ -20,7 +20,7 @@ interface ImportScreenProps {
   onToast?: (message: string) => void;
 }
 
-type ImportStep = 'pick' | 'configure';
+type ImportStep = 'pick' | 'photos' | 'configure';
 
 const DEFAULT_FOCUS: TrainingFocus[] = ['written', 'oral'];
 
@@ -46,43 +46,80 @@ export function ImportScreen({
 }: ImportScreenProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const appendNextPickRef = useRef(false);
   const [dragOver, setDragOver] = useState(false);
   const [picked, setPicked] = useState<File[]>(initialFiles ?? []);
-  const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'configure' : 'pick');
+  const [photoUrls, setPhotoUrls] = useState<string[]>([]);
+  const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
   const maxWords = getMaxWords();
+  const maxPhotos = getMaxImagesPerImport();
   const showTrainingFocus = isTrainingFocusApplicable(sheetType);
+  const atPhotoLimit = picked.length >= maxPhotos;
 
   useEffect(() => {
     if (!initialFiles?.length) return;
     setPicked(initialFiles);
-    setStep('configure');
+    setStep('photos');
   }, [initialFiles]);
 
-  const handleFiles = (list: FileList | null) => {
+  useEffect(() => {
+    const urls = picked.map((file) => URL.createObjectURL(file));
+    setPhotoUrls(urls);
+    return () => {
+      urls.forEach((url) => URL.revokeObjectURL(url));
+    };
+  }, [picked]);
+
+  const ingestFiles = (list: FileList | null, append: boolean) => {
     if (!list) return;
-    const { files: images, dropped } = clampImagesForImport(Array.from(list));
+    const incoming = Array.from(list).filter((f) => f.type.startsWith('image/'));
+    if (incoming.length === 0) return;
+
+    const merged = append ? [...picked, ...incoming] : incoming;
+    const { files: images, dropped } = clampImagesForImport(merged);
     if (images.length === 0) return;
+
     if (dropped > 0) {
       onToast?.(
         t('scanPhotosLimited', locale)
-          .replace('{max}', String(getMaxImagesPerImport()))
+          .replace('{max}', String(maxPhotos))
           .replace('{dropped}', String(dropped)),
       );
     }
+
     setPicked(images);
-    setStep('configure');
+    setStep('photos');
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    handleFiles(e.target.files);
+  const openCamera = (append: boolean) => {
+    appendNextPickRef.current = append;
+    cameraRef.current?.click();
+  };
+
+  const openFilePicker = (append: boolean) => {
+    appendNextPickRef.current = append;
+    fileRef.current?.click();
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    ingestFiles(e.target.files, appendNextPickRef.current);
+    appendNextPickRef.current = false;
     e.target.value = '';
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    handleFiles(e.dataTransfer.files);
+    ingestFiles(e.dataTransfer.files, false);
+  };
+
+  const removePhoto = (index: number) => {
+    setPicked((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length === 0) setStep('pick');
+      return next;
+    });
   };
 
   const handleSheetTypeChange = (type: SheetType) => {
@@ -100,6 +137,11 @@ export function ImportScreen({
 
   const handleBack = () => {
     if (step === 'configure') {
+      setStep('photos');
+      return;
+    }
+    if (step === 'photos') {
+      setPicked([]);
       setStep('pick');
       return;
     }
@@ -107,11 +149,15 @@ export function ImportScreen({
   };
 
   const screenTitle =
-    step === 'configure' ? t('importConfigureTitle', locale) : t('importTitle', locale);
+    step === 'configure'
+      ? t('importConfigureTitle', locale)
+      : step === 'photos'
+        ? t('importPhotosTitle', locale)
+        : t('importTitle', locale);
 
   return (
     <div
-      className={`screen flow-screen import-screen${isDesktop ? ' import-screen--desktop' : ''}${step === 'configure' ? ' import-screen--configure' : ''}`}
+      className={`screen flow-screen import-screen${isDesktop ? ' import-screen--desktop' : ''}${step === 'configure' ? ' import-screen--configure' : ''}${step === 'photos' ? ' import-screen--photos' : ''}`}
     >
       <header className="top-bar">
         <button type="button" className="icon-btn" onClick={handleBack} aria-label={t('back', locale)}>
@@ -142,11 +188,11 @@ export function ImportScreen({
               }}
               onDragLeave={() => setDragOver(false)}
               onDrop={handleDrop}
-              onClick={() => fileRef.current?.click()}
+              onClick={() => openFilePicker(false)}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click();
+                if (e.key === 'Enter' || e.key === ' ') openFilePicker(false);
               }}
             >
               <span className="import-dropzone-icon" aria-hidden="true">
@@ -157,7 +203,7 @@ export function ImportScreen({
             </div>
           )}
 
-          <button type="button" className="import-card import-card--primary" onClick={() => fileRef.current?.click()}>
+          <button type="button" className="import-card import-card--primary" onClick={() => openFilePicker(false)}>
             <span className="import-icon">🖼️</span>
             <span className="import-title">{t('importFile', locale)}</span>
             <span className="import-desc">
@@ -166,12 +212,76 @@ export function ImportScreen({
           </button>
 
           {!isDesktop && (
-            <button type="button" className="import-card" onClick={() => cameraRef.current?.click()}>
+            <button type="button" className="import-card" onClick={() => openCamera(false)}>
               <span className="import-icon">📷</span>
               <span className="import-title">{t('importCamera', locale)}</span>
               <span className="import-desc">{t('importCameraDesc', locale)}</span>
             </button>
           )}
+        </main>
+      )}
+
+      {step === 'photos' && (
+        <main className="import-photos-main scroll-natural">
+          <p className="import-photos-sub">{t('importPhotosSub', locale)}</p>
+          <span className="import-config-badge import-photos-badge">
+            {t('importPicked', locale).replace('{count}', String(picked.length))}
+          </span>
+
+          <ul className="import-photo-grid" aria-label={t('importPicked', locale).replace('{count}', String(picked.length))}>
+            {picked.map((file, index) => (
+              <li key={`${file.name}-${file.lastModified}-${index}`} className="import-photo-item">
+                {photoUrls[index] ? (
+                  <img src={photoUrls[index]} alt="" className="import-photo-thumb" />
+                ) : (
+                  <div className="import-photo-thumb import-photo-thumb--placeholder" aria-hidden="true">
+                    📷
+                  </div>
+                )}
+                <button
+                  type="button"
+                  className="import-photo-remove icon-btn"
+                  onClick={() => removePhoto(index)}
+                  aria-label={t('importPhotosRemove', locale)}
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+          </ul>
+
+          {atPhotoLimit && (
+            <p className="import-photos-limit">{t('importPhotosMax', locale).replace('{max}', String(maxPhotos))}</p>
+          )}
+
+          <div className="import-photos-actions">
+            {!isDesktop && (
+              <button
+                type="button"
+                className="btn-secondary import-photos-add"
+                disabled={atPhotoLimit}
+                onClick={() => openCamera(true)}
+              >
+                📷 {t('importPhotosAddCamera', locale)}
+              </button>
+            )}
+            <button
+              type="button"
+              className="btn-secondary import-photos-add"
+              disabled={atPhotoLimit}
+              onClick={() => openFilePicker(true)}
+            >
+              🖼️ {t('importPhotosAddFile', locale)}
+            </button>
+            <button
+              type="button"
+              className="btn-primary btn-lg import-photos-continue"
+              disabled={picked.length === 0}
+              onClick={() => setStep('configure')}
+            >
+              {t('importPhotosContinue', locale)}
+            </button>
+          </div>
         </main>
       )}
 
@@ -211,7 +321,7 @@ export function ImportScreen({
         accept="image/*"
         capture="environment"
         className="sr-only"
-        onChange={handleChange}
+        onChange={handleInputChange}
       />
       <input
         ref={fileRef}
@@ -219,7 +329,7 @@ export function ImportScreen({
         accept="image/*"
         multiple
         className="sr-only"
-        onChange={handleChange}
+        onChange={handleInputChange}
       />
     </div>
   );

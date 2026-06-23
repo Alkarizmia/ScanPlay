@@ -6,6 +6,17 @@ function envFlag(value: string | undefined, defaultOn = false): boolean {
   return value === '1' || value.toLowerCase() === 'true';
 }
 
+/** AdSense ne sert pas de pubs en dev local (localhost / LAN). */
+function isPrivateDevHost(): boolean {
+  if (typeof window === 'undefined') return false;
+  const h = window.location.hostname;
+  if (h === 'localhost' || h === '127.0.0.1' || h === '[::1]') return true;
+  if (/^192\.168\.\d+\.\d+$/.test(h)) return true;
+  if (/^10\.\d+\.\d+\.\d+$/.test(h)) return true;
+  if (/^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(h)) return true;
+  return false;
+}
+
 /** Ex: ca-pub-1234567890123456 */
 export function getAdSenseClientId(): string | null {
   const raw = import.meta.env.VITE_ADSENSE_CLIENT?.trim();
@@ -26,7 +37,10 @@ export function getAdSenseRewardSlot(): string | null {
 }
 
 export function isAdSenseEnabled(): boolean {
-  if (!envFlag(import.meta.env.VITE_ADSENSE_ENABLED, true)) return false;
+  // AdSense ne remplit jamais localhost / LAN — forcer la simulation en dev local
+  if (import.meta.env.DEV && isPrivateDevHost()) return false;
+  const defaultOn = !import.meta.env.DEV;
+  if (!envFlag(import.meta.env.VITE_ADSENSE_ENABLED, defaultOn)) return false;
   return getAdSenseClientId() != null;
 }
 

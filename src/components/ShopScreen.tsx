@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AdSenseSlot } from './AdSenseSlot';
 import { DailyChestOverlay } from './DailyChestOverlay';
 import { RewardedAdSheet } from './RewardedAdSheet';
@@ -137,6 +137,14 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
   const [adLoading, setAdLoading] = useState(false);
   const [rewardedOpen, setRewardedOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+    };
+  }, []);
 
   const shopAdSlot = getAdSenseShopSlot();
   const adsLive = isAdSenseEnabled() && shopAdSlot != null;
@@ -158,16 +166,19 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
     setError(null);
     setInfo(null);
     setBusy(id);
-    const result = await fn();
-    setBusy(null);
-    if (!result.ok) {
-      setError(t(mapReason(result.reason), locale));
-      return;
+    try {
+      const result = await fn();
+      if (!result.ok) {
+        setError(t(mapReason(result.reason), locale));
+        return;
+      }
+      if (successKey) setInfo(t(successKey, locale));
+      else setInfo(t('shopPurchaseOk', locale));
+      playSound('xpGain');
+      onRefresh();
+    } finally {
+      if (mountedRef.current) setBusy(null);
     }
-    if (successKey) setInfo(t(successKey, locale));
-    else setInfo(t('shopPurchaseOk', locale));
-    playSound('xpGain');
-    onRefresh();
   };
 
   const handleChest = () => {
@@ -188,12 +199,17 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
     setChestOverlayOpen(false);
   };
 
-  const handleAd = () => {
+  const handleAd = async () => {
+    if (adLoading || busy === 'ad' || rewardedOpen || !canWatchAdForCoins()) return;
+
     if (isAdSimulationMode()) {
       setAdLoading(true);
-      window.setTimeout(() => {
-        void run('ad', () => watchAdForCoins(), 'shopAdRewardDone').finally(() => setAdLoading(false));
-      }, 2200);
+      try {
+        await new Promise<void>((resolve) => window.setTimeout(resolve, 1500));
+        await run('ad', () => watchAdForCoins(), 'shopAdRewardDone');
+      } finally {
+        if (mountedRef.current) setAdLoading(false);
+      }
       return;
     }
     grantAdConsent();

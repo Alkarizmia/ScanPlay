@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ScanPlay — Aperçu design (mockups & Pix)</title>
+    <style>
+      :root {
+        --green: #22c55e;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --text: #0f172a;
+        --muted: #64748b;
+        --border: #e2e8f0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.5;
+      }
+
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 24px;
+        background: rgba(255, 255, 255, 0.92);
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(8px);
+      }
+
+      .toolbar h1 {
+        margin: 0;
+        font-size: 1.1rem;
+      }
+
+      .toolbar h1 span {
+        color: var(--green);
+      }
+
+      .toolbar-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .toolbar a,
+      .toolbar button {
+        font: inherit;
+        text-decoration: none;
+        border: 1px solid var(--border);
+        background: var(--card);
+        color: var(--text);
+        border-radius: 999px;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+
+      .toolbar button.primary {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      .intro {
+        max-width: 960px;
+        margin: 24px auto;
+        padding: 0 24px;
+      }
+
+      .intro p {
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+
+      .intro kbd {
+        background: #eef2ff;
+        border: 1px solid #c7d2fe;
+        border-radius: 6px;
+        padding: 2px 6px;
+        font-size: 0.9em;
+      }
+
+      nav.toc {
+        max-width: 960px;
+        margin: 0 auto 32px;
+        padding: 0 24px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      nav.toc a {
+        color: var(--green);
+        text-decoration: none;
+        font-weight: 600;
+      }
+
+      main {
+        max-width: 1200px;
+        margin: 0 auto 64px;
+        padding: 0 24px;
+      }
+
+      section {
+        margin-bottom: 48px;
+      }
+
+      section h2 {
+        margin: 0 0 8px;
+        font-size: 1.35rem;
+      }
+
+      section .desc {
+        margin: 0 0 20px;
+        color: var(--muted);
+      }
+
+      .grid {
+        display: grid;
+        gap: 20px;
+      }
+
+      .grid.pages {
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      }
+
+      figure {
+        margin: 0;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      }
+
+      figure img {
+        display: block;
+        width: 100%;
+        height: auto;
+        background: #fff;
+      }
+
+      figcaption {
+        padding: 12px 16px;
+        font-weight: 600;
+        border-top: 1px solid var(--border);
+      }
+
+      figcaption small {
+        display: block;
+        margin-top: 4px;
+        font-weight: 400;
+        color: var(--muted);
+      }
+
+      @media print {
+        .toolbar,
+        .intro,
+        nav.toc {
+          display: none;
+        }
+
+        body {
+          background: #fff;
+        }
+
+        section {
+          break-inside: avoid;
+          page-break-inside: avoid;
+          margin-bottom: 24px;
+        }
+
+        figure {
+          box-shadow: none;
+          break-inside: avoid;
+          page-break-inside: avoid;
+        }
+
+        section h2 {
+          break-after: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="toolbar">
+      <h1>Scan<span>Play</span> — Aperçu visuel</h1>
+      <div class="toolbar-actions">
+        <a href="#vue-ensemble">Vue d'ensemble</a>
+        <a href="#pages">Pages</a>
+        <a href="#mascot">Pix</a>
+        <button type="button" class="primary" onclick="window.print()">Imprimer (Ctrl+P)</button>
+      </div>
+    </header>
+
+    <div class="intro">
+      <p>
+        Maquettes UI + mascotte <strong>Pix</strong> — inspiration Duolingo, identité ScanPlay.
+        Ouvre ce fichier dans le navigateur, parcours les sections, puis <kbd>Ctrl</kbd>+<kbd>P</kbd> pour
+        imprimer ou enregistrer en PDF.
+      </p>
+      <p>Dossier : <code>ScanPlay/design-preview/</code></p>
+    </div>
+
+    <nav class="toc" aria-label="Sommaire">
+      <a href="#vue-ensemble">1. Vue d'ensemble</a> ·
+      <a href="#pages">2. Pages</a> ·
+      <a href="#mascot">3. Mascotte Pix</a>
+    </nav>
+
+    <main>
+      <section id="vue-ensemble">
+        <h2>1. Vue d'ensemble (layout desktop)</h2>
+        <p class="desc">Sidebar + parcours + quêtes du jour + ligue — vision globale PC.</p>
+        <figure>
+          <img src="01-vue-ensemble/scanplay-mockup-overview.png" alt="Vue d'ensemble ScanPlay desktop" />
+          <figcaption>
+            Vue d'ensemble
+            <small>01-vue-ensemble/scanplay-mockup-overview.png</small>
+          </figcaption>
+        </figure>
+      </section>
+
+      <section id="pages">
+        <h2>2. Maquettes par page</h2>
+        <p class="desc">Une proposition visuelle pour chaque écran principal de l'app.</p>
+        <div class="grid pages">
+          <figure>
+            <img src="02-pages/scanplay-mockup-accueil.png" alt="Maquette Accueil" />
+            <figcaption>Accueil<small>02-pages/scanplay-mockup-accueil.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="02-pages/scanplay-mockup-historique.png" alt="Maquette Historique" />
+            <figcaption>Historique<small>02-pages/scanplay-mockup-historique.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="02-pages/scanplay-mockup-amis.png" alt="Maquette Amis" />
+            <figcaption>Amis<small>02-pages/scanplay-mockup-amis.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="02-pages/scanplay-mockup-boutique.png" alt="Maquette Boutique" />
+            <figcaption>Boutique<small>02-pages/scanplay-mockup-boutique.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="02-pages/scanplay-mockup-erreurs.png" alt="Maquette Erreurs" />
+            <figcaption>Erreurs<small>02-pages/scanplay-mockup-erreurs.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="02-pages/scanplay-mockup-succes.png" alt="Maquette Succès" />
+            <figcaption>Succès<small>02-pages/scanplay-mockup-succes.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="02-pages/scanplay-mockup-parametres.png" alt="Maquette Paramètres" />
+            <figcaption>Paramètres<small>02-pages/scanplay-mockup-parametres.png</small></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section id="mascot">
+        <h2>3. Mascotte Pix</h2>
+        <p class="desc">Personnage original ScanPlay — fiche vivante, compagnon marketing.</p>
+        <div class="grid pages">
+          <figure>
+            <img src="03-mascot-pix/scanplay-mascot-pix-portrait.png" alt="Pix portrait" />
+            <figcaption>Pix — portrait (UI flottante)<small>03-mascot-pix/scanplay-mascot-pix-portrait.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="03-mascot-pix/scanplay-mascot-pix-sheet.png" alt="Pix poses" />
+            <figcaption>Pix — feuille de poses<small>03-mascot-pix/scanplay-mascot-pix-sheet.png</small></figcaption>
+          </figure>
+          <figure>
+            <img src="03-mascot-pix/scanplay-mascot-pix-marketing.png" alt="Pix marketing" />
+            <figcaption>Pix — bannière marketing<small>03-mascot-pix/scanplay-mascot-pix-marketing.png</small></figcaption>
+          </figure>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

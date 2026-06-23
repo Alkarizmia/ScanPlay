@@ -112,7 +112,12 @@
 }
 
 [data-device='mobile'] .bottom-nav-icon {
-  padding: 4px 8px;
+  padding: 3px 6px;
+  flex-shrink: 0;
+}
+
+[data-device='mobile'] .bottom-nav-item.active .bottom-nav-icon {
+  padding: 3px 8px;
 }
 
 [data-device='mobile'] .nav-icon-svg {
@@ -120,8 +125,11 @@
   height: 20px;
 }
 
-[data-device='mobile'] .bottom-nav-item.active .bottom-nav-icon {
-  padding: 4px 10px;
+@media (display-mode: standalone) {
+  [data-device='mobile'] .bottom-nav-label {
+    font-size: 0.58rem;
+    line-height: 1.2;
+  }
 }
 
 /* Top bar compact on small screens */
