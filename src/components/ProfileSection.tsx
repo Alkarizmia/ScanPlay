@@ -24,9 +24,10 @@ interface ProfileSectionProps {
   onRefresh: () => void;
   onUpgrade: () => void;
   onToast?: (message: string) => void;
+  variant?: 'embedded' | 'page';
 }
 
-export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToast }: ProfileSectionProps) {
+export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToast, variant = 'embedded' }: ProfileSectionProps) {
   const profile = getProfile();
   const fileRef = useRef<HTMLInputElement>(null);
   const [nameDraft, setNameDraft] = useState(profile?.displayName ?? '');
@@ -138,8 +139,8 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
   };
 
   return (
-    <section className="settings-section profile-section">
-      <h3 className="settings-label">{t('profileSection', locale)}</h3>
+    <section className={`settings-section profile-section${variant === 'page' ? ' profile-section--page' : ''}`}>
+      {variant !== 'page' && <h3 className="settings-label">{t('profileSection', locale)}</h3>}
 
       <div className="profile-card">
         <div className="profile-header">

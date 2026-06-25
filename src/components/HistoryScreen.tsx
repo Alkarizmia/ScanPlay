@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useDeviceProfile } from '../hooks/useDeviceProfile';
 import { usePlan } from '../hooks/usePlan';
 import { SynthesisActions } from './SynthesisActions';
 import { getExamHistory, deleteExamHistoryEntry } from '../lib/examHistory';
 import { getHistory, deleteHistoryEntry } from '../lib/history';
 import { canReplayHistoryEntry } from '../lib/historyReplay';
-import { resolvePathStepCount } from '../lib/stepProgress';
-import { countGoldSteps, normalizeStepProgress } from '../lib/stepProgress';
-import { getHistoryMax } from '../lib/planLimits';
+import { resolveHistoryEntryMeta, getHistorySubjectLabel } from '../lib/historySubject';
+import { formatHistoryDuration, formatHistoryScore, getHistoryPathProgress } from '../lib/historyProgress';
+import { getHistoryCardThumbnail } from '../lib/subjectThumbnail';
 import { getDateLocale, t, type TranslationKey } from '../lib/i18n';
-import type { GameMode, HistoryEntry, Locale, UpgradeReason } from '../types';
+import { resolvePathStepCount } from '../lib/stepProgress';
+import type { HistoryEntry, Locale, UpgradeReason } from '../types';
 
 interface HistoryScreenProps {
   locale: Locale;
@@ -21,23 +23,52 @@ interface HistoryScreenProps {
   onAuth: () => void;
 }
 
-type HistoryView = 'decks' | 'exams';
+type HistoryView = 'path' | 'exam';
 
-const MODE_LABELS: Record<GameMode, TranslationKey> = {
-  flashcards: 'flashcards',
-  quiz: 'quiz',
-  match: 'match',
-  type: 'modeType',
-  speak: 'modeSpeak',
-};
+const PAGE_SIZE = 6;
 
 function formatDate(iso: string, locale: Locale): string {
   return new Date(iso).toLocaleString(getDateLocale(locale), {
     day: 'numeric',
     month: 'short',
+    year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   });
+}
+
+function formatDayLabel(iso: string, locale: Locale): string {
+  const date = new Date(iso);
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round((startToday.getTime() - startDate.getTime()) / 86400000);
+
+  if (diffDays === 0) return t('historyGroupToday', locale);
+  if (diffDays === 1) return t('historyGroupYesterday', locale);
+  return date.toLocaleDateString(getDateLocale(locale), {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+}
+
+function groupEntriesByDay(entries: HistoryEntry[], locale: Locale) {
+  const groups: { label: string; entries: HistoryEntry[] }[] = [];
+  for (const entry of entries) {
+    const label = formatDayLabel(entry.lastPlayedAt ?? entry.createdAt, locale);
+    const last = groups[groups.length - 1];
+    if (last?.label === label) last.entries.push(entry);
+    else groups.push({ label, entries: [entry] });
+  }
+  return groups;
+}
+
+function averageScore(entries: HistoryEntry[]): number | null {
+  const scored = entries.filter((e) => e.lastScorePct != null);
+  if (scored.length === 0) return null;
+  const sum = scored.reduce((acc, e) => acc + (e.lastScorePct ?? 0), 0);
+  return Math.round(sum / scored.length);
 }
 
 export function HistoryScreen({
@@ -50,11 +81,17 @@ export function HistoryScreen({
   onToast,
   onAuth,
 }: HistoryScreenProps) {
-  const [view, setView] = useState<HistoryView>('decks');
+  const [view, setView] = useState<HistoryView>('path');
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const entries = isLoggedIn ? getHistory() : [];
   const examEntries = isLoggedIn ? getExamHistory() : [];
-  const historyMax = getHistoryMax();
   const plan = usePlan(refreshKey);
+  const device = useDeviceProfile();
+  const isMobileGrid = device.kind === 'mobile';
+  const avgScore = averageScore(entries);
+
+  const visibleEntries = entries.slice(0, visibleCount);
+  const grouped = useMemo(() => groupEntriesByDay(visibleEntries, locale), [visibleEntries, locale]);
 
   const handleOpen = (entry: HistoryEntry) => {
     if (!canReplayHistoryEntry(entry.id, plan)) {
@@ -79,18 +116,112 @@ export function HistoryScreen({
     }
   };
 
-  const countLabel =
-    historyMax < 9999
-      ? t('historyCount', locale)
-          .replace('{count}', String(entries.length))
-          .replace('{max}', String(historyMax))
-      : `${entries.length}`;
+  const tabs: { id: HistoryView; labelKey: TranslationKey; icon: string }[] = [
+    { id: 'path', labelKey: 'historyTabDecks', icon: '📋' },
+    { id: 'exam', labelKey: 'historyTabExams', icon: '🎓' },
+  ];
+
+  const renderDeckCard = (entry: HistoryEntry) => {
+    const meta = resolveHistoryEntryMeta(entry, locale);
+    const thumb = getHistoryCardThumbnail(meta.subject, entry.id, entry.thumbnail);
+    const replayLocked = !canReplayHistoryEntry(entry.id, plan);
+    const scorePct = entry.lastScorePct;
+    const pathProgress = getHistoryPathProgress(entry);
+    const pathPct = Math.round(pathProgress.fraction * 100);
+
+    return (
+      <li
+        key={entry.id}
+        className={`history-grid-card${replayLocked ? ' history-grid-card--locked' : ''}`}
+      >
+        <div className="history-grid-visual">
+          {thumb ? (
+            <img src={thumb} alt="" className="history-grid-thumb" />
+          ) : (
+            <div className="history-grid-thumb history-grid-thumb--fallback">📄</div>
+          )}
+          {scorePct != null && (
+            <span className="history-score-badge">{formatHistoryScore(scorePct)}</span>
+          )}
+          <span className="history-subject-badge">{getHistorySubjectLabel(meta.subject, locale)}</span>
+        </div>
+
+        <div className="history-grid-body">
+          <h4 className="history-grid-title">{meta.title}</h4>
+          <p className="history-grid-date">{formatDate(entry.lastPlayedAt ?? entry.createdAt, locale)}</p>
+          {entry.lastXpEarned != null && (
+            <p className="history-grid-xp">
+              <span aria-hidden="true">⭐</span> +{entry.lastXpEarned} XP
+            </p>
+          )}
+
+          <button
+            type="button"
+            className={`history-review-btn${replayLocked ? ' history-review-btn--locked' : ''}`}
+            onClick={() => handleOpen(entry)}
+          >
+            {replayLocked ? (
+              <>🔒 {t('historyReplayLocked', locale)}</>
+            ) : (
+              <>
+                <span className="history-review-play" aria-hidden="true">
+                  ▶
+                </span>
+                {t('historyReview', locale)}
+              </>
+            )}
+          </button>
+
+          <div
+            className="history-path-progress"
+            role="progressbar"
+            aria-valuenow={pathPct}
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-label={t('historyPathProgress', locale)
+              .replace('{done}', String(pathProgress.doneSteps))
+              .replace('{total}', String(pathProgress.totalSteps))}
+          >
+            <div className="history-path-progress-track">
+              <div
+                className={`history-path-progress-fill${pathProgress.complete ? ' history-path-progress-fill--complete' : ''}`}
+                style={{ width: `${pathPct}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="history-grid-footer">
+          <SynthesisActions
+            locale={locale}
+            pairs={entry.pairs}
+            thumbnail={entry.thumbnail}
+            title={meta.title}
+            sheetType={entry.sheetType}
+            compact
+            onUpgrade={onUpgrade}
+            onToast={onToast}
+            onAuth={onAuth}
+          />
+          <button
+            type="button"
+            className="history-delete-btn"
+            onClick={(e) => handleDelete(entry.id, e)}
+            aria-label={t('delete', locale)}
+          >
+            {t('delete', locale)}
+          </button>
+        </div>
+      </li>
+    );
+  };
 
   if (!isLoggedIn) {
     return (
-      <div className="screen tab-screen">
-        <header className="top-bar">
-          <h2 className="screen-title">{t('historyTitle', locale)}</h2>
+      <div className="screen tab-screen history-screen">
+        <header className="history-hero">
+          <h2 className="history-hero-title">{t('historyTitle', locale)}</h2>
+          <p className="history-hero-sub">{t('historyHeroSub', locale)}</p>
         </header>
         <main className="history-main scroll-natural">
           <div className="empty-state">
@@ -107,33 +238,61 @@ export function HistoryScreen({
   }
 
   return (
-    <div className="screen tab-screen">
-      <header className="top-bar history-top-bar">
-        <h2 className="screen-title">{t('historyTitle', locale)}</h2>
-        {view === 'decks' && historyMax < 9999 && (
-          <span className="history-limit-badge">{countLabel}</span>
+    <div className="screen tab-screen history-screen">
+      <header className="history-hero">
+        <div className="history-hero-top">
+          <div>
+            <h2 className="history-hero-title">{t('historyTitle', locale)}</h2>
+            <p className="history-hero-sub">{t('historyHeroSub', locale)}</p>
+          </div>
+          <div className="history-stats-row">
+            <div className="history-stat-card">
+              <span className="history-stat-icon" aria-hidden="true">
+                📚
+              </span>
+              <div>
+                <strong>{entries.length}</strong>
+                <span>{t('historyStatScans', locale)}</span>
+              </div>
+            </div>
+            {avgScore != null && (
+              <div className="history-stat-card">
+                <span className="history-stat-icon" aria-hidden="true">
+                  📈
+                </span>
+                <div>
+                  <strong>{formatHistoryScore(avgScore)}</strong>
+                  <span>{t('historyStatAverage', locale)}</span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="history-filter-row history-filter-row--tabs">
+          {tabs.map((item) => (
+            <button
+              key={item.id}
+              type="button"
+              className={`history-filter-chip${view === item.id ? ' active' : ''}`}
+              onClick={() => {
+                setView(item.id);
+                setVisibleCount(PAGE_SIZE);
+              }}
+            >
+              <span aria-hidden="true">{item.icon}</span>
+              {t(item.labelKey, locale)}
+            </button>
+          ))}
+        </div>
+
+        {view === 'path' && (
+          <p className="history-replay-hint">{t('historyReplayLimitHint', locale)}</p>
         )}
       </header>
 
-      <div className="history-subtabs">
-        <button
-          type="button"
-          className={`history-subtab ${view === 'decks' ? 'active' : ''}`}
-          onClick={() => setView('decks')}
-        >
-          📋 {t('historyTabDecks', locale)}
-        </button>
-        <button
-          type="button"
-          className={`history-subtab ${view === 'exams' ? 'active' : ''}`}
-          onClick={() => setView('exams')}
-        >
-          🎓 {t('historyTabExams', locale)}
-        </button>
-      </div>
-
       <main className="history-main scroll-natural">
-        {view === 'decks' && (
+        {view === 'path' && (
           <>
             {entries.length === 0 ? (
               <div className="empty-state">
@@ -142,91 +301,36 @@ export function HistoryScreen({
                 <p className="empty-hint">{t('historyEmptyHint', locale)}</p>
               </div>
             ) : (
-              <ul className="history-list">
-                {entries.map((entry) => {
-                  const progress = normalizeStepProgress(entry.stepProgress, entry.completedSteps);
-                  const gold = countGoldSteps(progress);
-                  const wordCount = entry.pairs.length;
-                  const replayLocked = !canReplayHistoryEntry(entry.id, plan);
-                  return (
-                    <li
-                      key={entry.id}
-                      className={`history-card${replayLocked ? ' history-card--replay-locked' : ''}`}
-                    >
-                      <button
-                        type="button"
-                        className="history-card-play"
-                        onClick={() => handleOpen(entry)}
-                      >
-                        <div className="history-thumb">
-                          {entry.thumbnail ? <img src={entry.thumbnail} alt="" /> : <span>📄</span>}
-                        </div>
-                        <div className="history-card-body">
-                          <div className="history-card-head">
-                            <span className="history-title">{entry.title}</span>
-                            {replayLocked ? (
-                              <span className="history-play-label history-play-label--locked">
-                                🔒 {t('historyReplayLocked', locale)}
-                              </span>
-                            ) : (
-                              <span className="history-play-label">{t('historyPlay', locale)}</span>
-                            )}
-                          </div>
-                          <div className="history-card-meta">
-                            <span className="history-meta-pill">
-                              {wordCount} {t('pathUnitWords', locale)}
-                            </span>
-                            {entry.lastMode && (
-                              <span className="history-badge">
-                                {t(MODE_LABELS[entry.lastMode], locale)}
-                              </span>
-                            )}
-                            {gold > 0 && (
-                              <span className="history-step-badge">
-                                ★ {gold}/{resolvePathStepCount(entry.pathStepCount)}
-                              </span>
-                            )}
-                            {entry.lastScorePct != null && (
-                              <span className="history-session-stats">
-                                {entry.lastScorePct}%
-                                {entry.lastXpEarned != null && ` · +${entry.lastXpEarned} XP`}
-                              </span>
-                            )}
-                          </div>
-                          <span className="history-date">
-                            {formatDate(entry.lastPlayedAt ?? entry.createdAt, locale)}
-                          </span>
-                        </div>
-                      </button>
-                      <div className="history-card-footer">
-                        <SynthesisActions
-                          locale={locale}
-                          pairs={entry.pairs}
-                          thumbnail={entry.thumbnail}
-                          title={entry.title}
-                          compact
-                          onUpgrade={onUpgrade}
-                          onToast={onToast}
-                          onAuth={onAuth}
-                        />
-                        <button
-                          type="button"
-                          className="history-delete-btn"
-                          onClick={(e) => handleDelete(entry.id, e)}
-                          aria-label={t('delete', locale)}
-                        >
-                          {t('delete', locale)}
-                        </button>
-                      </div>
-                    </li>
-                  );
-                })}
-              </ul>
+              <>
+                <ul
+                  className={`history-grid history-grid--decks${isMobileGrid ? ' history-grid--flat' : ''}`}
+                >
+                  {isMobileGrid
+                    ? visibleEntries.map((entry) => renderDeckCard(entry))
+                    : grouped.flatMap((group) => [
+                        <li key={`day-${group.label}`} className="history-day-heading">
+                          <h3 className="history-day-label">{group.label}</h3>
+                        </li>,
+                        ...group.entries.map((entry) => renderDeckCard(entry)),
+                      ])}
+                </ul>
+
+                {visibleCount < entries.length && (
+                  <button
+                    type="button"
+                    className="history-load-more"
+                    onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+                  >
+                    {t('historyLoadMore', locale)}
+                    <span aria-hidden="true">⌄</span>
+                  </button>
+                )}
+              </>
             )}
           </>
         )}
 
-        {view === 'exams' && (
+        {view === 'exam' && (
           <>
             {examEntries.length === 0 ? (
               <div className="empty-state">
@@ -235,47 +339,58 @@ export function HistoryScreen({
                 <p className="empty-hint">{t('examHistoryEmptyHint', locale)}</p>
               </div>
             ) : (
-              <ul className="history-list exam-history-list">
-                {examEntries.map((exam) => (
-                  <li key={exam.id} className={`history-card exam-history-card${exam.passed ? '' : ' exam-history-card--fail'}`}>
-                    <div className="history-card-play exam-history-card-inner">
-                      <div className="history-thumb">
-                        {exam.thumbnail ? <img src={exam.thumbnail} alt="" /> : <span>🎓</span>}
+              <ul
+                className={`history-grid history-grid--decks${isMobileGrid ? ' history-grid--flat' : ''}`}
+              >
+                {examEntries.map((exam) => {
+                  const steps = resolvePathStepCount(exam.pathStepCount);
+                  const duration = formatHistoryDuration(exam.totalTimeSeconds);
+                  return (
+                    <li
+                      key={exam.id}
+                      className={`history-grid-card exam-history-card${exam.passed ? '' : ' exam-history-card--fail'}`}
+                    >
+                      <div className="history-grid-visual">
+                        {exam.thumbnail ? (
+                          <img src={exam.thumbnail} alt="" className="history-grid-thumb" />
+                        ) : (
+                          <div className="history-grid-thumb history-grid-thumb--fallback">🎓</div>
+                        )}
+                        <span
+                          className={`history-score-badge${exam.passed ? '' : ' history-score-badge--fail'}`}
+                        >
+                          {formatHistoryScore(exam.finalGrade)}
+                        </span>
+                        <span className="history-subject-badge">{t('examMode', locale)}</span>
                       </div>
-                      <div className="history-card-body">
-                        <div className="history-card-head">
-                          <span className="history-title">{exam.deckTitle}</span>
-                          <span
-                            className={`exam-grade-badge ${exam.passed ? 'exam-grade-badge--pass' : 'exam-grade-badge--fail'}`}
-                          >
-                            {exam.finalGrade}%
-                          </span>
-                        </div>
-                        <div className="history-card-meta">
-                          <span className="history-meta-pill">
-                            {t('examFinalGrade', locale)}: {exam.finalGrade}%
-                          </span>
-                          <span className="history-meta-pill">
-                            {exam.stepGrades.length}/{resolvePathStepCount(exam.pathStepCount)} {t('pathUnitSteps', locale)}
-                          </span>
-                          <span className="history-meta-pill">
-                            {Math.round(exam.totalTimeSeconds / 60)} min
-                          </span>
-                        </div>
-                        <span className="history-date">{formatDate(exam.createdAt, locale)}</span>
+                      <div className="history-grid-body">
+                        <h4 className="history-grid-title">{exam.deckTitle}</h4>
+                        <p className="history-grid-date">{formatDate(exam.createdAt, locale)}</p>
+                        <p className="history-grid-xp history-exam-duration">
+                          <span aria-hidden="true">⏱️</span>{' '}
+                          {t('historyExamPathTime', locale).replace('{time}', duration)}
+                        </p>
+                        <p className="history-exam-meta">
+                          {exam.stepGrades.length}/{steps} {t('pathUnitSteps', locale)}
+                          {exam.passed ? (
+                            <span className="history-exam-pass"> · {t('examFinalPassShort', locale)}</span>
+                          ) : (
+                            <span className="history-exam-fail"> · {t('examFinalFailShort', locale)}</span>
+                          )}
+                        </p>
                       </div>
-                    </div>
-                    <div className="history-card-footer">
-                      <button
-                        type="button"
-                        className="history-delete-btn"
-                        onClick={() => handleDeleteExam(exam.id)}
-                      >
-                        {t('delete', locale)}
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                      <div className="history-grid-footer">
+                        <button
+                          type="button"
+                          className="history-delete-btn"
+                          onClick={() => handleDeleteExam(exam.id)}
+                        >
+                          {t('delete', locale)}
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </>

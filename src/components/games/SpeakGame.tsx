@@ -18,11 +18,13 @@ import {
 import { canUseServerTranscribe, recordSpeechWithVAD, transcribeViaServer } from '../../lib/speechServer';
 import { coercePlayablePairs, isMathLikeText, type AnswerGrade } from '../../lib/vocabulary';
 import type { GameCompleteMeta, LangCode, Locale, WordPair } from '../../types';
-import { gameProgressPct, GameHeader } from './GameHeader';
+import { gameProgressPct } from './GameHeader';
+import type { EmbeddedGameProps } from './embeddedGame';
+import { LessonGameShell } from './LessonGameShell';
 
 type VoicePhase = 'idle' | 'listening' | 'speaking' | 'analyzing';
 
-interface SpeakGameProps {
+interface SpeakGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
   locale: Locale;
   examMode?: boolean;
@@ -40,6 +42,8 @@ export function SpeakGame({
   stepIndex,
   onComplete,
   onExit,
+  embedded = false,
+  onStepProgress,
 }: SpeakGameProps) {
   const pool = useMemo(
     () =>
@@ -51,6 +55,11 @@ export function SpeakGame({
   const total = Math.min(pool.length, examMode ? 6 : 5);
   const deck = pool.slice(0, total);
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (embedded && onStepProgress) onStepProgress(index, total);
+  }, [embedded, onStepProgress, index, total]);
+
   const [score, setScore] = useState(0);
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
   const [revealed, setRevealed] = useState(false);
@@ -321,15 +330,14 @@ export function SpeakGame({
 
   if (deck.length === 0) {
     return (
-      <div className="screen game-screen flow-screen">
-        <GameHeader locale={locale} onExit={onExit} progress={0} />
+      <LessonGameShell embedded={embedded} locale={locale} onExit={onExit} progress={0} className="speak-game">
         <div className="game-body speak-game-body">
           <p className="speak-game-empty">{t('speakUnsupported', locale)}</p>
           <button type="button" className="btn-secondary btn-lg" onClick={() => finish(0, { technical: true })}>
             {t('speakSkipAll', locale)}
           </button>
         </div>
-      </div>
+      </LessonGameShell>
     );
   }
 
@@ -355,15 +363,15 @@ export function SpeakGame({
           : '';
 
   return (
-    <div className="screen game-screen flow-screen speak-game">
-      <GameHeader
-        locale={locale}
-        onExit={onExit}
-        progress={gameProgressPct(index + 1, total)}
-        examMode={examMode}
-        timeLeft={timeLeft}
-      />
-
+    <LessonGameShell
+      embedded={embedded}
+      locale={locale}
+      onExit={onExit}
+      progress={gameProgressPct(index + 1, total)}
+      examMode={examMode}
+      timeLeft={timeLeft}
+      className="speak-game"
+    >
       <div className="game-body speak-game-scroll">
         <p className="speak-game-intro">{t('speakGameIntro', locale)}</p>
         <p className="speak-game-context">
@@ -523,6 +531,6 @@ export function SpeakGame({
           </button>
         )}
       </div>
-    </div>
+    </LessonGameShell>
   );
 }

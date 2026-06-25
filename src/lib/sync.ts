@@ -220,6 +220,7 @@ function examToRow(entry: ExamHistoryEntry, userId: string) {
     final_grade: entry.finalGrade,
     passed: entry.passed,
     step_grades: entry.stepGrades,
+    path_step_count: entry.pathStepCount ?? null,
     total_time_seconds: entry.totalTimeSeconds,
     created_at: entry.createdAt,
   };
@@ -234,6 +235,8 @@ function rowToExam(row: Record<string, unknown>): ExamHistoryEntry {
     finalGrade: Number(row.final_grade),
     passed: Boolean(row.passed),
     stepGrades: (row.step_grades as ExamHistoryEntry['stepGrades']) ?? [],
+    pathStepCount:
+      row.path_step_count != null ? Number(row.path_step_count) : undefined,
     totalTimeSeconds: Number(row.total_time_seconds ?? 0),
     createdAt: String(row.created_at ?? new Date().toISOString()),
   };

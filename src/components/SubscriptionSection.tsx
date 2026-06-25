@@ -65,14 +65,8 @@ interface SubscriptionSectionProps {
 
 
 
-function upgradeCtaKey(plan: Plan): 'upgradePlus' | 'upgradePro' | 'settingsManagePlan' {
-
-  if (plan === 'free') return 'upgradePlus';
-
-  if (plan === 'plus') return 'upgradePro';
-
-  return 'settingsManagePlan';
-
+function primaryCtaKey(plan: Plan): 'upgradePlus' | 'settingsManagePlan' {
+  return plan === 'free' ? 'upgradePlus' : 'settingsManagePlan';
 }
 
 
@@ -101,8 +95,6 @@ export function SubscriptionSection({
   const [cancelAtEnd] = useState(() => getSubscriptionCancelAtPeriodEnd());
 
   const scansLeft = isLoggedIn ? getScansRemaining() : null;
-
-  const showUpgradeHint = effectivePlan !== 'pro';
 
 
   const handleBillingCycle = (cycle: BillingCycle) => {
@@ -248,9 +240,7 @@ export function SubscriptionSection({
             >
               {portalLoading
                 ? t('portalOpening', locale)
-                : showUpgradeHint
-                  ? t(upgradeCtaKey(effectivePlan), locale)
-                  : t('settingsManagePlan', locale)}
+                : t(primaryCtaKey(effectivePlan), locale)}
             </button>
             {effectivePlan !== 'free' && (
               <button type="button" className="btn-secondary subscription-cta-secondary" onClick={onPricing}>

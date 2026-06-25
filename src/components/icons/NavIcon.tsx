@@ -27,8 +27,9 @@ const paths: Record<TabId, IconPath> = {
   ),
   shop: (
     <>
-      <circle cx="12" cy="12" r="8" />
-      <path d="M12 7v10M9 10h6M9 14h4" />
+      <rect x="5" y="9" width="14" height="10" rx="2" />
+      <path d="M8 9V7a4 4 0 0 1 8 0v2" />
+      <circle cx="12" cy="14" r="1.5" />
     </>
   ),
   mistakes: (
@@ -48,6 +49,19 @@ const paths: Record<TabId, IconPath> = {
     <>
       <circle cx="12" cy="12" r="3" />
       <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+    </>
+  ),
+  profile: (
+    <>
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+    </>
+  ),
+  more: (
+    <>
+      <circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      <circle cx="18" cy="12" r="1.5" fill="currentColor" stroke="none" />
     </>
   ),
 };

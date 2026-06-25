@@ -17,9 +17,11 @@ import {
 import { resolveSpeakLang } from '../../lib/speakLang';
 import type { Locale, SheetType, WordPair } from '../../types';
 import { ReportErrorSheet } from '../ReportErrorSheet';
-import { gameProgressPct, GameHeader } from './GameHeader';
+import { gameProgressPct } from './GameHeader';
+import type { EmbeddedGameProps } from './embeddedGame';
+import { LessonGameShell } from './LessonGameShell';
 
-interface TypeGameProps {
+interface TypeGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
   locale: Locale;
   examMode?: boolean;
@@ -43,6 +45,8 @@ export function TypeGame({
   onComplete,
   onExit,
   onToast,
+  embedded = false,
+  onStepProgress,
 }: TypeGameProps) {
   const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
   const total = Math.min(pool.length, examMode ? 8 : 6);
@@ -72,6 +76,10 @@ export function TypeGame({
   const timerSeconds = examMode ? getExamTimerSeconds('type', total) : 0;
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const [reportOpen, setReportOpen] = useState(false);
+
+  useEffect(() => {
+    if (embedded && onStepProgress) onStepProgress(index, total);
+  }, [embedded, onStepProgress, index, total]);
 
   useEffect(() => {
     if (!examMode || timerSeconds <= 0) return;
@@ -148,15 +156,14 @@ export function TypeGame({
   if (!current) return null;
 
   return (
-    <div className="screen game-screen flow-screen">
-      <GameHeader
-        locale={locale}
-        onExit={onExit}
-        progress={gameProgressPct(index + 1, total)}
-        examMode={examMode}
-        timeLeft={timeLeft}
-      />
-
+    <LessonGameShell
+      embedded={embedded}
+      locale={locale}
+      onExit={onExit}
+      progress={gameProgressPct(index + 1, total)}
+      examMode={examMode}
+      timeLeft={timeLeft}
+    >
       <div className="game-body type-game-body">
         <p className="type-game-prompt">
           {useChoiceMode
@@ -296,6 +303,6 @@ export function TypeGame({
           }}
         />
       )}
-    </div>
+    </LessonGameShell>
   );
 }

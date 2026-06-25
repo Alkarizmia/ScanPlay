@@ -1,6 +1,18 @@
-export type GameMode = 'flashcards' | 'quiz' | 'match' | 'type' | 'speak';
+export type GameMode = 'flashcards' | 'quiz' | 'match' | 'type' | 'speak' | 'listen' | 'truefalse' | 'cloze';
 
 export type SheetType = 'vocab' | 'notes' | 'definitions' | 'math';
+
+export type HistorySubject =
+  | 'math'
+  | 'history'
+  | 'science'
+  | 'physics'
+  | 'geography'
+  | 'literature'
+  | 'languages'
+  | 'law'
+  | 'economics'
+  | 'general';
 
 /** Written/reading vs listening/speaking focus for the learning path. */
 export type TrainingFocus = 'written' | 'oral';
@@ -29,7 +41,16 @@ export interface StepResult {
 
 export type StepProgressMap = Record<number, StepResult>;
 
-export type TabId = 'home' | 'history' | 'friends' | 'shop' | 'mistakes' | 'achievements' | 'settings';
+export type TabId =
+  | 'home'
+  | 'history'
+  | 'friends'
+  | 'shop'
+  | 'profile'
+  | 'more'
+  | 'mistakes'
+  | 'achievements'
+  | 'settings';
 
 export type Locale = 'fr' | 'en' | 'nl' | 'es';
 
@@ -67,6 +88,9 @@ export interface SessionResult {
 
 export interface GameCompleteMeta {
   technical?: boolean;
+  /** Leçon parcours : enchaînement sans changer d'écran. */
+  lessonContinues?: boolean;
+  mode?: GameMode;
 }
 
 export type FlowScreen =
@@ -74,11 +98,29 @@ export type FlowScreen =
   | 'scanning'
   | 'modes'
   | 'playing'
+  | 'lesson'
   | 'results'
+  | 'lessonInterstitial'
+  | 'lessonComplete'
   | 'multiplayerLobby'
   | 'multiplayerResults'
   | 'auth'
   | 'pricing';
+
+export interface LessonGameResult {
+  mode: GameMode;
+  score: number;
+  total: number;
+  timeSeconds: number;
+  xpEarned: number;
+  pct: number;
+}
+
+export interface LessonSession {
+  stepIndex: number;
+  games: LessonGameResult[];
+  startedAt: number;
+}
 
 export interface HistoryEntry {
   id: string;
@@ -100,6 +142,8 @@ export interface HistoryEntry {
   /** Nombre d'étapes du parcours au moment du scan (selon le plan). */
   pathStepCount?: number;
   sheetType?: SheetType;
+  /** Matière détectée au scan (maths, histoire, langues…). */
+  subject?: HistorySubject;
   createdAt: string;
   /** Parcours libre (défaut) — pas un enregistrement d'examen final */
   kind?: 'deck';

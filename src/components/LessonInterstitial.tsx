@@ -1,0 +1,63 @@
+import { playSound } from '../lib/sounds';
+import { vibrateSuccess } from '../lib/haptics';
+import { t } from '../lib/i18n';
+import { PixCompanion } from './PixCompanion';
+import type { Locale, SessionResult } from '../types';
+
+interface LessonInterstitialProps {
+  locale: Locale;
+  result: SessionResult;
+  gameIndex: number;
+  gamesTotal: number;
+  onContinue: () => void;
+}
+
+function getFeedbackKey(pct: number): 'lessonStepGreat' | 'lessonStepGood' | 'lessonStepOk' {
+  if (pct >= 90) return 'lessonStepGreat';
+  if (pct >= 60) return 'lessonStepGood';
+  return 'lessonStepOk';
+}
+
+export function LessonInterstitial({
+  locale,
+  result,
+  gameIndex,
+  gamesTotal,
+  onContinue,
+}: LessonInterstitialProps) {
+  const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
+  const mood = pct >= 70 ? 'excited' : pct >= 40 ? 'happy' : 'neutral';
+
+  const handleContinue = () => {
+    playSound('tap');
+    vibrateSuccess();
+    onContinue();
+  };
+
+  return (
+    <div className="screen lesson-interstitial">
+      <div className="lesson-interstitial-progress" aria-hidden="true">
+        {Array.from({ length: gamesTotal }, (_, i) => (
+          <span
+            key={i}
+            className={`lesson-dot${i < gameIndex ? ' lesson-dot--done' : ''}${i === gameIndex - 1 ? ' lesson-dot--current' : ''}`}
+          />
+        ))}
+      </div>
+
+      <div className="lesson-interstitial-body">
+        <PixCompanion mood={mood} size={88} animate />
+        <p className="lesson-interstitial-title">{t(getFeedbackKey(pct), locale)}</p>
+        <p className="lesson-interstitial-score">
+          {result.score}/{result.total} · {pct}%
+        </p>
+      </div>
+
+      <footer className="lesson-interstitial-footer">
+        <button type="button" className="btn-primary btn-lg lesson-continue-btn" onClick={handleContinue}>
+          {t('lessonContinue', locale)}
+        </button>
+      </footer>
+    </div>
+  );
+}

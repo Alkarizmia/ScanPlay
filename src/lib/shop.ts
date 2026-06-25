@@ -24,6 +24,8 @@ import {
 import { getNewUnlocksSince, recordUnlocks, snapshotUnlockedIds } from './achievementUnlocks';
 import { addBonusXp } from './gamification';
 import { getPlan } from './planLimits';
+import type { ChestRarity } from './chestRarity';
+import { scaleRewardAmount } from './chestRarity';
 import type { AchievementDef } from './achievements';
 import type { TranslationKey } from './i18n';
 
@@ -134,17 +136,26 @@ export function getStreakRestoreShopPrice(): number {
   return streakRestorePrice(getRestorableStreak());
 }
 
-export function rollDailyChest(): ChestReward {
+export function rollDailyChest(rarity: ChestRarity = 'common'): ChestReward {
   if (Math.random() < 0.14) {
     return rollAchievementChestReward();
   }
   const idx = Math.floor(Math.random() * CHEST_POOL.length);
-  return CHEST_POOL[idx] ?? CHEST_POOL[0]!;
+  const base = CHEST_POOL[idx] ?? CHEST_POOL[0]!;
+  if (base.type === 'coins') {
+    return { ...base, amount: scaleRewardAmount(base.amount, rarity) };
+  }
+  if (base.type === 'xp') {
+    return { ...base, amount: scaleRewardAmount(base.amount, rarity) };
+  }
+  return base;
 }
 
-export function claimDailyChest(): { ok: true; reward: ChestReward } | { ok: false; reason: 'already_claimed' } {
+export function claimDailyChest(
+  rarity: ChestRarity = 'common',
+): { ok: true; reward: ChestReward; rarity: ChestRarity } | { ok: false; reason: 'already_claimed' } {
   if (!canClaimDailyChest()) return { ok: false, reason: 'already_claimed' };
-  const reward = rollDailyChest();
+  const reward = rollDailyChest(rarity);
   markDailyChestClaimed();
 
   if (reward.type === 'coins') {
@@ -159,11 +170,11 @@ export function claimDailyChest(): { ok: true; reward: ChestReward } | { ok: fal
     if (fresh.some((a) => a.id === reward.achievement.id)) {
       recordUnlocks([reward.achievement.id]);
     } else {
-      addBonusXp(40);
+      addBonusXp(scaleRewardAmount(40, rarity));
     }
   }
 
-  return { ok: true, reward };
+  return { ok: true, reward, rarity };
 }
 
 export function watchAdForCoins(): ShopPurchaseResult {

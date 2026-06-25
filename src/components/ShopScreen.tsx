@@ -189,7 +189,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
     setChestOverlayOpen(true);
   };
 
-  const handleChestOpened = (reward: ChestReward) => {
+  const handleChestOpened = (reward: ChestReward, _rarity?: import('../lib/chestRarity').ChestRarity) => {
     setChestReward(reward);
     setInfo(t('chestOpened', locale));
     onRefresh();

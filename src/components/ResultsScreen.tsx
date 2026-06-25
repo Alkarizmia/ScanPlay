@@ -26,12 +26,15 @@ interface ResultsScreenProps {
   onHome: () => void;
 }
 
-const MODE_KEYS: Record<GameMode, 'flashcards' | 'quiz' | 'match' | 'modeType' | 'modeSpeak'> = {
+const MODE_KEYS: Record<GameMode, 'flashcards' | 'quiz' | 'match' | 'modeType' | 'modeSpeak' | 'modeListen' | 'modeTrueFalse' | 'modeCloze'> = {
   flashcards: 'flashcards',
   quiz: 'quiz',
   match: 'match',
   type: 'modeType',
   speak: 'modeSpeak',
+  listen: 'modeListen',
+  truefalse: 'modeTrueFalse',
+  cloze: 'modeCloze',
 };
 
 const TIER_LABEL: Record<StepTier, 'tierGold' | 'tierIron' | 'tierBronze'> = {

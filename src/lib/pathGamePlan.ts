@@ -5,24 +5,26 @@ import {
   hasEnoughQuizPairsRelaxed,
   hasEnoughMatchPairs,
 } from './vocabulary';
-import { isSpeechRecognitionSupported } from './speechRecognition';
+import { canSpeak } from './speech';
 import { isOralAllowedForSheet } from './pathSheetType';
 import { filterModesByFocus, isModeAllowedByFocus } from './trainingFocus';
 
-const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'speak'];
+const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'truefalse', 'cloze', 'listen'];
 
-/** 2–3 jeux par leçon, ordre varié (style Duolingo). */
+/** 3–4 jeux par leçon, ordre varié (style parcours accumulé). */
 const NODE_GAME_TEMPLATES: GameMode[][] = [
-  ['flashcards', 'speak'],
-  ['quiz', 'match'],
-  ['flashcards', 'match', 'speak'],
-  ['type', 'quiz'],
-  ['match', 'flashcards', 'speak'],
-  ['flashcards', 'quiz', 'type'],
+  ['flashcards', 'truefalse', 'match'],
+  ['quiz', 'match', 'listen'],
+  ['flashcards', 'match', 'truefalse', 'listen'],
+  ['type', 'quiz', 'cloze'],
+  ['match', 'flashcards', 'listen', 'truefalse'],
+  ['flashcards', 'quiz', 'type', 'cloze'],
+  ['truefalse', 'match', 'listen'],
+  ['cloze', 'quiz', 'listen'],
 ];
 
-function speakAvailable(): boolean {
-  return typeof window === 'undefined' || isSpeechRecognitionSupported();
+function listenAvailable(): boolean {
+  return typeof window === 'undefined' || canSpeak();
 }
 
 /** Pick a playable mode for this step (fallback if the default cycle mode needs more pairs). */
@@ -31,23 +33,24 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
   if (playable.length === 0) return preferred;
 
   const tryMode = (mode: GameMode): boolean => {
-    if (mode === 'speak') {
+    if (mode === 'listen') {
       if (!isOralAllowedForSheet()) return false;
-      if (!speakAvailable()) return false;
-      return playable.some(
-        (p) => p.term.length >= 2 && !/[\d=+\-×÷*/^]/.test(p.term) && !/[\d=+\-×÷*/^]/.test(p.definition),
-      );
+      if (!listenAvailable()) return false;
+      return hasEnoughQuizPairsRelaxed(playable);
     }
+    if (mode === 'speak') return false;
     if (mode === 'flashcards' || mode === 'type') return playable.length >= 1;
-    if (mode === 'quiz') return hasEnoughQuizPairsRelaxed(playable);
+    if (mode === 'quiz' || mode === 'truefalse' || mode === 'cloze') return hasEnoughQuizPairsRelaxed(playable);
     if (mode === 'match') return hasEnoughMatchPairs(playable);
     return false;
   };
 
   if (tryMode(preferred)) return preferred;
   if (tryMode('type')) return 'type';
-  if (tryMode('speak')) return 'speak';
+  if (tryMode('listen')) return 'listen';
   if (tryMode('flashcards')) return 'flashcards';
+  if (tryMode('truefalse')) return 'truefalse';
+  if (tryMode('cloze')) return 'cloze';
   if (tryMode('quiz')) return 'quiz';
   if (tryMode('match')) return 'match';
   return 'flashcards';
@@ -60,7 +63,7 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   const out: GameMode[] = [];
 
   for (const preferred of template) {
-    if (preferred === 'speak' && !isOralAllowedForSheet()) continue;
+    if (preferred === 'listen' && !isOralAllowedForSheet()) continue;
     if (!isModeAllowedByFocus(preferred)) continue;
     const mode = resolveStepMode(preferred, playable.length > 0 ? playable : pairs);
     if (!isModeAllowedByFocus(mode)) continue;
@@ -71,11 +74,11 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   }
 
   let filtered = filterModesByFocus(out);
-  if (filtered.length >= 2) return filtered.slice(0, 3);
+  if (filtered.length >= 2) return filtered.slice(0, 4);
 
   for (const fallback of STEP_CYCLE) {
     if (filtered.length >= 2) break;
-    if (fallback === 'speak' && !isOralAllowedForSheet()) continue;
+    if (fallback === 'listen' && !isOralAllowedForSheet()) continue;
     if (!isModeAllowedByFocus(fallback)) continue;
     const mode = resolveStepMode(fallback, playable.length > 0 ? playable : pairs);
     if (!isModeAllowedByFocus(mode)) continue;

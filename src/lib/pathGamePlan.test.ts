@@ -10,26 +10,26 @@ const pairs: WordPair[] = [
   { term: 'jump', definition: 'sauter' },
 ];
 
-describe('getNextGameForStep technical oral', () => {
-  it('does not force speak replay after technical skip', () => {
-    const games = pickPathStepGames(0, pairs);
-    expect(games).toContain('speak');
+describe('getNextGameForStep listen path', () => {
+  it('includes listen in oral lesson templates', () => {
+    const games = pickPathStepGames(6, pairs);
+    expect(games).toContain('listen');
 
-    let progress = mergeSubGameResult({}, 0, 'speak', TECHNICAL_PCT, pairs);
+    let progress = mergeSubGameResult({}, 6, 'listen', TECHNICAL_PCT, pairs);
     for (const mode of games) {
-      if (mode === 'speak') continue;
-      progress = mergeSubGameResult(progress, 0, mode, 100, pairs);
+      if (mode === 'listen') continue;
+      progress = mergeSubGameResult(progress, 6, mode, 100, pairs);
     }
 
-    expect(getNextGameForStep(0, progress, pairs)).toBeNull();
+    expect(getNextGameForStep(6, progress, pairs)).toBeNull();
   });
 
   it('still offers unfinished games before advancing', () => {
-    const games = pickPathStepGames(0, pairs);
-    const other = games.find((g) => g !== 'speak');
+    const games = pickPathStepGames(6, pairs);
+    const other = games.find((g) => g !== 'listen');
     expect(other).toBeTruthy();
 
-    const progress = mergeSubGameResult({}, 0, 'speak', TECHNICAL_PCT, pairs);
-    expect(getNextGameForStep(0, progress, pairs)).toBe(other);
+    const progress = mergeSubGameResult({}, 6, 'listen', TECHNICAL_PCT, pairs);
+    expect(getNextGameForStep(6, progress, pairs)).toBe(other);
   });
 });

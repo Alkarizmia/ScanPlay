@@ -29,9 +29,11 @@ import {
 import { resolveSpeakLang } from '../../lib/speakLang';
 import { seededShuffle } from '../../lib/seededRandom';
 import type { Locale, WordPair } from '../../types';
-import { gameProgressPct, GameHeader } from './GameHeader';
+import { gameProgressPct } from './GameHeader';
+import type { EmbeddedGameProps } from './embeddedGame';
+import { LessonGameShell } from './LessonGameShell';
 
-interface QuizGameProps {
+interface QuizGameProps extends EmbeddedGameProps {
 
   pairs: WordPair[];
 
@@ -89,6 +91,8 @@ export function QuizGame({
 
   onNotEnoughPairs,
   shuffleSeed,
+  embedded = false,
+  onStepProgress,
 }: QuizGameProps) {
   const quizPool = useMemo(() => getQuizPool(pairs), [pairs]);
 
@@ -102,6 +106,10 @@ export function QuizGame({
 
 
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (embedded && onStepProgress) onStepProgress(index, questions.length);
+  }, [embedded, onStepProgress, index, questions.length]);
 
   const [score, setScore] = useState(0);
 
@@ -251,25 +259,14 @@ export function QuizGame({
   if (quizPool.length < MIN_QUIZ_PAIRS_RELAXED || questions.length === 0) {
 
     return (
-
-      <div className="screen game-screen flow-screen">
-
-        <GameHeader locale={locale} onExit={onExit} progress={0} />
-
+      <LessonGameShell embedded={embedded} locale={locale} onExit={onExit} progress={0}>
         <div className="game-body quiz-body">
-
           <p className="quiz-empty-msg">{t('stepNeedMoreWords', locale)}</p>
-
           <button type="button" className="btn-primary" onClick={onExit}>
-
             {t('back', locale)}
-
           </button>
-
         </div>
-
-      </div>
-
+      </LessonGameShell>
     );
 
   }
@@ -281,19 +278,14 @@ export function QuizGame({
 
 
   return (
-
-    <div className="screen game-screen flow-screen">
-
-      <GameHeader
-        locale={locale}
-        onExit={onExit}
-        progress={gameProgressPct(index + 1, questions.length)}
-        examMode={examMode}
-        timeLeft={timeLeft}
-      />
-
-
-
+    <LessonGameShell
+      embedded={embedded}
+      locale={locale}
+      onExit={onExit}
+      progress={gameProgressPct(index + 1, questions.length)}
+      examMode={examMode}
+      timeLeft={timeLeft}
+    >
       <div className="game-body quiz-body">
 
         <p className="quiz-prompt">{t('quizPrompt', locale)}</p>
@@ -328,10 +320,7 @@ export function QuizGame({
         </div>
 
       </div>
-
-    </div>
-
+    </LessonGameShell>
   );
-
 }
 

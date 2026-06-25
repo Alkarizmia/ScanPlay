@@ -1,6 +1,7 @@
 import type { GameMode, HistoryEntry, SheetType, StepProgressMap, WordPair } from '../types';
 import { getPathStepCount } from './planLimits';
 import { unpackDeckProgress } from './examEligibility';
+import { buildHistoryTitle, detectHistorySubject } from './historySubject';
 
 import { isLoggedIn } from './auth';
 import { getLocale } from './i18n';
@@ -56,28 +57,10 @@ export function getHistory(): HistoryEntry[] {
 
 
 
-function autoTitle(pairs: WordPair[]): string {
-
+function autoTitle(pairs: WordPair[], sheetType?: SheetType): string {
   const locale = getLocale();
-
-  const count = pairs.length;
-
-  const labels: Record<string, { vocab: string; words: string }> = {
-
-    fr: { vocab: 'Vocab', words: 'mots' },
-
-    en: { vocab: 'Vocab', words: 'words' },
-
-    nl: { vocab: 'Vocab', words: 'woorden' },
-
-    es: { vocab: 'Vocab', words: 'palabras' },
-
-  };
-
-  const { vocab, words } = labels[locale] ?? labels.fr;
-
-  return `${vocab} (${count} ${words})`;
-
+  const subject = detectHistorySubject(pairs, sheetType);
+  return buildHistoryTitle(pairs, subject, sheetType, locale);
 }
 
 
@@ -96,11 +79,13 @@ export function addHistoryEntry(
 
   const entries = loadHistoryRaw();
 
+  const subject = detectHistorySubject(pairs, sheetType);
+
   const entry: HistoryEntry = {
 
     id: crypto.randomUUID(),
 
-    title: autoTitle(pairs),
+    title: autoTitle(pairs, sheetType),
 
     pairs,
 
@@ -109,6 +94,8 @@ export function addHistoryEntry(
     lastMode,
 
     sheetType,
+
+    subject,
 
     kind: 'deck',
 

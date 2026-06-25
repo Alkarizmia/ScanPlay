@@ -8,8 +8,9 @@ import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
+import type { EmbeddedGameProps } from './embeddedGame';
 
-interface FlashcardsGameProps {
+interface FlashcardsGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
   locale: Locale;
   examMode?: boolean;
@@ -27,6 +28,8 @@ export function FlashcardsGame({
   stepIndex,
   onComplete,
   onExit,
+  embedded = false,
+  onStepProgress,
 }: FlashcardsGameProps) {
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
@@ -39,6 +42,10 @@ export function FlashcardsGame({
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const knownRef = useRef(0);
   knownRef.current = known;
+
+  useEffect(() => {
+    if (embedded && onStepProgress) onStepProgress(index, total);
+  }, [embedded, onStepProgress, index, total]);
 
   useEffect(() => {
     if (!examMode || timerSeconds <= 0) return;
@@ -84,16 +91,8 @@ export function FlashcardsGame({
 
   if (!current) return null;
 
-  return (
-    <div className="screen game-screen flow-screen">
-      <GameHeader
-        locale={locale}
-        onExit={onExit}
-        progress={gameProgressPct(index + 1, total)}
-        examMode={examMode}
-        timeLeft={timeLeft}
-      />
-
+  const body = (
+    <>
       <div className="game-body flashcards-body">
         <div
           role="button"
@@ -151,6 +150,23 @@ export function FlashcardsGame({
           </button>
         </div>
       )}
+    </>
+  );
+
+  if (embedded) {
+    return <div className="lesson-embedded-pane">{body}</div>;
+  }
+
+  return (
+    <div className="screen game-screen flow-screen">
+      <GameHeader
+        locale={locale}
+        onExit={onExit}
+        progress={gameProgressPct(index + 1, total)}
+        examMode={examMode}
+        timeLeft={timeLeft}
+      />
+      {body}
     </div>
   );
 }

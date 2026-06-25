@@ -20,6 +20,7 @@
 .app-shell {
   max-width: min(100%, var(--shell-mobile));
   margin-inline: auto;
+  width: 100%;
 }
 
 .screen {
@@ -171,7 +172,6 @@
   }
 
   [data-device='desktop'] .settings-main,
-  [data-device='desktop'] .history-main,
   [data-device='desktop'] .mode-main-path {
     max-width: 920px;
   }
@@ -195,6 +195,11 @@
   max-width: var(--content-max);
   margin-inline: auto;
   width: 100%;
+}
+
+[data-device='desktop'] .app-main .history-screen {
+  max-width: none;
+  margin-inline: 0;
 }
 
 /* Home desktop — single centered column (premium layout) */
@@ -254,7 +259,6 @@
 [data-device='desktop'] .gamification-hud,
 [data-device='desktop'] .mode-main-path,
 [data-device='desktop'] .settings-main,
-[data-device='desktop'] .history-main,
 [data-device='desktop'] .achievements-main,
 [data-device='desktop'] .friends-main,
 [data-device='desktop'] .shop-main,

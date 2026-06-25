@@ -1,4 +1,5 @@
 import { Mascot } from './Mascot';
+import { usePlan } from '../hooks/usePlan';
 import { t } from '../lib/i18n';
 import type { Locale, UpgradeReason } from '../types';
 
@@ -9,20 +10,22 @@ interface UpgradeModalProps {
   onUpgrade: () => void;
 }
 
-const REASON_KEYS: Record<
-  UpgradeReason,
+type UpgradeMessageKey =
   | 'upgradeScans'
   | 'upgradeWords'
   | 'upgradeHistory'
   | 'upgradeHistoryReplay'
+  | 'upgradeHistoryReplayPlus'
+  | 'upgradeHistoryReplayPro'
   | 'upgradeFeature'
   | 'upgradeExport'
   | 'upgradeShare'
   | 'upgradeSynthesis'
   | 'upgradeExam'
   | 'upgradeStats'
-  | 'upgradeMultiplayer'
-> = {
+  | 'upgradeMultiplayer';
+
+const REASON_KEYS: Record<UpgradeReason, UpgradeMessageKey> = {
   scans: 'upgradeScans',
   words: 'upgradeWords',
   history: 'upgradeHistory',
@@ -36,15 +39,27 @@ const REASON_KEYS: Record<
   multiplayer: 'upgradeMultiplayer',
 };
 
-const PRO_REASONS = new Set<UpgradeReason>(['share', 'exam', 'historyReplay']);
+const PRO_REASONS = new Set<UpgradeReason>(['share', 'exam']);
 
 export function UpgradeModal({ reason, locale, onClose, onUpgrade }: UpgradeModalProps) {
-  const ctaKey = PRO_REASONS.has(reason) ? 'upgradePro' : 'upgradePlus';
+  const plan = usePlan();
+  let messageKey = REASON_KEYS[reason];
+  if (reason === 'historyReplay') {
+    messageKey = plan === 'plus' ? 'upgradeHistoryReplayPro' : 'upgradeHistoryReplayPlus';
+  }
+  const ctaKey =
+    reason === 'historyReplay'
+      ? plan === 'plus'
+        ? 'upgradePro'
+        : 'upgradePlus'
+      : PRO_REASONS.has(reason)
+        ? 'upgradePro'
+        : 'upgradePlus';
 
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true">
       <div className="modal-card">
-        <Mascot message={t(REASON_KEYS[reason], locale)} mood="sad" size={64} />
+        <Mascot message={t(messageKey, locale)} mood="sad" size={64} />
         <h3 className="modal-title">{t('upgradeTitle', locale)}</h3>
         <button type="button" className="btn-primary btn-lg" onClick={onUpgrade}>
           {t(ctaKey, locale)}

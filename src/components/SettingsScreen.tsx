@@ -1,4 +1,3 @@
-import { ProfileSection } from './ProfileSection';
 import { SubscriptionSection } from './SubscriptionSection';
 import { AccountPasswordSection } from './AccountPasswordSection';
 import { PrivacyPolicySheet } from './PrivacyPolicySheet';
@@ -35,14 +34,14 @@ interface SettingsScreenProps {
 export function SettingsScreen({
   locale,
   device,
-  refreshKey,
+  refreshKey: _refreshKey,
   isLoggedIn,
   onLocaleChange,
   onAuth,
   onLogout,
   onPricing,
   onRefresh,
-  onToast,
+  onToast: _onToast,
   highlightPasswordRecovery = false,
   onPasswordHighlightDone,
 }: SettingsScreenProps) {
@@ -90,15 +89,7 @@ export function SettingsScreen({
       </header>
 
       <main className="settings-main scroll-natural">
-        {isLoggedIn ? (
-          <ProfileSection
-            locale={locale}
-            refreshKey={refreshKey}
-            onRefresh={onRefresh}
-            onUpgrade={onPricing}
-            onToast={onToast}
-          />
-        ) : (
+        {!isLoggedIn && (
           <>
             <section className="settings-section profile-section profile-section--guest">
               <h3 className="settings-label">{t('profileSection', locale)}</h3>

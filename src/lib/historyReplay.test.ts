@@ -37,13 +37,16 @@ function seedHistory(ids: string[]) {
 }
 
 describe('historyReplay', () => {
-  it('allows 1 replay slot on free/plus', () => {
+  it('allows 1 replay slot on free', () => {
     expect(getHistoryReplaySlots('free')).toBe(1);
-    expect(getHistoryReplaySlots('plus')).toBe(1);
   });
 
-  it('allows 2 replay slots on pro', () => {
-    expect(getHistoryReplaySlots('pro')).toBe(2);
+  it('allows 2 replay slots on plus', () => {
+    expect(getHistoryReplaySlots('plus')).toBe(2);
+  });
+
+  it('allows 3 replay slots on pro', () => {
+    expect(getHistoryReplaySlots('pro')).toBe(3);
   });
 
   it('only newest entry is replayable on free', () => {
@@ -52,10 +55,18 @@ describe('historyReplay', () => {
     expect(canReplayHistoryEntry('old', 'free')).toBe(false);
   });
 
-  it('two newest entries replayable on pro', () => {
+  it('two newest entries replayable on plus', () => {
     seedHistory(['oldest', 'middle', 'newest']);
-    expect(canReplayHistoryEntry('newest', 'pro')).toBe(true);
-    expect(canReplayHistoryEntry('middle', 'pro')).toBe(true);
-    expect(canReplayHistoryEntry('oldest', 'pro')).toBe(false);
+    expect(canReplayHistoryEntry('newest', 'plus')).toBe(true);
+    expect(canReplayHistoryEntry('middle', 'plus')).toBe(true);
+    expect(canReplayHistoryEntry('oldest', 'plus')).toBe(false);
+  });
+
+  it('three newest entries replayable on pro', () => {
+    seedHistory(['a', 'b', 'c', 'd']);
+    expect(canReplayHistoryEntry('d', 'pro')).toBe(true);
+    expect(canReplayHistoryEntry('c', 'pro')).toBe(true);
+    expect(canReplayHistoryEntry('b', 'pro')).toBe(true);
+    expect(canReplayHistoryEntry('a', 'pro')).toBe(false);
   });
 });

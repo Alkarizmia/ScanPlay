@@ -28,7 +28,11 @@ import { ModeSelect } from './components/ModeSelect';
 import { PricingScreen } from './components/PricingScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { ScanningScreen } from './components/ScanningScreen';
+import { ProfileScreen } from './components/ProfileScreen';
+import { LessonRunner } from './components/games/LessonRunner';
+import { LessonCompleteScreen } from './components/LessonCompleteScreen';
 import { SettingsScreen } from './components/SettingsScreen';
+import { NavMoreSheet } from './components/NavMoreSheet';
 import { StreakClaimFlyby } from './components/StreakClaimFlyby';
 import { StreakLostModal } from './components/StreakLostModal';
 import { ShopScreen } from './components/ShopScreen';
@@ -37,7 +41,10 @@ import { UpgradeModal } from './components/UpgradeModal';
 import { FlashcardsGame } from './components/games/FlashcardsGame';
 import { MatchGame } from './components/games/MatchGame';
 import { QuizGame } from './components/games/QuizGame';
+import { ListenGame } from './components/games/ListenGame';
 import { SpeakGame } from './components/games/SpeakGame';
+import { TrueFalseGame } from './components/games/TrueFalseGame';
+import { ClozeGame } from './components/games/ClozeGame';
 import { TypeGame } from './components/games/TypeGame';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
 import { acknowledgeStreakLoss, shouldShowStreakLostModal } from './lib/wallet';
@@ -101,7 +108,7 @@ import {
   resolvePathStepCount,
   TECHNICAL_PCT,
 } from './lib/stepProgress';
-import { isSpeechRecognitionSupported } from './lib/speechRecognition';
+import { canSpeak } from './lib/speech';
 import { resetTrainingFocus, setTrainingFocus } from './lib/trainingFocus';
 import { canReplayHistoryEntry } from './lib/historyReplay';
 import { mergeWithDifficult } from './lib/spacedRepetition';
@@ -112,6 +119,8 @@ import type { MultiplayerRoom, RoomPlayer } from './lib/social/types';
 import { createThumbnail } from './lib/thumbnail';
 import type {
   FlowScreen,
+  LessonGameResult,
+  LessonSession,
   GameMode,
   HistoryEntry,
   Locale,
@@ -199,6 +208,8 @@ export default function App() {
   const [mpScore, setMpScore] = useState({ score: 0, total: 0 });
   const pendingMultiplayerScanRef = useRef(false);
   const unlockQueueRef = useRef<AchievementDef[]>([]);
+  const [lessonSession, setLessonSession] = useState<LessonSession | null>(null);
+  const [navMoreOpen, setNavMoreOpen] = useState(false);
   const sessionStart = useRef(0);
   const importErrorTimer = useRef<number | null>(null);
   const device = useDeviceProfile();
@@ -362,6 +373,7 @@ export default function App() {
     setMultiplayerSession(null);
     setMultiplayerPlayers([]);
     setPendingImportFiles(null);
+    setLessonSession(null);
     resetTrainingFocus();
   };
 
@@ -790,14 +802,24 @@ export default function App() {
 
     const play = getPlayPairs(base, stepIndex ?? null, pairDirection);
     let resolved = resolveStepMode(m, play);
-    if (resolved === 'speak' && !isOralAllowedForSheet(sheetType)) {
-      resolved = resolveStepMode('type', play);
+    if (resolved === 'listen' && !isOralAllowedForSheet(sheetType)) {
+      resolved = resolveStepMode('flashcards', play);
     }
-    if (resolved === 'speak' && !isSpeechRecognitionSupported()) {
-      showToast(t('speakUnsupported', locale));
-      return;
+    if (resolved === 'listen') {
+      if (!canSpeak()) {
+        showToast(t('listenUnsupported', locale));
+        return;
+      }
+      if (!hasEnoughQuizPairsRelaxed(play)) {
+        showToast(t('stepNeedMoreWords', locale));
+        return;
+      }
     }
     if (resolved === 'quiz' && !hasEnoughQuizPairsRelaxed(play)) {
+      showToast(t('stepNeedMoreWords', locale));
+      return;
+    }
+    if ((resolved === 'truefalse' || resolved === 'cloze') && !hasEnoughQuizPairsRelaxed(play)) {
       showToast(t('stepNeedMoreWords', locale));
       return;
     }
@@ -819,6 +841,15 @@ export default function App() {
     }
 
     if (deckPairs) setPairs(deckPairs);
+    if (stepIndex !== undefined && !examMode) {
+      setActiveStepIndex(stepIndex);
+      setLessonSession({ stepIndex, games: [], startedAt: Date.now() });
+      sessionStart.current = Date.now();
+      playSound('quizStart');
+      setFlow('lesson');
+      return;
+    }
+
     setMode(resolved);
     if (stepIndex !== undefined) setActiveStepIndex(stepIndex);
     if (historyId) updateHistoryMode(historyId, m);
@@ -834,7 +865,8 @@ export default function App() {
   }, []);
 
   const endGame = (score: number, total: number, meta?: GameCompleteMeta) => {
-    if (!mode) return;
+    const activeMode = meta?.mode ?? mode;
+    if (!activeMode) return;
 
     if (multiplayerSession) {
       void (async () => {
@@ -907,7 +939,7 @@ export default function App() {
     setResultXpBefore(xpBefore);
 
     const session: SessionResult = {
-      mode,
+      mode: activeMode,
       score,
       total,
       timeSeconds: Math.max(1, Math.round((Date.now() - sessionStart.current) / 1000)),
@@ -919,23 +951,23 @@ export default function App() {
       goldReplay,
       technical,
     };
-    const prev = loadBest()[mode] ?? 0;
+    const prev = loadBest()[activeMode] ?? 0;
     setPreviousBest(prev);
     const isNewBest = !technical && score > prev;
-    if (!technical) saveBest(mode, score);
+    if (!technical) saveBest(activeMode, score);
 
     let updatedProgress = stepProgress;
     let updatedExamProgress = examStepProgress;
     if (activeStepIndex !== null && (!examMode || pct >= EXAM_PASS_PCT || isTechnicalResult(pct))) {
       const play = getPlayPairs(pairs, activeStepIndex, pairDirection);
       if (examMode) {
-        updatedExamProgress = mergeSubGameResult(examStepProgress, activeStepIndex, mode, pct, play);
+        updatedExamProgress = mergeSubGameResult(examStepProgress, activeStepIndex, activeMode, pct, play);
         setExamStepProgress(updatedExamProgress);
         if (historyId) {
           updateHistoryDeckProgress(historyId, { examStepProgress: updatedExamProgress });
         }
       } else {
-        updatedProgress = mergeSubGameResult(stepProgress, activeStepIndex, mode, pct, play);
+        updatedProgress = mergeSubGameResult(stepProgress, activeStepIndex, activeMode, pct, play);
         setStepProgress(updatedProgress);
         const locked = isExamModeLocked(examModeLocked, updatedProgress, pathStepCount, pairs);
         if (locked && !examModeLocked) {
@@ -953,10 +985,10 @@ export default function App() {
     if (!technical && score === total && total > 0) playSound('perfect');
     playSound('sessionFinish');
     let newExamGrades = examStepGrades;
-    if (examMode && activeStepIndex !== null && mode) {
+    if (examMode && activeStepIndex !== null && activeMode) {
       const stepGrade: ExamStepGrade = {
         stepIndex: activeStepIndex,
-        mode,
+        mode: activeMode,
         pct,
         passed: examPassed,
       };
@@ -968,9 +1000,12 @@ export default function App() {
     }
     const progressForCount = examMode ? updatedExamProgress : updatedProgress;
     setResultStepCount(countClearedSteps(progressForCount, examMode, pathStepCount, pairs));
+
+    const inPathLesson = activeStepIndex !== null && !examMode;
+
     if (historyId && !examMode && !technical) {
       if (goldReplay) touchHistoryPlayed(historyId);
-      else updateHistorySessionStats(historyId, pct, xpEarned);
+      else if (!inPathLesson) updateHistorySessionStats(historyId, pct, xpEarned);
     }
     if (
       examMode &&
@@ -981,6 +1016,42 @@ export default function App() {
     }
     const shouldConfetti = !goldReplay && !technical && (isNewBest || pct >= 90 || stepTier === 'gold');
     if (shouldConfetti) setShowConfetti(true);
+
+    if (inPathLesson) {
+      const gameResult: LessonGameResult = {
+        mode: activeMode,
+        score,
+        total,
+        timeSeconds: Math.max(1, Math.round((Date.now() - sessionStart.current) / 1000)),
+        xpEarned,
+        pct,
+      };
+      const updatedLesson: LessonSession =
+        lessonSession?.stepIndex === activeStepIndex
+          ? { ...lessonSession, games: [...lessonSession.games, gameResult] }
+          : { stepIndex: activeStepIndex, games: [gameResult], startedAt: sessionStart.current };
+      setLessonSession(updatedLesson);
+
+      if (meta?.lessonContinues) {
+        refresh();
+        return;
+      }
+
+      if (historyId && !technical && !goldReplay) {
+        const lessonScore = updatedLesson.games.reduce((sum, g) => sum + g.score, 0);
+        const lessonTotal = updatedLesson.games.reduce((sum, g) => sum + g.total, 0);
+        const lessonPct =
+          lessonTotal > 0 ? Math.round((lessonScore / lessonTotal) * 100) : Math.round(pct);
+        const lessonXp = updatedLesson.games.reduce((sum, g) => sum + g.xpEarned, 0);
+        updateHistorySessionStats(historyId, lessonPct, lessonXp);
+      }
+
+      setResult(session);
+      setFlow('lessonComplete');
+      refresh();
+      return;
+    }
+
     setResult(session);
     setFlow('results');
     refresh();
@@ -1152,14 +1223,66 @@ export default function App() {
     setFlow('playing');
   }, []);
 
+  const goToPathMap = () => {
+    if (historyId) {
+      updateHistoryDeckProgress(historyId, {
+        stepProgress,
+        examStepProgress,
+        examModeLocked,
+      });
+    }
+    markNavReplace();
+    setFlow('modes');
+    setLessonSession(null);
+    setResult(null);
+    setShowConfetti(false);
+    setActiveStepIndex(null);
+    setMode(null);
+  };
+
+  const continueAfterLesson = () => {
+    markNavReplace();
+    if (activeStepIndex !== null) {
+      const nextStep = getFirstActiveStep(pathProgress, pathStepCount, examMode, pairs);
+      if (nextStep < pathStepCount && nextStep !== activeStepIndex) {
+        const playNext = getPlayPairs(pairs, nextStep, pairDirection);
+        const games = pickPathStepGames(nextStep, playNext);
+        const nextMode = getNextGameForStep(nextStep, pathProgress, playNext) ?? games[0] ?? null;
+        if (nextMode) {
+          setLessonSession(null);
+          startGame(nextMode, nextStep);
+          setResult(null);
+          setShowConfetti(false);
+          return;
+        }
+      }
+    }
+    setFlow('modes');
+    setLessonSession(null);
+    setResult(null);
+    setShowConfetti(false);
+  };
+
   const handleTabChange = (next: TabId) => {
+    if (next === 'more') {
+      setNavMoreOpen((open) => !open);
+      return;
+    }
+    setNavMoreOpen(false);
     if (flow !== null) {
       closeFlow();
       setMode(null);
       setResult(null);
       setShowConfetti(false);
     }
-    if ((next === 'history' || next === 'friends' || next === 'mistakes' || next === 'achievements') && !isLoggedIn()) {
+    if (
+      (next === 'history' ||
+        next === 'friends' ||
+        next === 'profile' ||
+        next === 'mistakes' ||
+        next === 'achievements') &&
+      !isLoggedIn()
+    ) {
       setTab(next);
       setFlow('auth');
       return;
@@ -1224,7 +1347,23 @@ export default function App() {
       <AdConsentBanner locale={locale} />
 
       {showBottomNav && (
-        <BottomNav active={tab} onChange={handleTabChange} locale={locale} device={device.kind} />
+        <>
+          <NavMoreSheet
+            open={navMoreOpen}
+            locale={locale}
+            activeTab={tab}
+            onSelect={handleTabChange}
+            onClose={() => setNavMoreOpen(false)}
+          />
+          <BottomNav
+            active={tab}
+            onChange={handleTabChange}
+            locale={locale}
+            device={device.kind}
+            moreOpen={navMoreOpen}
+            onMoreToggle={() => setNavMoreOpen((o) => !o)}
+          />
+        </>
       )}
 
       <div className="app-main">
@@ -1315,6 +1454,17 @@ export default function App() {
       )}
       {flow === null && tab === 'shop' && (
         <ShopScreen locale={locale} refreshKey={refreshKey} onRefresh={refresh} />
+      )}
+      {flow === null && tab === 'profile' && (
+        <ProfileScreen
+          locale={locale}
+          refreshKey={refreshKey}
+          isLoggedIn={isLoggedIn()}
+          onRefresh={refresh}
+          onUpgrade={() => setFlow('pricing')}
+          onAuth={() => setFlow('auth')}
+          onToast={showToast}
+        />
       )}
       {flow === null && tab === 'mistakes' && (
         <MistakesScreen locale={locale} refreshKey={refreshKey} />
@@ -1470,6 +1620,18 @@ export default function App() {
           onToast={showToast}
         />
       )}
+      {flow === 'playing' && mode === 'listen' && (
+        <ListenGame
+          pairs={playPairs}
+          locale={locale}
+          examMode={examMode}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+          onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
+        />
+      )}
       {flow === 'playing' && mode === 'speak' && (
         <SpeakGame
           pairs={playPairs}
@@ -1490,6 +1652,86 @@ export default function App() {
           stepIndex={activeStepIndex}
           onComplete={endGame}
           onExit={appGoBack}
+        />
+      )}
+      {flow === 'playing' && mode === 'truefalse' && (
+        <TrueFalseGame
+          pairs={playPairs}
+          locale={locale}
+          examMode={examMode}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+          onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
+        />
+      )}
+      {flow === 'playing' && mode === 'cloze' && (
+        <ClozeGame
+          pairs={playPairs}
+          locale={locale}
+          examMode={examMode}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+          onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
+        />
+      )}
+      {flow === 'lesson' && activeStepIndex !== null && (
+        <LessonRunner
+          pairs={playPairs}
+          locale={locale}
+          games={pickPathStepGames(activeStepIndex, playPairs)}
+          stepIndex={activeStepIndex}
+          deckId={historyId}
+          sheetType={sheetType}
+          onExit={appGoBack}
+          onSubGameStart={() => {
+            sessionStart.current = Date.now();
+          }}
+          onSubGameComplete={(subMode, score, total, continues) => {
+            endGame(score, total, { lessonContinues: continues, mode: subMode });
+          }}
+          onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
+          onToast={showToast}
+        />
+      )}
+      {flow === 'lessonComplete' && lessonSession && (
+        <LessonCompleteScreen
+          locale={locale}
+          session={lessonSession}
+          xpBefore={resultXpBefore}
+          newUnlocks={resultNewUnlocks}
+          pathComplete={
+            isPathComplete(pathProgress, examMode, pathStepCount, pairs) ||
+            resultStepCount >= pathStepCount
+          }
+          onContinue={() => {
+            refresh();
+            continueAfterLesson();
+          }}
+          onViewPath={() => {
+            refresh();
+            goToPathMap();
+          }}
+          onHome={() => {
+            if (historyId) {
+              updateHistoryDeckProgress(historyId, {
+                stepProgress,
+                examStepProgress,
+                examModeLocked,
+              });
+            }
+            markNavReplace();
+            closeFlow();
+            setTab('home');
+            setMode(null);
+            setResult(null);
+            setLessonSession(null);
+            setShowConfetti(false);
+            setActiveStepIndex(null);
+          }}
         />
       )}
       {flow === 'results' && result && (
