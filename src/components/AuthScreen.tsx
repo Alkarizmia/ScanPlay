@@ -328,7 +328,7 @@ export function AuthScreen({ locale, onSuccess, onBack, variant = 'default' }: A
           <input
             type="email"
             className="field-input"
-            placeholder="exemple@mail.com"
+            placeholder={t('authEmailPlaceholder', locale)}
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             autoComplete="email"

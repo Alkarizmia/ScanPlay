@@ -46,6 +46,7 @@ import { SpeakGame } from './components/games/SpeakGame';
 import { TrueFalseGame } from './components/games/TrueFalseGame';
 import { ClozeGame } from './components/games/ClozeGame';
 import { TypeGame } from './components/games/TypeGame';
+import { canGuestScan, recordGuestScan } from './lib/guestTrial';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
 import { acknowledgeStreakLoss, shouldShowStreakLostModal } from './lib/wallet';
 import {
@@ -593,12 +594,25 @@ export default function App() {
   );
 
   const startScanFlow = (files?: File[]) => {
-    if (!requireAuth()) return;
-    const reason = getUpgradeReasonForScan();
-    if (reason) {
-      setUpgradeReason(reason);
+    const guestScan = !isLoggedIn();
+    if (guestScan) {
+      if (!canGuestScan()) {
+        showToast(t('guestScanUsed', locale));
+        setFlow('auth');
+        return;
+      }
+    } else if (!requireAuth()) {
       return;
     }
+
+    if (!guestScan) {
+      const reason = getUpgradeReasonForScan();
+      if (reason) {
+        setUpgradeReason(reason);
+        return;
+      }
+    }
+
     dismissImportError();
     if (files?.length) {
       const { files: clamped, dropped } = clampImagesForImport(files);
@@ -623,53 +637,73 @@ export default function App() {
 
   const processImage = useCallback(
     async (file: File | File[], focus: TrainingFocus[] = ['written', 'oral']) => {
-      if (!requireAuth()) return;
+      const guestScan = !isLoggedIn();
+      if (guestScan) {
+        if (!canGuestScan()) {
+          showToast(t('guestScanUsed', locale));
+          setFlow('auth');
+          return;
+        }
+      } else if (!requireAuth()) {
+        return;
+      }
+
       const rawFiles = Array.isArray(file) ? file : [file];
       const { files, dropped } = clampImagesForImport(rawFiles);
       if (files.length === 0) return;
 
       setTrainingFocus(focus);
 
-      const remaining = getScansRemaining();
-      if (remaining !== Infinity && files.length > remaining) {
-        setUpgradeReason('scans');
-        return;
-      }
-      if (!canScan()) {
-        setUpgradeReason('scans');
-        return;
-      }
-      if (dropped > 0) {
-        showToast(
-          t('scanPhotosLimited', locale)
-            .replace('{max}', String(getMaxImagesPerImport()))
-            .replace('{dropped}', String(dropped)),
-        );
-      }
-      if (remaining !== Infinity && files.length >= remaining) {
-        showToast(t('scanLastWarning', locale));
-      }
-      if (files.length > 1) recordMultiScan();
-      const batchSize = files.length;
-      for (let s = 0; s < batchSize; s += 1) {
+      if (!guestScan) {
+        const remaining = getScansRemaining();
+        if (remaining !== Infinity && files.length > remaining) {
+          setUpgradeReason('scans');
+          return;
+        }
         if (!canScan()) {
           setUpgradeReason('scans');
           return;
         }
-        recordScan();
+        if (dropped > 0) {
+          showToast(
+            t('scanPhotosLimited', locale)
+              .replace('{max}', String(getMaxImagesPerImport()))
+              .replace('{dropped}', String(dropped)),
+          );
+        }
+        if (remaining !== Infinity && files.length >= remaining) {
+          showToast(t('scanLastWarning', locale));
+        }
+        if (files.length > 1) recordMultiScan();
+        const batchSize = files.length;
+        for (let s = 0; s < batchSize; s += 1) {
+          if (!canScan()) {
+            setUpgradeReason('scans');
+            return;
+          }
+          recordScan();
+        }
+      } else {
+        recordGuestScan();
+        if (files.length > 1) {
+          showToast(t('guestScanSingleOnly', locale));
+        }
       }
+
+      const scanFiles = guestScan ? files.slice(0, 1) : files;
+
       setFlow('scanning');
       playSound('scanStart');
       setScanProgress(10);
       setScanStatus(
-        files.length > 1
-          ? t('readingMulti', locale).replace('{count}', String(files.length))
+        scanFiles.length > 1
+          ? t('readingMulti', locale).replace('{count}', String(scanFiles.length))
           : t('reading', locale),
       );
 
       let thumbnail: string | undefined;
       try {
-        thumbnail = await createThumbnail(files[0]);
+        thumbnail = await createThumbnail(scanFiles[0]);
       } catch {
         /* optional */
       }
@@ -687,21 +721,21 @@ export default function App() {
         failImport(t('ocrEmpty', locale));
       };
 
-      const safetyTimer = window.setTimeout(finishWithFallback, 55_000 + files.length * 12_000);
+      const safetyTimer = window.setTimeout(finishWithFallback, 55_000 + scanFiles.length * 12_000);
 
       try {
         const allPairs: WordPair[] = [];
-        for (let i = 0; i < files.length; i += 1) {
+        for (let i = 0; i < scanFiles.length; i += 1) {
           setScanStatus(
-            files.length > 1
+            scanFiles.length > 1
               ? t('readingMultiProgress', locale)
                   .replace('{current}', String(i + 1))
-                  .replace('{total}', String(files.length))
-              : isAiScanEnabled()
+                  .replace('{total}', String(scanFiles.length))
+              : isAiScanEnabled() && !guestScan
                 ? t('scanningAi', locale)
                 : t('reading', locale),
           );
-          const { pairs, source } = await extractPairsFromImage(files[i], sheetType);
+          const { pairs, source } = await extractPairsFromImage(scanFiles[i], sheetType);
           if (source === 'ocr' && isAiScanEnabled() && i === 0) {
             setScanStatus(t('reading', locale));
           }

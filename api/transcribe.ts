@@ -1,4 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { getUserFromRequest } from './lib/auth.js';
 
 const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
 
@@ -6,6 +7,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'method_not_allowed' });
+  }
+
+  const user = await getUserFromRequest(req);
+  if (!user) {
+    return res.status(401).json({ error: 'unauthorized' });
   }
 
   const apiKey = process.env.GROQ_API_KEY?.trim();

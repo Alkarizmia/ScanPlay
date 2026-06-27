@@ -1,7 +1,8 @@
 import type { CSSProperties } from 'react';
 import { LearningFlow } from './LearningFlow';
 import { ScanningBackground } from './ScanningBackground';
-import { Logo } from './Logo';
+import { PixCompanion } from './PixCompanion';
+import { getScanAdventureState } from '../lib/scanAdventure';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -13,37 +14,68 @@ interface ScanningScreenProps {
 
 export function ScanningScreen({ locale, progress, status }: ScanningScreenProps) {
   const pct = Math.min(100, Math.max(0, progress));
+  const adventure = getScanAdventureState(pct);
   const atEnd = pct >= 99;
   const runnerStyle: CSSProperties = atEnd
-    ? { left: '100%', top: '50%', transform: 'translate(-100%, -50%)' }
-    : { left: `${pct}%`, top: '50%', transform: 'translate(-50%, -50%)' };
+    ? { left: '100%', transform: 'translate(-100%, -50%)' }
+    : { left: `${Math.max(8, pct)}%`, transform: 'translate(-50%, -50%)' };
+
+  const bubbleText = status || t('scanning', locale);
 
   return (
-    <div className="screen scanning-screen flow-screen scanning-screen-branded">
+    <div className="screen scanning-screen flow-screen scanning-screen-branded scanning-screen-adventure">
       <ScanningBackground />
 
-      <div className="scanning-content">
-        <p className="scanning-status-wow">{status || t('scanning', locale)}</p>
+      <div className="scanning-content scanning-content-adventure">
+        <div className="scanning-pix-hero">
+          <PixCompanion mood={adventure.mood} size={96} animate />
+          <div className="scanning-pix-bubble" role="status" aria-live="polite">
+            <p className="scanning-pix-bubble-text">{bubbleText}</p>
+          </div>
+        </div>
 
-        <div className="progress-stage">
+        <p className="scanning-quest-label">{t('scanningQuestLabel', locale)}</p>
+
+        <div className="scanning-track-wrap">
           <div
-            className="progress-track-wow"
+            className="scanning-track-game"
             role="progressbar"
             aria-valuenow={pct}
             aria-valuemin={0}
             aria-valuemax={100}
+            aria-label={t('scanningTrackLabel', locale)}
           >
-            <div className="progress-fill-wow" style={{ width: `${pct}%` }}>
-              <span className="progress-shimmer" aria-hidden="true" />
+            <div className="scanning-track-fill" style={{ width: `${pct}%` }}>
+              <span className="scanning-track-shimmer" aria-hidden="true" />
+              {pct > 18 && (
+                <span className="scanning-track-label">{t('scanningTrackLabel', locale)}</span>
+              )}
             </div>
-            <div className="progress-runner" style={runnerStyle}>
-              <Logo size={40} />
+            <div
+              className={`scanning-track-runner${adventure.rocket && !atEnd ? ' scanning-track-runner--rocket' : ''}`}
+              style={runnerStyle}
+              aria-hidden="true"
+            >
+              {adventure.rocket && (
+                <>
+                  <span className="scanning-rocket-flame scanning-rocket-flame--1" />
+                  <span className="scanning-rocket-flame scanning-rocket-flame--2" />
+                </>
+              )}
+              <img
+                src="/pix-adventure-run.png"
+                alt=""
+                className="scanning-pix-runner-img"
+                width={52}
+                height={52}
+                draggable={false}
+              />
             </div>
           </div>
-          <span className="progress-pct">{pct}%</span>
+          <p className="scanning-checkpoint">{t(adventure.checkpointKey, locale)}</p>
         </div>
 
-        <LearningFlow active={atEnd ? 'game' : 'sheet'} locale={locale} compact />
+        <LearningFlow active={atEnd ? 'game' : adventure.flowStep} locale={locale} compact />
       </div>
     </div>
   );

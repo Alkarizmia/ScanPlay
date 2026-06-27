@@ -4,6 +4,8 @@ import { clearLocalUserData } from './localData';
 import { ensureUserProfile, loadProfileRaw } from './profile';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { flushSync, syncAfterLogin, syncOnSessionRestore } from './sync';
+import { clearGuestTrial } from './guestTrial';
+import { getGoogleClientId, requestGoogleIdToken } from './googleAuth';
 
 let cachedUser: UserProfile = { email: null, isLoggedIn: false };
 let cachedUserId: string | null = null;
@@ -121,6 +123,7 @@ function runPostAuth(session: Session, freshLogin: boolean): void {
   void (async () => {
     try {
       if (freshLogin) {
+        clearGuestTrial();
         await syncAfterLogin();
       } else {
         await syncOnSessionRestore();
@@ -260,7 +263,21 @@ export async function signInWithGoogle(): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) return { error: 'authNotConfigured' };
 
+  const googleClientId = getGoogleClientId();
+
   try {
+    if (googleClientId) {
+      const credential = await requestGoogleIdToken(googleClientId);
+      const { error } = await supabase.auth.signInWithIdToken({
+        provider: 'google',
+        token: credential,
+      });
+      if (error) {
+        return { error: mapAuthError(error.message), errorDetail: error.message };
+      }
+      return { error: null };
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -273,6 +290,9 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     return { error: null };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
+    if (msg === 'google_signin_cancelled') {
+      return { error: null };
+    }
     return { error: mapAuthError(msg), errorDetail: msg };
   }
 }

@@ -9,6 +9,8 @@
 --   Site URL : https://scanplay.org
 --   Redirect URLs : https://scanplay.org/** , http://localhost:5173/**
 -- Authentication → Providers → Email → Enable
+-- Authentication → Providers → Google → Client ID + Secret (voir GOOGLE_OAUTH_SETUP.md)
+-- Vercel : VITE_GOOGLE_CLIENT_ID=... pour afficher « ScanPlay » à la connexion Google
 -- ============================================================
 
 -- ── 1. TABLES ───────────────────────────────────────────────

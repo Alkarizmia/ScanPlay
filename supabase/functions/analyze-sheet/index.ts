@@ -1,4 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  assertCanScan,
+  fetchUserPlan,
+  fetchUserStatsData,
+  incrementScanCount,
+} from '../_shared/planQuotas.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -115,6 +121,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseAdmin = serviceKey
+      ? createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
+      : null;
+
+    const plan = await fetchUserPlan(supabase, user.id);
+    const statsData = supabaseAdmin
+      ? await fetchUserStatsData(supabaseAdmin, user.id)
+      : {};
+    const scanQuotaError = assertCanScan(plan, statsData);
+    if (scanQuotaError) {
+      return new Response(JSON.stringify({ error: scanQuotaError }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = (await req.json()) as AnalyzeBody;
     const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab' } = body;
 
@@ -183,6 +206,10 @@ Deno.serve(async (req) => {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    if (supabaseAdmin) {
+      await incrementScanCount(supabaseAdmin, user.id);
     }
 
     return new Response(JSON.stringify(parsed), {

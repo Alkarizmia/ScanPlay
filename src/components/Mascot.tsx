@@ -1,6 +1,6 @@
 import { Logo } from './Logo';
 
-export type MascotMood = 'happy' | 'excited' | 'sad' | 'neutral';
+export type MascotMood = 'happy' | 'excited' | 'sad' | 'neutral' | 'thinking' | 'running';
 
 interface MascotProps {
   message: string;

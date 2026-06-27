@@ -17,6 +17,9 @@ function pickMimeType(): string {
 }
 
 export function canUseServerTranscribe(): boolean {
+  const flag = import.meta.env.VITE_SPEECH_SERVER;
+  if (flag === '0' || flag === 'false') return false;
+  if (flag !== '1' && flag !== 'true') return false;
   return typeof MediaRecorder !== 'undefined' && pickMimeType().length > 0;
 }
 
@@ -209,9 +212,17 @@ export async function recordSpeechBlob(maxMs = 7000): Promise<Blob | null> {
 /** Transcription serveur (Groq Whisper si GROQ_API_KEY sur Vercel). */
 export async function transcribeViaServer(blob: Blob, lang: LangCode | undefined): Promise<string | null> {
   try {
+    const { getSupabase } = await import('./supabase');
+    const supabase = getSupabase();
+    const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
+    if (!token) return null;
+
     const res = await fetch('/api/transcribe', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify({
         audio: await blobToBase64(blob),
         mime: blob.type,

@@ -26,6 +26,8 @@ Find the anon key: **Project Settings → API → anon public**
 
 Add the same variables in Vercel → Project → Settings → Environment Variables, then redeploy.
 
+For Google sign-in branding (« ScanPlay » instead of supabase.co), also set `VITE_GOOGLE_CLIENT_ID` — see **`GOOGLE_OAUTH_SETUP.md`**.
+
 ## 5. Behaviour
 
 - **Not logged in**: no local progress (must sign in to play/scan)

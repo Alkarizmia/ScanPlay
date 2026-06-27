@@ -9,6 +9,7 @@ interface ImportMetaEnv {
   readonly VITE_ADSENSE_SLOT_SHOP?: string;
   readonly VITE_ADSENSE_SLOT_REWARD?: string;
   readonly VITE_ADSENSE_VERIFY_META?: string;
+  readonly VITE_GOOGLE_CLIENT_ID?: string;
   readonly VITE_SPEECH_SERVER?: string;
   readonly VITE_STRIPE_CHECKOUT?: string;
 }

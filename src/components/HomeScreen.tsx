@@ -12,6 +12,7 @@ import { SiteFooter } from './SiteFooter';
 import { InstallAppSheet } from './InstallAppSheet';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
+import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { getHistory } from '../lib/history';
@@ -208,6 +209,9 @@ export function HomeScreen({
               </button>
               <span className="camera-label">{t('scanPlay', locale)}</span>
               <p className="home-scan-hint">{t('homeScanHint', locale)}</p>
+              {!loggedIn && canGuestScan() && (
+                <p className="home-guest-hint">{t('guestScanHint', locale)}</p>
+              )}
             </div>
           )}
         </section>

@@ -186,7 +186,7 @@ export function hasFeature(
   plan?: Plan,
 ): boolean {
   const p = plan ?? getPlan();
-  if (feature === 'synthesis') return true;
+  if (feature === 'synthesis') return PLAN_LIMITS[p].synthesesPerMonth > 0;
   if (feature === 'share' || feature === 'exam') return p === 'pro';
   if (feature === 'spaced' || feature === 'export' || feature === 'stats' || feature === 'multiplayer') {
     return p !== 'free';

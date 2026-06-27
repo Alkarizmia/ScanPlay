@@ -1,4 +1,10 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import {
+  assertCanSynthesize,
+  fetchUserPlan,
+  fetchUserStatsData,
+  incrementSynthesisCount,
+} from '../_shared/planQuotas.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -108,6 +114,23 @@ Deno.serve(async (req) => {
       });
     }
 
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const supabaseAdmin = serviceKey
+      ? createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
+      : null;
+
+    const plan = await fetchUserPlan(supabase, user.id);
+    const statsData = supabaseAdmin
+      ? await fetchUserStatsData(supabaseAdmin, user.id)
+      : {};
+    const synthesisQuotaError = assertCanSynthesize(plan, statsData);
+    if (synthesisQuotaError) {
+      return new Response(JSON.stringify({ error: synthesisQuotaError }), {
+        status: 429,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const body = (await req.json()) as SynthesisBody;
     const userPrompt = buildUserPrompt(body);
     const hasImage = typeof body.imageBase64 === 'string' && body.imageBase64.length > 100;
@@ -167,6 +190,10 @@ Deno.serve(async (req) => {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    if (supabaseAdmin) {
+      await incrementSynthesisCount(supabaseAdmin, user.id);
     }
 
     return new Response(JSON.stringify(parsed), {

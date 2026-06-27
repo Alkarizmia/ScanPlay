@@ -244,6 +244,57 @@
 .pix-spark { animation: pix-spark 1.2s ease-in-out infinite alternate; }
 .pix-spark--2 { animation-delay: 0.2s; }
 .pix-spark--3 { animation-delay: 0.4s; }
+.pix-companion--thinking .pix-pupil--left,
+.pix-companion--thinking .pix-pupil--right {
+  transform: translate(2px, -3px);
+}
+.pix-companion--thinking .pix-question {
+  animation: pix-question-bob 1.6s ease-in-out infinite;
+}
+.pix-companion--running .pix-svg {
+  animation: pix-run-tilt 0.35s ease-in-out infinite alternate;
+}
+.pix-companion--running .pix-leg--left {
+  transform-origin: 32px 96px;
+  animation: pix-run-leg-left 0.35s ease-in-out infinite alternate;
+}
+.pix-companion--running .pix-leg--right {
+  transform-origin: 60px 96px;
+  animation: pix-run-leg-right 0.35s ease-in-out infinite alternate;
+}
+.pix-companion--running .pix-scan-beam {
+  animation: pix-beam-pulse 0.8s ease-in-out infinite alternate;
+}
+.pix-companion--running .pix-motion {
+  animation: pix-motion-fade 0.5s ease-in-out infinite alternate;
+}
+.pix-companion--excited .pix-svg {
+  animation: pix-celebrate 0.7s ease-in-out infinite alternate;
+}
+@keyframes pix-question-bob {
+  0%, 100% { transform: translateY(0); opacity: 0.7; }
+  50% { transform: translateY(-3px); opacity: 1; }
+}
+@keyframes pix-run-tilt {
+  from { transform: rotate(-4deg) translateX(0); }
+  to { transform: rotate(-2deg) translateX(2px); }
+}
+@keyframes pix-run-leg-left {
+  from { transform: rotate(12deg); }
+  to { transform: rotate(-8deg); }
+}
+@keyframes pix-run-leg-right {
+  from { transform: rotate(-10deg); }
+  to { transform: rotate(14deg); }
+}
+@keyframes pix-beam-pulse {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+@keyframes pix-motion-fade {
+  from { opacity: 0.35; }
+  to { opacity: 1; }
+}
 @keyframes pix-spark {
   from { opacity: 0.4; transform: scale(0.8); }
   to { opacity: 1; transform: scale(1.2); }

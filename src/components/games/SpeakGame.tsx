@@ -165,50 +165,7 @@ export function SpeakGame({
     [],
   );
 
-  const analyzeBlob = useCallback(
-    async (blob: Blob | null, target: string, phraseSpeech: string, lang: LangCode) => {
-      if (!blob || blob.size < 400) {
-        setVoicePhase('idle');
-        busyRef.current = false;
-        setMicError(t('speakNoSpeech', locale));
-        setShowFallback(true);
-        return;
-      }
-
-      setVoicePhase('analyzing');
-      const text = await transcribeViaServer(blob, lang);
-      busyRef.current = false;
-
-      if (!text) {
-        setMicError(t('speakNetworkError', locale));
-        setShowFallback(true);
-        return;
-      }
-
-      applyGrade(gradeTranscript(text, target, phraseSpeech), text);
-    },
-    [applyGrade, gradeTranscript, locale],
-  );
-
-  const startGroqListening = useCallback(async () => {
-    if (!challenge) return;
-
-    const stream = (await acquireMicStream()) ?? getActiveMicStream();
-
-    const { promise, stop } = recordSpeechWithVAD({
-      stream,
-      silenceMs: 850,
-      maxMs: 6000,
-      onLevel: (level) => setMicLevel(level),
-      onSpeechStart: () => setVoicePhase('speaking'),
-      onSpeechEnd: () => setVoicePhase('analyzing'),
-    });
-    stopRef.current = stop;
-
-    const blob = await promise;
-    stopRef.current = null;
-    await analyzeBlob(blob, challenge.target, challenge.phraseSpeech, challenge.lang);
-  }, [analyzeBlob, challenge]);
+  const startWebListeningRef = useRef<() => void>(() => {});
 
   const startWebListening = useCallback(() => {
     if (!challenge) return;
@@ -257,6 +214,60 @@ export function SpeakGame({
       },
     );
   }, [applyGrade, challenge, locale]);
+
+  startWebListeningRef.current = startWebListening;
+
+  const analyzeBlob = useCallback(
+    async (blob: Blob | null, target: string, phraseSpeech: string, lang: LangCode) => {
+      if (!blob || blob.size < 400) {
+        setVoicePhase('idle');
+        busyRef.current = false;
+        setMicError(t('speakNoSpeech', locale));
+        setShowFallback(true);
+        return;
+      }
+
+      setVoicePhase('analyzing');
+      const text = await transcribeViaServer(blob, lang);
+      busyRef.current = false;
+
+      if (!text) {
+        if (isSpeechRecognitionSupported()) {
+          setMicError(null);
+          busyRef.current = false;
+          setVoicePhase('listening');
+          startWebListeningRef.current();
+          return;
+        }
+        setMicError(t('speakNetworkError', locale));
+        setShowFallback(true);
+        return;
+      }
+
+      applyGrade(gradeTranscript(text, target, phraseSpeech), text);
+    },
+    [applyGrade, gradeTranscript, locale],
+  );
+
+  const startGroqListening = useCallback(async () => {
+    if (!challenge) return;
+
+    const stream = (await acquireMicStream()) ?? getActiveMicStream();
+
+    const { promise, stop } = recordSpeechWithVAD({
+      stream,
+      silenceMs: 850,
+      maxMs: 6000,
+      onLevel: (level) => setMicLevel(level),
+      onSpeechStart: () => setVoicePhase('speaking'),
+      onSpeechEnd: () => setVoicePhase('analyzing'),
+    });
+    stopRef.current = stop;
+
+    const blob = await promise;
+    stopRef.current = null;
+    await analyzeBlob(blob, challenge.target, challenge.phraseSpeech, challenge.lang);
+  }, [analyzeBlob, challenge]);
 
   const startListening = useCallback(() => {
     if (!current || !challenge || revealed || busyRef.current) return;
