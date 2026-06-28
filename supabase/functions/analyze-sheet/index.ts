@@ -26,7 +26,7 @@ RÈGLES ABSOLUES :
 
 TYPES DE FICHE (sheetType) :
 - "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne UNIQUEMENT si c'est une vraie traduction (langues différentes, mot ↔ traduction).
-- LISTE DE MOTS (sans traduction) : ex. titre "mots français dans la langue anglaise", deux colonnes de mots isolés pour mise en page. NE PAS associer gauche+droite sur la même ligne. Chaque mot = une paire : term = le mot, definition = indice court (fin du mot, ex. "…ritif" pour Apéritif) ou courte glose visible sur la fiche.
+- LISTE DE MOTS (sans traduction sur la fiche) : ex. titre "mots français dans la langue anglaise", deux colonnes de mots pour mise en page. NE PAS associer gauche+droite. Chaque mot = une paire : term = le mot exact, definition = courte définition pédagogique en français (sens concret, 4 à 12 mots). Utilise tes connaissances générales. INTERDIT : indices …suffixe, fragments de titre, répéter le mot seul.
 - "definitions" : format question/réponse ou mot — définition sur une ou deux lignes.
 - "notes" : transforme en paires mémorables : extrait clé (terme, date, concept, mot-clé) → idée courte à retenir (phrase résumée, max 120 car.).
 
@@ -69,7 +69,7 @@ Objectif : produire des paires term/definition exploitables pour des jeux éduca
 
 Consignes supplémentaires :
 - Photo possiblement floue, penchée ou sombre : lis quand même au maximum.
-- Pour vocab : cherche deux colonnes. Si traduction (langue A ↔ langue B), associe ligne par ligne. Si simple liste de mots (même langue, pas de traduction), un mot = une carte, pas de paires gauche/droite.
+- Pour vocab : cherche deux colonnes. Si traduction (langue A ↔ langue B), associe ligne par ligne. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français (pas d'indice …suffixe).
 - Pour definitions : une notion = une réponse courte.
 - Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
 - Exclus les lignes de consigne ou d'exemple générique sans contenu à apprendre.

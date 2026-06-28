@@ -1,6 +1,11 @@
 import type { PairDirection, WordPair } from '../types';
 import { seededShuffle } from './seededRandom';
 import { enrichPairsWithVisuals } from './wordVisuals';
+import {
+  isGarbageVocabTerm,
+  isPlayableDefinition,
+  isSpellingHintDefinition,
+} from './pairQuality';
 
 const INSTRUCTION_PATTERNS = [
   /\blet op\b/i,
@@ -90,6 +95,9 @@ export function isCoherentPair(pair: WordPair): boolean {
   }
 
   if (isInstructionText(pair.term) || isInstructionText(pair.definition)) return false;
+  if (isGarbageVocabTerm(pair.term) || isGarbageVocabTerm(pair.definition)) return false;
+  if (isSpellingHintDefinition(pair.definition)) return false;
+  if (!isPlayableDefinition(pair.definition, pair.term)) return false;
 
   const defWords = pair.definition.split(/\s+/).length;
   if (defWords > 10) return false;
@@ -141,7 +149,9 @@ export function getQuizPool(pairs: WordPair[]): WordPair[] {
       p.term.length >= 2 &&
       p.definition.length >= 2 &&
       !isInstructionText(p.term) &&
-      !isInstructionText(p.definition),
+      !isInstructionText(p.definition) &&
+      !isGarbageVocabTerm(p.term) &&
+      isPlayableDefinition(p.definition, p.term),
   );
   return relaxed;
 }
@@ -359,7 +369,9 @@ export function getPlayPairs(
 
 /** Strict filter for quiz — never use raw unfiltered pairs. */
 export function filterQuizPool(pairs: WordPair[]): WordPair[] {
-  return sanitizePairs(pairs);
+  return sanitizePairs(pairs).filter(
+    (p) => !isGarbageVocabTerm(p.term) && isPlayableDefinition(p.definition, p.term),
+  );
 }
 
 export function hasEnoughQuizPairsRelaxed(pairs: WordPair[]): boolean {

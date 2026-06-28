@@ -39,14 +39,15 @@ describe('columnParser', () => {
     expect(pairs[0]?.defLang).toBe('fr');
   });
 
-  it('flattens French-in-English word list instead of pairing rows', () => {
+  it('flattens French-in-English word list with teachable glosses', () => {
     const pairs = parseColumnText(FR_IN_EN_FIXTURE);
     const terms = pairs.map((p) => p.term.toLowerCase());
     expect(terms).toContain('apéritif');
     expect(terms).toContain('machine');
-    expect(pairs.some((p) => p.term.toLowerCase() === 'apéritif' && p.definition.toLowerCase() === 'machine')).toBe(
+    expect(pairs.some((p) => p.term.toLowerCase() === 'apéritif' && p.definition.startsWith('…'))).toBe(
       false,
     );
+    expect(pairs.find((p) => p.term.toLowerCase() === 'apéritif')?.definition).toContain('Boisson');
     expect(pairs.length).toBeGreaterThanOrEqual(8);
   });
 
@@ -57,10 +58,9 @@ describe('columnParser', () => {
       { term: 'Champagne', definition: 'Restaurant' },
     ];
     const fixed = reconcileWordListPairs(bad, FR_IN_EN_FIXTURE);
-    const terms = fixed.map((p) => p.term.toLowerCase());
-    expect(terms).toContain('apéritif');
-    expect(terms).toContain('machine');
-    expect(fixed.some((p) => p.definition === 'Machine')).toBe(false);
+    const ap = fixed.find((p) => p.term.toLowerCase() === 'apéritif');
+    expect(ap?.definition).not.toBe('Machine');
+    expect(ap?.definition.length).toBeGreaterThan(10);
   });
 });
 

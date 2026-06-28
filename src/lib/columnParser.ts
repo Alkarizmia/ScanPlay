@@ -1,5 +1,12 @@
 import type { LangCode, WordPair } from '../types';
 import { fixOcrLine, isInstructionText } from './vocabulary';
+import { lookupLoanwordGloss } from './loanwordGlosses';
+import {
+  enrichTeachablePairs,
+  isGarbageVocabTerm,
+  isPlayableDefinition,
+  looksLikeStandaloneVocabWord,
+} from './pairQuality';
 
 const TITLE_PATTERNS = [
   /^(vocabulaire|vocabulary|lexique|woordenlijst|wordlist)\b/i,
@@ -146,7 +153,7 @@ export function detectDualColumnLayout(rows: Array<[string, string]>): 'translat
   return 'translation';
 }
 
-/** Spelling hint for list-only flashcards (term on front, suffix on back). */
+/** @deprecated Use loanword glosses — kept for tests only. */
 export function wordListHint(word: string): string {
   const core = word.replace(/[^a-zA-Zàâäéèêëïîôùûüœæ'-]/g, '');
   if (core.length >= 5) {
@@ -159,12 +166,14 @@ export function wordListHint(word: string): string {
 
 export function buildWordListPair(word: string): WordPair | null {
   const w = primarySegment(word).trim();
-  if (!w || w.length < 2 || isTitleLine(w)) return null;
+  if (!w || w.length < 2 || isGarbageVocabTerm(w)) return null;
+  const gloss = lookupLoanwordGloss(w);
+  if (!gloss) return null;
   return {
     term: w,
-    definition: wordListHint(w),
+    definition: gloss,
     termLang: detectLang(w),
-    defLang: 'unknown',
+    defLang: 'fr',
   };
 }
 
@@ -320,7 +329,10 @@ export function mergeDualColumnOcr(leftText: string, rightText: string): string 
 export function flattenMistranslatedPairsToWordList(pairs: WordPair[]): WordPair[] {
   const words: string[] = [];
   for (const p of pairs) {
-    words.push(...extractWordsFromCell(p.term), ...extractWordsFromCell(p.definition));
+    words.push(...extractWordsFromCell(p.term));
+    if (looksLikeStandaloneVocabWord(p.definition)) {
+      words.push(...extractWordsFromCell(p.definition));
+    }
   }
   const rebuilt = words
     .map((w) => buildWordListPair(w))
@@ -330,7 +342,7 @@ export function flattenMistranslatedPairsToWordList(pairs: WordPair[]): WordPair
 
 /** AI/OCR paired unrelated short words from a 2-column word list. */
 export function pairsLookLikeMistranslatedWordList(pairs: WordPair[]): boolean {
-  if (pairs.length < 3) return false;
+  if (pairs.length < 2) return false;
 
   const shortRows = pairs.filter(
     (p) => p.term.split(/\s+/).length <= 2 && p.definition.split(/\s+/).length <= 2,
@@ -344,16 +356,37 @@ export function pairsLookLikeMistranslatedWordList(pairs: WordPair[]): boolean {
   });
   if (crossLang.length >= pairs.length * 0.4) return false;
 
-  const listLikeRows = pairs.filter((p) => isLikelyDualColumnWordListRow(p.term, p.definition));
+  const listLikeRows = pairs.filter(
+    (p) =>
+      isLikelyDualColumnWordListRow(p.term, p.definition) &&
+      looksLikeStandaloneVocabWord(p.definition),
+  );
   return listLikeRows.length >= Math.min(3, pairs.length * 0.6);
 }
 
 export function reconcileWordListPairs(pairs: WordPair[], sourceText?: string): WordPair[] {
-  if (pairs.length < 2) return pairs;
+  if (pairs.length < 2) return enrichTeachablePairs(pairs);
+
+  const clean = pairs.filter((p) => !isGarbageVocabTerm(p.term));
+  const teachableCount = clean.filter((p) => isPlayableDefinition(p.definition, p.term)).length;
+  const crossLangPairs = clean.filter((p) => {
+    const tl = detectLang(p.term);
+    const dl = detectLang(p.definition);
+    return tl !== 'unknown' && dl !== 'unknown' && tl !== dl;
+  });
+  if (crossLangPairs.length >= Math.min(3, clean.length * 0.5)) {
+    return enrichTeachablePairs(clean);
+  }
+  if (teachableCount >= Math.min(3, clean.length * 0.5)) {
+    return enrichTeachablePairs(clean);
+  }
+
   const titleLayout = sourceText ? detectLayoutFromTitle(sourceText) : null;
-  if (titleLayout === 'word_list') return flattenMistranslatedPairsToWordList(pairs);
-  if (pairsLookLikeMistranslatedWordList(pairs)) return flattenMistranslatedPairsToWordList(pairs);
-  return pairs;
+  if (titleLayout === 'word_list' || pairsLookLikeMistranslatedWordList(clean)) {
+    return enrichTeachablePairs(flattenMistranslatedPairsToWordList(clean));
+  }
+
+  return enrichTeachablePairs(clean);
 }
 export const NL_FR_FIXTURE = `
 eerlijk\thonnêtement
