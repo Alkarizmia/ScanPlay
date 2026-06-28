@@ -1,4 +1,5 @@
 import { analyzeSheetWithAi, isAiScanEnabled, mapAiPairsToWordPairs } from './aiExtract';
+import { reconcileWordListPairs } from './columnParser';
 import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
 import { canOpenGamePath, coercePlayablePairs } from './vocabulary';
@@ -27,7 +28,9 @@ export async function extractPairsFromImage(
     try {
       const ai = await analyzeSheetWithAi(file, sheetType);
       if (ai?.pairs.length) {
-        const pairs = coercePlayablePairs(mapAiPairsToWordPairs(ai.pairs));
+        const pairs = coercePlayablePairs(
+          reconcileWordListPairs(mapAiPairsToWordPairs(ai.pairs)),
+        );
         if (canOpenGamePath(pairs)) {
           return { pairs, source: 'ai' };
         }

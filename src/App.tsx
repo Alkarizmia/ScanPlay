@@ -46,7 +46,7 @@ import { SpeakGame } from './components/games/SpeakGame';
 import { TrueFalseGame } from './components/games/TrueFalseGame';
 import { ClozeGame } from './components/games/ClozeGame';
 import { TypeGame } from './components/games/TypeGame';
-import { canGuestScan, recordGuestScan } from './lib/guestTrial';
+import { canGuestScan, recordGuestScan, beginGuestPlaySession, clearGuestPlaySession, isGuestPlaySessionActive } from './lib/guestTrial';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
 import { acknowledgeStreakLoss, shouldShowStreakLostModal } from './lib/wallet';
 import {
@@ -362,6 +362,9 @@ export default function App() {
   }, [showToast]);
 
   const closeFlow = () => {
+    if (!isLoggedIn()) {
+      clearGuestPlaySession();
+    }
     setFlow(null);
     setExamMode(false);
     setHistoryReplayMode(false);
@@ -529,13 +532,16 @@ export default function App() {
         if (!fromHistory) {
           setHistoryReplayMode(false);
         }
-        if (!fromHistory && canAddHistory()) {
+        if (!fromHistory && isLoggedIn() && canAddHistory()) {
           try {
             const entry = addHistoryEntry(parsed, thumbnail, undefined, sheetType);
             setHistoryId(entry.id);
           } catch {
             /* storage unavailable */
           }
+        }
+        if (!isLoggedIn() && !fromHistory && !isDemo) {
+          beginGuestPlaySession();
         }
         setStepProgress({});
         setExamStepProgress({});
@@ -617,14 +623,21 @@ export default function App() {
     if (files?.length) {
       const { files: clamped, dropped } = clampImagesForImport(files);
       if (clamped.length === 0) {
-        setUpgradeReason('scans');
+        if (guestScan) {
+          showToast(t('guestScanUsed', locale));
+          setFlow('auth');
+        } else {
+          setUpgradeReason('scans');
+        }
         return;
       }
       if (dropped > 0) {
         showToast(
-          t('scanPhotosLimited', locale)
-            .replace('{max}', String(getMaxImagesPerImport()))
-            .replace('{dropped}', String(dropped)),
+          guestScan
+            ? t('guestScanSingleOnly', locale)
+            : t('scanPhotosLimited', locale)
+                .replace('{max}', String(getMaxImagesPerImport()))
+                .replace('{dropped}', String(dropped)),
         );
       }
       setPendingImportFiles(clamped);
@@ -650,7 +663,15 @@ export default function App() {
 
       const rawFiles = Array.isArray(file) ? file : [file];
       const { files, dropped } = clampImagesForImport(rawFiles);
-      if (files.length === 0) return;
+      if (files.length === 0) {
+        if (guestScan) {
+          showToast(t('guestScanUsed', locale));
+          setFlow('auth');
+        } else {
+          setUpgradeReason('scans');
+        }
+        return;
+      }
 
       setTrainingFocus(focus);
 
@@ -684,10 +705,10 @@ export default function App() {
           recordScan();
         }
       } else {
-        recordGuestScan();
-        if (files.length > 1) {
+        if (dropped > 0 || files.length > 1) {
           showToast(t('guestScanSingleOnly', locale));
         }
+        recordGuestScan();
       }
 
       const scanFiles = guestScan ? files.slice(0, 1) : files;
@@ -822,7 +843,10 @@ export default function App() {
   };
 
   const startGame = (m: GameMode, stepIndex?: number, deckPairs?: WordPair[], skipGoldConfirm = false) => {
-    if (!requireAuth()) return;
+    if (!isLoggedIn() && !isGuestPlaySessionActive()) {
+      setFlow('auth');
+      return;
+    }
     const base = deckPairs ?? pairs;
     if (
       !skipGoldConfirm &&
@@ -1460,6 +1484,7 @@ export default function App() {
           onPricing={() => setFlow('pricing')}
           onSocialChange={handleSocialChange}
           onToast={showToast}
+          onAuth={() => setFlow('auth')}
         />
       )}
       {flow === null && tab === 'history' && (
@@ -1537,6 +1562,8 @@ export default function App() {
           onSheetTypeChange={setSheetType}
           onFile={processImage}
           onToast={showToast}
+          onAuth={() => setFlow('auth')}
+          showGuestBanner={!isLoggedIn()}
         />
       )}
       {flow === 'scanning' && (
@@ -1837,6 +1864,7 @@ export default function App() {
         <AuthScreen
           locale={locale}
           variant="action"
+          guestTrialUsed={!isLoggedIn() && !canGuestScan()}
           onBack={appGoBack}
           onSuccess={handleAuthSuccess}
         />

@@ -1,5 +1,11 @@
 import type { SheetType, WordPair } from '../types';
-import { mergeDualColumnOcr, parseColumnText, isTitleLine } from './columnParser';
+import {
+  detectLayoutFromTitle,
+  mergeDualColumnOcr,
+  parseColumnText,
+  isTitleLine,
+  reconcileWordListPairs,
+} from './columnParser';
 import { fixOcrLine, isInstructionText } from './vocabulary';
 
 const SEPARATORS = /[-–—:|=•·]/;
@@ -123,19 +129,20 @@ function parseVocabSheet(text: string): WordPair[] {
     .filter((l) => l.length > 0);
 
   const lines = rawLines.filter((line) => !isTitleLine(line));
+  const titleLayout = detectLayoutFromTitle(text);
 
-  const fromColumns = parseColumnText(text);
+  const fromColumns = parseColumnText(text, titleLayout ?? undefined);
   const fromSeparators = lines
     .map(parseLinePair)
     .filter((p): p is WordPair => p !== null && isBasicPair(p));
 
   let pairs = dedupe([...fromColumns, ...fromSeparators]);
 
-  if (pairs.length < 3) {
+  if (titleLayout !== 'word_list' && pairs.length < 3) {
     pairs = dedupe([...pairs, ...parseAdjacentLines(lines)]);
   }
 
-  return pairs.slice(0, 32);
+  return reconcileWordListPairs(pairs, text).slice(0, 32);
 }
 
 /** Extract pairs from OCR text. */

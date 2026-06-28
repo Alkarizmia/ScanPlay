@@ -19,9 +19,10 @@ interface AuthScreenProps {
   onSuccess: () => void;
   onBack?: () => void;
   variant?: 'default' | 'action';
+  guestTrialUsed?: boolean;
 }
 
-export function AuthScreen({ locale, onSuccess, onBack, variant = 'default' }: AuthScreenProps) {
+export function AuthScreen({ locale, onSuccess, onBack, variant = 'default', guestTrialUsed = false }: AuthScreenProps) {
   const [mode, setMode] = useState<AuthMode>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -47,9 +48,11 @@ export function AuthScreen({ locale, onSuccess, onBack, variant = 'default' }: A
       ? 'authForgotSubtitle'
       : mode === 'signup'
         ? 'authSignupSubtitle'
-        : variant === 'action'
-          ? 'authActionSubtitle'
-          : 'authLoginSubtitle';
+        : guestTrialUsed
+          ? 'guestAuthSubtitle'
+          : variant === 'action'
+            ? 'authActionSubtitle'
+            : 'authLoginSubtitle';
 
   const runAuth = async () => {
     if (!email.trim() || !password) {

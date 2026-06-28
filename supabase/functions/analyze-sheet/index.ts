@@ -5,6 +5,7 @@ import {
   fetchUserStatsData,
   incrementScanCount,
 } from '../_shared/planQuotas.ts';
+import { resolveScanModel } from '../_shared/openaiModels.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -24,7 +25,8 @@ RÈGLES ABSOLUES :
 - Langues fréquentes : nl, fr, en, es. Détecte-les ; ne traduis pas sauf si la fiche le fait déjà.
 
 TYPES DE FICHE (sheetType) :
-- "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne. Si colonnes décalées, aligne par proximité verticale.
+- "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne UNIQUEMENT si c'est une vraie traduction (langues différentes, mot ↔ traduction).
+- LISTE DE MOTS (sans traduction) : ex. titre "mots français dans la langue anglaise", deux colonnes de mots isolés pour mise en page. NE PAS associer gauche+droite sur la même ligne. Chaque mot = une paire : term = le mot, definition = indice court (fin du mot, ex. "…ritif" pour Apéritif) ou courte glose visible sur la fiche.
 - "definitions" : format question/réponse ou mot — définition sur une ou deux lignes.
 - "notes" : transforme en paires mémorables : extrait clé (terme, date, concept, mot-clé) → idée courte à retenir (phrase résumée, max 120 car.).
 
@@ -34,7 +36,8 @@ QUALITÉ IMAGE FAIBLE :
 - Si une ligne est illisible, skip-la ; ne remplis pas avec du vide.
 - Si moins de 4 paires fiables : renvoie quand même ce que tu as + readable: false.
 
-Priorité : extraire un maximum de paires plausibles plutôt que abandonner.
+- Priorité : lire fidèlement le texte visible sur la photo. Ne réassocie pas des mots de colonnes différentes si la fiche est une simple liste.
+- Extraire un maximum de paires plausibles plutôt que abandonner.
 En cas de doute entre deux lectures, choisis la plus cohérente avec le reste de la fiche (même langue, même thème).
 Ne renvoie readable: false que si tu as moins de 2 paires avec un minimum de certitude.
 
@@ -66,7 +69,7 @@ Objectif : produire des paires term/definition exploitables pour des jeux éduca
 
 Consignes supplémentaires :
 - Photo possiblement floue, penchée ou sombre : lis quand même au maximum.
-- Pour vocab : cherche deux colonnes (langue A | langue B).
+- Pour vocab : cherche deux colonnes. Si traduction (langue A ↔ langue B), associe ligne par ligne. Si simple liste de mots (même langue, pas de traduction), un mot = une carte, pas de paires gauche/droite.
 - Pour definitions : une notion = une réponse courte.
 - Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
 - Exclus les lignes de consigne ou d'exemple générique sans contenu à apprendre.
@@ -157,9 +160,9 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini',
+        model: resolveScanModel(),
         response_format: { type: 'json_object' },
-        temperature: 0.2,
+        temperature: 0.1,
         max_tokens: 2500,
         messages: [
           { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },

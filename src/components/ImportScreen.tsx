@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { BrandDecor } from './BrandDecor';
+import { GuestScanBanner } from './GuestScanBanner';
 import { SheetTypePicker } from './SheetTypePicker';
 import { TrainingFocusPicker } from './TrainingFocusPicker';
 import { clampImagesForImport, getMaxImagesPerImport, getMaxWords } from '../lib/planLimits';
+import { isLoggedIn } from '../lib/auth';
+import { canGuestScan } from '../lib/guestTrial';
 import { isTrainingFocusApplicable } from '../lib/trainingFocus';
 import { t } from '../lib/i18n';
 import type { Locale, SheetType, TrainingFocus } from '../types';
@@ -18,6 +21,8 @@ interface ImportScreenProps {
   onSheetTypeChange: (type: SheetType) => void;
   onFile: (file: File | File[], trainingFocus: TrainingFocus[]) => void;
   onToast?: (message: string) => void;
+  onAuth?: () => void;
+  showGuestBanner?: boolean;
 }
 
 type ImportStep = 'pick' | 'photos' | 'configure';
@@ -43,6 +48,8 @@ export function ImportScreen({
   onSheetTypeChange,
   onFile,
   onToast,
+  onAuth,
+  showGuestBanner = false,
 }: ImportScreenProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -54,8 +61,11 @@ export function ImportScreen({
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
   const maxWords = getMaxWords();
   const maxPhotos = getMaxImagesPerImport();
+  const guestMode = !isLoggedIn();
+  const guestTrial = guestMode && canGuestScan();
   const showTrainingFocus = isTrainingFocusApplicable(sheetType);
   const atPhotoLimit = picked.length >= maxPhotos;
+  const allowMultiPick = maxPhotos > 1;
 
   useEffect(() => {
     if (!initialFiles?.length) return;
@@ -82,9 +92,11 @@ export function ImportScreen({
 
     if (dropped > 0) {
       onToast?.(
-        t('scanPhotosLimited', locale)
-          .replace('{max}', String(maxPhotos))
-          .replace('{dropped}', String(dropped)),
+        guestTrial
+          ? t('guestScanSingleOnly', locale)
+          : t('scanPhotosLimited', locale)
+              .replace('{max}', String(maxPhotos))
+              .replace('{dropped}', String(dropped)),
       );
     }
 
@@ -169,6 +181,8 @@ export function ImportScreen({
 
       {step === 'pick' && (
         <main className="import-main scroll-natural">
+          {showGuestBanner && <GuestScanBanner locale={locale} onAuth={onAuth} compact />}
+
           {importError && (
             <div className="import-error-banner" role="alert">
               {importError}
@@ -223,6 +237,11 @@ export function ImportScreen({
 
       {step === 'photos' && (
         <main className="import-photos-main scroll-natural">
+          {guestTrial && (
+            <p className="import-photos-guest-hint" role="status">
+              {t('importPhotosGuestOnly', locale)}
+            </p>
+          )}
           <p className="import-photos-sub">{t('importPhotosSub', locale)}</p>
           <span className="import-config-badge import-photos-badge">
             {t('importPicked', locale).replace('{count}', String(picked.length))}
@@ -251,11 +270,15 @@ export function ImportScreen({
           </ul>
 
           {atPhotoLimit && (
-            <p className="import-photos-limit">{t('importPhotosMax', locale).replace('{max}', String(maxPhotos))}</p>
+            <p className="import-photos-limit">
+              {guestTrial
+                ? t('importPhotosGuestOnly', locale)
+                : t('importPhotosMax', locale).replace('{max}', String(maxPhotos))}
+            </p>
           )}
 
           <div className="import-photos-actions">
-            {!isDesktop && (
+            {allowMultiPick && !isDesktop && (
               <button
                 type="button"
                 className="btn-secondary import-photos-add"
@@ -265,14 +288,16 @@ export function ImportScreen({
                 📷 {t('importPhotosAddCamera', locale)}
               </button>
             )}
-            <button
-              type="button"
-              className="btn-secondary import-photos-add"
-              disabled={atPhotoLimit}
-              onClick={() => openFilePicker(true)}
-            >
-              🖼️ {t('importPhotosAddFile', locale)}
-            </button>
+            {allowMultiPick && (
+              <button
+                type="button"
+                className="btn-secondary import-photos-add"
+                disabled={atPhotoLimit}
+                onClick={() => openFilePicker(true)}
+              >
+                🖼️ {t('importPhotosAddFile', locale)}
+              </button>
+            )}
             <button
               type="button"
               className="btn-primary btn-lg import-photos-continue"
@@ -327,7 +352,7 @@ export function ImportScreen({
         ref={fileRef}
         type="file"
         accept="image/*"
-        multiple
+        multiple={allowMultiPick}
         className="sr-only"
         onChange={handleInputChange}
       />

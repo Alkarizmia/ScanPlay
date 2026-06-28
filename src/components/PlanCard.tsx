@@ -7,6 +7,8 @@ import {
   PLAN_LIMITS,
 } from '../lib/planLimits';
 import { isStripeCheckoutEnabled, openStripePortal, stripeErrorMessage } from '../lib/stripeCheckout';
+import { isLoggedIn } from '../lib/auth';
+import { canGuestScan } from '../lib/guestTrial';
 import { PlanBadge } from './PlanBadge';
 import { t } from '../lib/i18n';
 import type { Locale, Plan } from '../types';
@@ -30,15 +32,28 @@ export function PlanCard({ locale, refreshKey = 0, onUpgrade, onToast }: PlanCar
   const limits = PLAN_LIMITS[plan];
   const scansLeft = getScansRemaining();
   const historyMax = getHistoryMax();
+  const loggedIn = isLoggedIn();
+  const guestTrialAvailable = !loggedIn && canGuestScan();
+
+  const scansPerkText =
+    !loggedIn
+      ? guestTrialAvailable
+        ? t('planPerkGuestTrial', locale)
+        : t('planPerkFreeAccountScans', locale)
+      : plan !== 'free'
+        ? `∞ ${t('planPerkScansUnlimited', locale)}`
+        : `${scansLeft} / ${limits.scansPerDay} ${t('scansToday', locale)}`;
 
   const perks = [
     {
       ok: true,
-      text:
-        plan !== 'free'
-          ? `∞ ${t('planPerkScansUnlimited', locale)}`
-          : `${scansLeft} / ${limits.scansPerDay} ${t('scansToday', locale)}`,
+      text: scansPerkText,
     },
+    ...(!loggedIn && guestTrialAvailable
+      ? []
+      : !loggedIn
+        ? [{ ok: true, text: t('planPerkFreeAccountScans', locale) }]
+        : []),
     { ok: true, text: `${limits.maxWords} ${t('planPerkWords', locale)}` },
     { ok: hasFeature('spaced', plan), text: t('planPerkSpaced', locale) },
     { ok: hasFeature('export', plan), text: t('planPerkExport', locale) },

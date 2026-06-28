@@ -5,6 +5,7 @@ import {
   fetchUserStatsData,
   incrementSynthesisCount,
 } from '../_shared/planQuotas.ts';
+import { resolveSynthesisModel } from '../_shared/openaiModels.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -153,7 +154,7 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini',
+        model: resolveSynthesisModel(),
         response_format: { type: 'json_object' },
         temperature: 0.35,
         max_tokens: 3500,

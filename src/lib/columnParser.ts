@@ -69,9 +69,137 @@ export function splitLineIntoColumns(line: string): [string, string] | null {
   return null;
 }
 
-function primarySegment(text: string): string {
+export function primarySegment(text: string): string {
   const parts = text.split(/\s*[–—-]\s*/);
   return parts[0]?.trim() ?? text.trim();
+}
+
+const WORD_LIST_TITLE_PATTERNS = [
+  /mots?\s+fran[cç]ais.{0,30}(langue\s+)?anglaise/i,
+  /french\s+words?\s+in\s+(the\s+)?english/i,
+  /loanwords?/i,
+  /emprunts?\s+(fran[cç]ais|linguistiques?)/i,
+];
+
+function hasDutchMorphology(text: string): boolean {
+  return /\w+(lijk|heid|isch|achtig)\b/i.test(text);
+}
+
+function hasFrenchMorphology(text: string): boolean {
+  return /[àâäéèêëïîôùûüçœæ]|(tion|ment|eau|eux)\b/i.test(text);
+}
+
+function isShortVocabToken(text: string): boolean {
+  const cleaned = text.trim();
+  if (!cleaned || cleaned.length > 32) return false;
+  return cleaned.split(/\s+/).length <= 3;
+}
+
+/** Row looks like NL↔FR (or similar) translation, not two standalone list items. */
+export function hasTranslationRowSignals(left: string, right: string): boolean {
+  if (/\([^)]*\)/.test(left) || /\([^)]*\)/.test(right)) return true;
+  if (/\s[–—-]\s/.test(left) || /\s[–—-]\s/.test(right)) return true;
+
+  const leftNl = scoreDutch(left);
+  const leftFr = scoreFrench(left);
+  const rightNl = scoreDutch(right);
+  const rightFr = scoreFrench(right);
+
+  if ((leftNl >= 2 && rightFr >= 2) || (leftFr >= 2 && rightNl >= 2)) return true;
+  if (leftNl >= 1 && rightFr >= 2) return true;
+  if (leftFr >= 2 && rightNl >= 1) return true;
+  if (hasDutchMorphology(left) && hasFrenchMorphology(right)) return true;
+  if (hasFrenchMorphology(left) && hasDutchMorphology(right)) return true;
+
+  const leftLang = detectLang(left);
+  const rightLang = detectLang(right);
+  if (leftLang !== 'unknown' && rightLang !== 'unknown' && leftLang !== rightLang) return true;
+
+  return false;
+}
+
+/** Two short standalone words on one row — typical 2-column word list layout. */
+export function isLikelyDualColumnWordListRow(left: string, right: string): boolean {
+  if (!isShortVocabToken(left) || !isShortVocabToken(right)) return false;
+  if (hasTranslationRowSignals(left, right)) return false;
+  return true;
+}
+
+export function detectLayoutFromTitle(text: string): 'translation' | 'word_list' | null {
+  const header = text.split(/\r?\n/).slice(0, 4).join(' ');
+  if (WORD_LIST_TITLE_PATTERNS.some((p) => p.test(header))) return 'word_list';
+  return null;
+}
+
+export function detectDualColumnLayout(rows: Array<[string, string]>): 'translation' | 'word_list' {
+  if (rows.length === 0) return 'translation';
+
+  let listScore = 0;
+  let transScore = 0;
+  for (const [left, right] of rows) {
+    if (hasTranslationRowSignals(left, right)) transScore += 1;
+    else if (isLikelyDualColumnWordListRow(left, right)) listScore += 1;
+  }
+
+  if (listScore >= 3 && listScore >= transScore) return 'word_list';
+  if (listScore >= 2 && transScore === 0) return 'word_list';
+  return 'translation';
+}
+
+/** Spelling hint for list-only flashcards (term on front, suffix on back). */
+export function wordListHint(word: string): string {
+  const core = word.replace(/[^a-zA-Zàâäéèêëïîôùûüœæ'-]/g, '');
+  if (core.length >= 5) {
+    const tail = core.slice(-Math.min(4, Math.floor(core.length / 2)));
+    return `…${tail}`;
+  }
+  if (core.length >= 2) return `Mot · ${core.length} lettres`;
+  return 'Mot à retenir';
+}
+
+export function buildWordListPair(word: string): WordPair | null {
+  const w = primarySegment(word).trim();
+  if (!w || w.length < 2 || isTitleLine(w)) return null;
+  return {
+    term: w,
+    definition: wordListHint(w),
+    termLang: detectLang(w),
+    defLang: 'unknown',
+  };
+}
+
+/** Split cells like "Déjà vu Detour" into separate vocabulary items. */
+export function extractWordsFromCell(cell: string): string[] {
+  const cleaned = fixOcrLine(cell.trim());
+  if (!cleaned) return [];
+
+  const parts = cleaned.split(/\s+(?=[A-ZÀ-Ÿ])/).map((p) => p.trim()).filter(Boolean);
+  if (parts.length >= 2 && parts.every((p) => isShortVocabToken(p))) {
+    return parts;
+  }
+
+  return [primarySegment(cleaned)];
+}
+
+function dedupeWordListPairs(pairs: WordPair[]): WordPair[] {
+  const seen = new Set<string>();
+  return pairs.filter((p) => {
+    const key = p.term.toLowerCase();
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function parseWordListRows(rows: Array<[string, string]>): WordPair[] {
+  const pairs: WordPair[] = [];
+  for (const [left, right] of rows) {
+    for (const word of [...extractWordsFromCell(left), ...extractWordsFromCell(right)]) {
+      const pair = buildWordListPair(word);
+      if (pair) pairs.push(pair);
+    }
+  }
+  return dedupeWordListPairs(pairs);
 }
 
 function expressionSegment(text: string): string | null {
@@ -139,17 +267,30 @@ export function pairFromColumnCells(left: string, right: string): WordPair[] {
 }
 
 /** Parse merged column OCR (tab or wide-gap separated lines). */
-export function parseColumnText(text: string): WordPair[] {
+export function parseColumnText(
+  text: string,
+  forcedLayout?: 'translation' | 'word_list',
+): WordPair[] {
   const lines = text
     .split(/\r?\n/)
     .map((l) => fixOcrLine(l.trim()))
     .filter((l) => l.length > 0 && !isTitleLine(l));
 
-  const pairs: WordPair[] = [];
+  const rows: Array<[string, string]> = [];
   for (const line of lines) {
     const cols = splitLineIntoColumns(line);
     if (!cols) continue;
-    pairs.push(...pairFromColumnCells(cols[0], cols[1]));
+    rows.push(cols);
+  }
+
+  const layout = forcedLayout ?? detectLayoutFromTitle(text) ?? detectDualColumnLayout(rows);
+  if (layout === 'word_list' && rows.length > 0) {
+    return parseWordListRows(rows);
+  }
+
+  const pairs: WordPair[] = [];
+  for (const [left, right] of rows) {
+    pairs.push(...pairFromColumnCells(left, right));
   }
   return pairs;
 }
@@ -176,7 +317,44 @@ export function mergeDualColumnOcr(leftText: string, rightText: string): string 
   return merged.join('\n');
 }
 
-/** Fixture simulating NL↔FR vocabulary sheet OCR output. */
+export function flattenMistranslatedPairsToWordList(pairs: WordPair[]): WordPair[] {
+  const words: string[] = [];
+  for (const p of pairs) {
+    words.push(...extractWordsFromCell(p.term), ...extractWordsFromCell(p.definition));
+  }
+  const rebuilt = words
+    .map((w) => buildWordListPair(w))
+    .filter((p): p is WordPair => p !== null);
+  return dedupeWordListPairs(rebuilt);
+}
+
+/** AI/OCR paired unrelated short words from a 2-column word list. */
+export function pairsLookLikeMistranslatedWordList(pairs: WordPair[]): boolean {
+  if (pairs.length < 3) return false;
+
+  const shortRows = pairs.filter(
+    (p) => p.term.split(/\s+/).length <= 2 && p.definition.split(/\s+/).length <= 2,
+  );
+  if (shortRows.length < pairs.length * 0.75) return false;
+
+  const crossLang = pairs.filter((p) => {
+    const tl = p.termLang ?? detectLang(p.term);
+    const dl = p.defLang ?? detectLang(p.definition);
+    return tl !== 'unknown' && dl !== 'unknown' && tl !== dl;
+  });
+  if (crossLang.length >= pairs.length * 0.4) return false;
+
+  const listLikeRows = pairs.filter((p) => isLikelyDualColumnWordListRow(p.term, p.definition));
+  return listLikeRows.length >= Math.min(3, pairs.length * 0.6);
+}
+
+export function reconcileWordListPairs(pairs: WordPair[], sourceText?: string): WordPair[] {
+  if (pairs.length < 2) return pairs;
+  const titleLayout = sourceText ? detectLayoutFromTitle(sourceText) : null;
+  if (titleLayout === 'word_list') return flattenMistranslatedPairsToWordList(pairs);
+  if (pairsLookLikeMistranslatedWordList(pairs)) return flattenMistranslatedPairsToWordList(pairs);
+  return pairs;
+}
 export const NL_FR_FIXTURE = `
 eerlijk\thonnêtement
 elk, elke\tchaque

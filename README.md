@@ -65,3 +65,4 @@ GitHub Actions : `.github/workflows/ci.yml`
 
 - **Vercel** : `vercel.json` — variables d'environnement + `SUPABASE_SERVICE_ROLE_KEY` pour webhooks et suppression de compte
 - **Edge Functions** : `supabase functions deploy analyze-sheet` et `generate-synthesis` (quotas serveur)
+  - Secrets : `OPENAI_API_KEY`, `OPENAI_SCAN_MODEL=gpt-4.1` (scan photo), `OPENAI_MODEL=gpt-4o-mini` (synthèse, optionnel)

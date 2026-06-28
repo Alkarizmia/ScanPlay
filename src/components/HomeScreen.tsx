@@ -10,6 +10,7 @@ import { PlanBadge } from './PlanBadge';
 import { PlanCard } from './PlanCard';
 import { SiteFooter } from './SiteFooter';
 import { InstallAppSheet } from './InstallAppSheet';
+import { GuestScanBanner } from './GuestScanBanner';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { canGuestScan } from '../lib/guestTrial';
@@ -31,6 +32,7 @@ interface HomeScreenProps {
   onPricing: () => void;
   onSocialChange?: () => void;
   onToast?: (message: string) => void;
+  onAuth?: () => void;
 }
 
 export function HomeScreen({
@@ -43,6 +45,7 @@ export function HomeScreen({
   onPricing,
   onSocialChange,
   onToast,
+  onAuth,
 }: HomeScreenProps) {
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
@@ -104,12 +107,26 @@ export function HomeScreen({
           {loggedIn && (
             <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
           )}
+          {!loggedIn && canGuestScan() && (
+            <span className="top-bar-guest-pill" title={t('guestScanBannerTitle', locale)}>
+              {t('guestScanTopPill', locale)}
+            </span>
+          )}
           <PlanBadge plan={plan} locale={locale} />
         </div>
         {isDesktop && <DeviceBadge locale={locale} profile={device} compact />}
       </header>
 
-      <main className="home-main scroll-natural">
+      <main className={`home-main scroll-natural${!loggedIn ? ' home-main--guest' : ''}`}>
+        {!loggedIn && (
+          <GuestScanBanner
+            locale={locale}
+            onAuth={onAuth}
+            className="guest-scan-banner--home-top"
+            variant={isDesktop ? 'default' : 'mobile'}
+          />
+        )}
+
         {loggedIn && (
           <section className="home-progress-card premium-card" aria-label={t('homeProgressLabel', locale)}>
             <div className="home-progress-top">
@@ -140,19 +157,22 @@ export function HomeScreen({
           </section>
         )}
 
-        <section className="home-scan-hero premium-card">
+        <section
+          className={`home-scan-hero premium-card${!loggedIn && canGuestScan() ? ' home-scan-hero--guest-trial' : ''}`}
+        >
           <p className="tagline">{t('tagline', locale)}</p>
           <p className="subtagline">{t('subtagline', locale)}</p>
 
-          {plan !== 'free' ? (
-            <p className="scans-left scans-left--unlimited">
-              ∞ {t('planPerkScansUnlimited', locale)}
-            </p>
-          ) : scansLeft !== Infinity ? (
-            <p className="scans-left">
-              {scansLeft} / 3 {t('scansToday', locale)}
-            </p>
-          ) : null}
+          {loggedIn &&
+            (plan !== 'free' ? (
+              <p className="scans-left scans-left--unlimited">
+                ∞ {t('planPerkScansUnlimited', locale)}
+              </p>
+            ) : scansLeft !== Infinity ? (
+              <p className="scans-left">
+                {scansLeft} / 3 {t('scansToday', locale)}
+              </p>
+            ) : null)}
 
           {isDesktop ? (
             <div
@@ -170,6 +190,9 @@ export function HomeScreen({
                 if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click();
               }}
             >
+              {!loggedIn && canGuestScan() && (
+                <span className="home-dropzone-guest-badge">{t('guestScanTopPill', locale)}</span>
+              )}
               <span className="home-dropzone-icon" aria-hidden="true">
                 📄
               </span>
@@ -208,13 +231,20 @@ export function HomeScreen({
                 </span>
               </button>
               <span className="camera-label">{t('scanPlay', locale)}</span>
-              <p className="home-scan-hint">{t('homeScanHint', locale)}</p>
-              {!loggedIn && canGuestScan() && (
-                <p className="home-guest-hint">{t('guestScanHint', locale)}</p>
-              )}
+              <p className="home-scan-hint">
+                {!loggedIn && canGuestScan()
+                  ? t('guestScanMobileHint', locale)
+                  : t('homeScanHint', locale)}
+              </p>
             </div>
           )}
         </section>
+
+        {!loggedIn && canGuestScan() && onAuth && (
+          <button type="button" className="guest-mobile-signup-teaser" onClick={onAuth}>
+            {t('guestSignupTeaser', locale)}
+          </button>
+        )}
 
         {loggedIn && recentDecks.length > 0 && (
           <section className="home-section home-section--premium">
@@ -290,7 +320,9 @@ export function HomeScreen({
           {t('tryDemo', locale)}
         </button>
 
-        <PlanCard locale={locale} refreshKey={refreshKey} onUpgrade={onPricing} onToast={onToast} />
+        {!( !loggedIn && canGuestScan() ) && (
+          <PlanCard locale={locale} refreshKey={refreshKey} onUpgrade={onPricing} onToast={onToast} />
+        )}
 
         <SiteFooter locale={locale} />
       </main>
@@ -300,7 +332,7 @@ export function HomeScreen({
           ref={fileRef}
           type="file"
           accept="image/*"
-          multiple
+          multiple={getMaxImagesPerImport() > 1}
           className="sr-only"
           onChange={(e) => {
             handleFiles(e.target.files);

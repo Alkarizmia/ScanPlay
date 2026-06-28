@@ -227,6 +227,7 @@ export function touchHistoryPlayed(id: string): void {
 }
 
 export function canAddHistory(): boolean {
+  if (!isLoggedIn()) return false;
   return loadHistoryRaw().length < getHistoryMax();
 }
 

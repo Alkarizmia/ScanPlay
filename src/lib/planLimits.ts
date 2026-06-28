@@ -1,4 +1,6 @@
 import type { BillingCycle, Plan, UpgradeReason } from '../types';
+import { isLoggedIn } from './auth';
+import { canGuestScan } from './guestTrial';
 import { getExtraScanAllowance } from './wallet';
 
 const PLAN_KEY = 'scanplay-plan';
@@ -114,6 +116,9 @@ function incrementScansToday(): void {
 }
 
 export function getScansRemaining(): number | typeof Infinity {
+  if (!isLoggedIn()) {
+    return canGuestScan() ? 1 : 0;
+  }
   const plan = getPlan();
   const limit = PLAN_LIMITS[plan].scansPerDay;
   if (limit === Infinity) return Infinity;
@@ -133,6 +138,9 @@ export function formatScansQuota(): string {
 }
 
 export function canScan(): boolean {
+  if (!isLoggedIn()) {
+    return canGuestScan();
+  }
   const plan = getPlan();
   const limit = PLAN_LIMITS[plan].scansPerDay;
   if (limit === Infinity) return true;
@@ -146,8 +154,11 @@ export function recordScan(): void {
   }
 }
 
-/** Max images per import batch (Free = remaining daily scans, paid = generous cap). */
+/** Max images per import batch (guest = 1 photo, Free = remaining daily scans, paid = generous cap). */
 export function getMaxImagesPerImport(): number {
+  if (!isLoggedIn()) {
+    return canGuestScan() ? 1 : 0;
+  }
   const plan = getPlan();
   if (PLAN_LIMITS[plan].scansPerDay === Infinity) return 20;
   const remaining = getScansRemaining();
@@ -195,6 +206,9 @@ export function hasFeature(
 }
 
 export function getUpgradeReasonForScan(): UpgradeReason | null {
+  if (!isLoggedIn()) {
+    return canGuestScan() ? null : 'scans';
+  }
   if (!canScan()) return 'scans';
   return null;
 }
