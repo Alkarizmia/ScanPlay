@@ -4,8 +4,6 @@ import { PrivacyPolicySheet } from './PrivacyPolicySheet';
 import { AudioSettingsScreen } from './AudioSettingsScreen';
 import { useMemo, useState } from 'react';
 import { getUser, signOut } from '../lib/auth';
-import { deleteAccount } from '../lib/accountDelete';
-import { clearLocalUserData } from '../lib/localData';
 import { DeviceBadge } from './DeviceBadge';
 import type { DeviceProfile } from '../lib/device';
 import { t } from '../lib/i18n';
@@ -72,19 +70,6 @@ export function SettingsScreen({
     onLogout();
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm(t('deleteAccountConfirm', locale))) return;
-    const result = await deleteAccount();
-    if (!result.ok) {
-      _onToast?.(t('deleteAccountError', locale));
-      return;
-    }
-    clearLocalUserData();
-    await signOut();
-    onLogout();
-    _onToast?.(t('deleteAccountDone', locale));
-  };
-
   const updatePref = <K extends keyof typeof prefs>(key: K, value: (typeof prefs)[K]) => {
     const prev = prefs[key];
     setPreference(key, value);
@@ -143,13 +128,6 @@ export function SettingsScreen({
               />
               <button type="button" className="btn-danger btn-sm" onClick={() => void handleLogout()}>
                 {t('logout', locale)}
-              </button>
-              <button
-                type="button"
-                className="btn-danger-outline btn-sm account-delete-btn"
-                onClick={() => void handleDeleteAccount()}
-              >
-                {t('deleteAccount', locale)}
               </button>
             </>
           ) : (
@@ -249,6 +227,7 @@ export function SettingsScreen({
         <section className="settings-section">
           <h3 className="settings-label">{t('privacySection', locale)}</h3>
           <p className="settings-hint">{t('privacyIntro', locale)}</p>
+          {isLoggedIn && <p className="settings-hint">{t('privacyDeleteHint', locale)}</p>}
           <button type="button" className="btn-secondary" onClick={() => setPrivacyOpen(true)}>
             {t('privacyOpen', locale)}
           </button>

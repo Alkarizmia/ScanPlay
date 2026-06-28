@@ -233,6 +233,8 @@ const strings = {
     togglePassword: 'Afficher le mot de passe',
     privacySection: 'Confidentialité',
     privacyIntro: 'Comment ScanPlay utilise et protège tes données.',
+    privacyDeleteHint:
+      'Pour supprimer ton compte, écris à support@scanplay.org depuis l\'adresse email de ton compte.',
     privacyOpen: 'Lire la politique de confidentialité',
     privacyUpdated: 'Dernière mise à jour : mai 2026',
     privacyClose: 'Fermer',
@@ -241,7 +243,8 @@ const strings = {
     privacyPolicy3: 'Synchronisation cloud via Supabase lorsque tu es connecté. Profil public partagé avec tes amis : pseudo, avatar, stats et succès débloqués.',
     privacyPolicy4: 'Scan de fiches : le texte extrait reste dans ton historique. Si l\'analyse IA est activée, l\'image peut être traitée par OpenAI uniquement pour extraire le vocabulaire.',
     privacyPolicy5: 'Multijoueur : code de salon, scores et présence en salle. Données stockées le temps de la partie.',
-    privacyPolicy6: 'Tes données ne sont pas vendues. Tu peux demander l\'accès ou la suppression de ton compte à support@scanplay.org. Session et préférences locales dans ton navigateur.',
+    privacyPolicy6:
+      'Tes données ne sont pas vendues. Pour supprimer ton compte, contacte support@scanplay.org depuis ton email de connexion. Tu peux aussi demander l\'accès à tes données à la même adresse. Session et préférences locales dans ton navigateur.',
     privacyAboutHeading: 'À propos',
     privacyPolicy7: 'ScanPlay est un projet indépendant créé par Bilal El Fahmi. L\'objectif : rendre la révision plus simple et motivante grâce au jeu, sans remplacer ton cours.',
     privacyPolicy8: 'Application web progressive (PWA) disponible sur scanplay.org. Pour toute question, suggestion ou retour : support@scanplay.org.',
@@ -1058,6 +1061,8 @@ const strings = {
     togglePassword: 'Show password',
     privacySection: 'Privacy',
     privacyIntro: 'How ScanPlay uses and protects your data.',
+    privacyDeleteHint:
+      'To delete your account, email support@scanplay.org from the address linked to your account.',
     privacyOpen: 'Read the privacy policy',
     privacyUpdated: 'Last updated: May 2026',
     privacyClose: 'Close',
@@ -1066,7 +1071,8 @@ const strings = {
     privacyPolicy3: 'Cloud sync via Supabase when signed in. Public profile shared with friends: name, avatar, stats and unlocked achievements.',
     privacyPolicy4: 'Sheet scans: extracted text stays in your history. If AI scan is enabled, images may be processed by OpenAI only to extract vocabulary.',
     privacyPolicy5: 'Multiplayer: room code, scores and lobby presence. Data kept for the duration of the session.',
-    privacyPolicy6: 'Your data is not sold. You may request access or deletion at support@scanplay.org. Session and local preferences are stored in your browser.',
+    privacyPolicy6:
+      'Your data is not sold. To delete your account, contact support@scanplay.org from your sign-in email. You may also request access to your data at the same address. Session and local preferences are stored in your browser.',
     privacyAboutHeading: 'About',
     privacyPolicy7: 'ScanPlay is an independent project created by Bilal El Fahmi. The goal: make studying simpler and more motivating through games, without replacing your course material.',
     privacyPolicy8: 'Progressive web app available at scanplay.org. For questions, feedback or suggestions: support@scanplay.org.',
@@ -1838,6 +1844,8 @@ const strings = {
     togglePassword: 'Wachtwoord tonen',
     privacySection: 'Privacy',
     privacyIntro: 'Hoe ScanPlay je gegevens gebruikt en beschermt.',
+    privacyDeleteHint:
+      'Om je account te verwijderen, mail support@scanplay.org vanaf het e-mailadres van je account.',
     privacyOpen: 'Privacybeleid lezen',
     privacyUpdated: 'Laatst bijgewerkt: mei 2026',
     privacyClose: 'Sluiten',
@@ -1846,7 +1854,8 @@ const strings = {
     privacyPolicy3: 'Cloudsync via Supabase wanneer ingelogd. Openbaar profiel gedeeld met vrienden: naam, avatar, stats en behaalde successen.',
     privacyPolicy4: 'Scans: geëxtraheerde tekst blijft in je historiek. Bij AI-scan kan de afbeelding door OpenAI worden verwerkt om woorden te extraheren.',
     privacyPolicy5: 'Multiplayer: roomcode, scores en aanwezigheid in de lobby. Gegevens bewaard voor de duur van de sessie.',
-    privacyPolicy6: 'Je gegevens worden niet verkocht. Vraag toegang of verwijdering aan via support@scanplay.org. Sessie en lokale voorkeuren staan in je browser.',
+    privacyPolicy6:
+      'Je gegevens worden niet verkocht. Om je account te verwijderen, neem contact op via support@scanplay.org met je inlog-e-mail. Je kunt daar ook toegang tot je gegevens vragen. Sessie en lokale voorkeuren staan in je browser.',
     privacyAboutHeading: 'Over',
     privacyPolicy7: 'ScanPlay is een onafhankelijk project van Bilal El Fahmi. Het doel: studeren eenvoudiger en motiverender maken via games, zonder je cursus te vervangen.',
     privacyPolicy8: 'Progressive web app op scanplay.org. Vragen, feedback of suggesties: support@scanplay.org.',
@@ -2599,6 +2608,8 @@ const strings = {
     togglePassword: 'Mostrar contraseña',
     privacySection: 'Privacidad',
     privacyIntro: 'Cómo ScanPlay usa y protege tus datos.',
+    privacyDeleteHint:
+      'Para eliminar tu cuenta, escribe a support@scanplay.org desde el email de tu cuenta.',
     privacyOpen: 'Leer la política de privacidad',
     privacyUpdated: 'Última actualización: mayo 2026',
     privacyClose: 'Cerrar',
@@ -2607,7 +2618,8 @@ const strings = {
     privacyPolicy3: 'Sincronización en la nube vía Supabase al iniciar sesión. Perfil público compartido con amigos: nombre, avatar, stats y logros desbloqueados.',
     privacyPolicy4: 'Escaneos: el texto extraído queda en tu historial. Si el escaneo IA está activo, la imagen puede procesarse con OpenAI solo para extraer vocabulario.',
     privacyPolicy5: 'Multijugador: código de sala, puntuaciones y presencia en lobby. Datos guardados durante la sesión.',
-    privacyPolicy6: 'Tus datos no se venden. Puedes solicitar acceso o eliminación en support@scanplay.org. Sesión y preferencias locales en tu navegador.',
+    privacyPolicy6:
+      'Tus datos no se venden. Para eliminar tu cuenta, contacta support@scanplay.org desde tu email de acceso. También puedes solicitar acceso a tus datos en la misma dirección. Sesión y preferencias locales en tu navegador.',
     privacyAboutHeading: 'Acerca de',
     privacyPolicy7: 'ScanPlay es un proyecto independiente creado por Bilal El Fahmi. El objetivo: hacer el repaso más simple y motivador con juegos, sin sustituir tu curso.',
     privacyPolicy8: 'Aplicación web progresiva (PWA) en scanplay.org. Para preguntas, sugerencias o comentarios: support@scanplay.org.',
