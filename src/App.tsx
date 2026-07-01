@@ -715,6 +715,7 @@ export default function App() {
 
       setFlow('scanning');
       playSound('scanStart');
+      playSound('whoosh');
       setScanProgress(10);
       setScanStatus(
         scanFiles.length > 1
@@ -983,6 +984,7 @@ export default function App() {
 
     if (!goldReplay && !technical && levelAfter > levelBefore) {
       playSound('levelUp');
+      window.setTimeout(() => playSound('powerUp'), 120);
       hapticLevelUp();
     } else if (!goldReplay && !technical && xpEarned > 0) playSound('xpGain');
     if (!goldReplay && !technical && streakUpdated && [3, 7, 30].includes(newStreak)) {

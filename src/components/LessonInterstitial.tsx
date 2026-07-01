@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { playSound } from '../lib/sounds';
 import { vibrateSuccess } from '../lib/haptics';
 import { t } from '../lib/i18n';
@@ -28,8 +29,14 @@ export function LessonInterstitial({
   const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
   const mood = pct >= 70 ? 'excited' : pct >= 40 ? 'happy' : 'neutral';
 
+  useEffect(() => {
+    if (pct >= 90) playSound('coinPop');
+    else if (pct >= 60) playSound('miniWin');
+    else playSound('progressBlip');
+  }, [pct]);
+
   const handleContinue = () => {
-    playSound('tap');
+    playSound('whoosh');
     vibrateSuccess();
     onContinue();
   };

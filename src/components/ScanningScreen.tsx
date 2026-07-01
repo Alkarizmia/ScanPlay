@@ -1,8 +1,9 @@
-import type { CSSProperties } from 'react';
+import { useEffect, useRef, type CSSProperties } from 'react';
 import { LearningFlow } from './LearningFlow';
 import { ScanningBackground } from './ScanningBackground';
 import { PixCompanion } from './PixCompanion';
 import { getScanAdventureState } from '../lib/scanAdventure';
+import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -16,6 +17,19 @@ export function ScanningScreen({ locale, progress, status }: ScanningScreenProps
   const pct = Math.min(100, Math.max(0, progress));
   const adventure = getScanAdventureState(pct);
   const atEnd = pct >= 99;
+  const lastBlipRef = useRef(0);
+
+  useEffect(() => {
+    const milestones = [25, 50, 75, 99];
+    for (const m of milestones) {
+      if (pct >= m && lastBlipRef.current < m) {
+        lastBlipRef.current = m;
+        playSound(m >= 99 ? 'coinPop' : 'progressBlip');
+        break;
+      }
+    }
+  }, [pct]);
+
   const runnerStyle: CSSProperties = atEnd
     ? { left: '100%', transform: 'translate(-100%, -50%)' }
     : { left: `${Math.max(8, pct)}%`, transform: 'translate(-50%, -50%)' };

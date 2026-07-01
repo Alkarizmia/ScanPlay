@@ -26,6 +26,12 @@ export function useGlobalTapSound(): void {
         return;
       }
 
+      if (target.closest('.btn-primary') && isSoundEnabled()) {
+        playSound('pop');
+        hapticTap();
+        return;
+      }
+
       if (!interactive || !isSoundEnabled()) return;
       playSound('tap');
       hapticTap();

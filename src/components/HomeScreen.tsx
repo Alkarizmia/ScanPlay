@@ -107,7 +107,7 @@ export function HomeScreen({
           {loggedIn && (
             <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
           )}
-          {!loggedIn && canGuestScan() && (
+          {!loggedIn && canGuestScan() && isDesktop && (
             <span className="top-bar-guest-pill" title={t('guestScanBannerTitle', locale)}>
               {t('guestScanTopPill', locale)}
             </span>

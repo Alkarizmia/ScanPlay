@@ -35,7 +35,17 @@ export type SoundId =
   | 'nearMiss'
   | 'nodeStep'
   | 'streakMilestone'
-  | 'examTick';
+  | 'examTick'
+  | 'pop'
+  | 'coinPop'
+  | 'combo2'
+  | 'combo5'
+  | 'whoosh'
+  | 'reveal'
+  | 'sparkle'
+  | 'powerUp'
+  | 'progressBlip'
+  | 'matchPerfect';
 
 export type MusicTheme = 'menu' | 'path' | 'exam';
 
@@ -150,6 +160,8 @@ const DEBOUNCE_MS: Partial<Record<SoundId, number>> = {
   cardTap: 70,
   cardFlip: 90,
   examTick: 180,
+  progressBlip: 220,
+  pop: 45,
   homeOpen: 800,
 };
 
@@ -451,6 +463,73 @@ const SOUND_MAP: Record<SoundId, () => void> = {
   },
   streakMilestone: () => SOUND_MAP.streak7(),
   examTick: () => tone(330, 0.035, 'square', 0.028),
+  pop: () => {
+    playNotes([
+      { f: 880, d: 0.035, v: 0.055, t: 'sine', delay: 0 },
+      { f: 1174.66, d: 0.045, v: 0.048, t: 'sine', delay: 28 },
+    ]);
+    playNoiseBurst(0.018, 0.012, 2400);
+  },
+  coinPop: () => {
+    playNotes([
+      { f: 987.77, d: 0.045, v: 0.062, delay: 0 },
+      { f: 1318.51, d: 0.06, v: 0.058, delay: 38 },
+      { f: 1567.98, d: 0.09, v: 0.052, t: 'sine', harm: 783.99, delay: 88 },
+    ]);
+    playNoiseBurst(0.022, 0.018, 2800);
+  },
+  combo2: () => {
+    playNotes([
+      { f: 659.25, d: 0.05, v: 0.058, delay: 0 },
+      { f: 880, d: 0.07, v: 0.055, delay: 45 },
+    ]);
+  },
+  combo5: () => {
+    playNotes([
+      { f: 523.25, d: 0.05, v: 0.06, delay: 0 },
+      { f: 659.25, d: 0.05, v: 0.062, delay: 42 },
+      { f: 783.99, d: 0.06, v: 0.064, delay: 84 },
+      { f: 987.77, d: 0.07, v: 0.066, delay: 126 },
+      { f: 1174.66, d: 0.12, v: 0.06, t: 'sine', delay: 175 },
+    ]);
+    playSweep(440, 1320, 0.14, 0.032, 'sine');
+  },
+  whoosh: () => {
+    playSweep(1400, 220, 0.14, 0.038, 'sine');
+    playNoiseBurst(0.05, 0.022, 900);
+  },
+  reveal: () => {
+    playSweep(380, 880, 0.1, 0.042, 'triangle');
+    playNotes([
+      { f: 1046.5, d: 0.08, v: 0.048, t: 'sine', delay: 70 },
+    ]);
+  },
+  sparkle: () => {
+    playNotes([
+      { f: 1318.51, d: 0.04, v: 0.045, t: 'sine', delay: 0 },
+      { f: 1567.98, d: 0.04, v: 0.042, t: 'sine', delay: 35 },
+      { f: 1760, d: 0.05, v: 0.04, t: 'sine', delay: 70 },
+      { f: 2093, d: 0.07, v: 0.038, t: 'sine', delay: 105 },
+    ]);
+  },
+  powerUp: () => {
+    playSweep(220, 880, 0.2, 0.045, 'sawtooth');
+    playNotes([
+      { f: 523.25, d: 0.08, v: 0.055, delay: 120 },
+      { f: 659.25, d: 0.08, v: 0.058, delay: 180 },
+      { f: 783.99, d: 0.12, v: 0.06, t: 'sine', delay: 240 },
+    ]);
+  },
+  progressBlip: () => {
+    playNotes([
+      { f: 698.46, d: 0.04, v: 0.05, delay: 0 },
+      { f: 880, d: 0.05, v: 0.046, delay: 35 },
+    ]);
+  },
+  matchPerfect: () => {
+    SOUND_MAP.matchSnap();
+    window.setTimeout(() => SOUND_MAP.coinPop(), 60);
+  },
 };
 
 export function playSound(id: SoundId): void {
@@ -472,11 +551,17 @@ export function playGameCorrectSound(pathStep: boolean, perfect = false): void {
   correctCombo += 1;
   lastCorrectAt = now;
 
-  if (perfect) playSound('perfect');
-  else if (pathStep) playSound('miniWin');
+  if (perfect) {
+    playSound('perfect');
+    window.setTimeout(() => playSound('sparkle'), 80);
+  } else if (pathStep) playSound('miniWin');
   else playSound('correct');
 
-  if (correctCombo >= 3) playSound('xpCombo');
+  if (correctCombo === 2) playSound('combo2');
+  else if (correctCombo >= 5) {
+    playSound('combo5');
+    window.setTimeout(() => playSound('coinPop'), 100);
+  } else if (correctCombo >= 3) playSound('xpCombo');
 }
 
 export function resetCorrectCombo(): void {
@@ -663,9 +748,18 @@ export function refreshMusicVolume(): void {
 /** Preview list for audio settings UI */
 export const SOUND_PREVIEW_IDS: { id: SoundId; labelKey: string }[] = [
   { id: 'tap', labelKey: 'audioPreviewTap' },
+  { id: 'pop', labelKey: 'audioPreviewPop' },
   { id: 'correct', labelKey: 'audioPreviewCorrect' },
+  { id: 'coinPop', labelKey: 'audioPreviewCoin' },
+  { id: 'combo2', labelKey: 'audioPreviewCombo' },
+  { id: 'combo5', labelKey: 'audioPreviewComboMax' },
+  { id: 'perfect', labelKey: 'audioPreviewPerfect' },
+  { id: 'sparkle', labelKey: 'audioPreviewSparkle' },
   { id: 'wrong', labelKey: 'audioPreviewWrong' },
+  { id: 'reveal', labelKey: 'audioPreviewReveal' },
+  { id: 'matchSnap', labelKey: 'audioPreviewMatch' },
   { id: 'levelUp', labelKey: 'audioPreviewLevelUp' },
   { id: 'achievementUnlock', labelKey: 'audioPreviewAchievement' },
+  { id: 'whoosh', labelKey: 'audioPreviewWhoosh' },
   { id: 'notification', labelKey: 'audioPreviewNotification' },
 ];

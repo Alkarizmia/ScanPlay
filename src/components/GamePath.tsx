@@ -130,7 +130,7 @@ export function GamePath({
 
       setUnlockIdx(firstActiveIdx);
 
-      playSound('nodeStep');
+      playSound('pop');
 
       const timer = window.setTimeout(() => setUnlockIdx(null), 750);
 

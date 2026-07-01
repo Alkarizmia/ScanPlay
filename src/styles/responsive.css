@@ -196,12 +196,17 @@
 }
 
 [data-device='mobile'] .top-bar-guest-pill {
-  font-size: 0.62rem;
-  padding: 4px 8px;
-  max-width: 42vw;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  display: none;
+}
+
+[data-device='mobile'] .top-bar-brand {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 88px);
+}
+
+[data-device='mobile'] .top-bar-actions {
+  flex-shrink: 0;
 }
 
 .home-screen--premium .text-link,

@@ -113,7 +113,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
 
     if (selected.pairId === card.pairId && selected.kind !== card.kind) {
       vibrateSuccess();
-      playSound('matchSnap');
+      playSound('matchPerfect');
       playGameCorrectSound(stepIndex != null);
       markCorrected(pairById[card.pairId]);
       const next = new Set(matched);

@@ -100,7 +100,7 @@ export function FlashcardsGame({
           className={`flashcard ${flipped ? 'flipped' : ''}`}
           onClick={() =>
             setFlipped((f) => {
-              if (!f) playSound('cardFlip');
+              if (!f) playSound('reveal');
               return !f;
             })
           }
@@ -108,7 +108,7 @@ export function FlashcardsGame({
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               setFlipped((f) => {
-                if (!f) playSound('cardFlip');
+                if (!f) playSound('reveal');
                 return !f;
               });
             }
