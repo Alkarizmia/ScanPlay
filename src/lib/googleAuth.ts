@@ -13,6 +13,7 @@ type GoogleIdApi = {
     callback: (response: GoogleCredentialResponse) => void;
     cancel_on_tap_outside?: boolean;
     use_fedcm_for_prompt?: boolean;
+    nonce?: string;
   }) => void;
   prompt: (listener?: (notification: GoogleMomentNotification) => void) => void;
   renderButton: (
@@ -45,6 +46,23 @@ export function getGoogleClientId(): string | null {
   return typeof id === 'string' && id.trim().length > 0 ? id.trim() : null;
 }
 
+export interface GoogleIdTokenResult {
+  token: string;
+  /** Raw nonce — pass to Supabase signInWithIdToken (not the hashed value). */
+  nonce: string;
+}
+
+/** Supabase expects raw nonce; Google GSI expects SHA-256 hex of that nonce. */
+export async function createGoogleNoncePair(): Promise<{ raw: string; hashed: string }> {
+  const bytes = crypto.getRandomValues(new Uint8Array(32));
+  const raw = btoa(String.fromCharCode(...bytes));
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(raw));
+  const hashed = Array.from(new Uint8Array(digest))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+  return { raw, hashed };
+}
+
 function loadGsiScript(): Promise<void> {
   if (window.google?.accounts?.id) return Promise.resolve();
 
@@ -72,10 +90,12 @@ function loadGsiScript(): Promise<void> {
 }
 
 /** Demande un ID token Google (popup ScanPlay) pour signInWithIdToken Supabase. */
-export async function requestGoogleIdToken(clientId: string): Promise<string> {
+export async function requestGoogleIdToken(clientId: string): Promise<GoogleIdTokenResult> {
   await loadGsiScript();
   const googleId = window.google?.accounts?.id;
   if (!googleId) throw new Error('gsi_unavailable');
+
+  const { raw: nonce, hashed: hashedNonce } = await createGoogleNoncePair();
 
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -112,17 +132,19 @@ export async function requestGoogleIdToken(clientId: string): Promise<string> {
 
     googleId.initialize({
       client_id: clientId,
+      nonce: hashedNonce,
       callback: (response) => {
         finish(() => {
           if (!response.credential) {
             reject(new Error('google_no_credential'));
             return;
           }
-          resolve(response.credential);
+          resolve({ token: response.credential, nonce });
         });
       },
       cancel_on_tap_outside: true,
-      use_fedcm_for_prompt: true,
+      // FedCM can inject its own nonce and break Supabase validation in some browsers.
+      use_fedcm_for_prompt: false,
     });
 
     googleId.renderButton(host, {

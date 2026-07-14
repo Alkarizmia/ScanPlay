@@ -81,3 +81,4 @@ Sur un plan Supabase payant, tu peux configurer `auth.scanplay.org` pour renforc
 | `redirect_uri_mismatch` | URI callback Supabase manquante dans Google Cloud |
 | `origin_mismatch` | Ajoute `https://www.scanplay.org` dans JavaScript origins |
 | Bouton Google ne répond pas | Vérifie `VITE_GOOGLE_CLIENT_ID` sur Vercel + redeploy |
+| Erreur `Passed nonce and nonce in id_token` | Corrigé dans l'app (nonce SHA-256). Sinon : Supabase → Google → **Skip nonce check** |

@@ -267,13 +267,25 @@ export async function signInWithGoogle(): Promise<AuthResult> {
 
   try {
     if (googleClientId) {
-      const credential = await requestGoogleIdToken(googleClientId);
+      const { token, nonce } = await requestGoogleIdToken(googleClientId);
       const { error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
-        token: credential,
+        token,
+        nonce,
       });
       if (error) {
-        return { error: mapAuthError(error.message), errorDetail: error.message };
+        const detail = error.message;
+        if (/nonce/i.test(detail)) {
+          const { error: oauthError } = await supabase.auth.signInWithOAuth({
+            provider: 'google',
+            options: { redirectTo: `${window.location.origin}/` },
+          });
+          if (oauthError) {
+            return { error: mapAuthError(oauthError.message), errorDetail: oauthError.message };
+          }
+          return { error: null };
+        }
+        return { error: mapAuthError(detail), errorDetail: detail };
       }
       return { error: null };
     }
