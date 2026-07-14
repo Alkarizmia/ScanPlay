@@ -28,8 +28,9 @@ export async function extractPairsFromImage(
     try {
       const ai = await analyzeSheetWithAi(file, sheetType);
       if (ai?.pairs.length) {
+        const sourceHint = ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n');
         const pairs = coercePlayablePairs(
-          reconcileWordListPairs(mapAiPairsToWordPairs(ai.pairs)),
+          reconcileWordListPairs(mapAiPairsToWordPairs(ai.pairs), sourceHint),
         );
         if (canOpenGamePath(pairs)) {
           return { pairs, source: 'ai' };

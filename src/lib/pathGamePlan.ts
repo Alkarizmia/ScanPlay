@@ -2,8 +2,9 @@ import type { GameMode, StepProgressMap, WordPair } from '../types';
 import { isTechnicalResult } from './stepProgress';
 import {
   coercePlayablePairs,
-  hasEnoughQuizPairsRelaxed,
   hasEnoughMatchPairs,
+  hasEnoughQuizPairsRelaxed,
+  hasEnoughTrueFalsePairs,
 } from './vocabulary';
 import { canSpeak } from './speech';
 import { isOralAllowedForSheet } from './pathSheetType';
@@ -40,7 +41,8 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
     }
     if (mode === 'speak') return false;
     if (mode === 'flashcards' || mode === 'type') return playable.length >= 1;
-    if (mode === 'quiz' || mode === 'truefalse' || mode === 'cloze') return hasEnoughQuizPairsRelaxed(playable);
+    if (mode === 'quiz' || mode === 'cloze') return hasEnoughQuizPairsRelaxed(playable);
+    if (mode === 'truefalse') return hasEnoughTrueFalsePairs(playable);
     if (mode === 'match') return hasEnoughMatchPairs(playable);
     return false;
   };

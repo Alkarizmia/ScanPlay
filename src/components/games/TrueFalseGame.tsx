@@ -3,7 +3,7 @@ import { playGameCorrectSound, playSound } from '../../lib/sounds';
 import { vibrateError, vibrateSuccess } from '../../lib/haptics';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { t } from '../../lib/i18n';
-import { getQuizPool, hasEnoughQuizPairsRelaxed } from '../../lib/vocabulary';
+import { getQuizPool, hasEnoughTrueFalsePairs } from '../../lib/vocabulary';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -66,7 +66,7 @@ export function TrueFalseGame({
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
-  if (!hasEnoughQuizPairsRelaxed(pairs)) {
+  if (!hasEnoughTrueFalsePairs(pairs)) {
     onNotEnoughPairs?.();
     return null;
   }

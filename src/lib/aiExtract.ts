@@ -1,3 +1,5 @@
+import { fixOcrLine } from './vocabulary';
+import { isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import type { LangCode, SheetType, WordPair } from '../types';
 
@@ -30,11 +32,16 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[]): WordPair[] {
   return pairs
     .filter((p) => p.term?.trim() && p.definition?.trim())
     .map((p) => ({
-      term: p.term.trim().slice(0, 55),
-      definition: p.definition.trim().slice(0, 120),
+      term: fixOcrLine(p.term.trim()).slice(0, 55),
+      definition: fixOcrLine(p.definition.trim()).slice(0, 120),
       termLang: normalizeLang(p.termLang),
       defLang: normalizeLang(p.defLang),
-    }));
+    }))
+    .filter((p) => !isGarbageVocabTerm(p.term) && !isGarbageVocabTerm(p.definition))
+    .filter((p) => !isSectionTitle(p.term) && !isSectionTitle(p.definition))
+    .filter((p) => !isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2)
+    .filter((p) => !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2)
+    .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase());
 }
 
 export function parseAiExtractResponse(raw: unknown): AiExtractResponse | null {

@@ -4,8 +4,10 @@ import {
   parseColumnText,
   runColumnParserSelfTest,
   reconcileWordListPairs,
+  splitLineIntoColumns,
 } from './columnParser';
 import { parseContent } from './parser';
+import { fixOcrLine } from './vocabulary';
 
 const FR_IN_EN_FIXTURE = `
 Quelques mots français dans la langue anglaise
@@ -14,6 +16,13 @@ Apostrophe\tMetro
 Avant-garde\tOccasion
 Bon voyage\tPremiere
 Champagne\tRestaurant
+`.trim();
+
+const NL_FR_SHEET = `
+Le Règne animal – Woordenschat NL – FR
+de vader\tle père
+de zoon\tle fils
+de moeder\tla mère
 `.trim();
 
 describe('columnParser', () => {
@@ -39,6 +48,17 @@ describe('columnParser', () => {
     expect(pairs[0]?.defLang).toBe('fr');
   });
 
+  it('parses arrow-separated rows and skips chapter titles', () => {
+    const cols = splitLineIntoColumns('en -> et');
+    expect(cols).toEqual(['en', 'et']);
+
+    const pairs = parseColumnText(NL_FR_SHEET);
+    const terms = pairs.map((p) => p.term.toLowerCase());
+    expect(terms).toContain('de vader');
+    expect(terms).toContain('de zoon');
+    expect(pairs.some((p) => /règne animal/i.test(p.term))).toBe(false);
+  });
+
   it('flattens French-in-English word list with teachable glosses', () => {
     const pairs = parseColumnText(FR_IN_EN_FIXTURE);
     const terms = pairs.map((p) => p.term.toLowerCase());
@@ -61,6 +81,12 @@ describe('columnParser', () => {
     const ap = fixed.find((p) => p.term.toLowerCase() === 'apéritif');
     expect(ap?.definition).not.toBe('Machine');
     expect(ap?.definition.length).toBeGreaterThan(10);
+  });
+
+  it('normalizes fused OCR tokens before parsing', () => {
+    const pairs = parseColumnText(`${fixOcrLine('dezoon')}\t${fixOcrLine('lefils')}`);
+    expect(pairs[0]?.term).toBe('de zoon');
+    expect(pairs[0]?.definition).toBe('le fils');
   });
 });
 

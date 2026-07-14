@@ -94,6 +94,7 @@ import {
   coercePlayablePairs,
   getPlayPairs,
   hasEnoughQuizPairsRelaxed,
+  hasEnoughTrueFalsePairs,
 } from './lib/vocabulary';
 import { getXpBoostMultiplier } from './lib/wallet';
 import {
@@ -878,7 +879,11 @@ export default function App() {
       showToast(t('stepNeedMoreWords', locale));
       return;
     }
-    if ((resolved === 'truefalse' || resolved === 'cloze') && !hasEnoughQuizPairsRelaxed(play)) {
+    if (resolved === 'cloze' && !hasEnoughQuizPairsRelaxed(play)) {
+      showToast(t('stepNeedMoreWords', locale));
+      return;
+    }
+    if (resolved === 'truefalse' && !hasEnoughTrueFalsePairs(play)) {
       showToast(t('stepNeedMoreWords', locale));
       return;
     }

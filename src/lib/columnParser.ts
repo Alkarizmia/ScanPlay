@@ -3,8 +3,10 @@ import { fixOcrLine, isInstructionText } from './vocabulary';
 import { lookupLoanwordGloss } from './loanwordGlosses';
 import {
   enrichTeachablePairs,
+  isExampleSentence,
   isGarbageVocabTerm,
   isPlayableDefinition,
+  isSectionTitle,
   looksLikeStandaloneVocabWord,
 } from './pairQuality';
 
@@ -13,12 +15,18 @@ const TITLE_PATTERNS = [
   /\b(un peu de|liste de|list of)\b/i,
   /^(nom|name|mot|word|terme|term|français|francais|english|anglais|néerlandais|dutch)\s*[:.]?\s*$/i,
   /^(scanplay|date|classe|class|page\s+\d+)\b/i,
+  /^(le|la|les|het|de)\s+r[eè]gne\b/i,
+  /^les\s+conjonctions\b/i,
+  /^personnages\s+en\s+relaties\b/i,
+  /^verandering\s*&\s*verschil\b/i,
+  /^gevoelens\s*&\s*reacties\b/i,
 ];
 
 export function isTitleLine(line: string): boolean {
   const cleaned = fixOcrLine(line.trim());
   if (!cleaned || cleaned.length < 2) return true;
   if (TITLE_PATTERNS.some((p) => p.test(cleaned))) return true;
+  if (isSectionTitle(cleaned)) return true;
   if (isInstructionText(cleaned)) return true;
   if (/^vocabulaire\b/i.test(cleaned) && cleaned.split(/\s+/).length <= 4) return true;
   return false;
@@ -68,6 +76,16 @@ export function splitLineIntoColumns(line: string): [string, string] | null {
     return [wideGap[1].trim(), wideGap[2].trim()];
   }
 
+  const arrow = cleaned.match(/^(.+?)\s*(?:->|→|=>)\s*(.+)$/);
+  if (arrow) {
+    return [arrow[1].trim(), arrow[2].trim()];
+  }
+
+  const emDash = cleaned.match(/^(.+?)\s*[–—]\s*(.+)$/);
+  if (emDash && !/\t/.test(cleaned) && emDash[1].trim().split(/\s+/).length <= 2) {
+    return [emDash[1].trim(), emDash[2].trim()];
+  }
+
   const pipeParts = cleaned.split(/\s*\|\s*/);
   if (pipeParts.length >= 2) {
     return [pipeParts[0].trim(), pipeParts.slice(1).join(' | ').trim()];
@@ -77,7 +95,8 @@ export function splitLineIntoColumns(line: string): [string, string] | null {
 }
 
 export function primarySegment(text: string): string {
-  const parts = text.split(/\s*[–—-]\s*/);
+  const beforeSlash = text.split(/\s*\/\s*/)[0]?.trim() ?? text.trim();
+  const parts = beforeSlash.split(/\s*[–—-]\s*/);
   return parts[0]?.trim() ?? text.trim();
 }
 
@@ -245,12 +264,18 @@ function assignColumnPair(left: string, right: string): { term: string; definiti
 export function pairFromColumnCells(left: string, right: string): WordPair[] {
   if (!left.trim() || !right.trim()) return [];
   if (isTitleLine(left) || isTitleLine(right)) return [];
+  if (isSectionTitle(left) || isSectionTitle(right)) return [];
 
   const assigned = assignColumnPair(left, right);
   const pairs: WordPair[] = [];
 
   const termPrimary = primarySegment(assigned.term);
   const defPrimary = primarySegment(assigned.definition);
+
+  if (isGarbageVocabTerm(termPrimary) || isGarbageVocabTerm(defPrimary)) return [];
+  if (isSectionTitle(termPrimary) || isSectionTitle(defPrimary)) return [];
+  if (isExampleSentence(termPrimary) && termPrimary.split(/\s+/).length >= 4) return [];
+  if (isExampleSentence(defPrimary) && defPrimary.split(/\s+/).length >= 4) return [];
 
   if (termPrimary.length >= 2 && defPrimary.length >= 2) {
     pairs.push({
@@ -263,7 +288,7 @@ export function pairFromColumnCells(left: string, right: string): WordPair[] {
 
   const termExpr = expressionSegment(assigned.term);
   const defExpr = expressionSegment(assigned.definition);
-  if (termExpr && defExpr) {
+  if (termExpr && defExpr && !(isExampleSentence(termExpr) && termExpr.split(/\s+/).length >= 5)) {
     pairs.push({
       term: termExpr,
       definition: defExpr,

@@ -4,7 +4,9 @@ import { enrichPairsWithVisuals } from './wordVisuals';
 import {
   isGarbageVocabTerm,
   isPlayableDefinition,
+  isSectionTitle,
   isSpellingHintDefinition,
+  isTrueFalseSuitable,
 } from './pairQuality';
 
 const INSTRUCTION_PATTERNS = [
@@ -19,14 +21,18 @@ const INSTRUCTION_PATTERNS = [
   /\bliste de\b/i,
 ];
 
-/** Fix frequent OCR truncations on French negation. */
+/** Fix frequent OCR truncations and fused articles (dezoon → de zoon, lefils → le fils). */
 export function fixOcrLine(line: string): string {
-  return line
+  let s = line
     .replace(/\bcela ne r[eé]ussit pa\b/gi, 'cela ne réussit pas')
     .replace(/\b(r[eé]ussit)\s+pa(\s*[.,!?]|$)/gi, '$1 pas$2')
-    .replace(/\bne\s+pa(\s*[.,!?]|$)/gi, 'ne pas$1')
-    .replace(/\s{2,}/g, ' ')
-    .trim();
+    .replace(/\bne\s+pa(\s*[.,!?]|$)/gi, 'ne pas$1');
+
+  // Fused NL/FR articles glued to the next word (common on phone OCR).
+  s = s.replace(/\b(de|het|een|le|la|les|un|une)([a-zàâäéèêëïîôùûüçœæ])/gi, '$1 $2');
+  s = s.replace(/^(de|het|le|la|les|un|une)([a-zàâäéèêëïîôùûüçœæ])/i, '$1 $2');
+
+  return s.replace(/\s{2,}/g, ' ').trim();
 }
 
 export function isInstructionText(text: string): boolean {
@@ -96,6 +102,7 @@ export function isCoherentPair(pair: WordPair): boolean {
 
   if (isInstructionText(pair.term) || isInstructionText(pair.definition)) return false;
   if (isGarbageVocabTerm(pair.term) || isGarbageVocabTerm(pair.definition)) return false;
+  if (isSectionTitle(pair.term) || isSectionTitle(pair.definition)) return false;
   if (isSpellingHintDefinition(pair.definition)) return false;
   if (!isPlayableDefinition(pair.definition, pair.term)) return false;
 
@@ -375,6 +382,11 @@ export function filterQuizPool(pairs: WordPair[]): WordPair[] {
 }
 
 export function hasEnoughQuizPairsRelaxed(pairs: WordPair[]): boolean {
+  return getQuizPool(pairs).length >= MIN_QUIZ_PAIRS_RELAXED;
+}
+
+export function hasEnoughTrueFalsePairs(pairs: WordPair[]): boolean {
+  if (!isTrueFalseSuitable(pairs)) return false;
   return getQuizPool(pairs).length >= MIN_QUIZ_PAIRS_RELAXED;
 }
 

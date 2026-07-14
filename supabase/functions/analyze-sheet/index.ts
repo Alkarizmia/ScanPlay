@@ -25,7 +25,8 @@ RÈGLES ABSOLUES :
 - Langues fréquentes : nl, fr, en, es. Détecte-les ; ne traduis pas sauf si la fiche le fait déjà.
 
 TYPES DE FICHE (sheetType) :
-- "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne UNIQUEMENT si c'est une vraie traduction (langues différentes, mot ↔ traduction).
+- "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne UNIQUEMENT si c'est une vraie traduction (langues différentes, mot ↔ traduction). Exemple : "de zoon" ↔ "le fils", "de vader" ↔ "le père". Garde les espaces dans les articles (de zoon, le fils — jamais dezoon ni lefils).
+- Ignore les titres de chapitre ("Le Règne animal", "Les conjonctions de coordination") et les phrases d'exemple sous les mots (ex. "Ik eet en ik drink" → ne pas en faire une paire).
 - LISTE DE MOTS (sans traduction sur la fiche) : ex. titre "mots français dans la langue anglaise", deux colonnes de mots pour mise en page. NE PAS associer gauche+droite. Chaque mot = une paire : term = le mot exact, definition = courte définition pédagogique en français (sens concret, 4 à 12 mots). Utilise tes connaissances générales. INTERDIT : indices …suffixe, fragments de titre, répéter le mot seul.
 - "definitions" : format question/réponse ou mot — définition sur une ou deux lignes.
 - "notes" : transforme en paires mémorables : extrait clé (terme, date, concept, mot-clé) → idée courte à retenir (phrase résumée, max 120 car.).
