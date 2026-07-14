@@ -216,6 +216,8 @@ export type AuthResult = {
   error: string | null;
   errorDetail?: string;
   needsEmailConfirmation?: boolean;
+  /** True when signInWithOAuth started a full-page redirect (no session yet). */
+  redirecting?: boolean;
 };
 
 export async function signUp(email: string, password: string): Promise<AuthResult> {
@@ -268,7 +270,7 @@ export async function signInWithGoogle(): Promise<AuthResult> {
   try {
     if (googleClientId) {
       const { token, nonce } = await requestGoogleIdToken(googleClientId);
-      const { error } = await supabase.auth.signInWithIdToken({
+      const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token,
         nonce,
@@ -283,10 +285,16 @@ export async function signInWithGoogle(): Promise<AuthResult> {
           if (oauthError) {
             return { error: mapAuthError(oauthError.message), errorDetail: oauthError.message };
           }
-          return { error: null };
+          return { error: null, redirecting: true };
         }
         return { error: mapAuthError(detail), errorDetail: detail };
       }
+      if (!data.session) {
+        return { error: 'authGenericError', errorDetail: 'No session returned' };
+      }
+      setCache(data.session);
+      skipNextSignedInSync = true;
+      deferPostAuth(data.session, true);
       return { error: null };
     }
 
@@ -299,7 +307,7 @@ export async function signInWithGoogle(): Promise<AuthResult> {
     if (error) {
       return { error: mapAuthError(error.message), errorDetail: error.message };
     }
-    return { error: null };
+    return { error: null, redirecting: true };
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
     if (msg === 'google_signin_cancelled') {

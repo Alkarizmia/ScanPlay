@@ -1206,10 +1206,16 @@ export default function App() {
 
   const showBottomNav = device.kind === 'desktop' || flow === null;
 
-  const handleAuthSuccess = () => {
+  const handleAuthSuccess = useCallback(() => {
     closeFlow();
     refresh();
-  };
+  }, [refresh]);
+
+  useEffect(() => {
+    if (flow === 'auth' && isLoggedIn()) {
+      handleAuthSuccess();
+    }
+  }, [flow, refreshKey, handleAuthSuccess]);
 
   const openSharedPathFromRoom = useCallback(
     (room: MultiplayerRoom) => {

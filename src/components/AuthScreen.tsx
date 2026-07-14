@@ -139,8 +139,13 @@ export function AuthScreen({ locale, onSuccess, onBack, variant = 'default', gue
       if (result.error) {
         setErrorKey(result.error as TranslationKey);
         setErrorDetail(result.errorDetail ?? null);
+        return;
       }
-      /* redirecting to Google — onSuccess runs after callback */
+      if (result.redirecting) {
+        /* OAuth redirect — page reloads; onSuccess runs via initAuth */
+        return;
+      }
+      onSuccess();
     } catch (e) {
       setErrorKey('authGenericError');
       setErrorDetail(e instanceof Error ? e.message : String(e));
