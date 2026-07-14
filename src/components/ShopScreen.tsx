@@ -244,6 +244,8 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
               <p className="shop-chest-reward">
                 {chestReward.type === 'coins' ? (
                   <>🪙 +{chestReward.amount}</>
+                ) : chestReward.type === 'gems' ? (
+                  <>💎 +{chestReward.amount}</>
                 ) : chestReward.type === 'achievement' ? (
                   <>
                     {chestReward.achievement.icon} {t(chestReward.achievement.nameKey, locale)}

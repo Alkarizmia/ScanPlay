@@ -3,7 +3,7 @@ import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { playSound } from '../lib/sounds';
 import { hapticLevelUp } from '../lib/haptics';
 import { t } from '../lib/i18n';
-import { PixCompanion } from './PixCompanion';
+import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 import type { AchievementDef } from '../lib/achievements';
 import type { LessonSession, Locale } from '../types';
 
@@ -76,12 +76,12 @@ export function LessonCompleteScreen({
   }, [xpBefore, xpAfter, totalXp, reducedMotion]);
 
   const { progress: xpProgress } = xpForNextLevel(displayXp);
-  const mood = avgPct >= 85 ? 'excited' : avgPct >= 55 ? 'happy' : 'neutral';
+  const expression = leveledUp ? 'levelup' : avgPct >= 85 ? 'celebrating' : avgPct >= 55 ? 'proud' : 'encouraging';
 
   return (
     <div className="screen lesson-complete-screen">
       <header className="lesson-complete-hero">
-        <PixCompanion mood={mood} size={120} animate celebrate />
+        <ScanPlayMascot expression={expression} size={120} idle celebrate />
         <h1 className="lesson-complete-title">{t('lessonCompleteTitle', locale)}</h1>
       </header>
 

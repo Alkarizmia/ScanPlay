@@ -6,6 +6,7 @@ import {
   type ChestRarity,
 } from '../lib/chestRarity';
 import { vibrate } from '../lib/haptics';
+import { mascotReactChest } from '../lib/mascot/reactions';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -62,6 +63,7 @@ export function DailyChestOverlay({ open, locale, onClose, onOpened }: DailyChes
     setReward(result.reward);
     setRevealed(true);
     onOpened(result.reward, result.rarity);
+    mascotReactChest();
     playSound(finalRarity === 'legendary' ? 'levelUp' : 'goalComplete');
     vibrate([20, 60, 20, 60, 30]);
   };
@@ -145,9 +147,9 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   if (reward.type === 'coins') {
     return (
       <span className="daily-chest-reward-coins">
-        <span className="daily-chest-coin-icon" aria-hidden="true">
-          🪙
-        </span>
+      <span className="daily-chest-coin-icon icon-glyph icon-glyph--xl" aria-hidden="true">
+        🪙
+      </span>
         <span className="daily-chest-coin-amount">+{reward.amount}</span>
       </span>
     );
@@ -155,22 +157,30 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   if (reward.type === 'xp') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-icon">✨</span>
+        <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">✨</span>
         <span>+{reward.amount} XP</span>
+      </span>
+    );
+  }
+  if (reward.type === 'gems') {
+    return (
+      <span className="daily-chest-reward-other">
+        <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">💎</span>
+        <span>+{reward.amount} {t('dashGems', locale)}</span>
       </span>
     );
   }
   if (reward.type === 'xp_potion') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-icon">⚗️</span>
+        <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">⚗️</span>
         <span>{t('chestRewardPotion', locale)}</span>
       </span>
     );
   }
   return (
     <span className="daily-chest-reward-other">
-      <span className="daily-chest-reward-icon">{reward.achievement.icon}</span>
+      <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">{reward.achievement.icon}</span>
       <span>{t(reward.achievement.nameKey, locale)}</span>
     </span>
   );

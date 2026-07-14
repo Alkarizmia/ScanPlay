@@ -133,7 +133,8 @@ export function ResultsScreen({
                   ? t('pathCompleteMsg', locale)
                   : t(getMessageKey(pct ?? 0, examFailed), locale)
           }
-          mood={examFailed ? 'sad' : technical || (pct != null && pct >= 70) || pathComplete ? 'excited' : 'happy'}
+          mood={examFailed ? 'encouraging' : technical || (pct != null && pct >= 70) || pathComplete ? 'celebrating' : 'proud'}
+          celebrate={!examFailed && ((pct != null && pct >= 70) || pathComplete)}
         />
 
         <div className="results-card">

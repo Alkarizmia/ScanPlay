@@ -1,0 +1,113 @@
+import type { MascotExpression } from './types';
+
+/** Official mascot asset library — one pose per expression (PNG/WebP in /public/mascot/emotions/). */
+export const MASCOT_EXPRESSIONS: MascotExpression[] = [
+  'happy',
+  'excited',
+  'proud',
+  'surprised',
+  'thinking',
+  'confused',
+  'content',
+  'determined',
+  'tired',
+  'sad',
+  'frustrated',
+  'laughing',
+  'encouraging',
+  'wink',
+  'shocked',
+  'celebrating',
+  'satisfied',
+  'motivated',
+  'sleepy',
+  'applauding',
+  'running',
+  'jumping',
+  'highfive',
+  'neutral',
+  'curious',
+  'focused',
+  'wrong',
+  'combo',
+  'levelup',
+  'chest',
+  'badge',
+  'welcome',
+  'scanning',
+  'streak',
+  'welcomed_back',
+  'reading',
+];
+
+/** Maps expression → public asset filename (without path). */
+export const MASCOT_ASSET_FILE: Partial<Record<MascotExpression, string>> = {
+  happy: 'happy.png',
+  excited: 'excited.png',
+  proud: 'proud.png',
+  surprised: 'surprised.png',
+  thinking: 'thinking.png',
+  confused: 'thinking.png',
+  encouraging: 'encouraging.png',
+  wink: 'wink.png',
+  celebrating: 'jumping.png',
+  satisfied: 'proud.png',
+  motivated: 'excited.png',
+  content: 'happy.png',
+  focused: 'reading-sheet.png',
+  curious: 'thinking.png',
+  shocked: 'surprised.png',
+  laughing: 'excited.png',
+  neutral: 'happy.png',
+  highfive: 'welcome.png',
+  determined: 'proud.png',
+  frustrated: 'encouraging.png',
+  sad: 'encouraging.png',
+  tired: 'sleepy.png',
+  applauding: 'applauding.png',
+  jumping: 'jumping.png',
+  levelup: 'levelup.png',
+  streak: 'streak-torch.png',
+  chest: 'chest-open.png',
+  badge: 'badge-show.png',
+  welcome: 'welcome.png',
+  scanning: 'scanning-point.png',
+  reading: 'reading-sheet.png',
+  running: 'running.png',
+  sleepy: 'sleepy.png',
+  combo: 'combo.png',
+  wrong: 'encouraging.png',
+  welcomed_back: 'welcome-back.png',
+};
+
+const MASCOT_ASSET_VERSION = '4';
+
+export function getMascotAssetUrl(expression: MascotExpression): string | null {
+  const file = MASCOT_ASSET_FILE[expression];
+  if (!file) return null;
+  return `/mascot/emotions/${file}?v=${MASCOT_ASSET_VERSION}`;
+}
+
+/** Expressions queued for AI image generation (batch workflow). */
+export const MASCOT_GENERATION_QUEUE: { id: MascotExpression; label: string }[] = [
+  { id: 'happy', label: 'Heureux / idle accueil' },
+  { id: 'excited', label: 'Excité / confettis' },
+  { id: 'proud', label: 'Fier / mains sur les hanches' },
+  { id: 'surprised', label: 'Surpris' },
+  { id: 'thinking', label: 'Réfléchi / curieux' },
+  { id: 'encouraging', label: 'Encourageant (mauvaise réponse)' },
+  { id: 'wink', label: 'Clin d\'œil' },
+  { id: 'laughing', label: 'Mort de rire' },
+  { id: 'applauding', label: 'Applaudit' },
+  { id: 'jumping', label: 'Saute de joie' },
+  { id: 'levelup', label: 'Niveau gagné / victoire' },
+  { id: 'streak', label: 'Tient une flamme (série)' },
+  { id: 'badge', label: 'Montre un badge' },
+  { id: 'chest', label: 'Coffre ouvert' },
+  { id: 'scanning', label: 'Pointe vers scanner / caméra' },
+  { id: 'reading', label: 'Lit une fiche' },
+  { id: 'running', label: 'Court' },
+  { id: 'sleepy', label: 'Endormi' },
+  { id: 'welcome', label: 'Accueil utilisateur' },
+  { id: 'welcomed_back', label: 'Heureux de revoir' },
+];

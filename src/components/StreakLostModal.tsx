@@ -17,7 +17,7 @@ export function StreakLostModal({ locale, onClose, onOpenShop }: StreakLostModal
   return (
     <div className="modal-overlay streak-lost-modal" role="dialog" aria-modal="true">
       <div className="modal-card">
-        <Mascot message={t('streakLostMsg', locale)} mood="sad" size={64} />
+        <Mascot message={t('streakLostMsg', locale)} mood="encouraging" size={64} />
         <span className="streak-lost-flame" aria-hidden="true">
           💨
         </span>

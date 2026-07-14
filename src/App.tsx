@@ -38,6 +38,17 @@ import { StreakLostModal } from './components/StreakLostModal';
 import { ShopScreen } from './components/ShopScreen';
 import { Toast } from './components/Toast';
 import { UpgradeModal } from './components/UpgradeModal';
+import { MascotCorner } from './components/mascot/MascotCorner';
+import { MascotFirstLaunch } from './components/mascot/MascotFirstLaunch';
+import { hasSeenMascotIntro } from './lib/mascot/firstLaunch';
+import { shouldWelcomeBack } from './lib/mascot/firstLaunch';
+import {
+  mascotReactBadge,
+  mascotReactLevelUp,
+  mascotReactScanComplete,
+  mascotReactStreak,
+  mascotReactWelcomeBack,
+} from './lib/mascot/reactions';
 import { FlashcardsGame } from './components/games/FlashcardsGame';
 import { MatchGame } from './components/games/MatchGame';
 import { QuizGame } from './components/games/QuizGame';
@@ -212,6 +223,8 @@ export default function App() {
   const unlockQueueRef = useRef<AchievementDef[]>([]);
   const [lessonSession, setLessonSession] = useState<LessonSession | null>(null);
   const [navMoreOpen, setNavMoreOpen] = useState(false);
+  const [showMascotIntro, setShowMascotIntro] = useState(() => !hasSeenMascotIntro());
+  const welcomeBackChecked = useRef(false);
   const sessionStart = useRef(0);
   const importErrorTimer = useRef<number | null>(null);
   const device = useDeviceProfile();
@@ -270,6 +283,7 @@ export default function App() {
     }
     playSound('achievementUnlock');
     hapticAchievement();
+    mascotReactBadge();
     setResultNewUnlocks(newUnlocks);
     unlockQueueRef.current = newUnlocks;
     setCurrentUnlock(newUnlocks[0]);
@@ -289,6 +303,12 @@ export default function App() {
   }, []);
 
   useStreakDayWatcher(handleStreakDayChange);
+
+  useEffect(() => {
+    if (flow !== null || tab !== 'home' || !isLoggedIn() || welcomeBackChecked.current) return;
+    welcomeBackChecked.current = true;
+    if (shouldWelcomeBack()) mascotReactWelcomeBack();
+  }, [flow, tab]);
 
   useEffect(() => {
     warmupOcr();
@@ -588,6 +608,7 @@ export default function App() {
       goModes(parsed, thumbnail, false, usedSample);
       playSound('scanComplete');
       playSound('ocrComplete');
+      mascotReactScanComplete();
     },
     [goModes, locale, failImport],
   );
@@ -899,6 +920,7 @@ export default function App() {
       refresh();
       playSound('streakDaily');
       playStreakSound(newStreak);
+      mascotReactStreak(newStreak);
       if ([3, 7, 30].includes(newStreak)) {
         notifyStreakMilestone(newStreak);
       }
@@ -991,6 +1013,7 @@ export default function App() {
       playSound('levelUp');
       window.setTimeout(() => playSound('powerUp'), 120);
       hapticLevelUp();
+      mascotReactLevelUp();
     } else if (!goldReplay && !technical && xpEarned > 0) playSound('xpGain');
     if (!goldReplay && !technical && streakUpdated && [3, 7, 30].includes(newStreak)) {
       playStreakSound(newStreak);
@@ -1416,6 +1439,10 @@ export default function App() {
       />
       <Toast message={toast} />
       <AdConsentBanner locale={locale} />
+      <MascotCorner locale={locale} enabled={flow === null || flow === 'playing' || flow === 'lesson'} />
+      {showMascotIntro && (
+        <MascotFirstLaunch locale={locale} onDone={() => setShowMascotIntro(false)} />
+      )}
 
       {showBottomNav && (
         <>
@@ -1498,6 +1525,7 @@ export default function App() {
           onSocialChange={handleSocialChange}
           onToast={showToast}
           onAuth={() => setFlow('auth')}
+          onRefresh={refresh}
         />
       )}
       {flow === null && tab === 'history' && (

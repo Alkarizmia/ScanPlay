@@ -59,7 +59,7 @@ export function UpgradeModal({ reason, locale, onClose, onUpgrade }: UpgradeModa
   return (
     <div className="modal-overlay" role="dialog" aria-modal="true">
       <div className="modal-card">
-        <Mascot message={t(messageKey, locale)} mood="sad" size={64} />
+        <Mascot message={t(messageKey, locale)} mood="encouraging" size={64} />
         <h3 className="modal-title">{t('upgradeTitle', locale)}</h3>
         <button type="button" className="btn-primary btn-lg" onClick={onUpgrade}>
           {t(ctaKey, locale)}

@@ -5,11 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite --host --open",
-    "build": "node scripts/generate-icons.mjs && tsc -b && vite build",
+    "build": "node scripts/generate-icons.mjs && node scripts/mascot-remove-bg.mjs && tsc -b && vite build",
     "test": "vitest run",
     "lint": "eslint .",
     "preview": "vite preview",
-    "preview:mobile": "vite preview --host --open"
+    "preview:mobile": "vite preview --host --open",
+    "mascot:transparent": "node scripts/mascot-remove-bg.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.106.2",

@@ -1,20 +1,28 @@
-import { Logo } from './Logo';
+import { MascotCoach } from './mascot/MascotCoach';
+import type { MascotExpression } from '../lib/mascot/types';
 
-export type MascotMood = 'happy' | 'excited' | 'sad' | 'neutral' | 'thinking' | 'running';
+export type { MascotExpression };
+export type MascotMood = MascotExpression;
 
 interface MascotProps {
   message: string;
-  mood?: MascotMood;
+  mood?: MascotExpression | string;
   size?: number;
+  celebrate?: boolean;
 }
 
-export function Mascot({ message, mood = 'happy', size = 56 }: MascotProps) {
+export function Mascot({ message, mood = 'happy', size = 56, celebrate = false }: MascotProps) {
   return (
-    <div className={`mascot mascot--${mood}`}>
-      <div className="mascot-icon">
-        <Logo size={size} />
-      </div>
-      <p className="mascot-message">{message}</p>
-    </div>
+    <MascotCoach
+      message={message}
+      expression={mood}
+      size={size}
+      celebrate={celebrate}
+      placement="card"
+      className="mascot"
+    />
   );
 }
+
+export { ScanPlayMascot as PixCompanion } from './mascot/ScanPlayMascot';
+export { ScanPlayMascot } from './mascot/ScanPlayMascot';

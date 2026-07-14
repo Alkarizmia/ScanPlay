@@ -3,7 +3,8 @@ import { useRef, useState } from 'react';
 import { usePlan } from '../hooks/usePlan';
 import { BrandDecor } from './BrandDecor';
 import { DeviceBadge } from './DeviceBadge';
-import { GamificationHUD, HudLevelStat } from './GamificationHUD';
+import { HomeDashboard } from './HomeDashboard';
+import { HudStreakStat } from './GamificationHUD';
 import { LogoWordmark } from './Logo';
 import { NotificationCenter } from './NotificationCenter';
 import { PlanBadge } from './PlanBadge';
@@ -15,7 +16,6 @@ import { usePwaInstall } from '../hooks/usePwaInstall';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
-import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { getHistory } from '../lib/history';
 import { getDateLocale, t } from '../lib/i18n';
 import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining } from '../lib/planLimits';
@@ -33,6 +33,7 @@ interface HomeScreenProps {
   onSocialChange?: () => void;
   onToast?: (message: string) => void;
   onAuth?: () => void;
+  onRefresh?: () => void;
 }
 
 export function HomeScreen({
@@ -46,6 +47,7 @@ export function HomeScreen({
   onSocialChange,
   onToast,
   onAuth,
+  onRefresh,
 }: HomeScreenProps) {
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
@@ -56,12 +58,10 @@ export function HomeScreen({
   const { canNativeInstall, canShowInstall, isInstalled, install, platform, isInAppBrowser } =
     usePwaInstall();
   const loggedIn = isLoggedIn();
-  const gamification = loggedIn ? getGamification() : { streak: 0, xp: 0 };
-  const { streak, xp } = gamification;
-  const level = getLevel(xp);
-  const { progress } = xpForNextLevel(xp);
   const recentDecks = loggedIn ? getHistory().slice(0, 6) : [];
   const recentUnlocks = loggedIn ? getRecentUnlocks(4) : [];
+  const welcomeMessage =
+    recentDecks.length > 0 ? t('mascotWelcomeBackShort', locale) : t('mascotWelcomeReady', locale);
 
   const handleFiles = (list: FileList | null) => {
     if (!list) return;
@@ -105,7 +105,15 @@ export function HomeScreen({
         </div>
         <div className="top-bar-actions">
           {loggedIn && (
-            <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
+            <>
+              <HudStreakStat
+                locale={locale}
+                refreshKey={refreshKey}
+                streakPulseKey={streakPulseKey}
+                className="top-bar-streak"
+              />
+              <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
+            </>
           )}
           {!loggedIn && canGuestScan() && isDesktop && (
             <span className="top-bar-guest-pill" title={t('guestScanBannerTitle', locale)}>
@@ -128,33 +136,12 @@ export function HomeScreen({
         )}
 
         {loggedIn && (
-          <section className="home-progress-card premium-card" aria-label={t('homeProgressLabel', locale)}>
-            <div className="home-progress-top">
-              <div className="home-progress-stats">
-                <div
-                  className={`home-stat-pill home-stat-pill--streak${streak > 0 ? ' active' : ''}`}
-                  title={t('streak', locale)}
-                >
-                  <span aria-hidden="true">🔥</span>
-                  <span>{streak}</span>
-                </div>
-                <div className="home-stat-pill home-stat-pill--level" title={t('level', locale)}>
-                  <span aria-hidden="true">⚡</span>
-                  <span>Lv.{level}</span>
-                </div>
-              </div>
-              <HudLevelStat locale={locale} refreshKey={refreshKey} />
-            </div>
-            <div className="hud-xp-bar-wrap" aria-label={t('xp', locale)}>
-              <div className="hud-xp-bar-track">
-                <div className="hud-xp-bar-fill" style={{ width: `${progress}%` }} />
-              </div>
-              <span className="hud-xp-bar-label">
-                {Math.round(progress)}% · {t('level', locale)} {level}
-              </span>
-            </div>
-            {streak === 0 && <p className="home-streak-cta">{t('homeStreakCta', locale)}</p>}
-          </section>
+          <HomeDashboard
+            locale={locale}
+            refreshKey={refreshKey}
+            welcomeMessage={welcomeMessage}
+            onRefresh={onRefresh}
+          />
         )}
 
         <section
@@ -302,10 +289,6 @@ export function HomeScreen({
               })}
             </div>
           </section>
-        )}
-
-        {loggedIn && (
-          <GamificationHUD locale={locale} refreshKey={refreshKey} streakPulseKey={streakPulseKey} />
         )}
 
         {showInstallButton && (

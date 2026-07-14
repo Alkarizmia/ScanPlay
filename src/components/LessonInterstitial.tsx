@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { playSound } from '../lib/sounds';
 import { vibrateSuccess } from '../lib/haptics';
 import { t } from '../lib/i18n';
-import { PixCompanion } from './PixCompanion';
+import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 import type { Locale, SessionResult } from '../types';
 
 interface LessonInterstitialProps {
@@ -27,7 +27,6 @@ export function LessonInterstitial({
   onContinue,
 }: LessonInterstitialProps) {
   const pct = result.total > 0 ? Math.round((result.score / result.total) * 100) : 0;
-  const mood = pct >= 70 ? 'excited' : pct >= 40 ? 'happy' : 'neutral';
 
   useEffect(() => {
     if (pct >= 90) playSound('coinPop');
@@ -53,7 +52,11 @@ export function LessonInterstitial({
       </div>
 
       <div className="lesson-interstitial-body">
-        <PixCompanion mood={mood} size={88} animate />
+        <ScanPlayMascot
+          expression={pct >= 70 ? 'excited' : pct >= 40 ? 'happy' : 'encouraging'}
+          size={88}
+          idle
+        />
         <p className="lesson-interstitial-title">{t(getFeedbackKey(pct), locale)}</p>
         <p className="lesson-interstitial-score">
           {result.score}/{result.total} · {pct}%

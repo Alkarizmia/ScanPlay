@@ -5,10 +5,10 @@ type Theme = 'dark' | 'light';
 const STORAGE_KEY = 'scanplay-theme';
 
 export function getInitialTheme(): Theme {
-  if (typeof window === 'undefined') return 'dark';
+  if (typeof window === 'undefined') return 'light';
   const stored = localStorage.getItem(STORAGE_KEY) as Theme | null;
   if (stored === 'light' || stored === 'dark') return stored;
-  return 'dark';
+  return 'light';
 }
 
 export function applyTheme(theme: Theme): void {

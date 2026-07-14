@@ -10,6 +10,7 @@ export const AD_REWARD_COINS = 25;
 
 export interface WalletState {
   coins: number;
+  gems: number;
   xpBoostUntil: number | null;
   lastDailyChest: string | null;
   lastAdRewardDate: string | null;
@@ -29,6 +30,7 @@ export interface WalletState {
 
 const DEFAULT: WalletState = {
   coins: STARTING_COINS,
+  gems: 0,
   xpBoostUntil: null,
   lastDailyChest: null,
   lastAdRewardDate: null,
@@ -52,6 +54,7 @@ export function loadWalletRaw(): WalletState {
     if (!data || typeof data !== 'object') return { ...DEFAULT };
     return {
       coins: Number(data.coins ?? STARTING_COINS),
+      gems: Number(data.gems ?? 0),
       xpBoostUntil: data.xpBoostUntil != null ? Number(data.xpBoostUntil) : null,
       lastDailyChest: data.lastDailyChest ?? null,
       lastAdRewardDate: data.lastAdRewardDate ?? null,
@@ -78,6 +81,17 @@ export function saveWalletRaw(state: WalletState): void {
 
 export function getCoins(): number {
   return loadWalletRaw().coins;
+}
+
+export function getGems(): number {
+  return loadWalletRaw().gems;
+}
+
+export function addGems(amount: number): void {
+  if (amount <= 0) return;
+  const w = loadWalletRaw();
+  w.gems += amount;
+  saveWalletRaw(w);
 }
 
 export function getXpBoostMultiplier(): number {

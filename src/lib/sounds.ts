@@ -537,6 +537,9 @@ export function playSound(id: SoundId): void {
   if (!canPlay(id)) return;
   void getCtx()?.resume();
   SOUND_MAP[id]?.();
+  if (id === 'wrong') {
+    void import('./mascot/reactions').then((m) => m.mascotReactWrong());
+  }
 }
 
 export function playStreakSound(streakDays: number): void {
@@ -562,6 +565,12 @@ export function playGameCorrectSound(pathStep: boolean, perfect = false): void {
     playSound('combo5');
     window.setTimeout(() => playSound('coinPop'), 100);
   } else if (correctCombo >= 3) playSound('xpCombo');
+
+  let comboLevel = 0;
+  if (correctCombo >= 5) comboLevel = 5;
+  else if (correctCombo >= 3) comboLevel = 3;
+  else if (correctCombo === 2) comboLevel = 2;
+  void import('./mascot/reactions').then((m) => m.mascotReactCorrect(comboLevel, perfect));
 }
 
 export function resetCorrectCombo(): void {

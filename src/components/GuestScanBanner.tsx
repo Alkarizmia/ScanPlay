@@ -1,4 +1,4 @@
-import { PixCompanion } from './PixCompanion';
+import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
 import { t } from '../lib/i18n';
@@ -45,7 +45,7 @@ export function GuestScanBanner({
         <div className="guest-scan-banner-glow" aria-hidden="true" />
         <div className="guest-scan-banner-inner">
           <div className="guest-scan-banner-pix" aria-hidden="true">
-            <PixCompanion mood="happy" size={pixSize} animate />
+            <ScanPlayMascot expression="welcome" size={pixSize} idle />
           </div>
           <div className="guest-scan-banner-copy">
             <span className="guest-scan-badge">{t('guestScanBadge', locale)}</span>
@@ -64,7 +64,7 @@ export function GuestScanBanner({
     <div className={bannerClass} role="status">
       <div className="guest-scan-banner-inner">
         <div className="guest-scan-banner-pix" aria-hidden="true">
-          <PixCompanion mood="sad" size={isMobile ? 72 : isCompact ? 52 : 60} />
+          <ScanPlayMascot expression="encouraging" size={isMobile ? 72 : isCompact ? 52 : 60} idle />
         </div>
         <div className="guest-scan-banner-copy">
           <p className="guest-scan-banner-title">{t('guestScanBannerUsedTitle', locale)}</p>

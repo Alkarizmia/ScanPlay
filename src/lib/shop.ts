@@ -1,12 +1,14 @@
 import {
   activateXpBoost,
   addCoins,
+  addGems,
   canBuyExtraScan,
   canClaimDailyChest,
   canWatchAdForCoins,
   EXTRA_SCAN_PRICE,
   getAdWatchesLeftToday,
   getCoins,
+  getGems,
   getRestorableStreak,
   getStreakFreezeCharges,
   getSynthesisBonusCredits,
@@ -52,7 +54,11 @@ export type ChestReward =
   | { type: 'coins'; amount: number; labelKey: TranslationKey }
   | { type: 'xp'; amount: number; labelKey: TranslationKey }
   | { type: 'xp_potion'; minutes: number; labelKey: TranslationKey }
+  | { type: 'gems'; amount: number; labelKey: TranslationKey }
   | { type: 'achievement'; achievement: AchievementDef; labelKey: TranslationKey };
+
+export const LEGENDARY_CHEST_GEMS_MIN = 8;
+export const LEGENDARY_CHEST_GEMS_MAX = 15;
 
 const CHEST_POOL: ChestReward[] = [
   { type: 'coins', amount: 15, labelKey: 'chestRewardCoins' },
@@ -137,6 +143,12 @@ export function getStreakRestoreShopPrice(): number {
 }
 
 export function rollDailyChest(rarity: ChestRarity = 'common'): ChestReward {
+  if (rarity === 'legendary') {
+    const span = LEGENDARY_CHEST_GEMS_MAX - LEGENDARY_CHEST_GEMS_MIN + 1;
+    const amount = LEGENDARY_CHEST_GEMS_MIN + Math.floor(Math.random() * span);
+    return { type: 'gems', amount, labelKey: 'chestRewardGems' };
+  }
+
   if (Math.random() < 0.14) {
     return rollAchievementChestReward();
   }
@@ -160,6 +172,8 @@ export function claimDailyChest(
 
   if (reward.type === 'coins') {
     addCoins(reward.amount);
+  } else if (reward.type === 'gems') {
+    addGems(reward.amount);
   } else if (reward.type === 'xp') {
     addBonusXp(reward.amount);
   } else if (reward.type === 'xp_potion') {
@@ -185,6 +199,7 @@ export function watchAdForCoins(): ShopPurchaseResult {
 
 export {
   getCoins,
+  getGems,
   getRestorableStreak,
   canClaimDailyChest,
   canWatchAdForCoins,

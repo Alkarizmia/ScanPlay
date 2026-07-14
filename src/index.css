@@ -323,7 +323,7 @@ body {
   color: var(--text-muted);
 }
 
-/* Scanning — adventure loader with Pix */
+/* Scanning — quest loader with mascot */
 .scanning-screen {
   align-items: center;
   justify-content: center;
@@ -340,82 +340,92 @@ body {
   z-index: 1;
 }
 .scanning-content-adventure {
-  max-width: 340px;
+  max-width: 360px;
 }
-.scanning-pix-hero {
+.scanning-adventure-stage {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 0;
+  margin-bottom: 24px;
+  overflow: visible;
 }
-.scanning-pix-bubble {
+.scanning-speech-bubble {
   position: relative;
-  background: #fff;
-  border: 3px solid #22c55e;
-  border-radius: 20px;
-  padding: 12px 16px;
-  max-width: 280px;
-  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.18);
-  animation: pix-bubble-pop 0.45s ease-out;
+  width: min(100%, 300px);
+  margin: 0 auto 18px;
+  padding: 14px 18px;
+  border-radius: var(--radius-xl, 20px);
+  background: var(--bg-card);
+  border: 2px solid color-mix(in srgb, var(--accent) 55%, var(--surface-border));
+  box-shadow:
+    0 10px 32px color-mix(in srgb, var(--accent) 18%, transparent),
+    0 0 0 1px color-mix(in srgb, var(--accent) 8%, transparent);
+  animation: scanning-bubble-in 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
-.scanning-pix-bubble::before {
+.scanning-speech-bubble::after {
   content: '';
   position: absolute;
-  top: -10px;
   left: 50%;
+  bottom: -9px;
   transform: translateX(-50%);
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-bottom: 10px solid #22c55e;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 9px solid var(--bg-card);
+  filter: drop-shadow(0 2px 0 color-mix(in srgb, var(--accent) 35%, transparent));
 }
-.scanning-pix-bubble::after {
-  content: '';
-  position: absolute;
-  top: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 8px solid #fff;
-}
-.scanning-pix-bubble-text {
+.scanning-speech-text {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 1.02rem;
   font-weight: 800;
-  color: #166534;
+  color: var(--text);
   line-height: 1.35;
-  min-height: 2.6em;
+  min-height: 2.5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .scanning-quest-label {
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   font-size: 0.72rem;
   font-weight: 900;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #15803d;
-  opacity: 0.85;
+  color: var(--accent);
+  opacity: 0.9;
 }
 .scanning-track-wrap {
-  margin-bottom: 28px;
+  width: 100%;
+  overflow: visible;
 }
 .scanning-track-game {
   position: relative;
-  height: 42px;
-  background: #ecfdf5;
-  border: 4px solid #22c55e;
+  height: 48px;
+  background: color-mix(in srgb, var(--accent) 8%, var(--bg-card));
+  border: 3px solid color-mix(in srgb, var(--accent) 70%, var(--surface-border));
   border-radius: 99px;
   box-shadow:
-    inset 0 3px 8px rgba(0, 0, 0, 0.06),
-    0 6px 20px rgba(34, 197, 94, 0.15);
+    inset 0 2px 8px rgba(0, 0, 0, 0.06),
+    0 8px 28px color-mix(in srgb, var(--accent) 16%, transparent);
   overflow: visible;
+  transition: box-shadow 0.35s ease, border-color 0.35s ease;
+}
+.scanning-track-game--boost {
+  border-color: var(--accent);
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.06),
+    0 0 24px color-mix(in srgb, var(--accent) 35%, transparent),
+    0 8px 28px color-mix(in srgb, var(--accent) 20%, transparent);
+}
+.scanning-track-game--finish {
+  animation: scanning-track-finish 0.6s ease;
 }
 .scanning-track-fill {
   position: absolute;
   inset: 0 auto 0 0;
   height: 100%;
   min-width: 0;
-  background: linear-gradient(90deg, #fde047 0%, #facc15 55%, #fbbf24 100%);
+  background: linear-gradient(90deg, #fde047 0%, #facc15 48%, #fbbf24 100%);
   border-radius: 99px;
   transition: width 0.35s ease;
   overflow: hidden;
@@ -429,84 +439,102 @@ body {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(255, 255, 255, 0.45) 50%,
+    rgba(255, 255, 255, 0.5) 50%,
     transparent 100%
   );
-  animation: shimmer 1.2s ease-in-out infinite;
+  animation: shimmer 1.1s ease-in-out infinite;
 }
 .scanning-track-label {
   position: relative;
   z-index: 1;
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   font-weight: 900;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(120, 53, 15, 0.75);
+  color: rgba(120, 53, 15, 0.8);
   pointer-events: none;
   user-select: none;
 }
 .scanning-track-runner {
   position: absolute;
   top: 50%;
-  width: 52px;
-  height: 52px;
+  width: 58px;
+  height: 58px;
   transition: left 0.35s ease, transform 0.35s ease;
   z-index: 3;
-  filter: drop-shadow(0 3px 8px rgba(34, 197, 94, 0.35));
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--accent) 45%, transparent));
+  background: transparent;
+  overflow: visible;
 }
 .scanning-track-runner--rocket {
-  animation: pix-runner-bounce 0.55s ease-in-out infinite alternate;
+  animation: scanning-runner-bounce 0.5s ease-in-out infinite alternate;
 }
-.scanning-pix-runner-img {
-  display: block;
-  width: 52px;
-  height: 52px;
-  object-fit: contain;
+.scanning-track-runner--finish {
+  animation: scanning-runner-finish 0.55s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+.scanning-runner-glow {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 70%);
+  animation: scanning-glow-pulse 0.8s ease-in-out infinite alternate;
   pointer-events: none;
-  user-select: none;
 }
 .scanning-rocket-flame {
   position: absolute;
-  right: calc(100% - 6px);
+  right: calc(100% - 4px);
   top: 50%;
-  width: 18px;
+  width: 20px;
   height: 10px;
   transform: translateY(-50%);
   border-radius: 99px 0 0 99px;
   background: linear-gradient(90deg, #fb923c, #fbbf24, transparent);
-  opacity: 0.9;
-  animation: rocket-flicker 0.25s ease-in-out infinite alternate;
+  opacity: 0.95;
+  animation: rocket-flicker 0.22s ease-in-out infinite alternate;
 }
 .scanning-rocket-flame--2 {
-  top: calc(50% + 8px);
-  width: 12px;
-  height: 6px;
-  opacity: 0.65;
-  animation-delay: 0.08s;
+  top: calc(50% + 10px);
+  width: 14px;
+  height: 7px;
+  opacity: 0.7;
+  animation-delay: 0.07s;
 }
 .scanning-checkpoint {
-  margin: 12px 0 0;
-  font-size: 0.88rem;
+  margin: 14px 0 0;
+  font-size: 0.9rem;
   font-weight: 800;
   color: var(--text-muted);
+  transition: color 0.3s ease;
 }
-@keyframes pix-bubble-pop {
+.scanning-checkpoint--boost {
+  color: var(--accent);
+}
+@keyframes scanning-bubble-in {
   from {
     opacity: 0;
-    transform: translateY(8px) scale(0.96);
+    transform: translateY(10px) scale(0.96);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
 }
-@keyframes pix-runner-bounce {
-  from {
-    transform: translate(-50%, -54%);
-  }
-  to {
-    transform: translate(-50%, -46%);
-  }
+@keyframes scanning-runner-bounce {
+  from { transform: translate(-50%, -50%) translateY(0); }
+  to { transform: translate(-50%, -50%) translateY(-5px); }
+}
+@keyframes scanning-runner-finish {
+  0% { transform: translate(-100%, -50%) scale(1); }
+  45% { transform: translate(-100%, -50%) scale(1.12) translateY(-8px); }
+  100% { transform: translate(-100%, -50%) scale(1); }
+}
+@keyframes scanning-track-finish {
+  0%, 100% { box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 24px color-mix(in srgb, var(--accent) 35%, transparent); }
+  50% { box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.06), 0 0 36px color-mix(in srgb, var(--accent) 55%, transparent); }
+}
+@keyframes scanning-glow-pulse {
+  from { opacity: 0.5; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1.05); }
 }
 @keyframes rocket-flicker {
   from {
@@ -658,8 +686,11 @@ body {
   .scanning-orb-b,
   .scanning-orb-c,
   .scanning-track-runner--rocket,
+  .scanning-track-runner--finish,
   .scanning-rocket-flame,
-  .scanning-pix-bubble {
+  .scanning-runner-glow,
+  .scanning-speech-bubble,
+  .scanning-track-game--finish {
     animation: none;
   }
   .progress-runner,
@@ -2162,6 +2193,12 @@ body {
 }
 .guest-scan-banner-pix {
   flex-shrink: 0;
+  background: transparent;
+  overflow: visible;
+}
+
+.guest-scan-banner-pix .scanplay-mascot {
+  background: transparent;
 }
 .guest-scan-banner-copy {
   flex: 1;
@@ -4368,7 +4405,14 @@ body {
   min-height: 32px;
 }
 .hud-duo-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: visible;
   font-size: 1.35rem;
+  min-width: 1.35em;
+  min-height: 1.35em;
   line-height: 1;
 }
 .hud-duo-val {
@@ -7043,8 +7087,14 @@ body {
     0 20px 40px rgba(0, 0, 0, 0.3);
 }
 .daily-chest-gift-emoji {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 4.5rem;
+  min-width: 1.1em;
+  min-height: 1.1em;
   line-height: 1;
+  overflow: visible;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2));
   transition: opacity 0.25s ease, transform 0.35s ease;
 }
@@ -7069,8 +7119,14 @@ body {
   gap: 4px;
 }
 .daily-chest-coin-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 3rem;
+  min-width: 1.15em;
+  min-height: 1.15em;
   line-height: 1;
+  overflow: visible;
   animation: daily-chest-coin-bounce 0.6s ease 0.2s both;
 }
 .daily-chest-coin-amount {
@@ -7091,8 +7147,14 @@ body {
   line-height: 1.25;
 }
 .daily-chest-reward-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 2.5rem;
+  min-width: 1.15em;
+  min-height: 1.15em;
   line-height: 1;
+  overflow: visible;
 }
 .daily-chest-opened-msg {
   margin: 0;

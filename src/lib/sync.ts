@@ -132,6 +132,7 @@ function mergeWalletFromCloud(cloud: Record<string, unknown>): void {
   const merged = {
     ...local,
     coins: Number(cloud.coins ?? local.coins),
+    gems: Math.max(local.gems, Number(cloud.gems ?? 0)),
     xpBoostUntil: cloud.xpBoostUntil != null ? Number(cloud.xpBoostUntil) : local.xpBoostUntil,
     lastDailyChest: (cloud.lastDailyChest as string | null) ?? local.lastDailyChest,
     lastAdRewardDate: (cloud.lastAdRewardDate as string | null) ?? local.lastAdRewardDate,
