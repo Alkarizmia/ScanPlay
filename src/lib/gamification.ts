@@ -1,6 +1,6 @@
 import type { GamificationState } from '../types';
 import { isLoggedIn } from './auth';
-import { consumeStreakFreezeCharge, getStreakFreezeCharges, loadWalletRaw, recordStreakLoss } from './wallet';
+import { clearStreakRestoreOffer, consumeStreakFreezeCharge, getStreakFreezeCharges, loadWalletRaw, recordStreakLoss } from './wallet';
 
 const KEY = 'scanplay-gamification';
 
@@ -60,7 +60,15 @@ export function claimDailyStreak(): StreakClaimResult {
   }
   state.lastPlayDate = today;
   save(state);
+  if (walletHasPendingLoss()) {
+    clearStreakRestoreOffer();
+  }
   return { claimed: true, newStreak: state.streak, previousStreak };
+}
+
+function walletHasPendingLoss(): boolean {
+  const wallet = loadWalletRaw();
+  return wallet.lostStreak > 0 && wallet.lostStreakAt != null;
 }
 
 export function getGamification(): GamificationState {
@@ -70,15 +78,20 @@ export function getGamification(): GamificationState {
 /** Reset streak if user missed a day (not played today or yesterday). */
 export function validateStreak(): { streak: number; justLost: boolean } {
   const state = load();
+  const today = todayKey();
+  const wallet = loadWalletRaw();
+
+  if (state.lastPlayDate === today && state.streak > 0) {
+    return { streak: state.streak, justLost: false };
+  }
+
   if (state.streak === 0 || !state.lastPlayDate) {
     return { streak: state.streak, justLost: false };
   }
-  const today = todayKey();
   const yesterday = yesterdayKey();
   if (state.lastPlayDate === today || state.lastPlayDate === yesterday) {
     return { streak: state.streak, justLost: false };
   }
-  const wallet = loadWalletRaw();
   if (wallet.lostStreak > 0 && wallet.lostStreakAt) {
     state.streak = 0;
     save(state);
@@ -115,11 +128,17 @@ export function applyGamificationFromCloud(
     (!wallet.lostStreakAckAt || wallet.lostStreakAckAt < wallet.lostStreakAt);
 
   let nextStreak = streak;
-  const nextLastPlay = lastPlayDate;
+  let nextLastPlay = lastPlayDate;
   if (wallet.lostStreak > 0 && wallet.lostStreakAt && streak > 0) {
     nextStreak = 0;
   } else if (local.streak === 0 && (lossAcked || lossPending) && streak > 0) {
     nextStreak = 0;
+  }
+
+  const today = todayKey();
+  if (local.lastPlayDate === today) {
+    nextStreak = Math.max(local.streak, nextStreak);
+    nextLastPlay = today;
   }
 
   save({ xp, streak: nextStreak, lastPlayDate: nextLastPlay });
@@ -166,6 +185,9 @@ export function recordSession(
     }
     state.lastPlayDate = today;
     streakUpdated = true;
+    if (walletHasPendingLoss()) {
+      clearStreakRestoreOffer();
+    }
   }
 
   save(state);

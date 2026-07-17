@@ -40,6 +40,12 @@ export function MascotCorner({ locale, enabled = true }: MascotCornerProps) {
   );
 
   useEffect(() => {
+    if (!enabled) {
+      dismiss();
+    }
+  }, [dismiss, enabled]);
+
+  useEffect(() => {
     if (!enabled) return;
 
     const onReaction = (e: Event) => {
@@ -56,11 +62,17 @@ export function MascotCorner({ locale, enabled = true }: MascotCornerProps) {
     window.addEventListener(MASCOT_EVENT, onReaction);
     return () => {
       window.removeEventListener(MASCOT_EVENT, onReaction);
-      if (timerRef.current) window.clearTimeout(timerRef.current);
     };
   }, [enabled, locale, show]);
 
-  if (!visible) return null;
+  useEffect(
+    () => () => {
+      if (timerRef.current) window.clearTimeout(timerRef.current);
+    },
+    [],
+  );
+
+  if (!enabled || !visible) return null;
 
   return (
     <div className="mascot-corner" aria-live="polite">

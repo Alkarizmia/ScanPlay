@@ -1439,7 +1439,7 @@ export default function App() {
       />
       <Toast message={toast} />
       <AdConsentBanner locale={locale} />
-      <MascotCorner locale={locale} enabled={flow === null || flow === 'playing' || flow === 'lesson'} />
+      <MascotCorner locale={locale} enabled={flow === 'playing' || flow === 'lesson'} />
       {showMascotIntro && (
         <MascotFirstLaunch locale={locale} onDone={() => setShowMascotIntro(false)} />
       )}

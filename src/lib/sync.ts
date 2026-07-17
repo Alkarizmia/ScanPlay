@@ -4,7 +4,7 @@ import { getUserId, isLoggedIn } from './auth';
 import type { ExamHistoryEntry } from './examHistory';
 import { getExamHistory, saveExamHistoryRaw } from './examHistory';
 import { getUnlockedCount } from './achievements';
-import { getGamification, applyGamificationFromCloud, validateStreak } from './gamification';
+import { getGamification, applyGamificationFromCloud, validateStreak, todayKey } from './gamification';
 import { getHistory, saveHistoryRaw } from './history';
 import { getLocale } from './i18n';
 import { clearLocalUserData } from './localData';
@@ -286,7 +286,9 @@ export async function pushUserData(): Promise<void> {
     const wallet = loadWalletRaw();
     const plan = getPlan();
     const locale = getLocale();
-    const streakForCloud = wallet.lostStreak > 0 && wallet.lostStreakAt ? 0 : gam.streak;
+    const playedToday = gam.lastPlayDate === todayKey();
+    const streakForCloud =
+      wallet.lostStreak > 0 && wallet.lostStreakAt && !playedToday ? 0 : gam.streak;
 
     const profileRow: Record<string, unknown> = {
       user_id: userId,
