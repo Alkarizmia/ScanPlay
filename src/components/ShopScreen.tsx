@@ -257,7 +257,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
             )}
             <button
               type="button"
-              className="btn-primary"
+              className={`btn-primary${chestReady ? '' : ' dash-chest-btn--done'}`}
               disabled={!chestReady || chestOverlayOpen}
               onClick={handleChest}
             >

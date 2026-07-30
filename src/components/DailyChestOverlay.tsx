@@ -111,7 +111,7 @@ export function DailyChestOverlay({ open, locale, onClose, onOpened }: DailyChes
           disabled={revealed}
           aria-label={t('shopOpenChest', locale)}
         >
-          <span className="daily-chest-chest-body" aria-hidden="true" />
+          {!revealed && <span className="daily-chest-chest-body" aria-hidden="true" />}
           {revealed && reward && (
             <span className="daily-chest-reveal" aria-live="polite">
               <RewardDisplay reward={reward} locale={locale} />
@@ -147,41 +147,51 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   if (reward.type === 'coins') {
     return (
       <span className="daily-chest-reward-coins">
-      <span className="daily-chest-coin-icon icon-glyph icon-glyph--xl" aria-hidden="true">
-        🪙
-      </span>
-        <span className="daily-chest-coin-amount">+{reward.amount}</span>
+        <span className="daily-chest-reward-emoji" aria-hidden="true">
+          🪙
+        </span>
+        <span className="daily-chest-reward-label">+{reward.amount}</span>
       </span>
     );
   }
   if (reward.type === 'xp') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">✨</span>
-        <span>+{reward.amount} XP</span>
+        <span className="daily-chest-reward-emoji" aria-hidden="true">
+          ✨
+        </span>
+        <span className="daily-chest-reward-label">+{reward.amount} XP</span>
       </span>
     );
   }
   if (reward.type === 'gems') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">💎</span>
-        <span>+{reward.amount} {t('dashGems', locale)}</span>
+        <span className="daily-chest-reward-emoji" aria-hidden="true">
+          💎
+        </span>
+        <span className="daily-chest-reward-label">
+          +{reward.amount} {t('dashGems', locale)}
+        </span>
       </span>
     );
   }
   if (reward.type === 'xp_potion') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">⚗️</span>
-        <span>{t('chestRewardPotion', locale)}</span>
+        <span className="daily-chest-reward-emoji" aria-hidden="true">
+          ⚗️
+        </span>
+        <span className="daily-chest-reward-label">{t('chestRewardPotion', locale)}</span>
       </span>
     );
   }
   return (
     <span className="daily-chest-reward-other">
-      <span className="daily-chest-reward-icon icon-glyph icon-glyph--lg">{reward.achievement.icon}</span>
-      <span>{t(reward.achievement.nameKey, locale)}</span>
+      <span className="daily-chest-reward-emoji" aria-hidden="true">
+        {reward.achievement.icon}
+      </span>
+      <span className="daily-chest-reward-label">{t(reward.achievement.nameKey, locale)}</span>
     </span>
   );
 }

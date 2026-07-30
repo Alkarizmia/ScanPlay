@@ -445,17 +445,51 @@
 
 /* ── Chest rarity ── */
 .daily-chest-rarity-label {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   font-weight: 900;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
-  margin: 0 0 8px;
+  letter-spacing: 0.12em;
+  margin: 0;
   text-align: center;
+  padding: 8px 18px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-shadow: 0 0 18px currentColor;
 }
-.chest-rarity--common { color: #d97706; }
-.chest-rarity--rare { color: #2563eb; }
-.chest-rarity--mythic { color: #9333ea; }
-.chest-rarity--legendary { color: #eab308; }
+.daily-chest-stage--revealed .daily-chest-rarity-label {
+  font-size: 1.55rem;
+  letter-spacing: 0.16em;
+  padding: 10px 22px;
+  animation: daily-chest-rarity-pulse 1.4s ease-in-out infinite;
+}
+.daily-chest-rarity-label.chest-rarity--common {
+  color: #fbbf24;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.25);
+}
+.daily-chest-rarity-label.chest-rarity--rare {
+  color: #93c5fd;
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.45);
+}
+.daily-chest-rarity-label.chest-rarity--mythic {
+  color: #e9d5ff;
+  box-shadow: 0 0 28px rgba(168, 85, 247, 0.55);
+}
+.daily-chest-rarity-label.chest-rarity--legendary {
+  color: #fde047;
+  box-shadow: 0 0 32px rgba(250, 204, 21, 0.7);
+}
+@keyframes daily-chest-rarity-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.04);
+    filter: brightness(1.12);
+  }
+}
 .daily-chest-chest-body {
   display: block;
   width: 88px;

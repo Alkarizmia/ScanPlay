@@ -293,6 +293,18 @@
   -webkit-user-drag: none;
   background: transparent !important;
   background-color: transparent !important;
+  opacity: 0;
+  transition: opacity 0.18s ease-out;
+}
+
+.sp-mascot-asset-img.is-loaded {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sp-mascot-asset-img {
+    transition: none;
+  }
 }
 
 .scanning-track-mascot {

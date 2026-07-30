@@ -136,11 +136,14 @@ export function HomeDashboard({ locale, refreshKey = 0, welcomeMessage, onRefres
         </div>
         <button
           type="button"
-          className="btn-primary dash-chest-btn"
+          className={`btn-primary dash-chest-btn${chestReady ? '' : ' dash-chest-btn--done'}`}
           disabled={!chestReady}
-          onClick={() => setChestOverlayOpen(true)}
+          onClick={() => {
+            if (!chestReady) return;
+            setChestOverlayOpen(true);
+          }}
         >
-          {t('dashChestOpen', locale)}
+          {chestReady ? t('dashChestOpen', locale) : t('shopChestDone', locale)}
         </button>
       </article>
 

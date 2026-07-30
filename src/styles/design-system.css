@@ -524,6 +524,12 @@ body {
   padding-inline: var(--space-4);
 }
 
+.dash-chest-btn--done {
+  min-width: 118px;
+  font-size: 0.82rem;
+  line-height: 1.15;
+}
+
 .dash-card--missions {
   padding: 0;
   overflow: visible;

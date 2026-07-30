@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { getMascotAssetUrl } from '../../lib/mascot/catalog';
+import { getMascotAssetFallbackUrl, getMascotAssetUrl } from '../../lib/mascot/catalog';
 import type { MascotExpression } from '../../lib/mascot/types';
 import { ScanPlayMascotSvg } from './svg/ScanPlayMascotSvg';
 
@@ -16,9 +16,13 @@ export interface MascotRendererProps {
   preferAsset?: boolean;
 }
 
+/** URLs already decoded once — lets repeat renders skip the fade-in. */
+const loadedAssets = new Set<string>();
+
 /**
- * Renders the official mascot: high-res PNG asset when present, else crisp inline SVG fallback.
- * Assets are generated per expression and dropped into public/mascot/emotions/.
+ * Renders the official mascot: high-res asset when present, else crisp inline SVG fallback.
+ * The asset is rendered straight away so the SVG never flashes on slow connections;
+ * it only takes over if the image genuinely fails to load.
  */
 export function MascotRenderer({
   expression = 'happy',
@@ -32,17 +36,16 @@ export function MascotRenderer({
 }: MascotRendererProps) {
   const expr = expression as MascotExpression;
   const assetUrl = preferAsset ? getMascotAssetUrl(expr) : null;
-  const [useAsset, setUseAsset] = useState(false);
+  const fallbackUrl = preferAsset ? getMascotAssetFallbackUrl(expr) : null;
+
+  const [src, setSrc] = useState(assetUrl);
+  const [failed, setFailed] = useState(false);
+  const [loaded, setLoaded] = useState(() => (assetUrl ? loadedAssets.has(assetUrl) : false));
 
   useEffect(() => {
-    if (!assetUrl) {
-      setUseAsset(false);
-      return;
-    }
-    const img = new Image();
-    img.onload = () => setUseAsset(true);
-    img.onerror = () => setUseAsset(false);
-    img.src = assetUrl;
+    setSrc(assetUrl);
+    setFailed(false);
+    setLoaded(assetUrl ? loadedAssets.has(assetUrl) : false);
   }, [assetUrl]);
 
   const cls = [
@@ -50,24 +53,36 @@ export function MascotRenderer({
     `scanplay-mascot--${expr}`,
     idle ? 'scanplay-mascot--idle' : '',
     celebrate ? 'scanplay-mascot--celebrate' : '',
-    useAsset ? 'scanplay-mascot--asset' : 'scanplay-mascot--svg',
+    !failed && src ? 'scanplay-mascot--asset' : 'scanplay-mascot--svg',
     className,
   ]
     .filter(Boolean)
     .join(' ');
 
-  if (useAsset && assetUrl) {
+  if (!failed && src) {
     return (
       <div className={cls} style={{ width: size, height: size * 1.1 }} aria-hidden={!label}>
         <img
-          src={assetUrl}
+          src={src}
           alt={label}
-          className="sp-mascot-asset-img"
+          className={`sp-mascot-asset-img${loaded ? ' is-loaded' : ''}`}
           width={size}
           height={Math.round(size * 1.1)}
           draggable={false}
-          loading="lazy"
+          loading="eager"
+          fetchPriority="high"
           decoding="async"
+          onLoad={() => {
+            loadedAssets.add(src);
+            setLoaded(true);
+          }}
+          onError={() => {
+            if (fallbackUrl && src !== fallbackUrl) {
+              setSrc(fallbackUrl);
+              return;
+            }
+            setFailed(true);
+          }}
         />
       </div>
     );

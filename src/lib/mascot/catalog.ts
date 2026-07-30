@@ -80,9 +80,16 @@ export const MASCOT_ASSET_FILE: Partial<Record<MascotExpression, string>> = {
   welcomed_back: 'welcome-back.png',
 };
 
-const MASCOT_ASSET_VERSION = '4';
+const MASCOT_ASSET_VERSION = '5';
 
+/** Lightweight WebP build (~20 KB) used for display; PNG stays as fallback. */
 export function getMascotAssetUrl(expression: MascotExpression): string | null {
+  const file = MASCOT_ASSET_FILE[expression];
+  if (!file) return null;
+  return `/mascot/emotions/${file.replace(/\.png$/, '.webp')}?v=${MASCOT_ASSET_VERSION}`;
+}
+
+export function getMascotAssetFallbackUrl(expression: MascotExpression): string | null {
   const file = MASCOT_ASSET_FILE[expression];
   if (!file) return null;
   return `/mascot/emotions/${file}?v=${MASCOT_ASSET_VERSION}`;
