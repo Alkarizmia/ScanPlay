@@ -1,5 +1,5 @@
 import { fixOcrLine } from './vocabulary';
-import { isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
+import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import type { LangCode, SheetType, WordPair } from '../types';
 
@@ -29,8 +29,9 @@ function normalizeLang(value: unknown): LangCode | undefined {
 }
 
 export function mapAiPairsToWordPairs(pairs: AiExtractPair[]): WordPair[] {
-  return pairs
+  const mapped = pairs
     .filter((p) => p.term?.trim() && p.definition?.trim())
+    .filter((p) => p.confidence !== 'low')
     .map((p) => ({
       term: fixOcrLine(p.term.trim()).slice(0, 55),
       definition: fixOcrLine(p.definition.trim()).slice(0, 120),
@@ -42,6 +43,7 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[]): WordPair[] {
     .filter((p) => !isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2)
     .filter((p) => !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2)
     .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase());
+  return dropSiblingOcrFragments(mapped);
 }
 
 export function parseAiExtractResponse(raw: unknown): AiExtractResponse | null {

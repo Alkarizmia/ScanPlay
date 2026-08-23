@@ -29,6 +29,17 @@ describe('aiExtract', () => {
     expect(mapped[0].term).toHaveLength(55);
   });
 
+  it('drops low-confidence and fragment pairs from AI output', () => {
+    const mapped = mapAiPairsToWordPairs([
+      { term: 'alles', definition: 'iologiste', termLang: 'nl', defLang: 'fr', confidence: 'medium' },
+      { term: 'alles', definition: 'tout', termLang: 'nl', defLang: 'fr', confidence: 'high' },
+      { term: 'fuif', definition: 'soirée', termLang: 'nl', defLang: 'fr', confidence: 'low' },
+    ]);
+    expect(mapped.some((p) => p.definition === 'iologiste')).toBe(false);
+    expect(mapped.some((p) => p.definition === 'tout')).toBe(true);
+    expect(mapped.some((p) => p.term === 'fuif')).toBe(false);
+  });
+
   it('rejects invalid payload', () => {
     expect(parseAiExtractResponse(null)).toBeNull();
     expect(parseAiExtractResponse({ pairs: [] })).toBeNull();

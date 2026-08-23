@@ -17,6 +17,21 @@ describe('pairQuality', () => {
     expect(isPlayableDefinition('…itif', 'Apéritif')).toBe(false);
   });
 
+  it('rejects OCR fragments and keeps real translations', () => {
+    expect(isGarbageVocabTerm('iologiste')).toBe(true);
+    expect(isPlayableDefinition('iologiste', 'alles')).toBe(false);
+    expect(isPlayableDefinition('tout', 'alles')).toBe(true);
+
+    const out = enrichTeachablePairs([
+      { term: 'alles', definition: 'iologiste' },
+      { term: 'audioloog (de)', definition: "l'audiologiste" },
+      { term: 'anders', definition: 'autrement' },
+    ]);
+    expect(out.some((p) => p.term === 'alles' && p.definition === 'iologiste')).toBe(false);
+    expect(out.some((p) => /audiologiste/i.test(p.definition))).toBe(true);
+    expect(out.some((p) => p.term === 'anders')).toBe(true);
+  });
+
   it('accepts real glosses', () => {
     expect(isPlayableDefinition('Boisson servie avant le repas', 'Apéritif')).toBe(true);
     expect(isPlayableDefinition('honnêtement', 'eerlijk')).toBe(true);

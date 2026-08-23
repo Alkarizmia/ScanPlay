@@ -18,6 +18,36 @@ export function isSpellingHintDefinition(definition: string): boolean {
   return d === 'Mot à retenir';
 }
 
+/** Truncated OCR token (e.g. "iologiste" from "audiologiste"). */
+export function isHeadlessOcrFragment(text: string): boolean {
+  const stripped = text
+    .trim()
+    .replace(/^(l['’]|le |la |les |un |une |des |du |de |het |een |the |a |an )/i, '');
+  const token = (stripped.split(/[\s,;:/]+/)[0] ?? '').replace(/[.,!?]+$/g, '');
+  if (token.length < 5 || token.length > 24) return false;
+  if (/^(io|olo|olog)(giste|gue|gie|iste)?/i.test(token)) return true;
+  if (/^(logiste|ologue|ologie|issement)$/i.test(token)) return true;
+  if (/^[aeiouy]{1,2}(log|scop|graph|phon|metr)/i.test(token)) return true;
+  return false;
+}
+
+/** Drop a side that is clearly a leftover piece of another extracted string. */
+export function dropSiblingOcrFragments<T extends { term: string; definition: string }>(pairs: T[]): T[] {
+  return pairs.filter((pair, index) => {
+    if (isHeadlessOcrFragment(pair.term) || isHeadlessOcrFragment(pair.definition)) return false;
+    const def = pair.definition
+      .toLowerCase()
+      .replace(/^(l['’]|le |la |les |un |une )/i, '')
+      .trim();
+    if (def.length < 6) return true;
+    return !pairs.some((other, j) => {
+      if (j === index) return false;
+      const hay = `${other.term} ${other.definition}`.toLowerCase();
+      return hay.includes(def) && hay.replace(def, '').length >= 2;
+    });
+  });
+}
+
 /** Chapter / section heading — not a vocabulary item. */
 export function isSectionTitle(text: string): boolean {
   const t = text.trim();
@@ -59,6 +89,7 @@ export function isGarbageVocabTerm(text: string): boolean {
   if (/^(dans|les|des|une|the)\s+(la\s+)?(lan|langue)/.test(low)) return true;
   if (/^…/.test(t)) return true;
   if (isSpellingHintDefinition(t)) return true;
+  if (isHeadlessOcrFragment(t)) return true;
   if (/^[a-zà-]{1,5}\)$/i.test(t)) return true;
   if (/\)\s*$/.test(t) && !/\(/.test(t)) return true;
   if (
@@ -193,7 +224,7 @@ export function enrichTeachablePairs(pairs: WordPair[]): WordPair[] {
   const out: WordPair[] = [];
   const seen = new Set<string>();
 
-  for (const pair of pairs) {
+  for (const pair of dropSiblingOcrFragments(pairs)) {
     const enriched = enrichPairWithGloss(pair);
     if (!enriched) continue;
     const key = enriched.term.toLowerCase();

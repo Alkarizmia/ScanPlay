@@ -23,6 +23,9 @@ RÈGLES ABSOLUES :
 - Longueur : term ≤ 55 caractères, definition ≤ 120 caractères. Coupe proprement si trop long.
 - Minimum visé : 4 paires propres pour vocab/définitions ; pour notes, au moins 3 paires si le contenu le permet.
 - Langues fréquentes : nl, fr, en, es. Détecte-les ; ne traduis pas sauf si la fiche le fait déjà.
+- ALIGNEMENT 2 COLONNES : une ligne visuelle = une seule paire. Le mot de gauche de la ligne N va UNIQUEMENT avec la traduction de droite de la MÊME ligne N. INTERDIT de coller un mot à une traduction d'une ligne voisine (ex. "alles" ↔ "tout", jamais "alles" ↔ "audiologiste").
+- Si tu n'es pas sûr de la lecture d'une ligne : OMETS la paire (confidence "low"). Ne complète JAMAIS avec un mot d'une autre ligne ni un fragment (ex. "iologiste").
+- Cellule avec formes entre parenthèses : term = le lemme seul ("aangeven"), definition = la traduction visible, pas les formes conjuguées.
 
 TYPES DE FICHE (sheetType) :
 - "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne UNIQUEMENT si c'est une vraie traduction (langues différentes, mot ↔ traduction). Exemple : "de zoon" ↔ "le fils", "de vader" ↔ "le père". Garde les espaces dans les articles (de zoon, le fils — jamais dezoon ni lefils).
@@ -70,7 +73,7 @@ Objectif : produire des paires term/definition exploitables pour des jeux éduca
 
 Consignes supplémentaires :
 - Photo possiblement floue, penchée ou sombre : lis quand même au maximum.
-- Pour vocab : cherche deux colonnes. Si traduction (langue A ↔ langue B), associe ligne par ligne. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français (pas d'indice …suffixe).
+- Pour vocab : deux colonnes de traduction = associe STRICTEMENT la même ligne (gauche ligne N ↔ droite ligne N). Si une ligne est floue, saute-la. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français (pas d'indice …suffixe).
 - Pour definitions : une notion = une réponse courte.
 - Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
 - Exclus les lignes de consigne ou d'exemple générique sans contenu à apprendre.

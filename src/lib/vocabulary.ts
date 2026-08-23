@@ -447,6 +447,7 @@ export function coercePlayablePairs(raw: WordPair[]): WordPair[] {
     const mathLike = isMathLikeText(p.term) || isMathLikeText(p.definition);
     if (!mathLike && (isOcrGarbage(p.term) || isOcrGarbage(p.definition))) return false;
     if (p.term.toLowerCase() === p.definition.toLowerCase()) return false;
+    if (isGarbageVocabTerm(p.term) || isGarbageVocabTerm(p.definition)) return false;
     const key = `${p.term.toLowerCase()}|${p.definition.toLowerCase()}`;
     if (seen.has(key)) return false;
     seen.add(key);
