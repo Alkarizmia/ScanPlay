@@ -1766,8 +1766,8 @@ html:has(.app-shell--guest) #root {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px 4px;
-  font-size: 0.68rem;
+  padding: 36px 14px 8px;
+  font-size: 0.7rem;
   font-weight: 700;
   color: #0f172a;
   background: #f8fafc;
@@ -1787,10 +1787,10 @@ html:has(.app-shell--guest) #root {
   flex: 1;
   min-height: 0;
   overflow: clip;
-  padding: 4px 10px 0;
+  padding: 6px 8px 0;
   background: #f8fafc;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 92%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 92%, transparent 100%);
 }
 
 .home-guest-phone-screen .scanplay-path {
@@ -1801,8 +1801,8 @@ html:has(.app-shell--guest) #root {
 
 .home-guest-phone-screen .scanplay-unit-banner {
   gap: 8px;
-  padding: 8px 10px;
-  margin-bottom: 8px;
+  padding: 7px 8px;
+  margin-bottom: 6px;
   box-shadow: 0 4px 0 var(--accent-deep);
 }
 
@@ -1820,15 +1820,18 @@ html:has(.app-shell--guest) #root {
   font-size: 0.82rem;
 }
 
-.home-guest-phone-screen .unit-banner-sub,
-.home-guest-phone-screen .unit-banner-mode {
+.home-guest-phone-screen .unit-banner-sub {
   font-size: 0.62rem;
   margin-top: 2px;
 }
 
+.home-guest-phone-screen .unit-banner-mode {
+  display: none;
+}
+
 .home-guest-phone-screen .path-tier-legend {
   gap: 4px;
-  margin-bottom: 6px;
+  margin-bottom: 2px;
 }
 
 .home-guest-phone-screen .path-tier-chip {
@@ -1838,7 +1841,7 @@ html:has(.app-shell--guest) #root {
 
 .home-guest-phone-screen .scanplay-path-area {
   min-height: 0;
-  padding: 36px 32px 24px;
+  padding: 22px 26px 16px;
 }
 
 [data-device='desktop'] .home-guest-phone-screen .scanplay-path-area {
@@ -1850,8 +1853,8 @@ html:has(.app-shell--guest) #root {
 }
 
 .home-guest-phone-screen .scanplay-node {
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   border-width: 2px;
   box-shadow:
     0 3px 0 var(--accent-deep),
@@ -1872,27 +1875,27 @@ html:has(.app-shell--guest) #root {
 }
 
 .home-guest-phone-screen .scanplay-node-icon {
-  font-size: 1.05rem;
+  font-size: 1.2rem;
 }
 
 .home-guest-phone-screen .scanplay-node-star {
-  width: 16px;
-  height: 16px;
-  font-size: 0.5rem;
+  width: 18px;
+  height: 18px;
+  font-size: 0.52rem;
   top: -4px;
   right: -3px;
 }
 
 .home-guest-phone-screen .scanplay-node-pct {
-  font-size: 0.52rem;
+  font-size: 0.55rem;
 }
 
 .home-guest-phone-screen .scanplay-path-buddy {
   display: none;
 }
 
-/* Keep the first path node fully inside the frame; hide the rest. */
-.home-guest-phone-screen .scanplay-path-step:nth-child(n + 3) {
+/* Show two path nodes; hide the rest so nothing clips mid-circle. */
+.home-guest-phone-screen .scanplay-path-step:nth-child(n + 4) {
   display: none;
 }
 
