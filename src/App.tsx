@@ -19,6 +19,7 @@ import {
   type AppNavSnapshot,
 } from './hooks/useAppNavigationHistory';
 import { ExamOffConfirmModal } from './components/ExamOffConfirmModal';
+import { GoldReplayConfirmModal } from './components/GoldReplayConfirmModal';
 import { GuestPlayReadyModal } from './components/GuestPlayReadyModal';
 import { FriendsScreen } from './components/FriendsScreen';
 import { MistakesScreen } from './components/MistakesScreen';
