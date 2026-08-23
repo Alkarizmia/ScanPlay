@@ -1783,16 +1783,117 @@ html:has(.app-shell--guest) #root {
 }
 
 .home-guest-phone-screen {
+  position: relative;
   flex: 1;
   min-height: 0;
-  overflow: hidden;
-  padding: 4px 8px 0;
+  overflow: clip;
+  padding: 4px 10px 0;
   background: #f8fafc;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 88%, transparent 100%);
 }
 
 .home-guest-phone-screen .scanplay-path {
-  transform: scale(0.88);
-  transform-origin: top center;
+  transform: none;
+  max-height: 100%;
+  overflow: clip;
+}
+
+.home-guest-phone-screen .scanplay-unit-banner {
+  gap: 8px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 0 var(--accent-deep);
+}
+
+.home-guest-phone-screen .unit-banner-sheet {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
+.home-guest-phone-screen .unit-banner-tag {
+  font-size: 0.48rem;
+}
+
+.home-guest-phone-screen .unit-banner-title {
+  font-size: 0.82rem;
+}
+
+.home-guest-phone-screen .unit-banner-sub,
+.home-guest-phone-screen .unit-banner-mode {
+  font-size: 0.62rem;
+  margin-top: 2px;
+}
+
+.home-guest-phone-screen .path-tier-legend {
+  gap: 4px;
+  margin-bottom: 6px;
+}
+
+.home-guest-phone-screen .path-tier-chip {
+  font-size: 0.55rem;
+  padding: 2px 6px;
+}
+
+.home-guest-phone-screen .scanplay-path-area {
+  min-height: 0;
+  padding: 36px 32px 24px;
+}
+
+[data-device='desktop'] .home-guest-phone-screen .scanplay-path-area {
+  min-height: 0;
+}
+
+.home-guest-phone-screen .scanplay-path-step {
+  max-width: none;
+}
+
+.home-guest-phone-screen .scanplay-node {
+  width: 44px;
+  height: 44px;
+  border-width: 2px;
+  box-shadow:
+    0 3px 0 var(--accent-deep),
+    0 0 0 2px rgba(255, 255, 255, 0.12),
+    0 8px 14px rgba(4, 120, 87, 0.28);
+}
+
+.home-guest-phone-screen .scanplay-node.active {
+  box-shadow:
+    0 3px 0 var(--accent-deep),
+    0 0 0 3px rgba(255, 255, 255, 0.35),
+    0 8px 14px rgba(4, 120, 87, 0.32);
+}
+
+.home-guest-phone-screen .scanplay-node.active::after {
+  inset: -4px;
+  border-width: 2px;
+}
+
+.home-guest-phone-screen .scanplay-node-icon {
+  font-size: 1.05rem;
+}
+
+.home-guest-phone-screen .scanplay-node-star {
+  width: 16px;
+  height: 16px;
+  font-size: 0.5rem;
+  top: -4px;
+  right: -3px;
+}
+
+.home-guest-phone-screen .scanplay-node-pct {
+  font-size: 0.52rem;
+}
+
+.home-guest-phone-screen .scanplay-path-buddy {
+  display: none;
+}
+
+/* Keep the first path node fully inside the frame; hide the rest. */
+.home-guest-phone-screen .scanplay-path-step:nth-child(n + 3) {
+  display: none;
 }
 
 .screen.home-screen--guest-acquire .site-footer {
@@ -1896,30 +1997,7 @@ html:has(.app-shell--guest) #root {
   }
 
   .home-guest-phone-screen {
-    position: relative;
-    overflow: clip;
-    padding: 6px 8px 0;
-    -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 90%, transparent 100%);
-    mask-image: linear-gradient(to bottom, #000 0%, #000 90%, transparent 100%);
-  }
-
-  .home-guest-phone-screen::after {
-    display: none;
-  }
-
-  .home-guest-phone-screen .scanplay-path {
-    transform: none;
-    max-height: 100%;
-    overflow: clip;
-  }
-
-  [data-device='desktop'] .home-guest-phone-screen .scanplay-path-area {
-    min-height: 0;
-  }
-
-  /* First path node stays fully visible; later nodes are hidden so they never clip mid-pill. */
-  .home-guest-phone-screen .scanplay-path-step:nth-child(n + 3) {
-    display: none;
+    padding: 6px 10px 0;
   }
 
   .screen.home-screen--guest-acquire .site-footer {
