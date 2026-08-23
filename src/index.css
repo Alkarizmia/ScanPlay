@@ -1550,6 +1550,13 @@ body {
 .modal-card .btn-secondary.btn-lg {
   margin-top: 10px;
 }
+.guest-aha-card .modal-title {
+  margin-top: 0;
+}
+.guest-aha-later {
+  margin-top: 8px;
+  width: 100%;
+}
 
 /* Import */
 .screen-title {

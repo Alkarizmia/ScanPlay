@@ -19,7 +19,7 @@ import {
   type AppNavSnapshot,
 } from './hooks/useAppNavigationHistory';
 import { ExamOffConfirmModal } from './components/ExamOffConfirmModal';
-import { GoldReplayConfirmModal } from './components/GoldReplayConfirmModal';
+import { GuestPlayReadyModal } from './components/GuestPlayReadyModal';
 import { FriendsScreen } from './components/FriendsScreen';
 import { MistakesScreen } from './components/MistakesScreen';
 import { MultiplayerLobby } from './components/MultiplayerLobby';
@@ -57,7 +57,14 @@ import { SpeakGame } from './components/games/SpeakGame';
 import { TrueFalseGame } from './components/games/TrueFalseGame';
 import { ClozeGame } from './components/games/ClozeGame';
 import { TypeGame } from './components/games/TypeGame';
-import { canGuestScan, recordGuestScan, beginGuestPlaySession, clearGuestPlaySession, isGuestPlaySessionActive } from './lib/guestTrial';
+import { canGuestScan, recordGuestScan, beginGuestPlaySession, clearGuestPlaySession } from './lib/guestTrial';
+import {
+  adoptPendingGuestDeckIntoHistory,
+  hasPendingGuestDeck,
+  peekLastAdoptedGuestDeck,
+  savePendingGuestDeck,
+  takeLastAdoptedGuestDeck,
+} from './lib/pendingGuestDeck';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
 import { acknowledgeStreakLoss, shouldShowStreakLostModal } from './lib/wallet';
 import {
@@ -195,6 +202,8 @@ export default function App() {
     stepIndex: number;
     mode: GameMode;
   } | null>(null);
+  const [guestPlayGate, setGuestPlayGate] = useState(false);
+  const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
   const [streakClaimPulse, setStreakClaimPulse] = useState(0);
   const [streakClaimCount, setStreakClaimCount] = useState(0);
   const [currentUnlock, setCurrentUnlock] = useState<AchievementDef | null>(null);
@@ -227,6 +236,8 @@ export default function App() {
   const welcomeBackChecked = useRef(false);
   const sessionStart = useRef(0);
   const importErrorTimer = useRef<number | null>(null);
+  const openAdoptedGuestDeckRef = useRef<() => boolean>(() => false);
+  const guestDeckOpenedRef = useRef(false);
   const device = useDeviceProfile();
 
   useGlobalTapSound();
@@ -322,6 +333,7 @@ export default function App() {
     });
     const unsubSync = onSyncReady(() => {
       if (!isLoggedIn()) return;
+      openAdoptedGuestDeckRef.current();
       if (shouldShowStreakLostModal()) setShowStreakLost(true);
       setRefreshKey((k) => k + 1);
     });
@@ -478,8 +490,21 @@ export default function App() {
 
   const requireAuth = useCallback((): boolean => {
     if (isLoggedIn()) return true;
+    setAuthInitialMode('login');
     setFlow('auth');
     return false;
+  }, []);
+
+  const openAuth = useCallback((mode: 'login' | 'signup' = 'login') => {
+    setGuestPlayGate(false);
+    setAuthInitialMode(mode);
+    setFlow('auth');
+  }, []);
+
+  const promptGuestPlayReady = useCallback((): boolean => {
+    if (isLoggedIn()) return false;
+    setGuestPlayGate(true);
+    return true;
   }, []);
 
   useEffect(() => {
@@ -563,6 +588,8 @@ export default function App() {
         }
         if (!isLoggedIn() && !fromHistory && !isDemo) {
           beginGuestPlaySession();
+          guestDeckOpenedRef.current = false;
+          savePendingGuestDeck(parsed, thumbnail, sheetType);
         }
         setStepProgress({});
         setExamStepProgress({});
@@ -866,10 +893,7 @@ export default function App() {
   };
 
   const startGame = (m: GameMode, stepIndex?: number, deckPairs?: WordPair[], skipGoldConfirm = false) => {
-    if (!isLoggedIn() && !isGuestPlaySessionActive()) {
-      setFlow('auth');
-      return;
-    }
+    if (promptGuestPlayReady()) return;
     const base = deckPairs ?? pairs;
     if (
       !skipGoldConfirm &&
@@ -1232,12 +1256,78 @@ export default function App() {
     prevHomeRef.current = onHome;
   }, [tab, flow]);
 
-  const showBottomNav = device.kind === 'desktop' || flow === null;
+  const showBottomNav = isLoggedIn() && (device.kind === 'desktop' || flow === null);
+
+  const restoreGuestDeckToModes = useCallback(
+    (entry: HistoryEntry) => {
+      const playable = coercePlayablePairs(entry.pairs);
+      const merged = truncatePairs(mergeWithDifficult(playable));
+      if (!canOpenGamePath(merged)) {
+        setFlow(null);
+        refresh();
+        return;
+      }
+      setRawPairCount(playable.length);
+      setPairs(merged);
+      setDeckThumbnail(entry.thumbnail);
+      if (entry.sheetType) setSheetType(entry.sheetType);
+      setHistoryId(entry.id);
+      setHistoryReplayMode(false);
+      setStepProgress({});
+      setExamStepProgress({});
+      setExamMode(false);
+      setExamModeLocked(false);
+      setPathStepCount(getPathStepCount());
+      setActiveStepIndex(null);
+      setTab('home');
+      markNavReplace();
+      setFlow('modes');
+      refresh();
+      void ensurePathRoomForDeck(merged, getPathStepCount());
+    },
+    [ensurePathRoomForDeck],
+  );
+
+  const openAdoptedGuestDeck = useCallback((): boolean => {
+    if (!isLoggedIn()) return false;
+    const adopted = takeLastAdoptedGuestDeck();
+    if (!adopted) return false;
+    guestDeckOpenedRef.current = true;
+    restoreGuestDeckToModes(adopted);
+    return true;
+  }, [restoreGuestDeckToModes]);
+
+  openAdoptedGuestDeckRef.current = openAdoptedGuestDeck;
 
   const handleAuthSuccess = useCallback(() => {
+    if (guestDeckOpenedRef.current) {
+      refresh();
+      return;
+    }
+    if (openAdoptedGuestDeck()) return;
+    if (hasPendingGuestDeck() || peekLastAdoptedGuestDeck()) {
+      let settled = false;
+      const finish = () => {
+        if (settled) return;
+        settled = true;
+        unsub();
+        if (openAdoptedGuestDeck()) return;
+        const fallback = isLoggedIn() ? adoptPendingGuestDeckIntoHistory() : null;
+        if (fallback) {
+          guestDeckOpenedRef.current = true;
+          restoreGuestDeckToModes(fallback);
+          return;
+        }
+        closeFlow();
+        refresh();
+      };
+      const unsub = onSyncReady(finish);
+      window.setTimeout(finish, 8000);
+      return;
+    }
     closeFlow();
     refresh();
-  }, [refresh]);
+  }, [openAdoptedGuestDeck, restoreGuestDeckToModes]);
 
   useEffect(() => {
     if (flow === 'auth' && isLoggedIn()) {
@@ -1378,6 +1468,7 @@ export default function App() {
       !isLoggedIn()
     ) {
       setTab(next);
+      setAuthInitialMode('login');
       setFlow('auth');
       return;
     }
@@ -1424,12 +1515,16 @@ export default function App() {
         setGoldReplayPending(null);
         return true;
       }
+      if (guestPlayGate) {
+        setGuestPlayGate(false);
+        return true;
+      }
       return false;
     },
   });
 
   return (
-    <div className="app-shell" data-device={device.kind}>
+    <div className={`app-shell${isLoggedIn() ? '' : ' app-shell--guest'}`} data-device={device.kind}>
       <Confetti active={showConfetti} />
       <StreakClaimFlyby locale={locale} streak={streakClaimCount} pulseKey={streakClaimPulse} />
       <AchievementUnlockModal
@@ -1500,6 +1595,14 @@ export default function App() {
           onCancel={() => setGoldReplayPending(null)}
         />
       )}
+      {guestPlayGate && (
+        <GuestPlayReadyModal
+          locale={locale}
+          onSignup={() => openAuth('signup')}
+          onLogin={() => openAuth('login')}
+          onClose={() => setGuestPlayGate(false)}
+        />
+      )}
 
       {upgradeReason && (
         <UpgradeModal
@@ -1524,7 +1627,7 @@ export default function App() {
           onPricing={() => setFlow('pricing')}
           onSocialChange={handleSocialChange}
           onToast={showToast}
-          onAuth={() => setFlow('auth')}
+          onAuth={() => openAuth('login')}
           onRefresh={refresh}
         />
       )}
@@ -1604,7 +1707,6 @@ export default function App() {
           onFile={processImage}
           onToast={showToast}
           onAuth={() => setFlow('auth')}
-          showGuestBanner={!isLoggedIn()}
         />
       )}
       {flow === 'scanning' && (
@@ -1655,7 +1757,10 @@ export default function App() {
           historyReplay={historyReplayMode}
           deckThumbnail={deckThumbnail}
           sheetType={sheetType}
-          onAuth={() => setFlow('auth')}
+          onAuth={() => {
+            if (promptGuestPlayReady()) return;
+            openAuth('login');
+          }}
         />
       )}
       {flow === 'playing' && mode === 'flashcards' && (
@@ -1906,6 +2011,8 @@ export default function App() {
           locale={locale}
           variant="action"
           guestTrialUsed={!isLoggedIn() && !canGuestScan()}
+          saveGame={hasPendingGuestDeck()}
+          initialMode={authInitialMode}
           onBack={appGoBack}
           onSuccess={handleAuthSuccess}
         />

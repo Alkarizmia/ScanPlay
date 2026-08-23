@@ -20,10 +20,20 @@ interface AuthScreenProps {
   onBack?: () => void;
   variant?: 'default' | 'action';
   guestTrialUsed?: boolean;
+  saveGame?: boolean;
+  initialMode?: AuthMode;
 }
 
-export function AuthScreen({ locale, onSuccess, onBack, variant = 'default', guestTrialUsed = false }: AuthScreenProps) {
-  const [mode, setMode] = useState<AuthMode>('login');
+export function AuthScreen({
+  locale,
+  onSuccess,
+  onBack,
+  variant = 'default',
+  guestTrialUsed = false,
+  saveGame = false,
+  initialMode = 'login',
+}: AuthScreenProps) {
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
@@ -46,13 +56,17 @@ export function AuthScreen({ locale, onSuccess, onBack, variant = 'default', gue
   const subtitleKey =
     mode === 'forgot'
       ? 'authForgotSubtitle'
-      : mode === 'signup'
-        ? 'authSignupSubtitle'
-        : guestTrialUsed
-          ? 'guestAuthSubtitle'
-          : variant === 'action'
-            ? 'authActionSubtitle'
-            : 'authLoginSubtitle';
+      : saveGame && mode === 'signup'
+        ? 'guestAhaBody'
+        : saveGame && mode === 'login'
+          ? 'guestAhaLoginSubtitle'
+          : mode === 'signup'
+            ? 'authSignupSubtitle'
+            : guestTrialUsed
+              ? 'guestAuthSubtitle'
+              : variant === 'action'
+                ? 'authActionSubtitle'
+                : 'authLoginSubtitle';
 
   const runAuth = async () => {
     if (!email.trim() || !password) {
@@ -197,7 +211,11 @@ export function AuthScreen({ locale, onSuccess, onBack, variant = 'default', gue
 
       <main className="auth-main scroll-natural">
         <h2 className="auth-title">
-          {mode === 'forgot' ? t('authForgotTitle', locale) : t('authWelcome', locale)}
+          {mode === 'forgot'
+            ? t('authForgotTitle', locale)
+            : saveGame && mode === 'signup'
+              ? t('guestAhaTitle', locale)
+              : t('authWelcome', locale)}
         </h2>
 
         {mode !== 'forgot' && (

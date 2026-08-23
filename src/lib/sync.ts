@@ -472,21 +472,26 @@ export async function pullUserData(options?: {
   }
 }
 
+async function adoptPendingGuestDeckThenPush(): Promise<void> {
+  const { adoptPendingGuestDeckIntoHistory } = await import('./pendingGuestDeck');
+  adoptPendingGuestDeckIntoHistory();
+  await pushUserData();
+  notifySyncReady();
+}
+
 /** After login/signup: discard guest data, restore cloud, push full snapshot. */
 export async function syncAfterLogin(): Promise<void> {
   clearLocalUserData();
   await pullUserData();
   validateStreak();
-  await pushUserData();
-  notifySyncReady();
+  await adoptPendingGuestDeckThenPush();
 }
 
 /** On app reload while logged in: pull cloud then push full snapshot. */
 export async function syncOnSessionRestore(): Promise<void> {
   await pullUserData();
   validateStreak();
-  await pushUserData();
-  notifySyncReady();
+  await adoptPendingGuestDeckThenPush();
 }
 
 /** @deprecated use syncAfterLogin */
