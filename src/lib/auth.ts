@@ -11,6 +11,79 @@ let cachedUser: UserProfile = { email: null, isLoggedIn: false };
 let cachedUserId: string | null = null;
 let authReady = false;
 let authReadyResolvers: Array<() => void> = [];
+let initPromise: Promise<void> | null = null;
+const authChangeListeners = new Set<() => void>();
+
+function isAuthCallbackUrl(): boolean {
+  if (typeof window === 'undefined') return false;
+  const hash = window.location.hash;
+  const search = window.location.search;
+  return (
+    hash.includes('access_token=') ||
+    hash.includes('refresh_token=') ||
+    search.includes('code=') ||
+    search.includes('type=recovery') ||
+    hash.includes('type=recovery')
+  );
+}
+
+function parseStoredSessionUser(raw: string | null): { id: string; email: string | null } | null {
+  if (!raw) return null;
+  try {
+    const parsed = JSON.parse(raw) as {
+      user?: { id?: string; email?: string | null };
+      currentSession?: { user?: { id?: string; email?: string | null } };
+    };
+    const user = parsed.user ?? parsed.currentSession?.user;
+    if (!user?.id) return null;
+    return { id: user.id, email: user.email ?? null };
+  } catch {
+    return null;
+  }
+}
+
+function readStoredSessionUser(): { id: string; email: string | null } | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const url = import.meta.env.VITE_SUPABASE_URL ?? '';
+    const ref = url.match(/https?:\/\/([^.]+)\./)?.[1];
+    if (ref) {
+      const fromKey = parseStoredSessionUser(localStorage.getItem(`sb-${ref}-auth-token`));
+      if (fromKey) return fromKey;
+    }
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key?.startsWith('sb-') || !key.endsWith('-auth-token')) continue;
+      const found = parseStoredSessionUser(localStorage.getItem(key));
+      if (found) return found;
+    }
+  } catch {
+    /* private mode / blocked storage */
+  }
+  return null;
+}
+
+/** True when a Supabase session is already on disk (or returning from OAuth). */
+export function hasStoredAuthSession(): boolean {
+  return Boolean(readStoredSessionUser()) || isAuthCallbackUrl();
+}
+
+function hydrateAuthCacheFromStorage(): void {
+  const stored = readStoredSessionUser();
+  if (!stored) return;
+  const localProfile = loadProfileRaw();
+  cachedUser = {
+    email: stored.email,
+    isLoggedIn: true,
+    displayName: localProfile?.displayName,
+    avatar: localProfile?.avatar,
+    customAvatarData: localProfile?.customAvatarData,
+  };
+  cachedUserId = stored.id;
+  void import('./planLimits').then((m) => m.setPlanUserId(stored.id));
+}
+
+hydrateAuthCacheFromStorage();
 
 function setCache(session: Session | null): void {
   const nextId = session?.user?.id ?? null;
@@ -145,71 +218,87 @@ function runPostAuth(session: Session, freshLogin: boolean): void {
 }
 
 export async function initAuth(onChange?: () => void): Promise<void> {
-  const supabase = getSupabase();
-  if (!supabase) {
-    markAuthReady();
+  if (onChange) authChangeListeners.add(onChange);
+  if (initPromise) {
+    await initPromise;
+    onChange?.();
     return;
   }
 
-  const { data } = await supabase.auth.getSession();
-  setCache(data.session);
+  initPromise = (async () => {
+    const notify = () => {
+      authChangeListeners.forEach((fn) => fn());
+    };
 
-  const recoveryFromUrl = isPasswordRecoveryUrl();
-  if (data.session && recoveryFromUrl) {
-    passwordRecoveryPending = true;
-  }
-
-  // OAuth / email links leave tokens in the URL — clean up once Supabase parsed them.
-  const hash = window.location.hash;
-  const search = window.location.search;
-  if (
-    hash.includes('access_token=') ||
-    hash.includes('error=') ||
-    search.includes('code=') ||
-    search.includes('error=')
-  ) {
-    window.history.replaceState({}, document.title, window.location.pathname);
-  }
-
-  if (!data.session) {
-    clearLocalUserData();
-  } else {
-    skipNextSignedInSync = true;
-    deferPostAuth(data.session, false);
-    if (passwordRecoveryPending) {
-      notifyPasswordRecovery();
-    }
-  }
-
-  supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
-    setCache(session);
-    if (event === 'SIGNED_OUT') {
-      clearLocalUserData();
-      passwordRecoveryPending = false;
-    }
-    if (event === 'PASSWORD_RECOVERY' && session) {
-      passwordRecoveryPending = true;
-      skipNextSignedInSync = true;
-      deferPostAuth(session, true);
-      notifyPasswordRecovery();
-      onChange?.();
+    const supabase = getSupabase();
+    if (!supabase) {
+      markAuthReady();
+      notify();
       return;
     }
-    if (event === 'INITIAL_SESSION' && session) {
-      skipNextSignedInSync = true;
+
+    const { data } = await supabase.auth.getSession();
+    setCache(data.session);
+
+    const recoveryFromUrl = isPasswordRecoveryUrl();
+    if (data.session && recoveryFromUrl) {
+      passwordRecoveryPending = true;
     }
-    if (event === 'SIGNED_IN' && session) {
-      if (skipNextSignedInSync) {
-        skipNextSignedInSync = false;
-      } else {
-        deferPostAuth(session, true);
+
+    // OAuth / email links leave tokens in the URL — clean up once Supabase parsed them.
+    const hash = window.location.hash;
+    const search = window.location.search;
+    if (
+      hash.includes('access_token=') ||
+      hash.includes('error=') ||
+      search.includes('code=') ||
+      search.includes('error=')
+    ) {
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+
+    if (!data.session) {
+      clearLocalUserData();
+    } else {
+      skipNextSignedInSync = true;
+      deferPostAuth(data.session, false);
+      if (passwordRecoveryPending) {
+        notifyPasswordRecovery();
       }
     }
-    onChange?.();
-  });
 
-  markAuthReady();
-  onChange?.();
+    supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
+      setCache(session);
+      if (event === 'SIGNED_OUT') {
+        clearLocalUserData();
+        passwordRecoveryPending = false;
+      }
+      if (event === 'PASSWORD_RECOVERY' && session) {
+        passwordRecoveryPending = true;
+        skipNextSignedInSync = true;
+        deferPostAuth(session, true);
+        notifyPasswordRecovery();
+        notify();
+        return;
+      }
+      if (event === 'INITIAL_SESSION' && session) {
+        skipNextSignedInSync = true;
+      }
+      if (event === 'SIGNED_IN' && session) {
+        if (skipNextSignedInSync) {
+          skipNextSignedInSync = false;
+        } else {
+          deferPostAuth(session, true);
+        }
+      }
+      notify();
+    });
+
+    markAuthReady();
+    notify();
+  })();
+
+  await initPromise;
 }
 
 export type AuthResult = {
@@ -379,6 +468,11 @@ async function ensureProfileDb(userId: string): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  setCache(null);
+  clearLocalUserData();
+  authChangeListeners.forEach((fn) => fn());
+  const { clearPlanState } = await import('./planLimits');
+  clearPlanState();
   const supabase = getSupabase();
   if (supabase) {
     await import('./social/presence')
@@ -386,10 +480,6 @@ export async function signOut(): Promise<void> {
       .catch(() => {});
     await supabase.auth.signOut();
   }
-  const { clearPlanState } = await import('./planLimits');
-  clearPlanState();
-  clearLocalUserData();
-  setCache(null);
 }
 
 export async function resetPassword(

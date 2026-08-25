@@ -1,4 +1,4 @@
-import { analyzeSheetWithAi, isAiScanEnabled, mapAiPairsToWordPairs } from './aiExtract';
+import { analyzeSheetWithAi, collectIgnoredAiPairs, isAiScanEnabled, mapAiPairsToWordPairs } from './aiExtract';
 import { reconcileWordListPairs } from './columnParser';
 import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
@@ -12,6 +12,7 @@ export type ExtractSource = 'ai' | 'ocr';
 export interface ExtractPairsResult {
   pairs: WordPair[];
   source: ExtractSource;
+  ignored?: WordPair[];
 }
 
 async function extractViaOcr(file: File, sheetType: SheetType): Promise<WordPair[]> {
@@ -28,12 +29,12 @@ export async function extractPairsFromImage(
     try {
       const ai = await analyzeSheetWithAi(file, sheetType);
       if (ai?.pairs.length) {
+        const mapped = mapAiPairsToWordPairs(ai.pairs);
+        const ignored = collectIgnoredAiPairs(ai.pairs);
         const sourceHint = ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n');
-        const pairs = coercePlayablePairs(
-          reconcileWordListPairs(mapAiPairsToWordPairs(ai.pairs), sourceHint),
-        );
+        const pairs = coercePlayablePairs(reconcileWordListPairs(mapped, sourceHint));
         if (canOpenGamePath(pairs)) {
-          return { pairs, source: 'ai' };
+          return { pairs, source: 'ai', ignored };
         }
       }
     } catch {

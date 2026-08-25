@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { mapAiPairsToWordPairs, parseAiExtractResponse } from './aiExtract';
+import { mapAiPairsToWordPairs, parseAiExtractResponse, collectIgnoredAiPairs } from './aiExtract';
 
 describe('aiExtract', () => {
   it('parses valid AI JSON', () => {
@@ -38,6 +38,17 @@ describe('aiExtract', () => {
     expect(mapped.some((p) => p.definition === 'iologiste')).toBe(false);
     expect(mapped.some((p) => p.definition === 'tout')).toBe(true);
     expect(mapped.some((p) => p.term === 'fuif')).toBe(false);
+  });
+
+  it('collects ignored low-confidence and fragment pairs for review', () => {
+    const ignored = collectIgnoredAiPairs([
+      { term: 'alles', definition: 'iologiste', termLang: 'nl', defLang: 'fr', confidence: 'medium' },
+      { term: 'alles', definition: 'tout', termLang: 'nl', defLang: 'fr', confidence: 'high' },
+      { term: 'fuif', definition: 'soirée', termLang: 'nl', defLang: 'fr', confidence: 'low' },
+    ]);
+    expect(ignored.some((p) => p.definition === 'iologiste')).toBe(true);
+    expect(ignored.some((p) => p.term === 'fuif')).toBe(true);
+    expect(ignored.every((p) => p.quality === 'uncertain')).toBe(true);
   });
 
   it('rejects invalid payload', () => {

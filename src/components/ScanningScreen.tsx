@@ -1,5 +1,4 @@
 import { useEffect, useRef, type CSSProperties } from 'react';
-import { LearningFlow } from './LearningFlow';
 import { ScanningBackground } from './ScanningBackground';
 import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 import { getScanAdventureState, type ScanPixMood } from '../lib/scanAdventure';
@@ -27,6 +26,21 @@ function moodToExpression(mood: ScanPixMood): MascotExpression {
   }
 }
 
+function bubbleForProgress(locale: Locale, pct: number, status: string): string {
+  const demo = t('demoLoading', locale);
+  const reading = t('reading', locale);
+  const scanningAi = t('scanningAi', locale);
+  const scanning = t('scanning', locale);
+  const building = t('building', locale);
+
+  if (status === demo) return status;
+  if (status === building || pct >= 92) return building;
+  if (status !== reading && status !== scanningAi && status !== scanning) return status;
+  if (pct < 40) return reading;
+  if (pct < 80) return scanningAi;
+  return building;
+}
+
 export function ScanningScreen({ locale, progress, status }: ScanningScreenProps) {
   const pct = Math.min(100, Math.max(0, progress));
   const adventure = getScanAdventureState(pct);
@@ -48,7 +62,7 @@ export function ScanningScreen({ locale, progress, status }: ScanningScreenProps
     ? { left: '100%', transform: 'translate(-100%, -50%)' }
     : { left: `${Math.max(8, pct)}%`, transform: 'translate(-50%, -50%)' };
 
-  const bubbleText = status || t('scanning', locale);
+  const bubbleText = bubbleForProgress(locale, pct, status);
   const runnerExpression = moodToExpression(adventure.mood);
 
   return (
@@ -56,8 +70,6 @@ export function ScanningScreen({ locale, progress, status }: ScanningScreenProps
       <ScanningBackground />
 
       <div className="scanning-content scanning-content-adventure">
-        <p className="scanning-quest-label">{t('scanningQuestLabel', locale)}</p>
-
         <div className="scanning-adventure-stage">
           <div className="scanning-speech-bubble" role="status" aria-live="polite" key={bubbleText}>
             <p className="scanning-speech-text">{bubbleText}</p>
@@ -101,14 +113,8 @@ export function ScanningScreen({ locale, progress, status }: ScanningScreenProps
                 </div>
               </div>
             </div>
-
-            <p className={`scanning-checkpoint${adventure.rocket ? ' scanning-checkpoint--boost' : ''}`}>
-              {t(adventure.checkpointKey, locale)}
-            </p>
           </div>
         </div>
-
-        <LearningFlow active={atEnd ? 'game' : adventure.flowStep} locale={locale} compact />
       </div>
     </div>
   );

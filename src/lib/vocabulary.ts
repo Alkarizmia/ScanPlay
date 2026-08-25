@@ -7,6 +7,7 @@ import {
   isSectionTitle,
   isSpellingHintDefinition,
   isTrueFalseSuitable,
+  isTrustedForQuiz,
 } from './pairQuality';
 
 const INSTRUCTION_PATTERNS = [
@@ -153,6 +154,7 @@ export function getQuizPool(pairs: WordPair[]): WordPair[] {
 
   const relaxed = coercePlayablePairs(pairs).filter(
     (p) =>
+      isTrustedForQuiz(p) &&
       p.term.length >= 2 &&
       p.definition.length >= 2 &&
       !isInstructionText(p.term) &&
@@ -377,7 +379,10 @@ export function getPlayPairs(
 /** Strict filter for quiz — never use raw unfiltered pairs. */
 export function filterQuizPool(pairs: WordPair[]): WordPair[] {
   return sanitizePairs(pairs).filter(
-    (p) => !isGarbageVocabTerm(p.term) && isPlayableDefinition(p.definition, p.term),
+    (p) =>
+      isTrustedForQuiz(p) &&
+      !isGarbageVocabTerm(p.term) &&
+      isPlayableDefinition(p.definition, p.term),
   );
 }
 

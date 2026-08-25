@@ -15,7 +15,7 @@ import { getAppStats } from '../lib/stats';
 import { createProfileAvatar } from '../lib/thumbnail';
 import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
-import type { Locale } from '../types';
+import type { Locale, TabId } from '../types';
 import { SubscriptionSection } from './SubscriptionSection';
 
 interface ProfileSectionProps {
@@ -25,9 +25,10 @@ interface ProfileSectionProps {
   onUpgrade: () => void;
   onToast?: (message: string) => void;
   variant?: 'embedded' | 'page';
+  onOpenTab?: (tab: TabId) => void;
 }
 
-export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToast, variant = 'embedded' }: ProfileSectionProps) {
+export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToast, variant = 'embedded', onOpenTab }: ProfileSectionProps) {
   const profile = getProfile();
   const fileRef = useRef<HTMLInputElement>(null);
   const [nameDraft, setNameDraft] = useState(profile?.displayName ?? '');
@@ -273,6 +274,26 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
         </div>
 
         <div className="profile-card-divider" role="presentation" />
+
+        {onOpenTab && (
+          <nav className="profile-shortcuts" aria-label={t('profileShortcuts', locale)}>
+            <p className="profile-picker-label">{t('profileShortcuts', locale)}</p>
+            <div className="profile-shortcut-grid">
+              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('shop')}>
+                {t('navChest', locale)}
+              </button>
+              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('mistakes')}>
+                {t('mistakes', locale)}
+              </button>
+              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('achievements')}>
+                {t('achievements', locale)}
+              </button>
+              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('settings')}>
+                {t('settings', locale)}
+              </button>
+            </div>
+          </nav>
+        )}
 
         <SubscriptionSection
           embedded

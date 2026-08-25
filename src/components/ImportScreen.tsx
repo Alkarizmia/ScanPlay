@@ -214,6 +214,7 @@ export function ImportScreen({
               </span>
               <span className="import-dropzone-title">{t('importDrop', locale)}</span>
               <span className="import-dropzone-sub">{t('importDropOr', locale)}</span>
+              <span className="import-frame-hint">{t('importFrameHint', locale)}</span>
             </div>
           )}
 
@@ -243,6 +244,7 @@ export function ImportScreen({
             </p>
           )}
           <p className="import-photos-sub">{t('importPhotosSub', locale)}</p>
+          <p className="import-frame-hint">{t('importFrameHint', locale)}</p>
           <span className="import-config-badge import-photos-badge">
             {t('importPicked', locale).replace('{count}', String(picked.length))}
           </span>

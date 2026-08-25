@@ -11,10 +11,12 @@ import './styles/responsive.css';
 import './styles/lesson-profile.css';
 import './styles/mascot.css';
 import App from './App.tsx';
+import { initAuth } from './lib/auth';
 
 initTheme();
 applyDeviceAttributes(detectDeviceProfile());
 void registerServiceWorker();
+void initAuth();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

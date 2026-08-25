@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GameMode, Locale, WordPair } from '../../types';
 import { getLessonTotalUnits, getLessonUnitOffsets, getGameUnitCount } from '../../lib/lessonUnits';
 import { gameProgressPct, GameHeader } from './GameHeader';
@@ -49,14 +49,17 @@ export function LessonRunner({
   const overallProgress = gameProgressPct((unitOffsets[gameIndex] ?? 0) + stepDone, totalUnits);
 
   const handleStepProgress = useCallback((done: number, total: number) => {
-    setStepDone(done);
+    setStepDone((prev) => Math.max(prev, done));
     void total;
   }, []);
 
+  const onSubGameStartRef = useRef(onSubGameStart);
+  onSubGameStartRef.current = onSubGameStart;
+
   useEffect(() => {
-    onSubGameStart();
+    onSubGameStartRef.current();
     setStepDone(0);
-  }, [gameIndex, onSubGameStart]);
+  }, [gameIndex]);
 
   const handleComplete = useCallback(
     (score: number, total: number) => {

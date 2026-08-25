@@ -732,6 +732,76 @@ body {
   margin-top: var(--space-2);
 }
 
+.home-continue-block {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  padding: 20px 16px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--surface-border);
+}
+
+.home-continue-hint {
+  margin: 0;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.home-continue-cta,
+.home-continue-scan {
+  width: 100%;
+  min-height: 48px;
+}
+
+.import-frame-hint {
+  display: block;
+  margin: 8px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.scanning-steps {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  list-style: none;
+  margin: 0 0 12px;
+  padding: 0;
+}
+
+.scanning-step {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.scanning-step--active {
+  color: #052e16;
+  background: #22c55e;
+}
+
+.scanning-step--done {
+  color: #86efac;
+}
+
+.profile-shortcut-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.profile-shortcut-btn {
+  min-height: 44px;
+}
+
 .home-scan-hint {
   margin: var(--space-3) 0 0;
   font-size: 0.78rem;

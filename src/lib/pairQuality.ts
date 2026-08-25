@@ -168,12 +168,17 @@ export function isPlayableDefinition(definition: string, term: string): boolean 
   return defWords >= 2;
 }
 
+export function isTrustedForQuiz(pair: WordPair): boolean {
+  return pair.quality !== 'uncertain';
+}
+
 /** Vrai/Faux needs real cross-language translation pairs with distinct answers. */
 export function isTrueFalseSuitable(pairs: WordPair[]): boolean {
   if (pairs.length < 3) return false;
 
   const candidates = pairs.filter(
     (p) =>
+      isTrustedForQuiz(p) &&
       !isGarbageVocabTerm(p.term) &&
       !isGarbageVocabTerm(p.definition) &&
       !isSectionTitle(p.term) &&

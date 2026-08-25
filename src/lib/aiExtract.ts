@@ -37,6 +37,7 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[]): WordPair[] {
       definition: fixOcrLine(p.definition.trim()).slice(0, 120),
       termLang: normalizeLang(p.termLang),
       defLang: normalizeLang(p.defLang),
+      quality: 'trusted' as const,
     }))
     .filter((p) => !isGarbageVocabTerm(p.term) && !isGarbageVocabTerm(p.definition))
     .filter((p) => !isSectionTitle(p.term) && !isSectionTitle(p.definition))
@@ -44,6 +45,25 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[]): WordPair[] {
     .filter((p) => !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2)
     .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase());
   return dropSiblingOcrFragments(mapped);
+}
+
+function pairKey(term: string, definition: string): string {
+  return `${term.toLowerCase()}\t${definition.toLowerCase()}`;
+}
+
+/** Pairs dropped for low confidence, fragments, or garbage — shown on review, never sent to quiz. */
+export function collectIgnoredAiPairs(pairs: AiExtractPair[]): WordPair[] {
+  const kept = new Set(mapAiPairsToWordPairs(pairs).map((p) => pairKey(p.term, p.definition)));
+  return pairs
+    .filter((p) => p.term?.trim() && p.definition?.trim())
+    .map((p) => ({
+      term: fixOcrLine(p.term.trim()).slice(0, 55),
+      definition: fixOcrLine(p.definition.trim()).slice(0, 120),
+      termLang: normalizeLang(p.termLang),
+      defLang: normalizeLang(p.defLang),
+      quality: 'uncertain' as const,
+    }))
+    .filter((p) => p.term && p.definition && !kept.has(pairKey(p.term, p.definition)));
 }
 
 export function parseAiExtractResponse(raw: unknown): AiExtractResponse | null {

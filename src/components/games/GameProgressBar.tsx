@@ -10,8 +10,16 @@ export function gameProgressPct(done: number, total: number): number {
   return Math.min(100, Math.round((done / total) * 100));
 }
 
+function chargeColor(pct: number): string {
+  const t = Math.min(1, Math.max(0, pct / 100));
+  const hue = 128 - t * 128;
+  const sat = 72 + t * 16;
+  const light = 46 - t * 6;
+  return `hsl(${hue} ${sat}% ${light}%)`;
+}
+
 export function GameProgressBar({ value }: GameProgressBarProps) {
-  const pct = Math.min(100, Math.max(0, value));
+  const pct = Math.min(100, Math.max(0, Number.isFinite(value) ? value : 0));
   const prevRef = useRef(pct);
   const [pulse, setPulse] = useState(false);
 
@@ -25,11 +33,13 @@ export function GameProgressBar({ value }: GameProgressBarProps) {
     prevRef.current = pct;
   }, [pct]);
 
-  const excitement = pct / 100;
+  const hueEnd = 128 - (pct / 100) * 128;
+  const chargeClass =
+    pct >= 94 ? ' game-progress-bar--explode' : pct >= 78 ? ' game-progress-bar--charge' : '';
 
   return (
     <div
-      className="game-progress-bar"
+      className={`game-progress-bar${chargeClass}`}
       role="progressbar"
       aria-valuenow={pct}
       aria-valuemin={0}
@@ -40,7 +50,9 @@ export function GameProgressBar({ value }: GameProgressBarProps) {
         style={
           {
             width: `${pct}%`,
-            '--progress-excitement': excitement,
+            '--progress-excitement': pct / 100,
+            '--progress-color-start': chargeColor(Math.max(0, pct - 28)),
+            '--progress-color-end': `hsl(${hueEnd} ${72 + (pct / 100) * 16}% ${46 - (pct / 100) * 6}%)`,
           } as CSSProperties
         }
       >

@@ -22,7 +22,7 @@ import { getDateLocale, t } from '../lib/i18n';
 import { SAMPLE_PAIRS } from '../lib/sample';
 import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining } from '../lib/planLimits';
 import type { DeviceProfile } from '../lib/device';
-import type { Locale, StepProgressMap } from '../types';
+import type { HistoryEntry, Locale, StepProgressMap } from '../types';
 
 interface HomeScreenProps {
   locale: Locale;
@@ -36,6 +36,8 @@ interface HomeScreenProps {
   onToast?: (message: string) => void;
   onAuth?: () => void;
   onRefresh?: () => void;
+  onContinueLast?: () => void;
+  onOpenDeck?: (entry: HistoryEntry) => void;
 }
 
 const GUEST_PREVIEW_PAIRS = SAMPLE_PAIRS.slice(0, 8);
@@ -59,6 +61,8 @@ export function HomeScreen({
   onToast,
   onAuth,
   onRefresh,
+  onContinueLast,
+  onOpenDeck,
 }: HomeScreenProps) {
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
@@ -229,6 +233,21 @@ export function HomeScreen({
           />
         )}
 
+        {loggedIn && recentDecks[0] && onContinueLast && (
+          <section className="home-continue-block">
+            <p className="home-continue-hint">
+              {t('homeContinueLastHint', locale).replace('{title}', recentDecks[0].title)}
+            </p>
+            <button type="button" className="btn-primary btn-lg home-continue-cta" onClick={onContinueLast}>
+              {t('homeContinueLast', locale)}
+            </button>
+            <button type="button" className="btn-secondary home-continue-scan" onClick={() => onScanPlay()}>
+              {t('homeScanAnother', locale)}
+            </button>
+          </section>
+        )}
+
+        {!(loggedIn && recentDecks[0]) && (
         <section
           className={`home-scan-hero premium-card${!loggedIn && canGuestScan() ? ' home-scan-hero--guest-trial' : ''}`}
         >
@@ -311,6 +330,7 @@ export function HomeScreen({
             </div>
           )}
         </section>
+        )}
 
         {!loggedIn && canGuestScan() && onAuth && (
           <button type="button" className="guest-mobile-signup-teaser" onClick={onAuth}>
@@ -325,7 +345,19 @@ export function HomeScreen({
             </div>
             <div className="home-recent-scroll">
               {recentDecks.map((deck) => (
-                <article key={deck.id} className="home-recent-card">
+                <article
+                  key={deck.id}
+                  className="home-recent-card"
+                  role={onOpenDeck ? 'button' : undefined}
+                  tabIndex={onOpenDeck ? 0 : undefined}
+                  onClick={() => onOpenDeck?.(deck)}
+                  onKeyDown={(e) => {
+                    if (onOpenDeck && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      onOpenDeck(deck);
+                    }
+                  }}
+                >
                   {deck.thumbnail ? (
                     <img src={deck.thumbnail} alt="" className="home-recent-thumb" />
                   ) : (

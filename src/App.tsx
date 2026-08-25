@@ -29,6 +29,7 @@ import { ModeSelect } from './components/ModeSelect';
 import { PricingScreen } from './components/PricingScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { ScanningScreen } from './components/ScanningScreen';
+import { ReviewCardsScreen } from './components/ReviewCardsScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { LessonRunner } from './components/games/LessonRunner';
 import { LessonCompleteScreen } from './components/LessonCompleteScreen';
@@ -78,8 +79,8 @@ import { refreshFriendCount } from './lib/social/friendCountCache';
 import { notifyAchievementUnlock, notifyGoldStep, notifyStreakMilestone } from './lib/notifications';
 import { playSound, playStreakSound, stopAllMusic } from './lib/sounds';
 import { hapticAchievement, hapticLevelUp } from './lib/haptics';
-import { initAuth, isLoggedIn, onPasswordRecovery, consumePasswordRecoveryPending, setupSyncLifecycle, waitForAuth } from './lib/auth';
-import { addHistoryEntry, canAddHistory, readDeckProgress, touchHistoryPlayed, updateHistoryDeckProgress, updateHistoryMode, updateHistorySessionStats, getHistoryEntry } from './lib/history';
+import { hasStoredAuthSession, initAuth, isAuthReady, isLoggedIn, onPasswordRecovery, consumePasswordRecoveryPending, setupSyncLifecycle, waitForAuth } from './lib/auth';
+import { addHistoryEntry, canAddHistory, getHistory, readDeckProgress, touchHistoryPlayed, updateHistoryDeckProgress, updateHistoryMode, updateHistorySessionStats, getHistoryEntry } from './lib/history';
 import { onSyncReady, pullUserData } from './lib/sync';
 import { isStripeCheckoutEnabled } from './lib/stripeCheckout';
 import { addExamHistoryEntry, type ExamStepGrade } from './lib/examHistory';
@@ -180,6 +181,7 @@ export default function App() {
   const [flow, setFlow] = useState<FlowScreen | null>(null);
   const [locale, setLocaleState] = useState<Locale>(getLocale);
   const [pairs, setPairs] = useState<WordPair[]>([]);
+  const [ignoredScanPairs, setIgnoredScanPairs] = useState<WordPair[]>([]);
   const [mode, setMode] = useState<GameMode | null>(null);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStatus, setScanStatus] = useState('');
@@ -234,7 +236,9 @@ export default function App() {
   const [lessonSession, setLessonSession] = useState<LessonSession | null>(null);
   const [navMoreOpen, setNavMoreOpen] = useState(false);
   const [showMascotIntro, setShowMascotIntro] = useState(() => !hasSeenMascotIntro());
+  const [authReady, setAuthReady] = useState(() => isAuthReady());
   const welcomeBackChecked = useRef(false);
+  const wasLoggedInRef = useRef(isLoggedIn());
   const sessionStart = useRef(0);
   const importErrorTimer = useRef<number | null>(null);
   const openAdoptedGuestDeckRef = useRef<() => boolean>(() => false);
@@ -246,6 +250,30 @@ export default function App() {
   useEffect(() => {
     stopAllMusic();
   }, []);
+
+  useEffect(() => {
+    void waitForAuth().then(() => setAuthReady(true));
+  }, []);
+
+  useEffect(() => {
+    const logged = isLoggedIn();
+    if (logged) {
+      wasLoggedInRef.current = true;
+      return;
+    }
+    if (wasLoggedInRef.current) {
+      wasLoggedInRef.current = false;
+      markNavReplace();
+      setNavMoreOpen(false);
+      setFlow(null);
+      setTab('home');
+      return;
+    }
+    if (flow === null && tab !== 'home') {
+      markNavReplace();
+      setTab('home');
+    }
+  }, [refreshKey, tab, flow]);
 
   useEffect(() => {
     if (!isLoggedIn() || !isSocialAvailable()) return;
@@ -412,6 +440,7 @@ export default function App() {
     setMultiplayerPlayers([]);
     setPendingImportFiles(null);
     setLessonSession(null);
+    setIgnoredScanPairs([]);
     resetTrainingFocus();
   };
 
@@ -610,7 +639,7 @@ export default function App() {
   );
 
   const finishExtracted = useCallback(
-    (parsed: WordPair[], thumbnail?: string, usedSample = false) => {
+    (parsed: WordPair[], thumbnail?: string, usedSample = false, ignored: WordPair[] = []) => {
       if (parsed.length === 0) {
         if (usedSample) {
           goModes(SAMPLE_PAIRS, thumbnail, false, true);
@@ -633,10 +662,20 @@ export default function App() {
 
       setScanProgress(100);
       setScanStatus('');
-      goModes(parsed, thumbnail, false, usedSample);
       playSound('scanComplete');
       playSound('ocrComplete');
       mascotReactScanComplete();
+
+      if (usedSample) {
+        goModes(parsed, thumbnail, false, true);
+        return;
+      }
+
+      setPairs(parsed);
+      setIgnoredScanPairs(ignored);
+      setDeckThumbnail(thumbnail);
+      markNavReplace();
+      setFlow('reviewCards');
     },
     [goModes, locale, failImport],
   );
@@ -797,6 +836,7 @@ export default function App() {
 
       try {
         const allPairs: WordPair[] = [];
+        const allIgnored: WordPair[] = [];
         for (let i = 0; i < scanFiles.length; i += 1) {
           setScanStatus(
             scanFiles.length > 1
@@ -807,11 +847,12 @@ export default function App() {
                 ? t('scanningAi', locale)
                 : t('reading', locale),
           );
-          const { pairs, source } = await extractPairsFromImage(scanFiles[i], sheetType);
+          const { pairs, source, ignored } = await extractPairsFromImage(scanFiles[i], sheetType);
           if (source === 'ocr' && isAiScanEnabled() && i === 0) {
             setScanStatus(t('reading', locale));
           }
           allPairs.push(...pairs);
+          if (ignored?.length) allIgnored.push(...ignored);
         }
         if (finished) return;
         finished = true;
@@ -819,7 +860,7 @@ export default function App() {
         clearTimeout(safetyTimer);
         setScanProgress(95);
         setScanStatus(t('building', locale));
-        finishExtracted(coercePlayablePairs(allPairs), thumbnail);
+        finishExtracted(coercePlayablePairs(allPairs), thumbnail, false, allIgnored);
       } catch {
         finishWithFallback();
       }
@@ -1258,6 +1299,7 @@ export default function App() {
   }, [tab, flow]);
 
   const showBottomNav = isLoggedIn() && (device.kind === 'desktop' || flow === null);
+  const waitingForSession = !authReady && !isLoggedIn() && hasStoredAuthSession();
 
   const restoreGuestDeckToModes = useCallback(
     (entry: HistoryEntry) => {
@@ -1525,7 +1567,7 @@ export default function App() {
   });
 
   return (
-    <div className={`app-shell${isLoggedIn() ? '' : ' app-shell--guest'}`} data-device={device.kind}>
+    <div className={`app-shell${isLoggedIn() || waitingForSession ? '' : ' app-shell--guest'}`} data-device={device.kind}>
       <Confetti active={showConfetti} />
       <StreakClaimFlyby locale={locale} streak={streakClaimCount} pulseKey={streakClaimPulse} />
       <AchievementUnlockModal
@@ -1536,7 +1578,7 @@ export default function App() {
       <Toast message={toast} />
       <AdConsentBanner locale={locale} />
       <MascotCorner locale={locale} enabled={flow === 'playing' || flow === 'lesson'} />
-      {showMascotIntro && (
+      {showMascotIntro && !waitingForSession && isLoggedIn() && (
         <MascotFirstLaunch locale={locale} onDone={() => setShowMascotIntro(false)} />
       )}
 
@@ -1617,7 +1659,10 @@ export default function App() {
         />
       )}
 
-      {flow === null && tab === 'home' && (
+      {waitingForSession && flow === null && tab === 'home' && (
+        <div className="auth-session-boot" aria-busy="true" />
+      )}
+      {flow === null && tab === 'home' && !waitingForSession && (
         <HomeScreen
           locale={locale}
           refreshKey={refreshKey}
@@ -1630,6 +1675,11 @@ export default function App() {
           onToast={showToast}
           onAuth={() => openAuth('login')}
           onRefresh={refresh}
+          onContinueLast={() => {
+            const last = getHistory()[0];
+            if (last) openHistoryDeck(last);
+          }}
+          onOpenDeck={openHistoryDeck}
         />
       )}
       {flow === null && tab === 'history' && (
@@ -1668,6 +1718,7 @@ export default function App() {
           onUpgrade={() => setFlow('pricing')}
           onAuth={() => setFlow('auth')}
           onToast={showToast}
+          onOpenTab={handleTabChange}
         />
       )}
       {flow === null && tab === 'mistakes' && (
@@ -1685,7 +1736,10 @@ export default function App() {
           onAuth={() => setFlow('auth')}
           isLoggedIn={isLoggedIn()}
           onLogout={() => {
+            markNavReplace();
             closeFlow();
+            setNavMoreOpen(false);
+            setTab('home');
             refresh();
           }}
           onPricing={() => setFlow('pricing')}
@@ -1715,6 +1769,21 @@ export default function App() {
           locale={locale}
           progress={scanProgress}
           status={scanStatus || t('scanning', locale)}
+        />
+      )}
+      {flow === 'reviewCards' && (
+        <ReviewCardsScreen
+          locale={locale}
+          pairs={pairs}
+          ignored={ignoredScanPairs}
+          onBack={appGoBack}
+          onRescan={() => {
+            setIgnoredScanPairs([]);
+            startScanFlow();
+          }}
+          onContinue={(kept) => {
+            goModes(kept, deckThumbnail, false, false);
+          }}
         />
       )}
       {flow === 'modes' && (

@@ -71,4 +71,17 @@ describe('pairQuality', () => {
     ];
     expect(isTrueFalseSuitable(titleOnly)).toBe(false);
   });
+
+  it('excludes uncertain pairs from true/false', () => {
+    const mixed = [
+      { term: 'de zoon', definition: 'le fils', quality: 'uncertain' as const },
+      { term: 'de vader', definition: 'le père' },
+      { term: 'de moeder', definition: 'la mère' },
+      { term: 'de broer', definition: 'le frère' },
+    ];
+    expect(isTrueFalseSuitable(mixed)).toBe(true);
+    expect(
+      isTrueFalseSuitable(mixed.map((p) => ({ ...p, quality: 'uncertain' as const }))),
+    ).toBe(false);
+  });
 });

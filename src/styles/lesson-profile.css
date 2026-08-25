@@ -330,6 +330,7 @@
 }
 .truefalse-btn {
   padding: 18px;
+  min-height: 48px;
   border-radius: var(--radius-md);
   border: 2px solid var(--border);
   font-size: 1.1rem;
@@ -432,12 +433,12 @@
   align-items: center;
   justify-content: center;
 }
-.bottom-nav-items--six .bottom-nav-item {
+.bottom-nav-items--four .bottom-nav-item {
   min-width: 0;
   flex: 1;
 }
-.bottom-nav-items--six .bottom-nav-label {
-  font-size: 0.58rem;
+.bottom-nav-items--four .bottom-nav-label {
+  font-size: 0.68rem;
 }
 .bottom-nav-item--more-open .bottom-nav-icon {
   color: #22c55e;

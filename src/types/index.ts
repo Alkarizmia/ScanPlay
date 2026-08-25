@@ -68,6 +68,8 @@ export interface WordPair {
   defLang?: LangCode;
   /** Emoji pictogram for concrete nouns (vocab games). */
   visual?: string;
+  /** After review: uncertain pairs stay in flashcards/match but not quiz or true/false. */
+  quality?: 'trusted' | 'uncertain';
 }
 
 export interface SessionResult {
@@ -105,7 +107,8 @@ export type FlowScreen =
   | 'multiplayerLobby'
   | 'multiplayerResults'
   | 'auth'
-  | 'pricing';
+  | 'pricing'
+  | 'reviewCards';
 
 export interface LessonGameResult {
   mode: GameMode;

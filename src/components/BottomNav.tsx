@@ -16,19 +16,17 @@ interface BottomNavProps {
 
 const MAIN_TABS: { id: TabId; labelKey: TranslationKey }[] = [
   { id: 'home', labelKey: 'home' },
-  { id: 'shop', labelKey: 'navChest' },
-  { id: 'friends', labelKey: 'friends' },
   { id: 'history', labelKey: 'history' },
+  { id: 'friends', labelKey: 'friends' },
   { id: 'profile', labelKey: 'profileTitle' },
-  { id: 'more', labelKey: 'navMore' },
 ];
 
 function navHighlight(tab: TabId): TabId {
-  if (isMoreSubTab(tab)) return 'more';
+  if (isMoreSubTab(tab) || tab === 'shop' || tab === 'more') return 'profile';
   return tab;
 }
 
-export function BottomNav({ active, onChange, locale, device, moreOpen, onMoreToggle }: BottomNavProps) {
+export function BottomNav({ active, onChange, locale, device }: BottomNavProps) {
   const highlight = navHighlight(active);
 
   return (
@@ -39,21 +37,16 @@ export function BottomNav({ active, onChange, locale, device, moreOpen, onMoreTo
         </div>
       )}
 
-      <div className="bottom-nav-items bottom-nav-items--six">
+      <div className="bottom-nav-items bottom-nav-items--four">
         {MAIN_TABS.map((tab) => {
-          const isMore = tab.id === 'more';
-          const isActive = isMore ? highlight === 'more' : highlight === tab.id;
+          const isActive = highlight === tab.id;
           return (
             <button
               key={tab.id}
               type="button"
-              className={`bottom-nav-item${isActive ? ' active' : ''}${isMore && moreOpen ? ' bottom-nav-item--more-open' : ''}`}
-              onClick={() => {
-                if (isMore && onMoreToggle) onMoreToggle();
-                else onChange(tab.id);
-              }}
+              className={`bottom-nav-item${isActive ? ' active' : ''}`}
+              onClick={() => onChange(tab.id)}
               aria-current={isActive ? 'page' : undefined}
-              aria-expanded={isMore ? moreOpen : undefined}
             >
               <span className="bottom-nav-icon" aria-hidden="true">
                 <NavIcon tab={tab.id} />

@@ -1,6 +1,6 @@
 import { ProfileSection } from './ProfileSection';
 import { t } from '../lib/i18n';
-import type { Locale } from '../types';
+import type { Locale, TabId } from '../types';
 
 interface ProfileScreenProps {
   locale: Locale;
@@ -10,6 +10,7 @@ interface ProfileScreenProps {
   onUpgrade: () => void;
   onAuth: () => void;
   onToast?: (message: string) => void;
+  onOpenTab?: (tab: TabId) => void;
 }
 
 export function ProfileScreen({
@@ -20,6 +21,7 @@ export function ProfileScreen({
   onUpgrade,
   onAuth,
   onToast,
+  onOpenTab,
 }: ProfileScreenProps) {
   return (
     <div className="screen tab-screen profile-screen">
@@ -34,6 +36,7 @@ export function ProfileScreen({
             onRefresh={onRefresh}
             onUpgrade={onUpgrade}
             onToast={onToast}
+            onOpenTab={onOpenTab}
             variant="page"
           />
         ) : (

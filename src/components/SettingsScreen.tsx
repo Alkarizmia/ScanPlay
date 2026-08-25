@@ -66,8 +66,12 @@ export function SettingsScreen({
   };
 
   const handleLogout = async () => {
-    await signOut();
     onLogout();
+    try {
+      await signOut();
+    } catch {
+      /* local session already cleared — stay on the guest landing */
+    }
   };
 
   const updatePref = <K extends keyof typeof prefs>(key: K, value: (typeof prefs)[K]) => {

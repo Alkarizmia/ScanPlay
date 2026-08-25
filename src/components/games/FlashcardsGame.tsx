@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
-import { playGameCorrectSound, playSound } from '../../lib/sounds';
+import { playSound } from '../../lib/sounds';
 import { getExamTimerSeconds } from '../../lib/examTimer';
 import { addCorrectAnswer } from '../../lib/gamification';
 import { vibrateSuccess } from '../../lib/haptics';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
+import { dispatchMascotReaction } from '../../lib/mascot/reactions';
+import { getLocale, t } from '../../lib/i18n';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -20,9 +22,11 @@ interface FlashcardsGameProps extends EmbeddedGameProps {
   onExit: () => void;
 }
 
+const SWIPE_COMMIT = 72;
+
 export function FlashcardsGame({
   pairs,
-  locale,
+  locale: localeProp,
   examMode,
   deckId,
   stepIndex,
@@ -31,9 +35,12 @@ export function FlashcardsGame({
   embedded = false,
   onStepProgress,
 }: FlashcardsGameProps) {
+  const locale = getLocale() || localeProp;
   const [index, setIndex] = useState(0);
   const [flipped, setFlipped] = useState(false);
   const [known, setKnown] = useState(0);
+  const [dragX, setDragX] = useState(0);
+  const [leaving, setLeaving] = useState<'left' | 'right' | null>(null);
 
   const total = Math.min(pairs.length, examMode ? 10 : 8);
   const deck = pairs.slice(0, total);
@@ -42,9 +49,12 @@ export function FlashcardsGame({
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const knownRef = useRef(0);
   knownRef.current = known;
+  const pointerStart = useRef<{ x: number; id: number } | null>(null);
+  const movedRef = useRef(false);
+  const busyRef = useRef(false);
 
   useEffect(() => {
-    if (embedded && onStepProgress) onStepProgress(index, total);
+    if (embedded && onStepProgress) onStepProgress(index + 1, total);
   }, [embedded, onStepProgress, index, total]);
 
   useEffect(() => {
@@ -68,85 +78,178 @@ export function FlashcardsGame({
     [onComplete, total],
   );
 
-  const answer = (gotIt: boolean) => {
-    if (!current) return;
-    if (gotIt) {
-      addCorrectAnswer();
-      markCorrected(current);
-      vibrateSuccess();
-      playGameCorrectSound(stepIndex != null);
-    } else {
-      recordMistake(current, 'flashcards', deckId ?? undefined, stepIndex ?? undefined);
-      playSound('wrong');
-    }
-    const nextKnown = known + (gotIt ? 1 : 0);
-    if (index >= total - 1) {
-      finish(nextKnown);
+  const answer = useCallback(
+    (gotIt: boolean) => {
+      if (!current || busyRef.current) return;
+      busyRef.current = true;
+      if (gotIt) {
+        addCorrectAnswer();
+        markCorrected(current);
+        vibrateSuccess();
+        playSound('correct');
+        dispatchMascotReaction({
+          type: 'correct',
+          messageKey: knownRef.current % 2 === 0 ? 'mascotFlashSuper' : 'mascotFlashNice',
+        });
+      } else {
+        recordMistake(current, 'flashcards', deckId ?? undefined, stepIndex ?? undefined);
+      }
+      const nextKnown = known + (gotIt ? 1 : 0);
+      if (index >= total - 1) {
+        window.setTimeout(() => finish(nextKnown), 180);
+        return;
+      }
+      window.setTimeout(() => {
+        setKnown(nextKnown);
+        setIndex((i) => i + 1);
+        setFlipped(false);
+        setDragX(0);
+        setLeaving(null);
+        busyRef.current = false;
+      }, 180);
+    },
+    [current, deckId, finish, index, known, stepIndex, total],
+  );
+
+  const commitSwipe = (gotIt: boolean) => {
+    setLeaving(gotIt ? 'right' : 'left');
+    setDragX(gotIt ? 280 : -280);
+    answer(gotIt);
+  };
+
+  const onPointerDown = (e: React.PointerEvent) => {
+    if (busyRef.current) return;
+    if ((e.target as HTMLElement).closest('button')) return;
+    pointerStart.current = { x: e.clientX, id: e.pointerId };
+    movedRef.current = false;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!pointerStart.current || pointerStart.current.id !== e.pointerId) return;
+    const dx = e.clientX - pointerStart.current.x;
+    if (Math.abs(dx) > 8) movedRef.current = true;
+    setDragX(dx);
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    if (!pointerStart.current || pointerStart.current.id !== e.pointerId) return;
+    const dx = e.clientX - pointerStart.current.x;
+    pointerStart.current = null;
+    if (dx >= SWIPE_COMMIT) {
+      commitSwipe(true);
       return;
     }
-    setKnown(nextKnown);
-    setIndex((i) => i + 1);
-    setFlipped(false);
+    if (dx <= -SWIPE_COMMIT) {
+      commitSwipe(false);
+      return;
+    }
+    setDragX(0);
+  };
+
+  const onCardActivate = () => {
+    if (movedRef.current || busyRef.current) return;
+    setFlipped((f) => {
+      if (!f) playSound('reveal');
+      return !f;
+    });
   };
 
   if (!current) return null;
+
+  const frontLabel =
+    current.termLang &&
+    current.defLang &&
+    current.termLang !== 'unknown' &&
+    current.defLang !== 'unknown'
+      ? `${current.termLang.toUpperCase()} → ${current.defLang.toUpperCase()}`
+      : t('cardTermLabel', locale);
+  const backLabel =
+    current.termLang &&
+    current.defLang &&
+    current.termLang !== 'unknown' &&
+    current.defLang !== 'unknown'
+      ? `${current.defLang.toUpperCase()}`
+      : t('cardMeaningLabel', locale);
+
+  const knownHint = Math.min(1, Math.max(0, dragX / SWIPE_COMMIT));
+  const reviewHint = Math.min(1, Math.max(0, -dragX / SWIPE_COMMIT));
+  const tilt = Math.max(-12, Math.min(12, dragX / 18));
 
   const body = (
     <>
       <div className="game-body flashcards-body">
         <div
-          role="button"
-          tabIndex={0}
-          className={`flashcard ${flipped ? 'flipped' : ''}`}
-          onClick={() =>
-            setFlipped((f) => {
-              if (!f) playSound('reveal');
-              return !f;
-            })
-          }
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' || e.key === ' ') {
-              e.preventDefault();
-              setFlipped((f) => {
-                if (!f) playSound('reveal');
-                return !f;
-              });
-            }
+          className={`flashcard-swipe-stage${leaving ? ` flashcard-swipe-stage--leave-${leaving}` : ''}`}
+          style={{
+            transform: `translateX(${dragX}px) rotate(${tilt}deg)`,
+            transition: pointerStart.current ? 'none' : 'transform 0.2s ease',
           }}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerCancel={onPointerUp}
         >
-          <div className="flashcard-face front">
-            <span className="card-label">Term</span>
-            <p className="card-text">{current.term}</p>
-            <HearButton
-              text={current.term}
-              lang={resolveSpeakLang(current)}
-              locale={locale}
-              className="flashcard-hear"
-              iconOnly
-            />
-            <span className="card-hint">Tap to flip</span>
-          </div>
-          <div className="flashcard-face back">
-            <span className="card-label">Meaning</span>
-            <p className="card-text">{current.definition}</p>
-            <HearButton
-              text={current.definition}
-              lang={current.defLang}
-              locale={locale}
-              className="flashcard-hear"
-              iconOnly
-            />
+          <span
+            className="flashcard-swipe-stamp flashcard-swipe-stamp--known"
+            style={{ opacity: knownHint }}
+          >
+            {t('cardSwipeKnown', locale)}
+          </span>
+          <span
+            className="flashcard-swipe-stamp flashcard-swipe-stamp--review"
+            style={{ opacity: reviewHint }}
+          >
+            {t('cardSwipeReview', locale)}
+          </span>
+          <div
+            role="button"
+            tabIndex={0}
+            className={`flashcard ${flipped ? 'flipped' : ''}`}
+            onClick={onCardActivate}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                onCardActivate();
+              }
+              if (e.key === 'ArrowRight') commitSwipe(true);
+              if (e.key === 'ArrowLeft') commitSwipe(false);
+            }}
+          >
+            <div className="flashcard-face front">
+              <span className="card-label">{frontLabel}</span>
+              <p className="card-text">{current.term}</p>
+              <HearButton
+                text={current.term}
+                lang={resolveSpeakLang(current)}
+                locale={locale}
+                className="flashcard-hear"
+                iconOnly
+              />
+              <span className="card-hint">{t('cardTapToFlip', locale)}</span>
+            </div>
+            <div className="flashcard-face back">
+              <span className="card-label">{backLabel}</span>
+              <p className="card-text">{current.definition}</p>
+              <HearButton
+                text={current.definition}
+                lang={current.defLang}
+                locale={locale}
+                className="flashcard-hear"
+                iconOnly
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {flipped && (
         <div className="game-actions">
-          <button type="button" className="btn-secondary" onClick={() => answer(false)}>
-            Still learning
+          <button type="button" className="btn-secondary" onClick={() => commitSwipe(false)}>
+            {t('cardStillLearning', locale)}
           </button>
-          <button type="button" className="btn-primary" onClick={() => answer(true)}>
-            Got it!
+          <button type="button" className="btn-primary" onClick={() => commitSwipe(true)}>
+            {t('cardGotIt', locale)}
           </button>
         </div>
       )}
