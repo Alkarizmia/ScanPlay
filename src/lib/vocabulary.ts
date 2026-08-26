@@ -1,4 +1,5 @@
 import type { PairDirection, WordPair } from '../types';
+import { looksLikeLatex } from './mathText';
 import { seededShuffle } from './seededRandom';
 import { enrichPairsWithVisuals } from './wordVisuals';
 import {
@@ -120,13 +121,14 @@ export const MIN_QUIZ_PAIRS_RELAXED = 2;
 export const MIN_MATCH_PAIRS = 2;
 
 export function isMathLikeText(text: string): boolean {
+  if (looksLikeLatex(text)) return true;
   return /[=+\-×÷*/^√∫∑]|\\frac|[0-9]\s*[+\-*/^]|[a-z]\s*=\s*[^=]/i.test(text);
 }
 
 export function isValidVocabPair(pair: WordPair, options?: { mathSheet?: boolean }): boolean {
   if (pair.term.length < 2 || pair.definition.length < 2) return false;
   if (options?.mathSheet || isMathLikeText(pair.term) || isMathLikeText(pair.definition)) {
-    if (pair.term.length > 80 || pair.definition.length > 140) return false;
+    if (pair.term.length > 120 || pair.definition.length > 280) return false;
     if (pair.term.toLowerCase() === pair.definition.toLowerCase()) return false;
     return true;
   }
@@ -441,8 +443,8 @@ export function canOpenGamePath(pairs: WordPair[]): boolean {
 }
 
 /** Lighter filter when strict sanitize removes everything but raw pairs exist. */
-export function coercePlayablePairs(raw: WordPair[]): WordPair[] {
-  const strict = sanitizePairs(raw);
+export function coercePlayablePairs(raw: WordPair[], options?: { mathSheet?: boolean }): WordPair[] {
+  const strict = sanitizePairs(raw, options);
   if (strict.length > 0) return strict;
 
   const seen = new Set<string>();

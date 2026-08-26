@@ -55,4 +55,33 @@ describe('aiExtract', () => {
     expect(parseAiExtractResponse(null)).toBeNull();
     expect(parseAiExtractResponse({ pairs: [] })).toBeNull();
   });
+
+  it('accepts math sheetType from vision JSON', () => {
+    const result = parseAiExtractResponse({
+      readable: true,
+      sheetType: 'math',
+      pairs: [
+        { term: 'Domaine', definition: 'D_f = \\mathbb{R} \\setminus \\{1\\}', confidence: 'high' },
+      ],
+    });
+    expect(result?.sheetType).toBe('math');
+    expect(result?.pairs[0]?.definition).toContain('\\mathbb{R}');
+  });
+
+  it('keeps LaTeX formulas instead of truncating like vocab', () => {
+    const latex = 'f(x) = \\frac{x^{2} - 2}{x - 1}';
+    const mapped = mapAiPairsToWordPairs(
+      [{ term: 'Fonction', definition: latex, confidence: 'high' }],
+      { mathSheet: true },
+    );
+    expect(mapped[0]?.definition).toBe(latex);
+  });
+
+  it('does not treat a vocab pair as math', () => {
+    const mapped = mapAiPairsToWordPairs([
+      { term: 'de zoon', definition: 'le fils', termLang: 'nl', defLang: 'fr', confidence: 'high' },
+    ]);
+    expect(mapped[0]?.term).toBe('de zoon');
+    expect(mapped[0]?.definition).toBe('le fils');
+  });
 });

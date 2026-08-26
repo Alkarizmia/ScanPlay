@@ -44,6 +44,7 @@ export function SpeakGame({
   onExit,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: SpeakGameProps) {
   const pool = useMemo(
     () =>
@@ -52,7 +53,7 @@ export function SpeakGame({
       ),
     [pairs],
   );
-  const total = Math.min(pool.length, examMode ? 6 : 5);
+  const total = Math.min(pool.length, examMode ? 6 : (maxItems ?? 5));
   const deck = pool.slice(0, total);
   const [index, setIndex] = useState(0);
 

@@ -1,6 +1,6 @@
 import { isVibrationEnabled } from './preferences';
 
-export type HapticPattern = 'tap' | 'success' | 'error' | 'achievement' | 'levelUp' | 'notification';
+export type HapticPattern = 'tap' | 'success' | 'error' | 'achievement' | 'levelUp' | 'notification' | 'burst';
 
 const PATTERNS: Record<HapticPattern, number | number[]> = {
   tap: 8,
@@ -9,6 +9,7 @@ const PATTERNS: Record<HapticPattern, number | number[]> = {
   achievement: [15, 50, 25, 50, 35],
   levelUp: [20, 40, 30, 40, 40, 60, 50],
   notification: [10, 60, 14],
+  burst: [18, 30, 22, 28, 40, 40, 80],
 };
 
 export function vibrate(pattern: number | number[] = 10): void {
@@ -42,6 +43,10 @@ export function hapticAchievement(): void {
 
 export function hapticLevelUp(): void {
   triggerHaptic('levelUp');
+}
+
+export function hapticBurst(): void {
+  triggerHaptic('burst');
 }
 
 export function hapticNotification(): void {

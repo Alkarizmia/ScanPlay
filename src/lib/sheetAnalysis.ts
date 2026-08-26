@@ -29,10 +29,17 @@ export async function extractPairsFromImage(
     try {
       const ai = await analyzeSheetWithAi(file, sheetType);
       if (ai?.pairs.length) {
-        const mapped = mapAiPairsToWordPairs(ai.pairs);
-        const ignored = collectIgnoredAiPairs(ai.pairs);
-        const sourceHint = ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n');
-        const pairs = coercePlayablePairs(reconcileWordListPairs(mapped, sourceHint));
+        const mathSheet = sheetType === 'math' || ai.sheetType === 'math';
+        const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet });
+        const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet });
+        const pairs = mathSheet
+          ? coercePlayablePairs(mapped, { mathSheet: true })
+          : coercePlayablePairs(
+              reconcileWordListPairs(
+                mapped,
+                ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n'),
+              ),
+            );
         if (canOpenGamePath(pairs)) {
           return { pairs, source: 'ai', ignored };
         }

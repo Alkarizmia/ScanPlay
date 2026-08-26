@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { t } from '../lib/i18n';
 import { canOpenGamePath } from '../lib/vocabulary';
+import { FormulaText } from './FormulaText';
 import type { Locale, WordPair } from '../types';
 
 interface ReviewCardsScreenProps {
@@ -88,8 +89,8 @@ export function ReviewCardsScreen({
                     </>
                   ) : (
                     <>
-                      <span className="review-card-term">{row.term}</span>
-                      <span className="review-card-def">{row.definition}</span>
+                      <FormulaText className="review-card-term" text={row.term} />
+                      <FormulaText className="review-card-def" text={row.definition} />
                     </>
                   )}
                 </div>
@@ -136,8 +137,8 @@ export function ReviewCardsScreen({
               {ignored.map((row, index) => (
                 <li key={`ign-${row.term}-${index}`} className="review-card-row review-card-row--ignored">
                   <div className="review-card-pair">
-                    <span className="review-card-term">{row.term}</span>
-                    <span className="review-card-def">{row.definition}</span>
+                    <FormulaText className="review-card-term" text={row.term} />
+                    <FormulaText className="review-card-def" text={row.definition} />
                   </div>
                   <span className="review-card-badge review-card-badge--bad">{t('reviewCardsIgnored', locale)}</span>
                 </li>

@@ -11,7 +11,7 @@ export const USER_DATA_KEYS = [
   'scanplay-notifications',
   'scanplay-achievement-unlocks',
   'scanplay-profile',
-  'scanplay-exam-history',
+  'scanplay-lesson-checkpoint',
   'scanplay-wallet',
   'scanplay-plan',
   'scanplay-billing',

@@ -32,6 +32,12 @@ import { ScanningScreen } from './components/ScanningScreen';
 import { ReviewCardsScreen } from './components/ReviewCardsScreen';
 import { ProfileScreen } from './components/ProfileScreen';
 import { LessonRunner } from './components/games/LessonRunner';
+import {
+  checkpointMatches,
+  clearLessonCheckpoint,
+  loadLessonCheckpoint,
+  saveLessonCheckpoint,
+} from './lib/lessonCheckpoint';
 import { LessonCompleteScreen } from './components/LessonCompleteScreen';
 import { SettingsScreen } from './components/SettingsScreen';
 import { NavMoreSheet } from './components/NavMoreSheet';
@@ -58,6 +64,7 @@ import { ListenGame } from './components/games/ListenGame';
 import { SpeakGame } from './components/games/SpeakGame';
 import { TrueFalseGame } from './components/games/TrueFalseGame';
 import { ClozeGame } from './components/games/ClozeGame';
+import { TranslateGame } from './components/games/TranslateGame';
 import { TypeGame } from './components/games/TypeGame';
 import { canGuestScan, recordGuestScan, beginGuestPlaySession, clearGuestPlaySession } from './lib/guestTrial';
 import {
@@ -107,7 +114,7 @@ import {
   truncatePairs,
 } from './lib/planLimits';
 import { hasMinimumForGames, parseContent } from './lib/parser';
-import { getNextGameForStep, isNodeAllGold, pickPathStepGames, resolveStepMode } from './lib/pathGamePlan';
+import { getNextGameForStep, getResumeGameIndex, isNodeAllGold, pickPathStepGames, resolveStepMode } from './lib/pathGamePlan';
 import { isOralAllowedForSheet, setPathSheetType } from './lib/pathSheetType';
 import {
   canOpenGamePath,
@@ -234,6 +241,12 @@ export default function App() {
   const pendingMultiplayerScanRef = useRef(false);
   const unlockQueueRef = useRef<AchievementDef[]>([]);
   const [lessonSession, setLessonSession] = useState<LessonSession | null>(null);
+  const [lessonStartIndex, setLessonStartIndex] = useState(0);
+  const [lessonPairShift, setLessonPairShift] = useState(0);
+  const lessonPendingMs = useRef(0);
+  const lessonGamesAtStart = useRef(0);
+  const lessonSessionRef = useRef<LessonSession | null>(null);
+  lessonSessionRef.current = lessonSession;
   const [navMoreOpen, setNavMoreOpen] = useState(false);
   const [showMascotIntro, setShowMascotIntro] = useState(() => !hasSeenMascotIntro());
   const [authReady, setAuthReady] = useState(() => isAuthReady());
@@ -994,10 +1007,31 @@ export default function App() {
 
     if (deckPairs) setPairs(deckPairs);
     if (stepIndex !== undefined && !examMode) {
+      const deckKey = historyId ?? 'current';
+      const goldNode = isNodeAllGold(stepIndex, stepProgress, play);
+      if (goldNode || skipGoldConfirm) {
+        clearLessonCheckpoint(deckKey, stepIndex);
+      }
+      const checkpoint = goldNode ? null : loadLessonCheckpoint();
+      const same = checkpointMatches(checkpoint, deckKey, stepIndex);
+      const fromProgress = getResumeGameIndex(stepIndex, stepProgress, play);
+      const startIndex = same ? checkpoint!.nextGameIndex : fromProgress;
+      const prevGames = same ? checkpoint!.games : [];
+      const pairShift = same ? checkpoint!.pairShift + 1 : 0;
+      const hasResume = startIndex > 0 || prevGames.length > 0 || (same && checkpoint!.pendingMs > 0);
+      lessonPendingMs.current = same ? checkpoint!.pendingMs : 0;
+      lessonGamesAtStart.current = prevGames.length;
+      setLessonStartIndex(Math.min(startIndex, Math.max(0, pickPathStepGames(stepIndex, play).length - 1)));
+      setLessonPairShift(pairShift);
       setActiveStepIndex(stepIndex);
-      setLessonSession({ stepIndex, games: [], startedAt: Date.now() });
+      setLessonSession({
+        stepIndex,
+        games: prevGames,
+        startedAt: same ? checkpoint!.startedAt : Date.now(),
+      });
       sessionStart.current = Date.now();
       playSound('quizStart');
+      if (hasResume) showToast(t('lessonResume', locale));
       setFlow('lesson');
       return;
     }
@@ -1092,11 +1126,20 @@ export default function App() {
 
     setResultXpBefore(xpBefore);
 
+    const lessonClock =
+      activeStepIndex !== null && !examMode
+        ? Math.round(lessonPendingMs.current / 1000) + Math.round((Date.now() - sessionStart.current) / 1000)
+        : Math.round((Date.now() - sessionStart.current) / 1000);
+    if (activeStepIndex !== null && !examMode) {
+      lessonPendingMs.current = 0;
+    }
+    const timeSeconds = Math.max(1, lessonClock);
+
     const session: SessionResult = {
       mode: activeMode,
       score,
       total,
-      timeSeconds: Math.max(1, Math.round((Date.now() - sessionStart.current) / 1000)),
+      timeSeconds,
       xpEarned,
       examMode,
       examPassed,
@@ -1176,7 +1219,7 @@ export default function App() {
         mode: activeMode,
         score,
         total,
-        timeSeconds: Math.max(1, Math.round((Date.now() - sessionStart.current) / 1000)),
+        timeSeconds,
         xpEarned,
         pct,
       };
@@ -1187,9 +1230,21 @@ export default function App() {
       setLessonSession(updatedLesson);
 
       if (meta?.lessonContinues) {
+        saveLessonCheckpoint({
+          deckId: historyId ?? 'current',
+          stepIndex: activeStepIndex,
+          nextGameIndex:
+            lessonStartIndex + updatedLesson.games.length - lessonGamesAtStart.current,
+          pendingMs: 0,
+          games: updatedLesson.games,
+          startedAt: updatedLesson.startedAt,
+          pairShift: lessonPairShift,
+        });
         refresh();
         return;
       }
+
+      clearLessonCheckpoint(historyId ?? 'current', activeStepIndex);
 
       if (historyId && !technical && !goldReplay) {
         const lessonScore = updatedLesson.games.reduce((sum, g) => sum + g.score, 0);
@@ -1955,6 +2010,18 @@ export default function App() {
           onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
         />
       )}
+      {flow === 'playing' && mode === 'translate' && (
+        <TranslateGame
+          pairs={playPairs}
+          locale={locale}
+          examMode={examMode}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+          onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
+        />
+      )}
       {flow === 'lesson' && activeStepIndex !== null && (
         <LessonRunner
           pairs={playPairs}
@@ -1963,7 +2030,24 @@ export default function App() {
           stepIndex={activeStepIndex}
           deckId={historyId}
           sheetType={sheetType}
+          startGameIndex={lessonStartIndex}
+          pairShift={lessonPairShift}
           onExit={appGoBack}
+          onPause={(gameIndex, pendingMs) => {
+            if (activeStepIndex === null) return;
+            const deckKey = historyId ?? 'current';
+            const prev = loadLessonCheckpoint();
+            const same = checkpointMatches(prev, deckKey, activeStepIndex);
+            saveLessonCheckpoint({
+              deckId: deckKey,
+              stepIndex: activeStepIndex,
+              nextGameIndex: gameIndex,
+              pendingMs: (same ? prev!.pendingMs : 0) + pendingMs,
+              games: lessonSessionRef.current?.games ?? [],
+              startedAt: lessonSessionRef.current?.startedAt ?? Date.now(),
+              pairShift: lessonPairShift,
+            });
+          }}
           onSubGameStart={() => {
             sessionStart.current = Date.now();
           }}

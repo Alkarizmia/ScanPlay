@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { playSound } from '../lib/sounds';
-import { hapticLevelUp } from '../lib/haptics';
+import { hapticBurst, hapticLevelUp } from '../lib/haptics';
 import { t } from '../lib/i18n';
 import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 import type { AchievementDef } from '../lib/achievements';
@@ -18,10 +18,25 @@ interface LessonCompleteScreenProps {
   onHome: () => void;
 }
 
+type FinalePhase = 'charge' | 'burst' | 'flash' | 'reveal';
+
 function formatTime(seconds: number): string {
   const m = Math.floor(seconds / 60);
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, '0')}`;
+}
+
+function burstShards() {
+  return Array.from({ length: 42 }, (_, i) => ({
+    id: i,
+    x: 18 + Math.random() * 64,
+    delay: Math.random() * 0.12,
+    duration: 0.7 + Math.random() * 0.45,
+    drift: (Math.random() - 0.5) * 140,
+    size: 6 + Math.random() * 10,
+    color: ['#22c55e', '#4ade80', '#fbbf24', '#fb923c', '#ffffff', '#86efac'][i % 6],
+    rotate: Math.random() * 360,
+  }));
 }
 
 export function LessonCompleteScreen({
@@ -46,46 +61,114 @@ export function LessonCompleteScreen({
   const leveledUp = levelAfter > levelBefore;
 
   const [displayXp, setDisplayXp] = useState(xpBefore);
+  const [phase, setPhase] = useState<FinalePhase>('charge');
+  const [barPct, setBarPct] = useState(0);
+  const shards = useMemo(() => burstShards(), []);
   const reducedMotion =
     typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   useEffect(() => {
-    if (leveledUp) {
-      playSound('levelUp');
-      hapticLevelUp();
-    } else if (totalXp > 0) playSound('xpGain');
-    playSound('goalComplete');
-  }, [leveledUp, totalXp]);
-
-  useEffect(() => {
     if (reducedMotion) {
       setDisplayXp(xpAfter);
+      setBarPct(100);
+      setPhase('reveal');
+      if (leveledUp) {
+        playSound('levelUp');
+        hapticLevelUp();
+      } else {
+        playSound('goalComplete');
+        hapticBurst();
+      }
       return;
     }
+
+    playSound('xpGain');
     const start = performance.now();
-    const duration = 1000;
+    const fillMs = 1150;
     let frame = 0;
     const tick = (now: number) => {
-      const tVal = Math.min(1, (now - start) / duration);
+      const tVal = Math.min(1, (now - start) / fillMs);
       const eased = 1 - (1 - tVal) ** 3;
+      setBarPct(Math.round(eased * 100));
       setDisplayXp(Math.round(xpBefore + totalXp * eased));
-      if (tVal < 1) frame = requestAnimationFrame(tick);
+      if (tVal < 1) {
+        frame = requestAnimationFrame(tick);
+      }
     };
     frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [xpBefore, xpAfter, totalXp, reducedMotion]);
+
+    const burstTimer = window.setTimeout(() => {
+      setPhase('burst');
+      setBarPct(100);
+      playSound('perfect');
+      playSound('powerUp');
+      hapticBurst();
+    }, fillMs);
+
+    const flashTimer = window.setTimeout(() => {
+      setPhase('flash');
+      hapticLevelUp();
+    }, fillMs + 380);
+
+    const revealTimer = window.setTimeout(() => {
+      setPhase('reveal');
+      playSound('goalComplete');
+      if (leveledUp) playSound('levelUp');
+      setDisplayXp(xpAfter);
+    }, fillMs + 900);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(burstTimer);
+      window.clearTimeout(flashTimer);
+      window.clearTimeout(revealTimer);
+    };
+  }, [leveledUp, totalXp, xpAfter, xpBefore, reducedMotion]);
 
   const { progress: xpProgress } = xpForNextLevel(displayXp);
   const expression = leveledUp ? 'levelup' : avgPct >= 85 ? 'celebrating' : avgPct >= 55 ? 'proud' : 'encouraging';
+  const settledBar = Math.round(xpProgress * 100);
+  const shownBar = phase === 'reveal' ? settledBar : barPct;
+  const showTitle = phase === 'flash' || phase === 'reveal';
+  const showRest = phase === 'reveal';
 
   return (
-    <div className="screen lesson-complete-screen">
+    <div
+      className={`screen lesson-complete-screen lesson-complete-screen--${phase}${
+        phase !== 'reveal' ? ' lesson-complete-screen--finale' : ''
+      }`}
+    >
+      <div className="lesson-complete-burst" aria-hidden="true">
+        {shards.map((p) => (
+          <span
+            key={p.id}
+            className="lesson-complete-shard"
+            style={{
+              left: `${p.x}%`,
+              width: p.size,
+              height: p.size,
+              background: p.color,
+              animationDelay: `${p.delay}s`,
+              animationDuration: `${p.duration}s`,
+              ['--drift' as string]: `${p.drift}px`,
+              ['--spin' as string]: `${p.rotate}deg`,
+            }}
+          />
+        ))}
+      </div>
+      <div className="lesson-complete-flash" aria-hidden="true" />
+
       <header className="lesson-complete-hero">
-        <ScanPlayMascot expression={expression} size={120} idle celebrate />
-        <h1 className="lesson-complete-title">{t('lessonCompleteTitle', locale)}</h1>
+        <ScanPlayMascot expression={expression} size={120} idle celebrate={showRest} />
+        <h1
+          className={`lesson-complete-title${showTitle ? ' lesson-complete-title--in' : ''}`}
+          aria-hidden={!showTitle}
+        >
+          {t('lessonCompleteTitle', locale)}
+        </h1>
       </header>
 
-      <div className="lesson-complete-stats">
+      <div className={`lesson-complete-stats${showRest ? ' is-in' : ''}`}>
         <div className="lesson-stat-card lesson-stat-card--xp">
           <span className="lesson-stat-label">{t('lessonStatXp', locale)}</span>
           <span className="lesson-stat-value">+{totalXp}</span>
@@ -100,12 +183,16 @@ export function LessonCompleteScreen({
         </div>
       </div>
 
-      <div className="lesson-xp-bar-wrap">
-        <div className="lesson-xp-bar" style={{ width: `${Math.round(xpProgress * 100)}%` }} />
+      <div
+        className={`lesson-xp-bar-wrap${phase === 'charge' && barPct > 82 ? ' lesson-xp-bar-wrap--hot' : ''}${
+          phase === 'burst' ? ' lesson-xp-bar-wrap--boom' : ''
+        }`}
+      >
+        <div className="lesson-xp-bar" style={{ width: `${shownBar}%` }} />
         <span className="lesson-xp-bar-label">{displayXp} XP</span>
       </div>
 
-      <footer className="lesson-complete-footer">
+      <footer className={`lesson-complete-footer${showRest ? ' is-in' : ''}`}>
         <button type="button" className="btn-secondary btn-lg lesson-view-path-btn" onClick={onViewPath}>
           {t('lessonViewPath', locale)}
         </button>

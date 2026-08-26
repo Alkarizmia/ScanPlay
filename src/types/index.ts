@@ -1,4 +1,4 @@
-export type GameMode = 'flashcards' | 'quiz' | 'match' | 'type' | 'speak' | 'listen' | 'truefalse' | 'cloze';
+export type GameMode = 'flashcards' | 'quiz' | 'match' | 'type' | 'speak' | 'listen' | 'truefalse' | 'cloze' | 'translate';
 
 export type SheetType = 'vocab' | 'notes' | 'definitions' | 'math';
 

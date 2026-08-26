@@ -6,80 +6,12 @@ import {
   incrementScanCount,
 } from '../_shared/planQuotas.ts';
 import { resolveScanModel } from '../_shared/openaiModels.ts';
+import { SCANPLAY_AI_SYSTEM_PROMPT, buildScanUserPrompt } from '../_shared/scanPrompt.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const SCANPLAY_AI_SYSTEM_PROMPT = `Tu es le moteur d'extraction ScanPlay. Tu analyses une photo de fiche scolaire (souvent floue, inclinée, mal éclairée, manuscrite ou imprimée) et tu en extrais des paires jouables pour des mini-jeux (flashcards, quiz, match).
-
-RÈGLES ABSOLUES :
-- Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans texte avant ou après.
-- Ne invente jamais de contenu absent de l'image. Si tu devines, marque confidence "low".
-- Même si la qualité est mauvaise : fais de ton mieux pour lire mot par mot, colonne par colonne, ligne par ligne.
-- Ignore : titres de page, numéros seuls, consignes ("Let op", "Attention", "Exercice", "Page 12"), logos, tampons, marges vides.
-- Chaque paire doit avoir un "term" et une "definition" distincts (pas identiques).
-- Longueur : term ≤ 55 caractères, definition ≤ 120 caractères. Coupe proprement si trop long.
-- Minimum visé : 4 paires propres pour vocab/définitions ; pour notes, au moins 3 paires si le contenu le permet.
-- Langues fréquentes : nl, fr, en, es. Détecte-les ; ne traduis pas sauf si la fiche le fait déjà.
-- ALIGNEMENT 2 COLONNES : une ligne visuelle = une seule paire. Le mot de gauche de la ligne N va UNIQUEMENT avec la traduction de droite de la MÊME ligne N. INTERDIT de coller un mot à une traduction d'une ligne voisine (ex. "alles" ↔ "tout", jamais "alles" ↔ "audiologiste").
-- Si tu n'es pas sûr de la lecture d'une ligne : OMETS la paire (confidence "low"). Ne complète JAMAIS avec un mot d'une autre ligne ni un fragment (ex. "iologiste").
-- Cellule avec formes entre parenthèses : term = le lemme seul ("aangeven"), definition = la traduction visible, pas les formes conjuguées.
-
-TYPES DE FICHE (sheetType) :
-- "vocab" : 2 colonnes (ex. NL à gauche, FR à droite). Associe ligne par ligne UNIQUEMENT si c'est une vraie traduction (langues différentes, mot ↔ traduction). Exemple : "de zoon" ↔ "le fils", "de vader" ↔ "le père". Garde les espaces dans les articles (de zoon, le fils — jamais dezoon ni lefils).
-- Ignore les titres de chapitre ("Le Règne animal", "Les conjonctions de coordination") et les phrases d'exemple sous les mots (ex. "Ik eet en ik drink" → ne pas en faire une paire).
-- LISTE DE MOTS (sans traduction sur la fiche) : ex. titre "mots français dans la langue anglaise", deux colonnes de mots pour mise en page. NE PAS associer gauche+droite. Chaque mot = une paire : term = le mot exact, definition = courte définition pédagogique en français (sens concret, 4 à 12 mots). Utilise tes connaissances générales. INTERDIT : indices …suffixe, fragments de titre, répéter le mot seul.
-- "definitions" : format question/réponse ou mot — définition sur une ou deux lignes.
-- "notes" : transforme en paires mémorables : extrait clé (terme, date, concept, mot-clé) → idée courte à retenir (phrase résumée, max 120 car.).
-
-QUALITÉ IMAGE FAIBLE :
-- Utilise le contexte (titres, numérotation, séparateurs - : |).
-- Corrige les erreurs OCR évidentes (ex. "pa" → "pas", accents manquants) seulement si le sens est clair.
-- Si une ligne est illisible, skip-la ; ne remplis pas avec du vide.
-- Si moins de 4 paires fiables : renvoie quand même ce que tu as + readable: false.
-
-- Priorité : lire fidèlement le texte visible sur la photo. Ne réassocie pas des mots de colonnes différentes si la fiche est une simple liste.
-- Extraire un maximum de paires plausibles plutôt que abandonner.
-En cas de doute entre deux lectures, choisis la plus cohérente avec le reste de la fiche (même langue, même thème).
-Ne renvoie readable: false que si tu as moins de 2 paires avec un minimum de certitude.
-
-FORMAT DE SORTIE (strict) :
-{
-  "readable": boolean,
-  "sheetType": "vocab" | "notes" | "definitions",
-  "detectedLangs": ["nl","fr"],
-  "pairs": [
-    {
-      "term": "string",
-      "definition": "string",
-      "termLang": "nl|fr|en|es|unknown",
-      "defLang": "nl|fr|en|es|unknown",
-      "confidence": "high|medium|low"
-    }
-  ],
-  "warnings": ["string"]
-}
-
-readable = true seulement si au moins 4 paires ont confidence "high" ou "medium" et sont clairement visibles sur la photo.`;
-
-function buildUserPrompt(sheetType: string): string {
-  return `Analyse cette photo de fiche scolaire pour l'application ScanPlay.
-
-Type choisi par l'utilisateur : ${sheetType}
-
-Objectif : produire des paires term/definition exploitables pour des jeux éducatifs.
-
-Consignes supplémentaires :
-- Photo possiblement floue, penchée ou sombre : lis quand même au maximum.
-- Pour vocab : deux colonnes de traduction = associe STRICTEMENT la même ligne (gauche ligne N ↔ droite ligne N). Si une ligne est floue, saute-la. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français (pas d'indice …suffixe).
-- Pour definitions : une notion = une réponse courte.
-- Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
-- Exclus les lignes de consigne ou d'exemple générique sans contenu à apprendre.
-
-Retourne le JSON au format imposé dans le system prompt.`;
-}
 
 interface AnalyzeBody {
   imageBase64?: string;
@@ -155,7 +87,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userPrompt = buildUserPrompt(sheetType);
+    const userPrompt = buildScanUserPrompt(sheetType);
+    const scientificSheet = sheetType === 'math' || sheetType === 'notes' || sheetType === 'definitions';
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -167,7 +100,7 @@ Deno.serve(async (req) => {
         model: resolveScanModel(),
         response_format: { type: 'json_object' },
         temperature: 0.1,
-        max_tokens: 2500,
+        max_tokens: scientificSheet ? 4000 : 2500,
         messages: [
           { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },
           {

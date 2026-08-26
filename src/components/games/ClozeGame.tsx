@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { playGameCorrectSound, playSound } from '../../lib/sounds';
 import { vibrateError, vibrateSuccess } from '../../lib/haptics';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
+import { FormulaText } from '../FormulaText';
 import { t } from '../../lib/i18n';
 import { getQuizPool, hasEnoughQuizPairsRelaxed } from '../../lib/vocabulary';
 import type { Locale, WordPair } from '../../types';
@@ -33,8 +34,8 @@ function pickBlankWord(definition: string): string | null {
   return words[Math.floor(Math.random() * words.length)] ?? null;
 }
 
-function buildRounds(pairs: WordPair[]): ClozeRound[] {
-  const pool = getQuizPool(pairs).slice(0, 7);
+function buildRounds(pairs: WordPair[], maxRounds = 7): ClozeRound[] {
+  const pool = getQuizPool(pairs).slice(0, Math.max(maxRounds, 3));
   const rounds: ClozeRound[] = [];
 
   for (let i = 0; i < pool.length; i++) {
@@ -54,6 +55,7 @@ function buildRounds(pairs: WordPair[]): ClozeRound[] {
       [unique[s], unique[j]] = [unique[j]!, unique[s]!];
     }
     rounds.push({ prompt, choices: unique, correct: blank, pairIndex: i });
+    if (rounds.length >= maxRounds) break;
   }
   return rounds;
 }
@@ -69,8 +71,12 @@ export function ClozeGame({
   onNotEnoughPairs,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: ClozeGameProps) {
-  const rounds = useMemo(() => buildRounds(pairs), [pairs]);
+  const rounds = useMemo(
+    () => buildRounds(pairs, examMode ? 7 : maxItems),
+    [pairs, examMode, maxItems],
+  );
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
@@ -131,7 +137,9 @@ export function ClozeGame({
       <main className="game-main scroll-natural">
         <p className="game-instruction">{t('clozeInstruction', locale)}</p>
         <div className="cloze-prompt">
-          <span className="cloze-term">{getQuizPool(pairs)[round.pairIndex]?.term}</span>
+          <span className="cloze-term">
+            <FormulaText text={getQuizPool(pairs)[round.pairIndex]?.term ?? ''} />
+          </span>
           <p className="cloze-sentence">{round.prompt}</p>
         </div>
         <div className="cloze-choices">

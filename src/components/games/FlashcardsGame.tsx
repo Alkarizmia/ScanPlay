@@ -8,6 +8,7 @@ import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
 import { dispatchMascotReaction } from '../../lib/mascot/reactions';
 import { getLocale, t } from '../../lib/i18n';
+import { FormulaText } from '../FormulaText';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -34,6 +35,7 @@ export function FlashcardsGame({
   onExit,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: FlashcardsGameProps) {
   const locale = getLocale() || localeProp;
   const [index, setIndex] = useState(0);
@@ -42,7 +44,7 @@ export function FlashcardsGame({
   const [dragX, setDragX] = useState(0);
   const [leaving, setLeaving] = useState<'left' | 'right' | null>(null);
 
-  const total = Math.min(pairs.length, examMode ? 10 : 8);
+  const total = Math.min(pairs.length, examMode ? 10 : (maxItems ?? 8));
   const deck = pairs.slice(0, total);
   const current = deck[index];
   const timerSeconds = examMode ? getExamTimerSeconds('flashcards', total) : 0;
@@ -218,7 +220,7 @@ export function FlashcardsGame({
           >
             <div className="flashcard-face front">
               <span className="card-label">{frontLabel}</span>
-              <p className="card-text">{current.term}</p>
+              <FormulaText as="p" className="card-text" text={current.term} />
               <HearButton
                 text={current.term}
                 lang={resolveSpeakLang(current)}
@@ -230,7 +232,7 @@ export function FlashcardsGame({
             </div>
             <div className="flashcard-face back">
               <span className="card-label">{backLabel}</span>
-              <p className="card-text">{current.definition}</p>
+              <FormulaText as="p" className="card-text" text={current.definition} />
               <HearButton
                 text={current.definition}
                 lang={current.defLang}

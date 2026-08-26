@@ -2,8 +2,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { playGameCorrectSound, playSound } from '../../lib/sounds';
 import { vibrateError, vibrateSuccess } from '../../lib/haptics';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
+import { FormulaText } from '../FormulaText';
 import { t } from '../../lib/i18n';
 import { getQuizPool, hasEnoughTrueFalsePairs } from '../../lib/vocabulary';
+import { buildTrueFalseRounds } from '../../lib/trueFalseRounds';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -19,36 +21,6 @@ interface TrueFalseGameProps extends EmbeddedGameProps {
   onNotEnoughPairs?: () => void;
 }
 
-interface Round {
-  term: string;
-  statement: string;
-  isTrue: boolean;
-  pairIndex: number;
-}
-
-function buildRounds(pairs: WordPair[]): Round[] {
-  const pool = getQuizPool(pairs).slice(0, 8);
-  const rounds: Round[] = [];
-  const others = pool.map((p) => p.definition);
-
-  for (let i = 0; i < pool.length; i++) {
-    const pair = pool[i]!;
-    const showTrue = Math.random() < 0.55;
-    let statement = pair.definition;
-    if (!showTrue) {
-      const alt = others.filter((d) => d !== pair.definition);
-      statement = alt[Math.floor(Math.random() * alt.length)] ?? pair.definition;
-    }
-    rounds.push({
-      term: pair.term,
-      statement,
-      isTrue: statement === pair.definition,
-      pairIndex: i,
-    });
-  }
-  return rounds;
-}
-
 export function TrueFalseGame({
   pairs,
   locale,
@@ -60,13 +32,20 @@ export function TrueFalseGame({
   onNotEnoughPairs,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: TrueFalseGameProps) {
-  const rounds = useMemo(() => buildRounds(pairs), [pairs]);
+  const rounds = useMemo(
+    () =>
+      buildTrueFalseRounds(pairs, {
+        maxRounds: examMode ? 8 : maxItems,
+      }),
+    [pairs, examMode, maxItems],
+  );
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [feedback, setFeedback] = useState<'correct' | 'wrong' | null>(null);
 
-  if (!hasEnoughTrueFalsePairs(pairs)) {
+  if (!hasEnoughTrueFalsePairs(pairs) || rounds.length === 0) {
     onNotEnoughPairs?.();
     return null;
   }
@@ -85,7 +64,7 @@ export function TrueFalseGame({
   const answer = (choice: boolean) => {
     if (!round || feedback) return;
     const ok = choice === round.isTrue;
-      if (ok) {
+    if (ok) {
       setScore((s) => s + 1);
       playGameCorrectSound(stepIndex != null);
       vibrateSuccess();
@@ -114,8 +93,10 @@ export function TrueFalseGame({
     <main className="game-main scroll-natural">
       <p className="game-instruction">{t('trueFalseInstruction', locale)}</p>
       <div className="truefalse-card">
-        <span className="truefalse-term">{round.term}</span>
-        <p className="truefalse-statement">= {round.statement}</p>
+        <FormulaText className="truefalse-term" text={round.term} />
+        <p className="truefalse-statement">
+          = <FormulaText text={round.statement} />
+        </p>
       </div>
       <div className="truefalse-actions">
         <button

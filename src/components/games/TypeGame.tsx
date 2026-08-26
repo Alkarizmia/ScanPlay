@@ -4,6 +4,7 @@ import { getExamTimerSeconds } from '../../lib/examTimer';
 import { playGameCorrectSound, playSound } from '../../lib/sounds';
 import { addCorrectAnswer } from '../../lib/gamification';
 import { vibrateError, vibrateSuccess } from '../../lib/haptics';
+import { FormulaText } from '../FormulaText';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import {
@@ -47,9 +48,10 @@ export function TypeGame({
   onToast,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: TypeGameProps) {
   const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
-  const total = Math.min(pool.length, examMode ? 8 : 6);
+  const total = Math.min(pool.length, examMode ? 8 : (maxItems ?? 6));
   const deck = pool.slice(0, total);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -180,7 +182,9 @@ export function TypeGame({
           </div>
         ) : (
           <div className="type-game-term-row">
-            <h2 className="type-game-term">{prompt}</h2>
+            <h2 className="type-game-term">
+              <FormulaText text={prompt} />
+            </h2>
             <HearButton text={current.term} lang={resolveSpeakLang(current)} locale={locale} />
           </div>
         )}
@@ -199,7 +203,7 @@ export function TypeGame({
                   onClick={() => pickOption(opt)}
                   disabled={revealed}
                 >
-                  {opt}
+                  <FormulaText text={opt} />
                 </button>
               );
             })}
@@ -238,7 +242,9 @@ export function TypeGame({
             {grade === 'near' && (
               <>
                 {t('typeNear', locale)}{' '}
-                <span className="type-game-expected type-game-expected--near">{expected}</span>
+                <span className="type-game-expected type-game-expected--near">
+                  <FormulaText text={expected} />
+                </span>
                 <span className="type-game-near-hint"> · {t('typeNearHint', locale)}</span>
                 {input.trim() && (
                   <span className="type-game-you-wrote">
@@ -251,7 +257,10 @@ export function TypeGame({
             {grade === 'wrong' && (
               <>
                 {t('typeWrong', locale)}
-                <span className="type-game-expected"> → {expected}</span>
+                <span className="type-game-expected">
+                  {' '}
+                  → <FormulaText text={expected} />
+                </span>
               </>
             )}
           </p>

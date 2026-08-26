@@ -341,9 +341,11 @@ export function GamePath({
                       ? '★'
                       : displayTier === 'iron'
                         ? '⚙'
-                        : displayTier === 'bronze'
-                          ? '🥉'
-                          : '⭐'}
+                    : displayTier === 'bronze'
+                      ? '🥉'
+                      : progressPct > 0 && progressPct < 100
+                        ? '▶'
+                        : '⭐'}
                 </span>
                 {result && progressPct > 0 && progressPct < 100 && (
                   <span className="scanplay-node-pct scanplay-node-pct--games">{done}/{total}</span>

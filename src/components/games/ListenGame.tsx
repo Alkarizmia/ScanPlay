@@ -3,6 +3,8 @@ import { getExamTimerSeconds } from '../../lib/examTimer';
 import { playGameCorrectSound, playSound } from '../../lib/sounds';
 import { vibrateError, vibrateSuccess } from '../../lib/haptics';
 import { t } from '../../lib/i18n';
+import { HearButton } from '../HearButton';
+import { FormulaText } from '../FormulaText';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { speakText } from '../../lib/speech';
 import { resolveSpeakLang } from '../../lib/speakLang';
@@ -17,7 +19,6 @@ import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { GameSkipFooter } from './GameSkipFooter';
-import { HearButton } from '../HearButton';
 
 interface ListenGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -50,12 +51,13 @@ export function ListenGame({
   onNotEnoughPairs,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: ListenGameProps) {
   const quizPool = useMemo(() => getQuizPool(pairs), [pairs]);
-  const questions = useMemo(
-    () => shuffle(quizPool).slice(0, Math.min(6, quizPool.length)),
-    [quizPool],
-  );
+  const questions = useMemo(() => {
+    const cap = examMode ? Math.min(10, quizPool.length) : Math.min(maxItems ?? 6, quizPool.length);
+    return shuffle(quizPool).slice(0, cap);
+  }, [quizPool, examMode, maxItems]);
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
@@ -183,7 +185,7 @@ export function ListenGame({
                 onClick={() => pick(opt)}
                 disabled={revealed}
               >
-                {opt}
+                <FormulaText text={opt} />
               </button>
             );
           })}

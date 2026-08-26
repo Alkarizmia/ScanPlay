@@ -1,24 +1,36 @@
 import type { GameMode, WordPair } from '../types';
 import { getQuizPool } from './vocabulary';
 
+/** Path lesson: a few items then switch game — not 8–10 of the same type. */
+export const LESSON_SHORT_ROUNDS = 2;
+export const LESSON_MATCH_PAIRS = 3;
+
+export function capLessonItems(raw: number, examMode: boolean, maxItems?: number, match = false): number {
+  if (examMode) return Math.max(1, raw);
+  const cap = maxItems ?? (match ? LESSON_MATCH_PAIRS : LESSON_SHORT_ROUNDS);
+  return Math.max(1, Math.min(raw, cap));
+}
+
 /** Nombre d'étapes pour la barre de progression unifiée d'une leçon. */
 export function getGameUnitCount(mode: GameMode, pairs: WordPair[], examMode = false): number {
   switch (mode) {
     case 'flashcards':
-      return Math.min(pairs.length, examMode ? 10 : 8);
+      return capLessonItems(Math.min(pairs.length, examMode ? 10 : 8), examMode);
     case 'truefalse':
-      return Math.min(getQuizPool(pairs).length, 8);
+      return capLessonItems(Math.min(getQuizPool(pairs).length, 8), examMode);
     case 'quiz':
-      return Math.min(getQuizPool(pairs).length, examMode ? 12 : 10);
+      return capLessonItems(Math.min(getQuizPool(pairs).length, examMode ? 12 : 10), examMode);
     case 'cloze':
-      return Math.min(getQuizPool(pairs).length, 7);
+      return capLessonItems(Math.min(getQuizPool(pairs).length, 7), examMode);
+    case 'translate':
+      return capLessonItems(Math.min(pairs.length, examMode ? 8 : 6), examMode);
     case 'match':
-      return Math.min(6, pairs.length);
+      return capLessonItems(Math.min(6, pairs.length), examMode, undefined, true);
     case 'listen':
-      return Math.min(getQuizPool(pairs).length, examMode ? 10 : 6);
+      return capLessonItems(Math.min(getQuizPool(pairs).length, examMode ? 10 : 6), examMode);
     case 'type':
     case 'speak':
-      return Math.min(pairs.length, examMode ? 10 : 8);
+      return capLessonItems(Math.min(pairs.length, examMode ? 10 : 8), examMode);
     default:
       return 1;
   }

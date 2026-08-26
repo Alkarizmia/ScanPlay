@@ -7,21 +7,21 @@ import {
   hasEnoughTrueFalsePairs,
 } from './vocabulary';
 import { canSpeak } from './speech';
-import { isOralAllowedForSheet } from './pathSheetType';
+import { isOralAllowedForSheet, isTranslateAllowedForSheet } from './pathSheetType';
 import { filterModesByFocus, isModeAllowedByFocus } from './trainingFocus';
 
-const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'truefalse', 'cloze', 'listen'];
+const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'translate', 'quiz', 'match', 'truefalse', 'cloze', 'listen'];
 
 /** 3–4 jeux par leçon, ordre varié (style parcours accumulé). */
 const NODE_GAME_TEMPLATES: GameMode[][] = [
-  ['flashcards', 'truefalse', 'match'],
+  ['flashcards', 'translate', 'match'],
   ['quiz', 'match', 'listen'],
   ['flashcards', 'match', 'truefalse', 'listen'],
-  ['type', 'quiz', 'cloze'],
+  ['translate', 'quiz', 'cloze'],
   ['match', 'flashcards', 'listen', 'truefalse'],
-  ['flashcards', 'quiz', 'type', 'cloze'],
+  ['flashcards', 'quiz', 'translate', 'cloze'],
   ['truefalse', 'match', 'listen'],
-  ['cloze', 'quiz', 'listen'],
+  ['translate', 'quiz', 'listen'],
 ];
 
 function listenAvailable(): boolean {
@@ -40,6 +40,10 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
       return hasEnoughQuizPairsRelaxed(playable);
     }
     if (mode === 'speak') return false;
+    if (mode === 'translate') {
+      if (!isTranslateAllowedForSheet()) return false;
+      return playable.length >= 1;
+    }
     if (mode === 'flashcards' || mode === 'type') return playable.length >= 1;
     if (mode === 'quiz' || mode === 'cloze') return hasEnoughQuizPairsRelaxed(playable);
     if (mode === 'truefalse') return hasEnoughTrueFalsePairs(playable);
@@ -48,6 +52,7 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
   };
 
   if (tryMode(preferred)) return preferred;
+  if (tryMode('translate')) return 'translate';
   if (tryMode('type')) return 'type';
   if (tryMode('listen')) return 'listen';
   if (tryMode('flashcards')) return 'flashcards';
@@ -66,6 +71,7 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
 
   for (const preferred of template) {
     if (preferred === 'listen' && !isOralAllowedForSheet()) continue;
+    if (preferred === 'translate' && !isTranslateAllowedForSheet()) continue;
     if (!isModeAllowedByFocus(preferred)) continue;
     const mode = resolveStepMode(preferred, playable.length > 0 ? playable : pairs);
     if (!isModeAllowedByFocus(mode)) continue;
@@ -81,6 +87,7 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   for (const fallback of STEP_CYCLE) {
     if (filtered.length >= 2) break;
     if (fallback === 'listen' && !isOralAllowedForSheet()) continue;
+    if (fallback === 'translate' && !isTranslateAllowedForSheet()) continue;
     if (!isModeAllowedByFocus(fallback)) continue;
     const mode = resolveStepMode(fallback, playable.length > 0 ? playable : pairs);
     if (!isModeAllowedByFocus(mode)) continue;
@@ -163,4 +170,17 @@ export function isNodeAllGold(
     return result.tier === 'gold';
   }
   return games.every((g) => result.games?.[g]?.tier === 'gold');
+}
+
+/** Index of the next unfinished mini-game in this node (0 = start). */
+export function getResumeGameIndex(
+  stepIndex: number,
+  progress: StepProgressMap,
+  pairs: WordPair[],
+): number {
+  const games = pickPathStepGames(stepIndex, pairs);
+  const next = getNextGameForStep(stepIndex, progress, pairs);
+  if (!next) return 0;
+  const idx = games.indexOf(next);
+  return idx >= 0 ? idx : 0;
 }

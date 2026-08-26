@@ -1,4 +1,5 @@
-import { fixOcrLine } from './vocabulary';
+import { fixOcrLine, isMathLikeText } from './vocabulary';
+import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import type { LangCode, SheetType, WordPair } from '../types';
@@ -28,22 +29,43 @@ function normalizeLang(value: unknown): LangCode | undefined {
   return LANGS.has(v as LangCode) ? (v as LangCode) : 'unknown';
 }
 
-export function mapAiPairsToWordPairs(pairs: AiExtractPair[]): WordPair[] {
+function isScientificPair(p: AiExtractPair): boolean {
+  return looksLikeLatex(p.term) || looksLikeLatex(p.definition) || isMathLikeText(p.term) || isMathLikeText(p.definition);
+}
+
+export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
   const mapped = pairs
     .filter((p) => p.term?.trim() && p.definition?.trim())
     .filter((p) => p.confidence !== 'low')
-    .map((p) => ({
-      term: fixOcrLine(p.term.trim()).slice(0, 55),
-      definition: fixOcrLine(p.definition.trim()).slice(0, 120),
-      termLang: normalizeLang(p.termLang),
-      defLang: normalizeLang(p.defLang),
-      quality: 'trusted' as const,
-    }))
-    .filter((p) => !isGarbageVocabTerm(p.term) && !isGarbageVocabTerm(p.definition))
-    .filter((p) => !isSectionTitle(p.term) && !isSectionTitle(p.definition))
-    .filter((p) => !isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2)
-    .filter((p) => !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2)
-    .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase());
+    .map((p) => {
+      const scientific = options?.mathSheet || isScientificPair(p);
+      const term = scientific ? p.term.trim().slice(0, 120) : fixOcrLine(p.term.trim()).slice(0, 55);
+      const definition = scientific
+        ? p.definition.trim().slice(0, 280)
+        : fixOcrLine(p.definition.trim()).slice(0, 120);
+      return {
+        term,
+        definition,
+        termLang: normalizeLang(p.termLang),
+        defLang: normalizeLang(p.defLang),
+        quality: 'trusted' as const,
+      };
+    })
+    .filter((p) => {
+      if (options?.mathSheet || isMathLikeText(p.term) || isMathLikeText(p.definition) || looksLikeLatex(p.term) || looksLikeLatex(p.definition)) {
+        return p.term.toLowerCase() !== p.definition.toLowerCase();
+      }
+      return (
+        !isGarbageVocabTerm(p.term) &&
+        !isGarbageVocabTerm(p.definition) &&
+        !isSectionTitle(p.term) &&
+        !isSectionTitle(p.definition) &&
+        (!isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2) &&
+        (!isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2) &&
+        p.term.toLowerCase() !== p.definition.toLowerCase()
+      );
+    });
+  if (options?.mathSheet) return mapped;
   return dropSiblingOcrFragments(mapped);
 }
 
@@ -52,33 +74,44 @@ function pairKey(term: string, definition: string): string {
 }
 
 /** Pairs dropped for low confidence, fragments, or garbage — shown on review, never sent to quiz. */
-export function collectIgnoredAiPairs(pairs: AiExtractPair[]): WordPair[] {
-  const kept = new Set(mapAiPairsToWordPairs(pairs).map((p) => pairKey(p.term, p.definition)));
+export function collectIgnoredAiPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
+  const kept = new Set(mapAiPairsToWordPairs(pairs, options).map((p) => pairKey(p.term, p.definition)));
   return pairs
     .filter((p) => p.term?.trim() && p.definition?.trim())
-    .map((p) => ({
-      term: fixOcrLine(p.term.trim()).slice(0, 55),
-      definition: fixOcrLine(p.definition.trim()).slice(0, 120),
-      termLang: normalizeLang(p.termLang),
-      defLang: normalizeLang(p.defLang),
-      quality: 'uncertain' as const,
-    }))
+    .map((p) => {
+      const scientific = options?.mathSheet || isScientificPair(p);
+      return {
+        term: scientific ? p.term.trim().slice(0, 120) : fixOcrLine(p.term.trim()).slice(0, 55),
+        definition: scientific
+          ? p.definition.trim().slice(0, 280)
+          : fixOcrLine(p.definition.trim()).slice(0, 120),
+        termLang: normalizeLang(p.termLang),
+        defLang: normalizeLang(p.defLang),
+        quality: 'uncertain' as const,
+      };
+    })
     .filter((p) => p.term && p.definition && !kept.has(pairKey(p.term, p.definition)));
 }
 
-export function parseAiExtractResponse(raw: unknown): AiExtractResponse | null {
+const SHEET_TYPES: SheetType[] = ['vocab', 'notes', 'definitions', 'math'];
+
+export function parseAiExtractResponse(raw: unknown, fallbackSheetType?: SheetType): AiExtractResponse | null {
   if (!raw || typeof raw !== 'object') return null;
   const data = raw as Record<string, unknown>;
   if (!Array.isArray(data.pairs)) return null;
 
-  const sheetType = data.sheetType;
-  if (sheetType !== 'vocab' && sheetType !== 'notes' && sheetType !== 'definitions') {
-    return null;
+  let sheetType = data.sheetType;
+  if (typeof sheetType !== 'string' || !SHEET_TYPES.includes(sheetType as SheetType)) {
+    if (fallbackSheetType && SHEET_TYPES.includes(fallbackSheetType)) {
+      sheetType = fallbackSheetType;
+    } else {
+      return null;
+    }
   }
 
   return {
     readable: Boolean(data.readable),
-    sheetType,
+    sheetType: sheetType as SheetType,
     detectedLangs: Array.isArray(data.detectedLangs)
       ? data.detectedLangs.filter((l): l is string => typeof l === 'string')
       : [],
@@ -115,7 +148,7 @@ function loadImageForAi(file: File, maxWidth = 1200): Promise<{ base64: string; 
       ctx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
       const mimeType = 'image/jpeg';
-      const dataUrl = canvas.toDataURL(mimeType, 0.85);
+      const dataUrl = canvas.toDataURL(mimeType, maxWidth > 1200 ? 0.9 : 0.85);
       const base64 = dataUrl.split(',')[1] ?? '';
       if (!base64) {
         reject(new Error('Encode failed'));
@@ -151,7 +184,10 @@ export async function analyzeSheetWithAi(
   } = await supabase.auth.getSession();
   if (!session) return null;
 
-  const { base64, mimeType } = await loadImageForAi(file);
+  const { base64, mimeType } = await loadImageForAi(
+    file,
+    sheetType === 'vocab' ? 1200 : 1600,
+  );
 
   const { data, error } = await supabase.functions.invoke('analyze-sheet', {
     body: {
@@ -162,5 +198,5 @@ export async function analyzeSheetWithAi(
   });
 
   if (error || !data) return null;
-  return parseAiExtractResponse(data);
+  return parseAiExtractResponse(data, sheetType);
 }

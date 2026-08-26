@@ -1,6 +1,6 @@
 import type { GameMode, TrainingFocus } from '../types';
 
-const WRITTEN_MODES: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'truefalse', 'cloze'];
+const WRITTEN_MODES: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'truefalse', 'cloze', 'translate'];
 const ORAL_MODES: GameMode[] = ['listen'];
 
 const DEFAULT_FOCUS: TrainingFocus[] = ['written', 'oral'];

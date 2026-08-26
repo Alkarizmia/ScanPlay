@@ -11,6 +11,7 @@ import { t } from '../../lib/i18n';
 
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { HearButton } from '../HearButton';
+import { FormulaText } from '../FormulaText';
 
 import { markDifficult } from '../../lib/spacedRepetition';
 
@@ -93,6 +94,7 @@ export function QuizGame({
   shuffleSeed,
   embedded = false,
   onStepProgress,
+  maxItems,
 }: QuizGameProps) {
   const quizPool = useMemo(() => getQuizPool(pairs), [pairs]);
 
@@ -100,8 +102,9 @@ export function QuizGame({
     const ordered = shuffleSeed
       ? seededShuffle(quizPool, `${shuffleSeed}-questions`)
       : shuffle(quizPool);
-    return ordered.slice(0, Math.min(6, quizPool.length));
-  }, [quizPool, shuffleSeed]);
+    const cap = examMode ? Math.min(12, quizPool.length) : Math.min(maxItems ?? 6, quizPool.length);
+    return ordered.slice(0, cap);
+  }, [quizPool, shuffleSeed, examMode, maxItems]);
 
 
 
@@ -291,7 +294,9 @@ export function QuizGame({
         <p className="quiz-prompt">{t('quizPrompt', locale)}</p>
 
         <div className="quiz-term-row">
-          <h2 className="quiz-term">{q.term}</h2>
+          <h2 className="quiz-term">
+            <FormulaText text={q.term} />
+          </h2>
           <HearButton text={q.term} lang={resolveSpeakLang(q)} locale={locale} />
         </div>
 
@@ -309,7 +314,7 @@ export function QuizGame({
 
               <button key={opt} type="button" className={cls} onClick={() => pick(opt)} disabled={revealed}>
 
-                {opt}
+                <FormulaText text={opt} />
 
               </button>
 

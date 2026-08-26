@@ -14,3 +14,8 @@ export function getPathSheetType(): SheetType {
 export function isOralAllowedForSheet(sheetType: SheetType = getPathSheetType()): boolean {
   return sheetType === 'vocab' || sheetType === 'notes';
 }
+
+/** Phrase translation with tiles — vocabulary lists only. */
+export function isTranslateAllowedForSheet(sheetType: SheetType = getPathSheetType()): boolean {
+  return sheetType === 'vocab';
+}

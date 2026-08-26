@@ -1,7 +1,9 @@
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { WordPair } from '../types';
 import { getNextGameForStep, pickPathStepGames } from './pathGamePlan';
 import { TECHNICAL_PCT, mergeSubGameResult } from './stepProgress';
+import { setPathSheetType } from './pathSheetType';
+import { resetTrainingFocus } from './trainingFocus';
 
 const pairs: WordPair[] = [
   { term: 'beat', definition: 'battre' },
@@ -11,6 +13,10 @@ const pairs: WordPair[] = [
 ];
 
 describe('getNextGameForStep listen path', () => {
+  beforeEach(() => {
+    setPathSheetType('vocab');
+    resetTrainingFocus();
+  });
   it('includes listen in oral lesson templates', () => {
     const games = pickPathStepGames(6, pairs);
     expect(games).toContain('listen');
@@ -31,5 +37,10 @@ describe('getNextGameForStep listen path', () => {
 
     const progress = mergeSubGameResult({}, 6, 'listen', TECHNICAL_PCT, pairs);
     expect(getNextGameForStep(6, progress, pairs)).toBe(other);
+  });
+
+  it('includes translate on vocab path nodes', () => {
+    const games = pickPathStepGames(0, pairs);
+    expect(games).toContain('translate');
   });
 });

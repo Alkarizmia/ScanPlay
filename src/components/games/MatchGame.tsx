@@ -5,6 +5,7 @@ import { getExamTimerSeconds } from '../../lib/examTimer';
 import { vibrateError, vibrateSuccess } from '../../lib/haptics';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
+import { FormulaText } from '../FormulaText';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -22,8 +23,8 @@ interface MatchGameProps extends EmbeddedGameProps {
 
 type Card = { id: string; text: string; pairId: number; kind: 'term' | 'def'; lang?: WordPair['termLang'] };
 
-function buildDeck(pairs: WordPair[]): Card[] {
-  const slice = pairs.slice(0, Math.min(6, pairs.length));
+function buildDeck(pairs: WordPair[], pairCap = 6): Card[] {
+  const slice = pairs.slice(0, Math.min(pairCap, pairs.length));
   const cards: Card[] = [];
   slice.forEach((p, i) => {
     cards.push({ id: `t-${i}`, text: p.term, pairId: i, kind: 'term', lang: resolveSpeakLang(p) });
@@ -36,9 +37,10 @@ function buildDeck(pairs: WordPair[]): Card[] {
   return cards;
 }
 
-export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComplete, onExit, embedded = false, onStepProgress }: MatchGameProps) {
-  const deck = useMemo(() => buildDeck(pairs), [pairs]);
-  const pairById = useMemo(() => pairs.slice(0, Math.min(6, pairs.length)), [pairs]);
+export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComplete, onExit, embedded = false, onStepProgress, maxItems }: MatchGameProps) {
+  const pairCap = examMode ? Math.min(6, pairs.length) : Math.min(maxItems ?? 6, pairs.length);
+  const deck = useMemo(() => buildDeck(pairs, pairCap), [pairs, pairCap]);
+  const pairById = useMemo(() => pairs.slice(0, pairCap), [pairs, pairCap]);
   const totalPairs = deck.length / 2;
   const maxMoves = examMode ? totalPairs + 2 : totalPairs * 3;
   const timerSeconds = examMode ? getExamTimerSeconds('match', totalPairs) : 0;
@@ -159,7 +161,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
                 disabled={isMatched}
                 aria-label={card.text}
               >
-                <span>{card.text}</span>
+                <FormulaText text={card.text} />
               </button>
               {isSelected && (
                 <HearButton

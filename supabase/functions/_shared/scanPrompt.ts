@@ -1,5 +1,3 @@
-import type { SheetType } from '../types';
-
 export const SCANPLAY_AI_SYSTEM_PROMPT = `Tu es le moteur d'extraction ScanPlay. Tu analyses une photo de fiche scolaire (souvent floue, inclinée, mal éclairée, manuscrite ou imprimée) et tu en extrais des paires jouables pour des mini-jeux (flashcards, quiz, match).
 
 RÈGLES ABSOLUES :
@@ -60,7 +58,7 @@ FORMAT DE SORTIE (strict) :
 
 readable = true seulement si au moins 4 paires ont confidence "high" ou "medium" et sont clairement visibles sur la photo.`;
 
-export function buildScanPlayAiUserPrompt(sheetType: SheetType): string {
+export function buildScanUserPrompt(sheetType: string): string {
   return `Analyse cette photo de fiche scolaire pour l'application ScanPlay.
 
 Type choisi par l'utilisateur : ${sheetType}

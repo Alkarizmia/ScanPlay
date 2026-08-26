@@ -16,6 +16,7 @@ const MODE_KEYS: Record<GameMode, TranslationKey> = {
   listen: 'modeListen',
   truefalse: 'modeTrueFalse',
   cloze: 'modeCloze',
+  translate: 'modeTranslate',
 };
 
 export function MistakesScreen({ locale, refreshKey }: MistakesScreenProps) {
