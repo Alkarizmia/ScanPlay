@@ -23,7 +23,6 @@ function clonePairs(pairs: WordPair[]): WordPair[] {
 export function ReviewCardsScreen({
   locale,
   pairs,
-  ignored: _ignored,
   onContinue,
   onRescan,
   onBack,

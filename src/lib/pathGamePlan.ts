@@ -40,7 +40,8 @@ function ensureListenInLesson(games: GameMode[], pairs: WordPair[]): GameMode[] 
   if (games.includes('listen') || !listenPlayable(pairs)) return games;
   if (games.length === 0) return ['listen'];
   const rest = games.filter((g) => g !== 'listen');
-  return [rest[0]!, 'listen', ...rest.slice(1)].slice(0, 4);
+  const injected: GameMode[] = rest[0] ? [rest[0], 'listen', ...rest.slice(1)] : ['listen'];
+  return injected.slice(0, 4);
 }
 
 /** Pick a playable mode for this step (fallback if the default cycle mode needs more pairs). */
