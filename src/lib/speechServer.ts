@@ -31,12 +31,17 @@ export interface VadRecordCallbacks {
 
 export interface VadRecordOptions extends VadRecordCallbacks {
   stream?: MediaStream | null;
-  /** Silence after speech before sending (ms). */
+  /** Silence after speech before sending (ms). Ignored when `untilStop` is set. */
   silenceMs?: number;
   maxMs?: number;
   minSpeechMs?: number;
-  /** Stop if user never speaks within this window (ms). */
+  /** Stop if user never speaks within this window (ms). Ignored when `untilStop` is set. */
   noSpeechMs?: number;
+  /** Record until `stop()` — no silence / max-duration auto-cut. */
+  untilStop?: boolean;
+  /** While recording, emit the audio captured so far (Groq probe). */
+  chunkMs?: number;
+  onChunk?: (blob: Blob) => void;
 }
 
 export interface VadRecording {
@@ -55,14 +60,16 @@ function readMicLevel(analyser: AnalyserNode, timeData: Uint8Array<ArrayBuffer>)
 }
 
 /**
- * Records until the user pauses (~1 s after speech),
- * then returns audio ready for Groq Whisper.
+ * Records mic audio for Groq Whisper.
+ * Default: stop after a pause. `untilStop`: only `stop()` (or a caller) ends the take.
  */
 export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecording {
+  const untilStop = Boolean(options.untilStop);
   const silenceMs = options.silenceMs ?? 850;
   const maxMs = options.maxMs ?? 6000;
   const minSpeechMs = options.minSpeechMs ?? 250;
   const noSpeechMs = options.noSpeechMs ?? 4500;
+  const chunkMs = options.chunkMs ?? 2400;
   const mime = pickMimeType();
 
   if (!mime || typeof window === 'undefined') {
@@ -76,11 +83,13 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   let audioCtx: AudioContext | null = null;
   let raf = 0;
   let maxTimer = 0;
+  let chunkTimer = 0;
   let finished = false;
   let speechStarted = false;
   let speechStartAt = 0;
   let lastLoudAt = 0;
   let bootAt = 0;
+  let resolveBlob: ((b: Blob | null) => void) | null = null;
   const chunks: BlobPart[] = [];
 
   const SPEAK_THRESHOLD = 0.018;
@@ -89,6 +98,7 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   const cleanup = (stopTracks: boolean) => {
     cancelAnimationFrame(raf);
     window.clearTimeout(maxTimer);
+    window.clearInterval(chunkTimer);
     void audioCtx?.close();
     audioCtx = null;
     analyser = null;
@@ -117,7 +127,12 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   };
 
   const promise = new Promise<Blob | null>((resolve) => {
+    resolveBlob = resolve;
     const boot = async () => {
+      if (finished) {
+        resolve(null);
+        return;
+      }
       if (!stream?.active) {
         try {
           stream = await navigator.mediaDevices.getUserMedia({
@@ -152,6 +167,15 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
         return;
       }
 
+      if (options.onChunk) {
+        chunkTimer = window.setInterval(() => {
+          if (finished || chunks.length === 0) return;
+          const blob = new Blob(chunks, { type: mime });
+          if (blob.size < 600) return;
+          options.onChunk?.(blob);
+        }, chunkMs);
+      }
+
       const timeData = new Uint8Array(analyser!.fftSize);
       const tick = () => {
         if (finished) return;
@@ -166,14 +190,14 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
             options.onSpeechStart?.();
           }
           lastLoudAt = now;
-        } else if (speechStarted && level < SILENCE_THRESHOLD) {
+        } else if (!untilStop && speechStarted && level < SILENCE_THRESHOLD) {
           const spokeMs = now - speechStartAt;
           const quietMs = now - lastLoudAt;
           if (spokeMs >= minSpeechMs && quietMs >= silenceMs) {
             finishStop(resolve);
             return;
           }
-        } else if (!speechStarted && bootAt > 0 && now - bootAt >= noSpeechMs) {
+        } else if (!untilStop && !speechStarted && bootAt > 0 && now - bootAt >= noSpeechMs) {
           finishStop(resolve);
           return;
         }
@@ -182,7 +206,9 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
       };
       tick();
 
-      maxTimer = window.setTimeout(() => finishStop(resolve), maxMs);
+      if (!untilStop) {
+        maxTimer = window.setTimeout(() => finishStop(resolve), maxMs);
+      }
     };
 
     void boot();
@@ -191,14 +217,7 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   return {
     promise,
     stop: () => {
-      if (finished) return;
-      finished = true;
-      cleanup(false);
-      try {
-        if (recorder?.state !== 'inactive') recorder?.stop();
-      } catch {
-        /* ignore */
-      }
+      if (resolveBlob) finishStop(resolveBlob);
     },
   };
 }

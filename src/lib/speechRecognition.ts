@@ -299,7 +299,9 @@ function listenOnce(
   listenMs = LISTEN_MS,
   onInterim?: (transcript: string, alternatives: string[]) => void,
   shouldStopEarly?: (alternatives: string[]) => boolean,
-): () => void {
+  untilStop = false,
+  onQuiet?: () => void,
+): (commit?: boolean) => void {
   const Ctor = getRecognitionCtor();
   if (!Ctor) {
     onError('unsupported');
@@ -316,15 +318,14 @@ function listenOnce(
   let gotResult = false;
   let endTimer: number | undefined;
   let bestInterim: string[] = [];
-  let speechStarted = false;
+  let timeout: number | undefined;
 
   const startRecognition = () => {
-    if (finished || speechStarted) return;
-    speechStarted = true;
+    if (finished) return;
     try {
       rec.start();
     } catch {
-      onError('error');
+      if (!untilStop) onError('error');
     }
   };
 
@@ -332,6 +333,7 @@ function listenOnce(
     if (finished) return;
     finished = true;
     if (endTimer != null) window.clearTimeout(endTimer);
+    if (timeout != null) window.clearTimeout(timeout);
     fn();
   };
 
@@ -353,7 +355,7 @@ function listenOnce(
       return;
     }
 
-    if (hasFinalResult(event)) {
+    if (!untilStop && hasFinalResult(event)) {
       gotResult = true;
       finish(() => onResult(alts));
       try {
@@ -372,6 +374,10 @@ function listenOnce(
       return;
     }
     if (code === 'no-speech') {
+      if (untilStop) {
+        onQuiet?.();
+        return;
+      }
       if (bestInterim.length > 0) {
         gotResult = true;
         finish(() => onResult(bestInterim));
@@ -381,14 +387,27 @@ function listenOnce(
       return;
     }
     if (code === 'network') {
+      if (untilStop) return;
       finish(() => onError('network'));
       return;
     }
+    if (untilStop) return;
     finish(() => onError('error'));
   };
 
   rec.onend = () => {
     if (finished) return;
+    if (untilStop) {
+      window.setTimeout(() => {
+        if (finished) return;
+        try {
+          rec.start();
+        } catch {
+          /* ignore */
+        }
+      }, 80);
+      return;
+    }
     if (bestInterim.length > 0 && !gotResult) {
       gotResult = true;
       finish(() => onResult(bestInterim));
@@ -412,11 +431,36 @@ function listenOnce(
     });
   }
 
-  const timeout = window.setTimeout(() => {
+  if (!untilStop && listenMs > 0) {
+    timeout = window.setTimeout(() => {
+      if (finished) return;
+      if (bestInterim.length > 0) {
+        gotResult = true;
+        finish(() => onResult(bestInterim));
+        try {
+          rec.stop();
+        } catch {
+          /* ignore */
+        }
+        return;
+      }
+      try {
+        rec.stop();
+      } catch {
+        /* ignore */
+      }
+    }, listenMs);
+  }
+
+  return (commit = false) => {
     if (finished) return;
-    if (bestInterim.length > 0) {
-      gotResult = true;
-      finish(() => onResult(bestInterim));
+    if (commit) {
+      if (bestInterim.length > 0) {
+        gotResult = true;
+        finish(() => onResult(bestInterim));
+      } else {
+        finish(() => onError('no-speech'));
+      }
       try {
         rec.stop();
       } catch {
@@ -424,17 +468,9 @@ function listenOnce(
       }
       return;
     }
-    try {
-      rec.stop();
-    } catch {
-      /* ignore */
-    }
-  }, listenMs);
-
-  return () => {
     finished = true;
     if (endTimer != null) window.clearTimeout(endTimer);
-    window.clearTimeout(timeout);
+    if (timeout != null) window.clearTimeout(timeout);
     try {
       rec.abort();
     } catch {
@@ -452,17 +488,20 @@ export function listenForSpeech(
     expectLongPhrase?: boolean;
     onInterim?: (transcript: string, alternatives: string[]) => void;
     shouldStopEarly?: (alternatives: string[]) => boolean;
+    untilStop?: boolean;
+    onQuiet?: () => void;
   },
-): () => void {
+): (commit?: boolean) => void {
   let cancelled = false;
-  let stopCurrent: (() => void) | null = null;
-  const maxAttempts = isIOSDevice() ? 3 : 2;
+  let stopCurrent: ((commit?: boolean) => void) | null = null;
+  const untilStop = Boolean(options?.untilStop);
+  const maxAttempts = untilStop ? 1 : isIOSDevice() ? 3 : 2;
 
   const run = async (attempt: number) => {
     if (cancelled) return;
     if (attempt === 0 && !hasActiveMicStream()) await delay(150);
 
-    stopCurrent?.();
+    stopCurrent?.(false);
     stopCurrent = listenOnce(
       lang,
       (alts) => {
@@ -480,17 +519,19 @@ export function listenForSpeech(
         }
         onError?.(reason);
       },
-      options?.expectLongPhrase ? LISTEN_MS_LONG : LISTEN_MS,
+      untilStop ? 0 : options?.expectLongPhrase ? LISTEN_MS_LONG : LISTEN_MS,
       (text, alts) => options?.onInterim?.(text, alts),
       options?.shouldStopEarly,
+      untilStop,
+      options?.onQuiet,
     );
   };
 
   void run(0);
 
-  return () => {
-    cancelled = true;
-    stopCurrent?.();
+  return (commit = false) => {
+    if (!commit) cancelled = true;
+    stopCurrent?.(commit);
     stopCurrent = null;
   };
 }

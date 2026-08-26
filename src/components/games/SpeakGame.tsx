@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { getExamTimerSeconds } from '../../lib/examTimer';
 import { playGameCorrectSound, playSound } from '../../lib/sounds';
@@ -66,13 +66,18 @@ export function SpeakGame({
   const [revealed, setRevealed] = useState(false);
   const [grade, setGrade] = useState<AnswerGrade>('wrong');
   const [heard, setHeard] = useState('');
+  const [heardVoice, setHeardVoice] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
   const [micError, setMicError] = useState<string | null>(null);
   const [showFallback, setShowFallback] = useState(false);
   const [selfCheck, setSelfCheck] = useState(false);
   const [skipMenu, setSkipMenu] = useState(false);
-  const stopRef = useRef<(() => void) | null>(null);
+  const stopRef = useRef<((commit?: boolean) => void) | null>(null);
   const busyRef = useRef(false);
+  const ignoreResultRef = useRef(false);
+  const gradedEarlyRef = useRef(false);
+  const probeBusyRef = useRef(false);
+  const heardVoiceRef = useRef(false);
   const scoreRef = useRef(0);
   scoreRef.current = score;
 
@@ -119,9 +124,12 @@ export function SpeakGame({
     setSelfCheck(false);
     setVoicePhase('idle');
     setMicLevel(0);
+    setHeardVoice(false);
     setSkipMenu(false);
     busyRef.current = false;
-    stopRef.current?.();
+    ignoreResultRef.current = true;
+    gradedEarlyRef.current = false;
+    stopRef.current?.(false);
     stopRef.current = null;
   }, [index]);
 
@@ -132,6 +140,7 @@ export function SpeakGame({
 
   const applyGrade = useCallback(
     (g: AnswerGrade, transcript: string) => {
+      if (ignoreResultRef.current) return;
       setGrade(g);
       setHeard(transcript);
       setRevealed(true);
@@ -166,8 +175,6 @@ export function SpeakGame({
     [],
   );
 
-  const startWebListeningRef = useRef<() => void>(() => {});
-
   const startWebListening = useCallback(() => {
     if (!challenge) return;
 
@@ -199,13 +206,18 @@ export function SpeakGame({
           setMicError(t('speakMicDenied', locale));
           setShowFallback(true);
         } else {
-          setMicError(t('speakNoSpeech', locale));
-          setShowFallback(true);
+          setMicError(t('speakTooQuiet', locale));
         }
       },
       {
         expectLongPhrase: challenge.phraseSpeech.length > 24,
-        onInterim: () => setVoicePhase('speaking'),
+        untilStop: true,
+        onQuiet: () => setMicError(t('speakTooQuiet', locale)),
+        onInterim: () => {
+          setVoicePhase('speaking');
+          setHeardVoice(true);
+          setMicError(null);
+        },
         shouldStopEarly: (alts) => {
           const g = gradeSpokenFromCandidates(alts, challenge.target, {
             phraseSpeech: challenge.phraseSpeech,
@@ -216,32 +228,24 @@ export function SpeakGame({
     );
   }, [applyGrade, challenge, locale]);
 
-  startWebListeningRef.current = startWebListening;
-
   const analyzeBlob = useCallback(
     async (blob: Blob | null, target: string, phraseSpeech: string, lang: LangCode) => {
+      if (ignoreResultRef.current || gradedEarlyRef.current) return;
       if (!blob || blob.size < 400) {
         setVoicePhase('idle');
         busyRef.current = false;
-        setMicError(t('speakNoSpeech', locale));
-        setShowFallback(true);
+        setMicError(t('speakTooQuiet', locale));
         return;
       }
 
       setVoicePhase('analyzing');
       const text = await transcribeViaServer(blob, lang);
+      if (ignoreResultRef.current || gradedEarlyRef.current) return;
       busyRef.current = false;
 
       if (!text) {
-        if (isSpeechRecognitionSupported()) {
-          setMicError(null);
-          busyRef.current = false;
-          setVoicePhase('listening');
-          startWebListeningRef.current();
-          return;
-        }
-        setMicError(t('speakNetworkError', locale));
-        setShowFallback(true);
+        setVoicePhase('idle');
+        setMicError(t('speakTooQuiet', locale));
         return;
       }
 
@@ -252,45 +256,92 @@ export function SpeakGame({
 
   const startGroqListening = useCallback(async () => {
     if (!challenge) return;
+    gradedEarlyRef.current = false;
+    heardVoiceRef.current = false;
 
     const stream = (await acquireMicStream()) ?? getActiveMicStream();
+    const target = challenge.target;
+    const phraseSpeech = challenge.phraseSpeech;
+    const lang = challenge.lang;
 
     const { promise, stop } = recordSpeechWithVAD({
       stream,
-      silenceMs: 850,
-      maxMs: 6000,
+      untilStop: true,
+      chunkMs: 2400,
       onLevel: (level) => setMicLevel(level),
-      onSpeechStart: () => setVoicePhase('speaking'),
-      onSpeechEnd: () => setVoicePhase('analyzing'),
+      onSpeechStart: () => {
+        heardVoiceRef.current = true;
+        setVoicePhase('speaking');
+        setHeardVoice(true);
+        setMicError(null);
+      },
+      onSpeechEnd: () => {
+        if (!gradedEarlyRef.current && !ignoreResultRef.current) setVoicePhase('analyzing');
+      },
+      onChunk: (blob) => {
+        if (probeBusyRef.current || gradedEarlyRef.current || ignoreResultRef.current) return;
+        probeBusyRef.current = true;
+        void transcribeViaServer(blob, lang).then((text) => {
+          probeBusyRef.current = false;
+          if (gradedEarlyRef.current || ignoreResultRef.current) return;
+          if (text) {
+            heardVoiceRef.current = true;
+            setHeardVoice(true);
+            setMicError(null);
+            const g = gradeTranscript(text, target, phraseSpeech);
+            if (g === 'correct') {
+              gradedEarlyRef.current = true;
+              stopRef.current?.(false);
+              stopRef.current = null;
+              applyGrade(g, text);
+            }
+          } else if (!heardVoiceRef.current) {
+            setMicError(t('speakTooQuiet', locale));
+          }
+        });
+      },
     });
-    stopRef.current = stop;
+    stopRef.current = () => stop();
 
     const blob = await promise;
     stopRef.current = null;
-    await analyzeBlob(blob, challenge.target, challenge.phraseSpeech, challenge.lang);
-  }, [analyzeBlob, challenge]);
+    if (gradedEarlyRef.current || ignoreResultRef.current) return;
+    await analyzeBlob(blob, target, phraseSpeech, lang);
+  }, [analyzeBlob, applyGrade, challenge, gradeTranscript, locale]);
+
+  const recording = voicePhase === 'listening' || voicePhase === 'speaking';
 
   const startListening = useCallback(() => {
-    if (!current || !challenge || revealed || busyRef.current) return;
+    if (!current || !challenge || revealed) return;
+    if (voicePhase === 'analyzing') return;
 
+    if (recording) {
+      playSound('tap');
+      stopRef.current?.(true);
+      return;
+    }
+
+    ignoreResultRef.current = false;
+    gradedEarlyRef.current = false;
+    heardVoiceRef.current = false;
     busyRef.current = true;
     setMicError(null);
     setShowFallback(false);
     setSkipMenu(false);
+    setHeardVoice(false);
     setVoicePhase('listening');
     setMicLevel(0);
     playSound('tap');
-    stopRef.current?.();
+    stopRef.current?.(false);
 
     if (useGroq) {
       void startGroqListening();
       return;
     }
     startWebListening();
-  }, [challenge, current, revealed, startGroqListening, startWebListening, useGroq]);
+  }, [challenge, current, recording, revealed, startGroqListening, startWebListening, useGroq, voicePhase]);
 
-  const handleMicPointerDown = (e: ReactPointerEvent<HTMLButtonElement>) => {
-    if (e.pointerType === 'mouse' && e.button !== 0) return;
+  const handleMicClick = () => {
     void acquireMicStream();
     startListening();
   };
@@ -313,7 +364,8 @@ export function SpeakGame({
 
   const skipThisQuestion = () => {
     setSkipMenu(false);
-    stopRef.current?.();
+    ignoreResultRef.current = true;
+    stopRef.current?.(false);
     stopRef.current = null;
     busyRef.current = false;
     setVoicePhase('idle');
@@ -326,7 +378,8 @@ export function SpeakGame({
 
   const skipAllOral = () => {
     setSkipMenu(false);
-    stopRef.current?.();
+    ignoreResultRef.current = true;
+    stopRef.current?.(false);
     stopRef.current = null;
     busyRef.current = false;
     finish(scoreRef.current, { technical: true });
@@ -355,24 +408,22 @@ export function SpeakGame({
 
   if (!current || !challenge) return null;
 
-  const micBusy = voicePhase !== 'idle';
+  const micBusy = recording || voicePhase === 'analyzing';
   const phaseLabel =
     voicePhase === 'analyzing'
       ? t('speakProcessing', locale)
-      : voicePhase === 'speaking'
-        ? t('speakListening', locale)
-        : voicePhase === 'listening'
-          ? t('speakSpeakNow', locale)
-          : t('speakGameMic', locale);
+      : recording
+        ? t('speakMicStop', locale)
+        : t('speakGameMic', locale);
 
   const liveHint =
     voicePhase === 'analyzing'
       ? t('speakAnalyzingHint', locale)
-      : voicePhase === 'speaking'
-        ? t('speakPauseHint', locale)
-        : voicePhase === 'listening'
-          ? t('speakSpeakNow', locale)
-          : '';
+      : recording
+        ? heardVoice
+          ? t('speakListening', locale)
+          : t('speakStatusListen', locale)
+        : '';
 
   return (
     <LessonGameShell
@@ -395,6 +446,7 @@ export function SpeakGame({
           </p>
         )}
         <div className="speak-game-phrase-card">
+          <p className="speak-game-cue">{t(challenge.cueKey, locale)}</p>
           <p className="speak-game-phrase">
             {parsePhraseDisplay(challenge.phraseDisplay).map((part, i) =>
               part.kind === 'term' ? (
@@ -406,9 +458,21 @@ export function SpeakGame({
               ),
             )}
           </p>
-          <p className="speak-game-listen-first">{t('speakListenFirst', locale)}</p>
           <HearButton text={challenge.phraseSpeech} lang={challenge.lang} locale={locale} />
         </div>
+
+        <p
+          className={`speak-game-status speak-game-status--${revealed ? 'result' : voicePhase === 'analyzing' ? 'process' : recording ? 'listen' : 'ready'}`}
+          role="status"
+        >
+          {revealed
+            ? t('speakStatusResult', locale)
+            : voicePhase === 'analyzing'
+              ? t('speakStatusProcess', locale)
+              : recording
+                ? t('speakStatusListen', locale)
+                : t('speakStatusReady', locale)}
+        </p>
 
         {revealed && (
           <p className={`type-game-feedback ${grade === 'wrong' && !selfCheck ? 'wrong' : 'correct'}`}>
@@ -462,7 +526,7 @@ export function SpeakGame({
           ) : (
             <>
               <div
-                className={`speak-game-mic-wrap${micBusy ? ' speak-game-mic-wrap--active' : ''}${voicePhase === 'analyzing' ? ' speak-game-mic-wrap--analyzing' : ''}`}
+                className={`speak-game-mic-wrap${micBusy ? ' speak-game-mic-wrap--active' : ''}${voicePhase === 'analyzing' ? ' speak-game-mic-wrap--analyzing' : ''}${heardVoice && recording ? ' speak-game-mic-wrap--heard' : ''}`}
               >
                 {voicePhase === 'analyzing' && <div className="speak-game-spinner" aria-hidden />}
                 <div className="speak-game-mic-levels" aria-hidden>
@@ -475,9 +539,9 @@ export function SpeakGame({
                 </div>
                 <button
                   type="button"
-                  className={`speak-game-mic${micBusy ? ' speak-game-mic--active' : ''}`}
-                  onPointerDown={handleMicPointerDown}
-                  disabled={micBusy}
+                  className={`speak-game-mic${recording ? ' speak-game-mic--active' : ''}${heardVoice && recording ? ' speak-game-mic--heard' : ''}`}
+                  onClick={handleMicClick}
+                  disabled={voicePhase === 'analyzing'}
                 >
                   🎤 {phaseLabel}
                 </button>
@@ -498,7 +562,7 @@ export function SpeakGame({
                   </button>
                 </div>
               )}
-              {!micBusy && !micError && (
+              {!recording && voicePhase !== 'analyzing' && !micError && (
                 <p className="speak-game-hint">{t('speakMicHintGroq', locale)}</p>
               )}
             </>

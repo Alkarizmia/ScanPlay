@@ -11,6 +11,8 @@ export interface UserProfileData {
   avatar: AvatarId;
   customAvatarData?: string;
   profileUpdatedAt?: number;
+  /** Tuto Profil « choisis ton pseudo » déjà vu ou skippé. */
+  pseudoOnboardingDone?: boolean;
 }
 
 export const DEFAULT_AVATARS: { id: AvatarId; emoji: string }[] = [
@@ -104,6 +106,11 @@ export async function trySetDisplayName(name: string): Promise<SetDisplayNameRes
   }
 
   saveProfileRaw({ ...profile, displayName: trimmed, profileUpdatedAt: Date.now() });
+  const userId = getUserId();
+  if (userId && !isDefaultDisplayName(trimmed, userId)) {
+    markPseudoOnboardingDoneLocal();
+    void completePseudoOnboarding();
+  }
   const { pushUserData } = await import('./sync');
   await pushUserData();
   const { refreshProfileCacheFromProfile } = await import('./auth');
@@ -196,4 +203,60 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
 export function getAvatarEmoji(profile: UserProfileData): string {
   if (profile.avatar === 'custom' && profile.customAvatarData) return '';
   return DEFAULT_AVATARS.find((a) => a.id === profile.avatar)?.emoji ?? '🎮';
+}
+
+export function hasCompletedPseudoOnboarding(): boolean {
+  const profile = getProfile();
+  return Boolean(profile?.pseudoOnboardingDone);
+}
+
+export function shouldShowPseudoOnboarding(): boolean {
+  if (!isLoggedIn()) return false;
+  const profile = getProfile();
+  if (!profile) return false;
+  return !profile.pseudoOnboardingDone;
+}
+
+export function markPseudoOnboardingDoneLocal(): void {
+  const profile = getProfile();
+  if (!profile || profile.pseudoOnboardingDone) return;
+  saveProfileRaw({ ...profile, pseudoOnboardingDone: true });
+}
+
+export async function completePseudoOnboarding(): Promise<void> {
+  markPseudoOnboardingDoneLocal();
+  if (!isSupabaseConfigured || !isLoggedIn()) return;
+  try {
+    const { getSupabase } = await import('./supabase');
+    const supabase = getSupabase();
+    if (!supabase) return;
+    await supabase.rpc('mark_pseudo_onboarding_done');
+  } catch {
+    /* offline — flag local, le pull cloud ne l’efface pas */
+  }
+}
+
+export function applyPseudoOnboardingFromCloud(seen: boolean | null | undefined): void {
+  if (!seen) return;
+  markPseudoOnboardingDoneLocal();
+}
+
+export async function pullPseudoTutoFlag(): Promise<void> {
+  if (!isSupabaseConfigured || !isLoggedIn()) return;
+  const userId = getUserId();
+  try {
+    const { getSupabase } = await import('./supabase');
+    const supabase = getSupabase();
+    if (!supabase || !userId) return;
+    const { data } = await supabase
+      .from('scanplay_profiles')
+      .select('has_seen_pseudo_tuto')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (data && (data as { has_seen_pseudo_tuto?: boolean }).has_seen_pseudo_tuto) {
+      markPseudoOnboardingDoneLocal();
+    }
+  } catch {
+    /* colonne pas encore déployée, ou hors ligne */
+  }
 }

@@ -1,9 +1,12 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import {
   DEFAULT_AVATARS,
+  completePseudoOnboarding,
   getAvatarEmoji,
   getProfile,
+  pullPseudoTutoFlag,
   setAvatar,
+  shouldShowPseudoOnboarding,
   trySetDisplayName,
   type AvatarId,
 } from '../lib/profile';
@@ -17,6 +20,7 @@ import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
 import type { Locale, TabId } from '../types';
 import { SubscriptionSection } from './SubscriptionSection';
+import { ProfilePseudoTuto } from './ProfilePseudoTuto';
 
 interface ProfileSectionProps {
   locale: Locale;
@@ -31,6 +35,8 @@ interface ProfileSectionProps {
 export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToast, variant = 'embedded', onOpenTab }: ProfileSectionProps) {
   const profile = getProfile();
   const fileRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const [nameFieldEl, setNameFieldEl] = useState<HTMLDivElement | null>(null);
   const [nameDraft, setNameDraft] = useState(profile?.displayName ?? '');
   const [savedHint, setSavedHint] = useState(false);
   const [nameError, setNameError] = useState<string | null>(null);
@@ -38,10 +44,19 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
   const [savingName, setSavingName] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [friendCount, setFriendCount] = useState(0);
+  const [pseudoCoach, setPseudoCoach] = useState(() => shouldShowPseudoOnboarding());
+  const [tutoZoom, setTutoZoom] = useState(false);
+  const closingTutoRef = useRef(false);
 
   useEffect(() => {
     const p = getProfile();
     if (p) setNameDraft(p.displayName);
+    setPseudoCoach(shouldShowPseudoOnboarding());
+    if (shouldShowPseudoOnboarding()) {
+      void pullPseudoTutoFlag().then(() => {
+        setPseudoCoach(shouldShowPseudoOnboarding());
+      });
+    }
   }, [refreshKey]);
 
   useEffect(() => {
@@ -113,6 +128,24 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
       });
   };
 
+  const finishPseudoTuto = () => {
+    if (!pseudoCoach || closingTutoRef.current) return;
+    closingTutoRef.current = true;
+    void completePseudoOnboarding();
+    setTutoZoom(true);
+    nameFieldEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    window.setTimeout(() => {
+      setPseudoCoach(false);
+      setTutoZoom(false);
+      closingTutoRef.current = false;
+    }, 420);
+  };
+
+  const skipPseudoCoach = () => {
+    playSound('tap');
+    finishPseudoTuto();
+  };
+
   const saveName = () => {
     setNameError(null);
     if (nameTaken) {
@@ -136,6 +169,7 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
       setSavedHint(true);
       playSound('profileUpdated');
       window.setTimeout(() => setSavedHint(false), 2000);
+      finishPseudoTuto();
     });
   };
 
@@ -250,13 +284,26 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
           {uploadError && <p className="profile-upload-error">{uploadError}</p>}
         </div>
 
-        <div className="profile-name-field">
+        {pseudoCoach && (
+          <ProfilePseudoTuto
+            locale={locale}
+            nameField={nameFieldEl}
+            zooming={tutoZoom}
+            onSkip={skipPseudoCoach}
+          />
+        )}
+
+        <div
+          ref={setNameFieldEl}
+          className={`profile-name-field${pseudoCoach ? ' profile-name-field--coach' : ''}${tutoZoom ? ' profile-name-field--zoom' : ''}`}
+        >
           <label className="profile-name-label" htmlFor="profile-display-name">
             {t('profileDisplayName', locale)}
           </label>
           <div className="profile-name-row">
             <input
               id="profile-display-name"
+              ref={nameInputRef}
               className="profile-name-input"
               value={nameDraft}
               maxLength={24}

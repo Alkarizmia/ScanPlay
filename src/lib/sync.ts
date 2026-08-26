@@ -400,6 +400,10 @@ export async function pullUserData(options?: {
         profile.streak_lost_ack_at as number | null | undefined,
       );
       applyGamification(profile.xp ?? 0, profile.streak ?? 0, profile.last_play_date ?? null);
+      const { applyPseudoOnboardingFromCloud } = await import('./profile');
+      applyPseudoOnboardingFromCloud(
+        Boolean(profile.has_seen_pseudo_tuto) || Boolean(profile.pseudo_onboarding_done_at),
+      );
     } else {
       applyGamification(0, 0, null);
     }
