@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         model: resolveScanModel(),
         response_format: { type: 'json_object' },
         temperature: 0.1,
-        max_tokens: scientificSheet ? 4000 : 2500,
+        max_tokens: scientificSheet ? 4000 : 5000,
         messages: [
           { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },
           {

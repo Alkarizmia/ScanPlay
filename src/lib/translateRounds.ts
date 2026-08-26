@@ -1,6 +1,7 @@
 import type { LangCode, WordPair } from '../types';
 import { detectLang } from './columnParser';
-import { coercePlayablePairs } from './vocabulary';
+import { coercePlayablePairs, isMathLikeText } from './vocabulary';
+import { inferColumnLangs } from './pathSheetType';
 
 export type TranslateGrade = 'correct' | 'small' | 'big';
 
@@ -65,7 +66,7 @@ export function wrapVocabSentence(word: string, lang: LangCode): string {
     case 'en':
       return `I see ${w}.`;
     default:
-      return `Ik zie ${w}.`;
+      return '';
   }
 }
 
@@ -169,22 +170,30 @@ export function buildLocalTranslateRound(
   pairIndex: number,
   pool: WordPair[],
 ): TranslateRound | null {
+  if (isMathLikeText(pair.term) || isMathLikeText(pair.definition)) return null;
+
   const term = extractPlayableLemma(pair.term);
   const definition = extractPlayableLemma(pair.definition);
   if (!term || !definition) return null;
 
-  const termLang = resolveLang(term, pair.termLang);
-  const defLang = resolveLang(definition, pair.defLang);
+  const deckLangs = inferColumnLangs(pool.length > 0 ? pool : [pair]);
+  const termLang =
+    resolveLang(term, pair.termLang) === 'unknown' ? deckLangs.term : resolveLang(term, pair.termLang);
+  const defLang =
+    resolveLang(definition, pair.defLang) === 'unknown' ? deckLangs.def : resolveLang(definition, pair.defLang);
+  if (termLang === 'unknown' || defLang === 'unknown' || termLang === defLang) return null;
+
   const source = wrapVocabSentence(term, termLang);
   const target = wrapVocabSentence(definition, defLang);
+  if (!source || !target) return null;
   const expected = tokenizePhrase(target);
   if (expected.length === 0) return null;
 
   const distractors = pool
     .filter((p) => p !== pair)
-    .flatMap((p) => tokenizePhrase(p.definition))
-    .slice(0, 6);
-  const fillers = FILLERS[defLang] ?? FILLERS.fr ?? [];
+    .flatMap((p) => tokenizePhrase(extractPlayableLemma(p.definition)))
+    .filter((tok) => tok.length > 1 && !/^\d+$/.test(tok));
+  const fillers = FILLERS[defLang] ?? [];
   const answerTiles = makeTiles(expected, `a${pairIndex}`);
   const extraTiles = makeTiles([...distractors, ...fillers], `x${pairIndex}`, true).filter(
     (tile) => !answerTiles.some((a) => normalizeToken(a.text) === normalizeToken(tile.text)),

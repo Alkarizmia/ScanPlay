@@ -49,6 +49,19 @@ describe('pairQuality', () => {
     expect(isSectionTitle('le fils')).toBe(false);
     expect(isGarbageVocabTerm('ons)')).toBe(true);
     expect(isGarbageVocabTerm('e animal')).toBe(true);
+    expect(isGarbageVocabTerm('a baby')).toBe(false);
+    expect(isGarbageVocabTerm('to be born')).toBe(false);
+    expect(isSectionTitle('la grossesse')).toBe(false);
+    expect(isSectionTitle('La Grossesse')).toBe(false);
+  });
+
+  it('keeps related vocab that share a word instead of treating them as OCR siblings', () => {
+    const out = enrichTeachablePairs([
+      { term: 'a baby', definition: 'un bébé' },
+      { term: 'a toddler', definition: 'un bébé (qui fait ses premiers pas)' },
+    ]);
+    expect(out.some((p) => p.term === 'a baby')).toBe(true);
+    expect(out.some((p) => p.term === 'a toddler')).toBe(true);
   });
 
   it('fixes fused articles in OCR lines', () => {

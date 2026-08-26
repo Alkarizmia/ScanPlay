@@ -29,25 +29,42 @@ describe('aiExtract', () => {
     expect(mapped[0].term).toHaveLength(55);
   });
 
-  it('drops low-confidence and fragment pairs from AI output', () => {
+  it('keeps English article and infinitive vocab instead of treating them as OCR junk', () => {
+    const mapped = mapAiPairsToWordPairs([
+      { term: 'a baby', definition: 'un bébé', termLang: 'en', defLang: 'fr', confidence: 'high' },
+      { term: 'to be born', definition: 'naître', termLang: 'en', defLang: 'fr', confidence: 'medium' },
+      { term: 'pregnancy [e]', definition: 'la grossesse', termLang: 'en', defLang: 'fr', confidence: 'high' },
+      { term: 'fuif', definition: 'soirée', termLang: 'nl', defLang: 'fr', confidence: 'low' },
+    ]);
+    expect(mapped.some((p) => p.term === 'a baby')).toBe(true);
+    expect(mapped.some((p) => p.term === 'to be born')).toBe(true);
+    expect(mapped.some((p) => p.term === 'pregnancy')).toBe(true);
+    expect(mapped.find((p) => p.term === 'fuif')?.quality).toBe('uncertain');
+  });
+
+  it('keeps related English–French rows that share a French word', () => {
+    const mapped = mapAiPairsToWordPairs([
+      { term: 'a baby', definition: 'un bébé', termLang: 'en', defLang: 'fr', confidence: 'high' },
+      { term: 'a toddler', definition: 'un bébé (qui fait ses premiers pas)', termLang: 'en', defLang: 'fr', confidence: 'high' },
+    ]);
+    expect(mapped).toHaveLength(2);
+  });
+
+  it('drops OCR fragment pairs from AI output', () => {
     const mapped = mapAiPairsToWordPairs([
       { term: 'alles', definition: 'iologiste', termLang: 'nl', defLang: 'fr', confidence: 'medium' },
       { term: 'alles', definition: 'tout', termLang: 'nl', defLang: 'fr', confidence: 'high' },
-      { term: 'fuif', definition: 'soirée', termLang: 'nl', defLang: 'fr', confidence: 'low' },
     ]);
     expect(mapped.some((p) => p.definition === 'iologiste')).toBe(false);
     expect(mapped.some((p) => p.definition === 'tout')).toBe(true);
-    expect(mapped.some((p) => p.term === 'fuif')).toBe(false);
   });
 
-  it('collects ignored low-confidence and fragment pairs for review', () => {
+  it('collects ignored fragment pairs for review internals', () => {
     const ignored = collectIgnoredAiPairs([
       { term: 'alles', definition: 'iologiste', termLang: 'nl', defLang: 'fr', confidence: 'medium' },
       { term: 'alles', definition: 'tout', termLang: 'nl', defLang: 'fr', confidence: 'high' },
-      { term: 'fuif', definition: 'soirée', termLang: 'nl', defLang: 'fr', confidence: 'low' },
     ]);
     expect(ignored.some((p) => p.definition === 'iologiste')).toBe(true);
-    expect(ignored.some((p) => p.term === 'fuif')).toBe(true);
     expect(ignored.every((p) => p.quality === 'uncertain')).toBe(true);
   });
 

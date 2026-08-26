@@ -7,7 +7,7 @@ import {
   hasEnoughTrueFalsePairs,
 } from './vocabulary';
 import { canSpeak } from './speech';
-import { isOralAllowedForSheet, isTranslateAllowedForSheet } from './pathSheetType';
+import { isOralAllowedForSheet, canUseTranslateGame } from './pathSheetType';
 import { filterModesByFocus, isModeAllowedByFocus } from './trainingFocus';
 
 const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'translate', 'quiz', 'match', 'truefalse', 'cloze', 'listen'];
@@ -28,6 +28,21 @@ function listenAvailable(): boolean {
   return typeof window === 'undefined' || canSpeak();
 }
 
+function listenPlayable(pairs: WordPair[]): boolean {
+  if (!isOralAllowedForSheet()) return false;
+  if (!isModeAllowedByFocus('listen')) return false;
+  if (!listenAvailable()) return false;
+  return hasEnoughQuizPairsRelaxed(coercePlayablePairs(pairs));
+}
+
+/** Vocab/notes: keep at least one listening item in the lesson when oral training is on. */
+function ensureListenInLesson(games: GameMode[], pairs: WordPair[]): GameMode[] {
+  if (games.includes('listen') || !listenPlayable(pairs)) return games;
+  if (games.length === 0) return ['listen'];
+  const rest = games.filter((g) => g !== 'listen');
+  return [rest[0]!, 'listen', ...rest.slice(1)].slice(0, 4);
+}
+
 /** Pick a playable mode for this step (fallback if the default cycle mode needs more pairs). */
 export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMode {
   const playable = coercePlayablePairs(pairs);
@@ -35,14 +50,11 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
 
   const tryMode = (mode: GameMode): boolean => {
     if (mode === 'listen') {
-      if (!isOralAllowedForSheet()) return false;
-      if (!listenAvailable()) return false;
-      return hasEnoughQuizPairsRelaxed(playable);
+      return listenPlayable(playable);
     }
     if (mode === 'speak') return false;
     if (mode === 'translate') {
-      if (!isTranslateAllowedForSheet()) return false;
-      return playable.length >= 1;
+      return canUseTranslateGame(playable);
     }
     if (mode === 'flashcards' || mode === 'type') return playable.length >= 1;
     if (mode === 'quiz' || mode === 'cloze') return hasEnoughQuizPairsRelaxed(playable);
@@ -52,7 +64,6 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
   };
 
   if (tryMode(preferred)) return preferred;
-  if (tryMode('translate')) return 'translate';
   if (tryMode('type')) return 'type';
   if (tryMode('listen')) return 'listen';
   if (tryMode('flashcards')) return 'flashcards';
@@ -71,7 +82,7 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
 
   for (const preferred of template) {
     if (preferred === 'listen' && !isOralAllowedForSheet()) continue;
-    if (preferred === 'translate' && !isTranslateAllowedForSheet()) continue;
+    if (preferred === 'translate' && !canUseTranslateGame(playable.length > 0 ? playable : pairs)) continue;
     if (!isModeAllowedByFocus(preferred)) continue;
     const mode = resolveStepMode(preferred, playable.length > 0 ? playable : pairs);
     if (!isModeAllowedByFocus(mode)) continue;
@@ -82,12 +93,12 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   }
 
   let filtered = filterModesByFocus(out);
-  if (filtered.length >= 2) return filtered.slice(0, 4);
+  if (filtered.length >= 2) return ensureListenInLesson(filtered.slice(0, 4), playable.length > 0 ? playable : pairs);
 
   for (const fallback of STEP_CYCLE) {
     if (filtered.length >= 2) break;
     if (fallback === 'listen' && !isOralAllowedForSheet()) continue;
-    if (fallback === 'translate' && !isTranslateAllowedForSheet()) continue;
+    if (fallback === 'translate' && !canUseTranslateGame(playable.length > 0 ? playable : pairs)) continue;
     if (!isModeAllowedByFocus(fallback)) continue;
     const mode = resolveStepMode(fallback, playable.length > 0 ? playable : pairs);
     if (!isModeAllowedByFocus(mode)) continue;
@@ -97,7 +108,8 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
     }
   }
 
-  return filtered.length > 0 ? filtered : filterModesByFocus(['flashcards']);
+  const filled = filtered.length > 0 ? filtered : filterModesByFocus(['flashcards']);
+  return ensureListenInLesson(filled, playable.length > 0 ? playable : pairs);
 }
 
 /** @deprecated use pickPathStepGames — kept for exam / legacy single-mode paths. */

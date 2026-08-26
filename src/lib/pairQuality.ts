@@ -31,19 +31,20 @@ export function isHeadlessOcrFragment(text: string): boolean {
   return false;
 }
 
-/** Drop a side that is clearly a leftover piece of another extracted string. */
+/** Drop a truncated OCR token that is a piece of another word (iologiste ⊂ audiologiste), not related vocab. */
 export function dropSiblingOcrFragments<T extends { term: string; definition: string }>(pairs: T[]): T[] {
-  return pairs.filter((pair, index) => {
+  return pairs.filter((pair) => {
     if (isHeadlessOcrFragment(pair.term) || isHeadlessOcrFragment(pair.definition)) return false;
     const def = pair.definition
       .toLowerCase()
       .replace(/^(l['’]|le |la |les |un |une )/i, '')
       .trim();
-    if (def.length < 6) return true;
-    return !pairs.some((other, j) => {
-      if (j === index) return false;
-      const hay = `${other.term} ${other.definition}`.toLowerCase();
-      return hay.includes(def) && hay.replace(def, '').length >= 2;
+    const token = (def.split(/[\s,;:/()]+/)[0] ?? '').replace(/[.,!?]+$/g, '');
+    if (token.length < 6) return true;
+    return !pairs.some((other) => {
+      if (other === pair) return false;
+      const words = `${other.term} ${other.definition}`.toLowerCase().split(/[\s,;:/()]+/);
+      return words.some((w) => w !== token && w.includes(token) && w.length - token.length >= 2);
     });
   });
 }
@@ -55,7 +56,7 @@ export function isSectionTitle(text: string): boolean {
   if (/^(les|the)\s+(conjonctions|verbes|adjectifs|prépositions|prepositions|mots|coordination)\b/i.test(t)) {
     return true;
   }
-  if (/^(le|la|les|het|de|l')\s+[A-ZÀ-Ÿ][\wàâäéèêëïîôùûüç'-]*(\s+[A-Za-zàâäéèêëïîôùûüç'-]+){0,4}$/.test(t)) {
+  if (/^(le|la|les|het|de|l')\s+[A-ZÀ-Ÿ][\wàâäéèêëïîôùûüç'-]*(\s+[A-Za-zàâäéèêëïîôùûüç'-]+){1,4}$/.test(t)) {
     return true;
   }
   if (/^(le|la|les)\s+r[eè]gne\b/i.test(t)) return true;
@@ -95,7 +96,7 @@ export function isGarbageVocabTerm(text: string): boolean {
   if (
     /^[a-z]{1,2}\s+[a-zà-]/i.test(t) &&
     t.length <= 14 &&
-    !/^(de|het|een|le|la|les|un|une|du|des|au|en|te|om|op|il|je|tu)\s+/i.test(t)
+    !/^(de|het|een|le|la|les|un|une|du|des|au|en|te|om|op|il|je|tu|a|an|the|to|my)\s+/i.test(t)
   ) {
     return true;
   }

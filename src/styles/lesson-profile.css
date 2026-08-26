@@ -11,6 +11,9 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding-top: 8px;
+  position: relative;
+  z-index: 0;
 }
 .lesson-runner-body--transition {
   opacity: 0.35;
@@ -35,7 +38,11 @@
   background: var(--bg);
 }
 .listen-game-body {
-  padding: 8px 0;
+  padding: 4px 0 8px;
+}
+.listen-game-body .game-instruction {
+  flex-shrink: 0;
+  padding-top: 2px;
 }
 .listen-audio-card {
   display: flex;

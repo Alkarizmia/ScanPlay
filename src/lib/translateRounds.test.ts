@@ -48,6 +48,13 @@ describe('translateRounds', () => {
     const source = wrapVocabSentence('auto', 'nl');
     expect(source.toLowerCase()).toContain('auto');
     expect(wrapVocabSentence('voiture', 'fr').toLowerCase()).toContain('voiture');
+    expect(wrapVocabSentence('Signe', 'unknown')).toBe('');
+    expect(wrapVocabSentence('Signe', 'unknown')).not.toMatch(/Ik zie/i);
+  });
+
+  it('does not build a translate round for a French math card', () => {
+    const math: WordPair = { term: 'Signe', definition: 'f(x) > 0', termLang: 'fr', defLang: 'fr' };
+    expect(buildLocalTranslateRound(math, 0, [math])).toBeNull();
   });
 
   it('does not paste a glossary fragment as the source sentence', () => {

@@ -23,7 +23,7 @@ function clonePairs(pairs: WordPair[]): WordPair[] {
 export function ReviewCardsScreen({
   locale,
   pairs,
-  ignored,
+  ignored: _ignored,
   onContinue,
   onRescan,
   onBack,
@@ -39,8 +39,8 @@ export function ReviewCardsScreen({
     () =>
       t('reviewCardsMix', locale)
         .replace('{n}', String(trustedCount))
-        .replace('{m}', String(uncertainCount + ignored.length)),
-    [locale, trustedCount, uncertainCount, ignored.length],
+        .replace('{m}', String(uncertainCount)),
+    [locale, trustedCount, uncertainCount],
   );
 
   const updateRow = (index: number, patch: Partial<WordPair>) => {
@@ -58,9 +58,7 @@ export function ReviewCardsScreen({
 
       <main className="review-cards-main scroll-natural">
         <p className="review-cards-sub">
-          {t('reviewCardsSub', locale)
-            .replace('{kept}', String(rows.length))
-            .replace('{ignored}', String(ignored.length))}
+          {t('reviewCardsSub', locale).replace('{kept}', String(rows.length))}
         </p>
         <p className="review-cards-mix" role="status">
           {mixLabel}
@@ -129,23 +127,6 @@ export function ReviewCardsScreen({
             );
           })}
         </ul>
-
-        {ignored.length > 0 && (
-          <section className="review-cards-ignored" aria-label={t('reviewCardsIgnored', locale)}>
-            <p className="review-cards-ignored-hint">{t('reviewCardsIgnoredHint', locale)}</p>
-            <ul className="review-cards-list review-cards-list--ignored">
-              {ignored.map((row, index) => (
-                <li key={`ign-${row.term}-${index}`} className="review-card-row review-card-row--ignored">
-                  <div className="review-card-pair">
-                    <FormulaText className="review-card-term" text={row.term} />
-                    <FormulaText className="review-card-def" text={row.definition} />
-                  </div>
-                  <span className="review-card-badge review-card-badge--bad">{t('reviewCardsIgnored', locale)}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
       </main>
 
       <footer className="review-cards-footer">

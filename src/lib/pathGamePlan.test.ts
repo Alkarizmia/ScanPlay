@@ -6,10 +6,16 @@ import { setPathSheetType } from './pathSheetType';
 import { resetTrainingFocus } from './trainingFocus';
 
 const pairs: WordPair[] = [
-  { term: 'beat', definition: 'battre' },
-  { term: 'run', definition: 'courir' },
-  { term: 'walk', definition: 'marcher' },
-  { term: 'jump', definition: 'sauter' },
+  { term: 'beat', definition: 'battre', termLang: 'en', defLang: 'fr' },
+  { term: 'run', definition: 'courir', termLang: 'en', defLang: 'fr' },
+  { term: 'walk', definition: 'marcher', termLang: 'en', defLang: 'fr' },
+  { term: 'jump', definition: 'sauter', termLang: 'en', defLang: 'fr' },
+];
+
+const mathPairs: WordPair[] = [
+  { term: 'Signe', definition: 'f(x) > 0' },
+  { term: 'Domaine', definition: 'R \\ {1}' },
+  { term: 'Racines', definition: 'x = ±√2' },
 ];
 
 describe('getNextGameForStep listen path', () => {
@@ -42,5 +48,22 @@ describe('getNextGameForStep listen path', () => {
   it('includes translate on vocab path nodes', () => {
     const games = pickPathStepGames(0, pairs);
     expect(games).toContain('translate');
+  });
+
+  it('includes listen on the first vocab node when oral training is on', () => {
+    expect(pickPathStepGames(0, pairs)).toContain('listen');
+  });
+
+  it('never puts listen on a math sheet', () => {
+    setPathSheetType('math');
+    expect(pickPathStepGames(0, mathPairs)).not.toContain('listen');
+    expect(pickPathStepGames(1, mathPairs)).not.toContain('listen');
+  });
+
+  it('never puts translate on a math sheet', () => {
+    setPathSheetType('math');
+    expect(pickPathStepGames(0, mathPairs).join(',')).not.toContain('translate');
+    setPathSheetType('vocab');
+    expect(pickPathStepGames(0, mathPairs)).not.toContain('translate');
   });
 });

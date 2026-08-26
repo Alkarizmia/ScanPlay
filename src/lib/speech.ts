@@ -7,7 +7,7 @@ function speechLangTag(lang?: LangCode): string {
     case 'fr':
       return 'fr-FR';
     case 'en':
-      return 'en-US';
+      return 'en-GB';
     default:
       return 'fr-FR';
   }
@@ -16,6 +16,7 @@ function speechLangTag(lang?: LangCode): string {
 const VOICE_HINTS: Record<string, string[]> = {
   'nl-NL': ['Google Nederlands', 'nl-NL', 'Dutch', 'Xander'],
   'fr-FR': ['Google français', 'fr-FR', 'Thomas', 'Amélie', 'French'],
+  'en-GB': ['Google UK English', 'en-GB', 'Daniel', 'Google US English', 'en-US', 'Samantha', 'Microsoft Zira'],
   'en-US': ['Google US English', 'en-US', 'Samantha', 'Microsoft Zira', 'Karen'],
 };
 
@@ -59,10 +60,12 @@ export function canSpeak(): boolean {
   return typeof window !== 'undefined' && 'speechSynthesis' in window;
 }
 
-/** Retire crochets, guillemets et symboles pour une lecture vocale naturelle. */
+/** Retire crochets phonétiques, astérisques et symboles pour une lecture vocale naturelle. */
 export function sanitizeTextForSpeech(text: string): string {
   return text
-    .replace(/\[[^\]]*\]/g, (m) => m.slice(1, -1))
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/\*/g, '')
+    .replace(/\b(GB|US|pl\.)\b/gi, ' ')
     .replace(/[«»""„"]/g, '')
     .replace(/\([^)]*\)/g, ' ')
     .replace(/\s{2,}/g, ' ')
@@ -84,7 +87,7 @@ export async function speakText(text: string, lang?: LangCode): Promise<void> {
   const utterance = new SpeechSynthesisUtterance(spoken);
   utterance.lang = langTag;
   if (voice) utterance.voice = voice;
-  utterance.rate = 0.9;
+  utterance.rate = 0.84;
   utterance.pitch = 1;
   window.speechSynthesis.speak(utterance);
 }

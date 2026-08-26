@@ -33,22 +33,31 @@ function isScientificPair(p: AiExtractPair): boolean {
   return looksLikeLatex(p.term) || looksLikeLatex(p.definition) || isMathLikeText(p.term) || isMathLikeText(p.definition);
 }
 
+function stripVocabDecorations(text: string): string {
+  return text
+    .replace(/\[[^\]]*\]/g, ' ')
+    .replace(/(^|\s)\*+/g, '$1')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
   const mapped = pairs
     .filter((p) => p.term?.trim() && p.definition?.trim())
-    .filter((p) => p.confidence !== 'low')
     .map((p) => {
       const scientific = options?.mathSheet || isScientificPair(p);
-      const term = scientific ? p.term.trim().slice(0, 120) : fixOcrLine(p.term.trim()).slice(0, 55);
+      const rawTerm = scientific ? p.term.trim() : stripVocabDecorations(p.term.trim());
+      const rawDef = scientific ? p.definition.trim() : stripVocabDecorations(p.definition.trim());
+      const term = scientific ? rawTerm.slice(0, 120) : fixOcrLine(rawTerm).slice(0, 55);
       const definition = scientific
-        ? p.definition.trim().slice(0, 280)
-        : fixOcrLine(p.definition.trim()).slice(0, 120);
+        ? rawDef.slice(0, 280)
+        : fixOcrLine(rawDef).slice(0, 120);
       return {
         term,
         definition,
         termLang: normalizeLang(p.termLang),
         defLang: normalizeLang(p.defLang),
-        quality: 'trusted' as const,
+        quality: (p.confidence === 'low' ? 'uncertain' : 'trusted') as WordPair['quality'],
       };
     })
     .filter((p) => {
@@ -73,7 +82,7 @@ function pairKey(term: string, definition: string): string {
   return `${term.toLowerCase()}\t${definition.toLowerCase()}`;
 }
 
-/** Pairs dropped for low confidence, fragments, or garbage — shown on review, never sent to quiz. */
+/** Pairs dropped as fragments or garbage — kept off the review list. */
 export function collectIgnoredAiPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
   const kept = new Set(mapAiPairsToWordPairs(pairs, options).map((p) => pairKey(p.term, p.definition)));
   return pairs
