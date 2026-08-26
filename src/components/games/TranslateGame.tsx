@@ -95,8 +95,12 @@ export function TranslateGame({
     else setIndex((i) => i + 1);
   };
 
+  const slots = round?.expected.length ?? 0;
+  const slotsFilled = Boolean(round && picked.length === slots);
+
   const pickFromBank = (id: string) => {
     if (feedback === 'ok' || feedback === 'fail' || picked.includes(id)) return;
+    if (round && picked.length >= round.expected.length) return;
     startedRef.current = true;
     playSound('tap');
     setPicked((ids) => [...ids, id]);
@@ -110,7 +114,7 @@ export function TranslateGame({
   };
 
   const check = () => {
-    if (!round || picked.length === 0 || feedback === 'ok' || feedback === 'fail') return;
+    if (!round || !slotsFilled || feedback === 'ok' || feedback === 'fail') return;
     const assembled = picked
       .map((id) => round.bank.find((t) => t.id === id)?.text ?? '')
       .filter(Boolean);
@@ -163,16 +167,18 @@ export function TranslateGame({
 
         <div className="translate-prompt">
           <ScanPlayMascot expression={mascotFor(feedback)} size={88} idle={feedback === 'idle'} />
-          <div className="translate-bubble">
+          <div className="translate-speech">
             {round ? (
-              <>
-                <HearButton
-                  text={round.source}
-                  lang={round.termLang}
-                  locale={locale}
-                  iconOnly
-                  className="translate-hear"
-                />
+              <HearButton
+                text={round.source}
+                lang={round.termLang}
+                locale={locale}
+                iconOnly
+                className="translate-hear"
+              />
+            ) : null}
+            <div className="translate-bubble">
+              {round ? (
                 <p className="translate-source">
                   {sourceParts.map((part, i) =>
                     part.hit ? (
@@ -184,49 +190,48 @@ export function TranslateGame({
                     ),
                   )}
                 </p>
-              </>
-            ) : (
-              <p className="translate-source">{t('translateLoading', locale)}</p>
-            )}
+              ) : (
+                <p className="translate-source">{t('translateLoading', locale)}</p>
+              )}
+            </div>
           </div>
         </div>
 
-        <div className="translate-answer" aria-label={t('translateInstruction', locale)}>
-          {picked.length === 0 ? <div className="translate-answer-line" /> : null}
-          <div className="translate-answer-tiles">
-            {picked.map((id) => {
-              const tile = round?.bank.find((t) => t.id === id);
-              if (!tile) return null;
-              return (
-                <button
-                  key={id}
-                  type="button"
-                  className="translate-tile translate-tile--placed"
-                  onClick={() => returnTile(id)}
-                >
-                  {tile.text}
-                </button>
-              );
-            })}
-          </div>
-          {picked.length > 0 ? <div className="translate-answer-line" /> : null}
-        </div>
-
-        <div className="translate-bank">
-          {(round?.bank ?? []).map((tile) => {
-            const used = picked.includes(tile.id);
+        <div
+          className="translate-answer"
+          aria-label={t('translateInstruction', locale)}
+        >
+          {(round?.expected ?? []).map((_, slot) => {
+            const id = picked[slot];
+            const tile = id ? round.bank.find((t) => t.id === id) : undefined;
             return (
               <button
-                key={tile.id}
+                key={`slot-${slot}`}
                 type="button"
-                className={`translate-tile${used ? ' translate-tile--ghost' : ''}`}
-                disabled={used || feedback === 'ok' || feedback === 'fail'}
-                onClick={() => pickFromBank(tile.id)}
+                className={`translate-slot${tile ? ' translate-slot--filled' : ''}`}
+                disabled={!tile || feedback === 'ok' || feedback === 'fail'}
+                onClick={() => tile && returnTile(tile.id)}
               >
-                {used ? '\u00a0' : tile.text}
+                {tile ? tile.text : '\u00a0'}
               </button>
             );
           })}
+        </div>
+
+        <div className="translate-bank">
+          {(round?.bank ?? [])
+            .filter((tile) => !picked.includes(tile.id))
+            .map((tile) => (
+              <button
+                key={tile.id}
+                type="button"
+                className="translate-tile"
+                disabled={feedback === 'ok' || feedback === 'fail'}
+                onClick={() => pickFromBank(tile.id)}
+              >
+                {tile.text}
+              </button>
+            ))}
         </div>
       </main>
 
@@ -253,7 +258,7 @@ export function TranslateGame({
             type="button"
             className="btn-primary btn-lg translate-check"
             onClick={check}
-            disabled={!round || picked.length === 0 || feedback === 'ok'}
+            disabled={!round || !slotsFilled || feedback === 'ok'}
           >
             {feedback === 'almost' ? t('translateRetry', locale) : t('translateCheck', locale)}
           </button>

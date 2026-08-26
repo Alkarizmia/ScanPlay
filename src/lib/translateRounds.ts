@@ -30,8 +30,32 @@ function resolveLang(text: string, hint?: LangCode): LangCode {
   return detectLang(text);
 }
 
+const ARTICLES = new Set([
+  'de', 'het', 'een', 'le', 'la', 'les', 'un', 'une', 'the', 'a', 'an', 'el', 'los', 'las',
+]);
+
+/** Prefer a short lemma over a glossary fragment like "beetje – een beetje". */
+export function extractPlayableLemma(raw: string): string {
+  const cleaned = raw.replace(/[–—]/g, '-').trim();
+  if (!cleaned) return '';
+  const chunks = cleaned
+    .split(/\s*[-/;,|]\s*/)
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const pool = chunks.length > 0 ? chunks : [cleaned];
+  for (const chunk of pool) {
+    const words = chunk
+      .split(/\s+/)
+      .map((w) => w.replace(/^[("'[]+|[)"'\]]+$/g, ''))
+      .filter((w) => w.length >= 2 && !ARTICLES.has(w.toLowerCase()));
+    const pick = [...words].sort((a, b) => b.length - a.length)[0];
+    if (pick && pick.length <= 28) return pick;
+  }
+  return cleaned.split(/\s+/)[0] ?? cleaned;
+}
+
 export function wrapVocabSentence(word: string, lang: LangCode): string {
-  const w = word.trim();
+  const w = extractPlayableLemma(word);
   if (!w) return '';
   switch (lang) {
     case 'fr':
@@ -41,8 +65,18 @@ export function wrapVocabSentence(word: string, lang: LangCode): string {
     case 'en':
       return `I see ${w}.`;
     default:
-      return `${w}.`;
+      return `Ik zie ${w}.`;
   }
+}
+
+export function looksLikeGlossaryFragment(text: string, rawTerm?: string): boolean {
+  const t = text.trim();
+  if (!t) return true;
+  if (/[–—]/.test(t) || /\s[-/=]\s/.test(t)) return true;
+  if (rawTerm && normalizeToken(t) === normalizeToken(rawTerm)) return true;
+  const words = tokenizePhrase(t);
+  if (words.length < 3) return true;
+  return false;
 }
 
 export function tokenizePhrase(phrase: string): string[] {
@@ -135,8 +169,8 @@ export function buildLocalTranslateRound(
   pairIndex: number,
   pool: WordPair[],
 ): TranslateRound | null {
-  const term = pair.term.trim();
-  const definition = pair.definition.trim();
+  const term = extractPlayableLemma(pair.term);
+  const definition = extractPlayableLemma(pair.definition);
   if (!term || !definition) return null;
 
   const termLang = resolveLang(term, pair.termLang);
@@ -202,8 +236,14 @@ export function parseAiTranslateRounds(
     );
     const pair = pairIndex >= 0 ? pool[pairIndex]! : null;
     if (!pair) continue;
-    if (!source.toLowerCase().includes(pair.term.trim().toLowerCase())) continue;
-    if (!target.toLowerCase().includes(pair.definition.trim().toLowerCase())) continue;
+    const termLemma = extractPlayableLemma(pair.term);
+    const defLemma = extractPlayableLemma(pair.definition);
+    const sourceOk = source.toLowerCase().includes(termLemma.toLowerCase());
+    const targetOk = target.toLowerCase().includes(defLemma.toLowerCase());
+    if (!sourceOk || !targetOk) continue;
+    if (looksLikeGlossaryFragment(source, pair.term) || looksLikeGlossaryFragment(target, pair.definition)) {
+      continue;
+    }
 
     const expected = tokenizePhrase(target);
     if (expected.length < 2) continue;
@@ -215,7 +255,7 @@ export function parseAiTranslateRounds(
     out.push({
       pairIndex,
       source,
-      focusWord: pair.term.trim(),
+      focusWord: termLemma,
       expected,
       bank,
       termLang: resolveLang(pair.term, pair.termLang),

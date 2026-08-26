@@ -523,14 +523,21 @@
 }
 .translate-prompt {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 10px;
+}
+.translate-speech {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex: 1;
+  min-width: 0;
 }
 .translate-bubble {
   position: relative;
   flex: 1;
   min-width: 0;
-  padding: 12px 14px 12px 40px;
+  padding: 12px 14px;
   border-radius: 16px;
   background: var(--surface);
   border: 2px solid var(--border);
@@ -539,21 +546,29 @@
   content: "";
   position: absolute;
   left: -8px;
-  top: 28px;
+  top: 16px;
   border-top: 8px solid transparent;
   border-bottom: 8px solid transparent;
   border-right: 8px solid var(--border);
 }
-.translate-hear {
-  position: absolute;
-  left: 8px;
-  top: 10px;
+.translate-hear.hear-btn--icon {
+  position: static;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  margin-top: 4px;
+  border: 2px solid var(--border);
+  background: var(--surface);
+  box-shadow: none;
 }
 .translate-source {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
-  line-height: 1.4;
+  line-height: 1.45;
+  padding: 0;
 }
 .translate-focus {
   color: #a78bfa;
@@ -562,19 +577,32 @@
   text-underline-offset: 3px;
 }
 .translate-answer {
-  min-height: 64px;
-  padding: 8px 0 4px;
-}
-.translate-answer-tiles {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  min-height: 40px;
+  gap: 8px 10px;
+  min-height: 52px;
+  padding: 6px 0 10px;
+  border-bottom: none;
 }
-.translate-answer-line {
-  height: 2px;
-  background: var(--border);
-  margin-top: 10px;
+.translate-slot {
+  min-width: 64px;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 2px solid var(--border);
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: var(--text);
+}
+.translate-slot--filled {
+  border-bottom-color: transparent;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+  box-shadow: 0 3px 0 color-mix(in srgb, var(--border) 80%, #000);
 }
 .translate-bank {
   display: flex;

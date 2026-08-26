@@ -1,32 +1,11 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import { resolveSynthesisModel } from '../_shared/openaiModels.ts';
+import { TRANSLATE_EXERCISE_SYSTEM_PROMPT } from '../_shared/translateExercisePrompt.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-const SYSTEM_PROMPT = `Tu crées des exercices de traduction ScanPlay (style Duolingo) à partir de paires vocabulaire déjà extraites d'une fiche.
-
-RÈGLES :
-- Réponds UNIQUEMENT en JSON valide, sans markdown.
-- Pour chaque paire : une phrase SOURCE courte (6 à 12 mots) dans la langue de "term", qui CONTIENT le mot "term" tel quel.
-- Une phrase CIBLE, traduction naturelle, dans la langue de "definition", qui CONTIENT le mot "definition" tel quel.
-- Phrases scolaires simples (présent), pas de contenu inventé hors de ces mots + grammaire autour.
-- extraTiles : 2 à 4 leurres dans la langue CIBLE (mots ou petits groupes comme "je m'appelle"), pas déjà dans la phrase cible.
-- N'invente pas d'autre vocabulaire thématique absurde. Pas de LaTeX.
-
-FORMAT :
-{
-  "rounds": [
-    {
-      "term": "string (copie exacte du term de la paire)",
-      "source": "string",
-      "target": "string",
-      "extraTiles": ["string"]
-    }
-  ]
-}`;
 
 interface Body {
   pairs?: { term?: string; definition?: string; termLang?: string; defLang?: string }[];
@@ -96,10 +75,14 @@ Deno.serve(async (req) => {
         temperature: 0.4,
         max_tokens: 900,
         messages: [
-          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'system', content: TRANSLATE_EXERCISE_SYSTEM_PROMPT },
           {
             role: 'user',
-            content: `Crée ${count} round(s) maximum, un par paire, dans l'ordre.\n\nPaires :\n${list}`,
+            content: `Crée ${count} round(s) maximum, un par paire, dans l'ordre.
+Chaque source et target doit être une phrase complète et naturelle (pas un fragment de glossaire).
+
+Paires :
+${list}`,
           },
         ],
       }),
