@@ -23,11 +23,18 @@ export function PlanPerksBar({ locale, onLockedClick }: PlanPerksBarProps) {
   if (plan === 'free') {
     summary = t('activePerksFree', locale)
       .replace('{scans}', String(PLAN_LIMITS.free.scansPerDay))
-      .replace('{words}', String(PLAN_LIMITS.free.maxWords));
+      .replace('{words}', String(PLAN_LIMITS.free.maxWords))
+      .replace('{steps}', String(PLAN_LIMITS.free.pathSteps));
   } else if (plan === 'plus') {
-    summary = t('activePerksPlus', locale);
+    summary = t('activePerksPlus', locale)
+      .replace('{scans}', String(PLAN_LIMITS.plus.scansPerDay))
+      .replace('{words}', String(PLAN_LIMITS.plus.maxWords))
+      .replace('{steps}', String(PLAN_LIMITS.plus.pathSteps));
   } else {
-    summary = t('activePerksPro', locale);
+    summary = t('activePerksPro', locale)
+      .replace('{scans}', String(PLAN_LIMITS.pro.scansPerDay))
+      .replace('{words}', String(PLAN_LIMITS.pro.maxWords))
+      .replace('{steps}', String(PLAN_LIMITS.pro.pathSteps));
   }
 
   const chips = [

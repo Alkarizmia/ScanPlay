@@ -181,7 +181,7 @@
   text-shadow: 0 0 24px rgba(255, 255, 255, 0.9);
 }
 .lesson-complete-flash {
-  position: absolute;
+  position: fixed;
   inset: 0;
   background: #fff;
   opacity: 0;
@@ -191,8 +191,24 @@
 .lesson-complete-screen--flash .lesson-complete-flash {
   animation: lessonWhiteFlash 0.55s ease-out both;
 }
+.lesson-complete-wash {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, #86efac 0%, #22c55e 42%, #15803d 100%);
+  transform: scaleY(0);
+  transform-origin: 50% 52%;
+  opacity: 0;
+}
+.lesson-complete-screen--burst .lesson-complete-wash {
+  animation: lessonWashBoom 0.5s cubic-bezier(0.12, 0.7, 0.2, 1) both;
+}
+.lesson-complete-screen--flash .lesson-complete-wash {
+  animation: lessonWashHold 0.55s ease-out both;
+}
 .lesson-complete-burst {
-  position: absolute;
+  position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 3;
@@ -200,7 +216,6 @@
 }
 .lesson-complete-shard {
   position: absolute;
-  bottom: 28%;
   border-radius: 3px;
   opacity: 0;
 }
@@ -209,19 +224,6 @@
   animation-name: lessonShardBurst;
   animation-timing-function: cubic-bezier(0.12, 0.7, 0.2, 1);
   animation-fill-mode: both;
-}
-.lesson-complete-screen--burst::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 26%;
-  height: 14px;
-  background: linear-gradient(180deg, #86efac 0%, #22c55e 45%, #166534 100%);
-  transform-origin: center bottom;
-  z-index: 2;
-  pointer-events: none;
-  animation: lessonWallpaperBoom 0.45s cubic-bezier(0.12, 0.7, 0.2, 1) both;
 }
 .lesson-xp-bar-wrap--hot .lesson-xp-bar {
   transform-origin: center bottom;
@@ -233,7 +235,7 @@
   z-index: 5;
 }
 .lesson-xp-bar-wrap--boom .lesson-xp-bar {
-  transform-origin: center bottom;
+  transform-origin: center center;
   transition: none;
   animation: lessonBarBoom 0.42s ease-out both;
 }
@@ -246,19 +248,23 @@
 }
 @keyframes lessonBarBoom {
   0% { transform: scaleY(1) scaleX(1); opacity: 1; }
-  40% { transform: scaleY(18) scaleX(1.08); opacity: 1; filter: brightness(1.8); }
-  100% { transform: scaleY(70) scaleX(1.2); opacity: 0; }
+  40% { transform: scaleY(28) scaleX(1.12); opacity: 1; filter: brightness(1.8); }
+  100% { transform: scaleY(90) scaleX(1.25); opacity: 0; }
 }
-@keyframes lessonWallpaperBoom {
-  0% { transform: scaleY(1); opacity: 1; }
-  70% { transform: scaleY(55); opacity: 1; }
-  100% { transform: scaleY(90); opacity: 0.15; }
+@keyframes lessonWashBoom {
+  0% { transform: scaleY(0.02); opacity: 1; }
+  65% { transform: scaleY(1.12); opacity: 1; }
+  100% { transform: scaleY(1.18); opacity: 1; }
+}
+@keyframes lessonWashHold {
+  0% { transform: scaleY(1.18); opacity: 1; }
+  100% { transform: scaleY(1.18); opacity: 0; }
 }
 @keyframes lessonShardBurst {
   0% { transform: translate(0, 0) rotate(0deg) scale(0.4); opacity: 0; }
   12% { opacity: 1; }
   100% {
-    transform: translate(var(--drift), -120vh) rotate(var(--spin)) scale(1.1);
+    transform: translate(var(--drift), var(--dy, -80vh)) rotate(var(--spin)) scale(1.1);
     opacity: 0;
   }
 }
@@ -275,10 +281,10 @@
 @media (prefers-reduced-motion: reduce) {
   .lesson-complete-title { opacity: 1; transform: none; animation: none; }
   .lesson-complete-flash,
+  .lesson-complete-wash,
   .lesson-complete-shard,
   .lesson-xp-bar-wrap--hot .lesson-xp-bar,
-  .lesson-xp-bar-wrap--boom .lesson-xp-bar,
-  .lesson-complete-screen--burst::before {
+  .lesson-xp-bar-wrap--boom .lesson-xp-bar {
     animation: none;
   }
 }

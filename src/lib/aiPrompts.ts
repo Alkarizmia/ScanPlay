@@ -22,7 +22,7 @@ VISION MATHÉMATIQUE / SCIENTIFIQUE (si ces signes sont visibles) :
 - Ne recopie pas un exemple générique. Si la photo montre une autre fonction, un autre domaine, une autre science : extraire CETTE photo.
 
 VOCABULAIRE (sheetType vocab uniquement) :
-- Extrais TOUTES les lignes de vocabulaire visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–100 mots) → vise autant de paires que de lignes lisibles (souvent 20 à 80). Ne t'arrête JAMAIS à 4 ou 5 paires s'il en reste sur la page.
+- Extrais TOUTES les lignes de vocabulaire visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de paires que de lignes lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. Ne t'arrête JAMAIS à 4, 5 ou 7 paires s'il en reste sur la page.
 - Multi-colonnes : lis chaque bloc verticalement (gauche EN/NL avec sa traduction FR sur la même ligne), puis le bloc suivant. N'aligne pas horizontalement d'une colonne à l'autre.
 - Longueur : term ≤ 55 caractères, definition ≤ 120 caractères.
 - ALIGNEMENT 2 COLONNES : une ligne visuelle = une seule paire. Le mot de gauche de la ligne N va UNIQUEMENT avec la traduction de droite de la MÊME ligne N.
@@ -65,16 +65,17 @@ FORMAT DE SORTIE (strict) :
 
 readable = true seulement si au moins 4 paires ont confidence "high" ou "medium" et sont clairement visibles sur la photo.`;
 
-export function buildScanPlayAiUserPrompt(sheetType: SheetType): string {
+export function buildScanPlayAiUserPrompt(sheetType: SheetType, maxPairs = 100): string {
   return `Analyse cette photo de fiche scolaire pour l'application ScanPlay.
 
 Type choisi par l'utilisateur : ${sheetType}
+Quota mots pour ce scan : extraire jusqu'à ${maxPairs} paires (pas moins si la page en contient plus).
 
 Objectif : produire des paires term/definition exploitables pour des jeux éducatifs.
 
 Consignes supplémentaires :
 - Photo possiblement floue, penchée ou sombre : lis quand même au maximum.
-- Pour vocab : deux colonnes de traduction = associe STRICTEMENT la même ligne. Fiche dense multi-colonnes = extraire CHAQUE ligne visible, pas 4 exemples. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français.
+- Pour vocab : deux colonnes de traduction = associe STRICTEMENT la même ligne. Fiche dense multi-colonnes = extraire CHAQUE ligne visible, jusqu'à ${maxPairs} paires. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français.
 - Pour definitions : une notion = une réponse courte.
 - Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
 - Pour math, ou dès que tu vois des formules / symboles scientifiques : transcris-les en LaTeX à partir de L'IMAGE, sans coller un exercice type.

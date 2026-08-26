@@ -4,7 +4,8 @@ import { BrandDecor } from './BrandDecor';
 import { GuestScanBanner } from './GuestScanBanner';
 import { SheetTypePicker } from './SheetTypePicker';
 import { TrainingFocusPicker } from './TrainingFocusPicker';
-import { clampImagesForImport, getMaxImagesPerImport, getMaxWords } from '../lib/planLimits';
+import { clampImagesForImport, getMaxImagesPerImport, PLAN_LIMITS } from '../lib/planLimits';
+import { usePlan } from '../hooks/usePlan';
 import { isLoggedIn } from '../lib/auth';
 import { canGuestScan } from '../lib/guestTrial';
 import { isTrainingFocusApplicable } from '../lib/trainingFocus';
@@ -59,7 +60,7 @@ export function ImportScreen({
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
-  const maxWords = getMaxWords();
+  const plan = usePlan();
   const maxPhotos = getMaxImagesPerImport();
   const guestMode = !isLoggedIn();
   const guestTrial = guestMode && canGuestScan();
@@ -189,9 +190,34 @@ export function ImportScreen({
             </div>
           )}
 
-          <p className="import-multi-hint">
-            {t('importMultiHint', locale).replace('{max}', String(maxWords))}
-          </p>
+          <ul className="import-plan-words" aria-label={t('importPlanWordsTitle', locale)}>
+            {(['free', 'plus', 'pro'] as const).map((tier) => (
+              <li key={tier} className={plan === tier ? 'is-current' : undefined}>
+                {t(
+                  tier === 'free'
+                    ? 'importPlanWordsFree'
+                    : tier === 'plus'
+                      ? 'importPlanWordsPlus'
+                      : 'importPlanWordsPro',
+                  locale,
+                ).replace('{n}', String(PLAN_LIMITS[tier].maxWords))}
+              </li>
+            ))}
+          </ul>
+
+          <button type="button" className="import-card import-card--primary" onClick={() => openCamera(false)}>
+            <span className="import-icon">📸</span>
+            <span className="import-title">{t('importCamera', locale)}</span>
+            <span className="import-desc">{t('importCameraDesc', locale)}</span>
+          </button>
+
+          <button type="button" className="import-card" onClick={() => openFilePicker(false)}>
+            <span className="import-icon">📁</span>
+            <span className="import-title">{t('importFile', locale)}</span>
+            <span className="import-desc">
+              {isDesktop ? t('importFileDescDesktop', locale) : t('importFileDesc', locale)}
+            </span>
+          </button>
 
           {isDesktop && (
             <div
@@ -216,22 +242,6 @@ export function ImportScreen({
               <span className="import-dropzone-sub">{t('importDropOr', locale)}</span>
               <span className="import-frame-hint">{t('importFrameHint', locale)}</span>
             </div>
-          )}
-
-          <button type="button" className="import-card import-card--primary" onClick={() => openFilePicker(false)}>
-            <span className="import-icon">🖼️</span>
-            <span className="import-title">{t('importFile', locale)}</span>
-            <span className="import-desc">
-              {isDesktop ? t('importFileDescDesktop', locale) : t('importFileDesc', locale)}
-            </span>
-          </button>
-
-          {!isDesktop && (
-            <button type="button" className="import-card" onClick={() => openCamera(false)}>
-              <span className="import-icon">📷</span>
-              <span className="import-title">{t('importCamera', locale)}</span>
-              <span className="import-desc">{t('importCameraDesc', locale)}</span>
-            </button>
           )}
         </main>
       )}

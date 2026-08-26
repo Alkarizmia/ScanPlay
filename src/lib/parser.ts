@@ -142,7 +142,7 @@ function parseVocabSheet(text: string): WordPair[] {
     pairs = dedupe([...pairs, ...parseAdjacentLines(lines)]);
   }
 
-  return reconcileWordListPairs(pairs, text).slice(0, 32);
+  return reconcileWordListPairs(pairs, text).slice(0, 250);
 }
 
 /** Extract pairs from OCR text. */
@@ -156,11 +156,11 @@ export function parseContent(text: string, sheetType: SheetType = 'vocab'): Word
 
   switch (sheetType) {
     case 'definitions':
-      return parseDefinitionsSheet(rawLines.filter((l) => !isTitleLine(l))).slice(0, 24);
+      return parseDefinitionsSheet(rawLines.filter((l) => !isTitleLine(l))).slice(0, 250);
     case 'notes':
-      return parseNotesSheet(rawLines).slice(0, 20);
+      return parseNotesSheet(rawLines).slice(0, 250);
     case 'math':
-      return parseMathSheet(rawLines).slice(0, 24);
+      return parseMathSheet(rawLines).slice(0, 250);
     case 'vocab':
     default:
       return parseVocabSheet(text);

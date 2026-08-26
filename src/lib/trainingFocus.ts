@@ -1,7 +1,7 @@
 import type { GameMode, TrainingFocus } from '../types';
 
 const WRITTEN_MODES: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'truefalse', 'cloze', 'translate'];
-const ORAL_MODES: GameMode[] = ['listen'];
+const ORAL_MODES: GameMode[] = ['listen', 'speak'];
 
 const DEFAULT_FOCUS: TrainingFocus[] = ['written', 'oral'];
 
@@ -35,7 +35,7 @@ export function filterModesByFocus(modes: GameMode[], focus: TrainingFocus[] = g
   const filtered = modes.filter((mode) => isModeAllowedByFocus(mode, focus));
   if (filtered.length > 0) return filtered;
 
-  if (focus.includes('oral') && !focus.includes('written')) return ['listen'];
+  if (focus.includes('oral') && !focus.includes('written')) return ['listen', 'speak'];
   if (focus.includes('written') && !focus.includes('oral')) return ['flashcards'];
   return modes;
 }

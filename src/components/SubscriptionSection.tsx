@@ -10,6 +10,7 @@ import {
   getBillingCycle,
 
   getScansRemaining,
+  PLAN_LIMITS,
 
   planLabel,
 
@@ -175,14 +176,9 @@ export function SubscriptionSection({
 
           </div>
 
-          {isLoggedIn && effectivePlan !== 'free' && (
-            <span className="subscription-scans-pill subscription-scans-pill--unlimited">
-              ∞ {t('planPerkScansUnlimited', locale)}
-            </span>
-          )}
-          {isLoggedIn && effectivePlan === 'free' && scansLeft !== null && (
+          {isLoggedIn && scansLeft !== null && (
             <span className="subscription-scans-pill">
-              {scansLeft} / 3 {t('scansToday', locale)}
+              {scansLeft} / {PLAN_LIMITS[effectivePlan].scansPerDay} {t('scansToday', locale)}
             </span>
           )}
 

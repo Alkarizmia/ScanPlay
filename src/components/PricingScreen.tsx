@@ -33,9 +33,9 @@ interface PricingScreenProps {
 const PLANS: Plan[] = ['free', 'plus', 'pro'];
 
 const PLAN_HIGHLIGHTS: Record<Plan, TranslationKey[]> = {
-  free: ['compareScans', 'compareWords', 'compareHistory'],
-  plus: ['compareScans', 'compareWords', 'compareHistory', 'planPerkSpaced', 'planPerkSynthesis', 'planPerkStats'],
-  pro: ['compareScans', 'compareWords', 'compareHistory', 'planPerkSpaced', 'planPerkSynthesis', 'planPerkStats', 'planPerkExam', 'planPerkShare'],
+  free: ['compareScans', 'compareWords', 'comparePath', 'compareHistory'],
+  plus: ['compareScans', 'compareWords', 'comparePath', 'compareHistory', 'planPerkSpaced', 'planPerkSynthesis', 'planPerkStats'],
+  pro: ['compareScans', 'compareWords', 'comparePath', 'compareHistory', 'planPerkSpaced', 'planPerkSynthesis', 'planPerkStats', 'planPerkExam', 'planPerkShare'],
 };
 
 type CompareRow = {
@@ -46,8 +46,9 @@ type CompareRow = {
 };
 
 const ROWS: CompareRow[] = [
-  { labelKey: 'compareScans', free: '3/j', plus: '∞', pro: '∞' },
+  { labelKey: 'compareScans', free: `${PLAN_LIMITS.free.scansPerDay}/j`, plus: `${PLAN_LIMITS.plus.scansPerDay}/j`, pro: `${PLAN_LIMITS.pro.scansPerDay}/j` },
   { labelKey: 'compareWords', free: String(PLAN_LIMITS.free.maxWords), plus: String(PLAN_LIMITS.plus.maxWords), pro: String(PLAN_LIMITS.pro.maxWords) },
+  { labelKey: 'comparePath', free: String(PLAN_LIMITS.free.pathSteps), plus: String(PLAN_LIMITS.plus.pathSteps), pro: String(PLAN_LIMITS.pro.pathSteps) },
   { labelKey: 'compareHistory', free: '7', plus: '∞', pro: '∞' },
   { labelKey: 'compareSpaced', free: '·', plus: '✓', pro: '✓' },
   { labelKey: 'compareSynthesis', free: '2/m', plus: '15/m', pro: '40/m' },

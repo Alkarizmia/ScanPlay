@@ -40,9 +40,7 @@ export function PlanCard({ locale, refreshKey = 0, onUpgrade, onToast }: PlanCar
       ? guestTrialAvailable
         ? t('planPerkGuestTrial', locale)
         : t('planPerkFreeAccountScans', locale)
-      : plan !== 'free'
-        ? `∞ ${t('planPerkScansUnlimited', locale)}`
-        : `${scansLeft} / ${limits.scansPerDay} ${t('scansToday', locale)}`;
+      : `${scansLeft} / ${limits.scansPerDay} ${t('scansToday', locale)}`;
 
   const perks = [
     {
@@ -55,6 +53,7 @@ export function PlanCard({ locale, refreshKey = 0, onUpgrade, onToast }: PlanCar
         ? [{ ok: true, text: t('planPerkFreeAccountScans', locale) }]
         : []),
     { ok: true, text: `${limits.maxWords} ${t('planPerkWords', locale)}` },
+    { ok: true, text: t('planPerkPath', locale).replace('{n}', String(limits.pathSteps)) },
     { ok: hasFeature('spaced', plan), text: t('planPerkSpaced', locale) },
     { ok: hasFeature('export', plan), text: t('planPerkExport', locale) },
     { ok: hasFeature('stats', plan), text: t('planPerkStats', locale) },

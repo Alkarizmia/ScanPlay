@@ -37,9 +37,10 @@ const enFrScan: WordPair[] = [
 describe('translate exercise prompt', () => {
   it('anchors glossary vs complete sentence in the system prompt', () => {
     expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toContain('beetje – een beetje');
-    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toContain('Ik zie een beetje water.');
-    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toContain('sujet + verbe');
-    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toMatch(/Ne recopie JAMAIS/i);
+    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toContain('Er is een beetje water.');
+    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toMatch(/I see old/i);
+    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toMatch(/sujet \+ verbe/i);
+    expect(TRANSLATE_EXERCISE_SYSTEM_PROMPT).toMatch(/Ne FORCE PAS/i);
   });
 });
 
@@ -50,6 +51,15 @@ describe('translateRounds', () => {
     expect(wrapVocabSentence('voiture', 'fr').toLowerCase()).toContain('voiture');
     expect(wrapVocabSentence('Signe', 'unknown')).toBe('');
     expect(wrapVocabSentence('Signe', 'unknown')).not.toMatch(/Ik zie/i);
+  });
+
+  it('does not calque "I see / Je vois" onto adjectives and abstract nouns', () => {
+    expect(wrapVocabSentence('old', 'en')).not.toMatch(/I see/i);
+    expect(wrapVocabSentence('old', 'en').toLowerCase()).toMatch(/\bold\b/);
+    expect(wrapVocabSentence('vieillesse', 'fr')).not.toMatch(/Je vois/i);
+    expect(wrapVocabSentence('vieillesse', 'fr').toLowerCase()).toMatch(/vieillesse/);
+    expect(wrapVocabSentence('to be born', 'en')).not.toMatch(/I see/i);
+    expect(wrapVocabSentence('to be born', 'en').toLowerCase()).toMatch(/born/);
   });
 
   it('does not build a translate round for a French math card', () => {
@@ -103,16 +113,33 @@ describe('translateRounds', () => {
         rounds: [
           {
             term: 'beetje – een beetje',
-            source: 'Ik zie een beetje water.',
-            target: 'Je vois un peu d eau.',
+            source: 'Er is een beetje water.',
+            target: "Il y a un peu d'eau.",
             extraTiles: ['bonjour'],
           },
         ],
       },
       glossaryScan,
     );
-    expect(parsed?.[0]?.source).toBe('Ik zie een beetje water.');
+    expect(parsed?.[0]?.source).toBe('Er is een beetje water.');
     expect(looksLikeGlossaryFragment(parsed![0]!.source)).toBe(false);
+  });
+
+  it('rejects AI see-calques like I see old', () => {
+    const parsed = parseAiTranslateRounds(
+      {
+        rounds: [
+          {
+            term: 'old',
+            source: 'I see old.',
+            target: 'Je vois vieillesse.',
+            extraTiles: ['bonjour'],
+          },
+        ],
+      },
+      [{ term: 'old', definition: 'vieillesse', termLang: 'en', defLang: 'fr' }],
+    );
+    expect(parsed).toBeNull();
   });
 
   it('builds tiles that include the target word', () => {

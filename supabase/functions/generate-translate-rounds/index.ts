@@ -79,7 +79,8 @@ Deno.serve(async (req) => {
           {
             role: 'user',
             content: `Crée ${count} round(s) maximum, un par paire, dans l'ordre.
-Chaque source et target doit être une phrase complète et naturelle (pas un fragment de glossaire).
+Phrases naturelles dans CHAQUE langue (pas de calque "I see / Je vois / Ik zie").
+Adjectif → phrase d'état ; nom → article ; verbe → infinitif dans une vraie phrase.
 
 Paires :
 ${list}`,

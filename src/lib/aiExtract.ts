@@ -2,6 +2,7 @@ import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
 import { getSupabase, isSupabaseConfigured } from './supabase';
+import { getMaxWords } from './planLimits';
 import type { LangCode, SheetType, WordPair } from '../types';
 
 export interface AiExtractPair {
@@ -157,7 +158,7 @@ function loadImageForAi(file: File, maxWidth = 1200): Promise<{ base64: string; 
       ctx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
       const mimeType = 'image/jpeg';
-      const dataUrl = canvas.toDataURL(mimeType, maxWidth > 1200 ? 0.9 : 0.85);
+      const dataUrl = canvas.toDataURL(mimeType, maxWidth >= 1600 ? 0.9 : 0.85);
       const base64 = dataUrl.split(',')[1] ?? '';
       if (!base64) {
         reject(new Error('Encode failed'));
@@ -195,14 +196,17 @@ export async function analyzeSheetWithAi(
 
   const { base64, mimeType } = await loadImageForAi(
     file,
-    sheetType === 'vocab' ? 1200 : 1600,
+    sheetType === 'vocab' ? 1800 : 1600,
   );
+
+  const maxPairs = getMaxWords();
 
   const { data, error } = await supabase.functions.invoke('analyze-sheet', {
     body: {
       imageBase64: base64,
       mimeType,
       sheetType,
+      maxPairs,
     },
   });
 

@@ -20,7 +20,7 @@ import { isLoggedIn } from '../lib/auth';
 import { getHistory } from '../lib/history';
 import { getDateLocale, t } from '../lib/i18n';
 import { SAMPLE_PAIRS } from '../lib/sample';
-import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining } from '../lib/planLimits';
+import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining, PLAN_LIMITS } from '../lib/planLimits';
 import type { DeviceProfile } from '../lib/device';
 import type { HistoryEntry, Locale, StepProgressMap } from '../types';
 
@@ -254,16 +254,11 @@ export function HomeScreen({
           <p className="tagline">{t('tagline', locale)}</p>
           <p className="subtagline">{t('subtagline', locale)}</p>
 
-          {loggedIn &&
-            (plan !== 'free' ? (
-              <p className="scans-left scans-left--unlimited">
-                ∞ {t('planPerkScansUnlimited', locale)}
-              </p>
-            ) : scansLeft !== Infinity ? (
+          {loggedIn && scansLeft !== Infinity && (
               <p className="scans-left">
-                {scansLeft} / 3 {t('scansToday', locale)}
+                {scansLeft} / {PLAN_LIMITS[plan].scansPerDay} {t('scansToday', locale)}
               </p>
-            ) : null)}
+            )}
 
           {isDesktop ? (
             <div

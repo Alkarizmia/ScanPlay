@@ -4,6 +4,7 @@ import {
   fetchUserPlan,
   fetchUserStatsData,
   incrementScanCount,
+  PLAN_LIMITS,
 } from '../_shared/planQuotas.ts';
 import { resolveScanModel } from '../_shared/openaiModels.ts';
 import { SCANPLAY_AI_SYSTEM_PROMPT, buildScanUserPrompt } from '../_shared/scanPrompt.ts';
@@ -17,6 +18,7 @@ interface AnalyzeBody {
   imageBase64?: string;
   mimeType?: string;
   sheetType?: string;
+  maxPairs?: number;
 }
 
 Deno.serve(async (req) => {
@@ -78,7 +80,7 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as AnalyzeBody;
-    const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab' } = body;
+    const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab', maxPairs: requestedMax } = body;
 
     if (!imageBase64 || typeof imageBase64 !== 'string') {
       return new Response(JSON.stringify({ error: 'imageBase64 required' }), {
@@ -87,8 +89,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const userPrompt = buildScanUserPrompt(sheetType);
+    const planCap = PLAN_LIMITS[plan].maxWords;
+    const maxPairs = Math.min(
+      planCap,
+      Math.max(4, Number.isFinite(Number(requestedMax)) ? Number(requestedMax) : planCap),
+    );
+    const userPrompt = buildScanUserPrompt(sheetType, maxPairs);
     const scientificSheet = sheetType === 'math' || sheetType === 'notes' || sheetType === 'definitions';
+    const vocabTokens = Math.min(16000, 800 + maxPairs * 80);
 
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -100,7 +108,7 @@ Deno.serve(async (req) => {
         model: resolveScanModel(),
         response_format: { type: 'json_object' },
         temperature: 0.1,
-        max_tokens: scientificSheet ? 4000 : 5000,
+        max_tokens: scientificSheet ? 4000 : vocabTokens,
         messages: [
           { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },
           {

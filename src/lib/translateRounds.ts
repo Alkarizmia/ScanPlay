@@ -35,6 +35,90 @@ const ARTICLES = new Set([
   'de', 'het', 'een', 'le', 'la', 'les', 'un', 'une', 'the', 'a', 'an', 'el', 'los', 'las',
 ]);
 
+const EN_ADJECTIVES = new Set([
+  'old', 'young', 'new', 'big', 'small', 'little', 'pregnant', 'dead', 'alive', 'happy', 'sad',
+  'good', 'bad', 'hot', 'cold', 'long', 'short', 'tall', 'mature', 'stillborn', 'sick', 'healthy',
+  'rich', 'poor', 'strong', 'weak', 'fast', 'slow', 'early', 'late', 'open', 'closed',
+]);
+
+const FR_ADJECTIVES = new Set([
+  'vieux', 'vieille', 'jeune', 'nouveau', 'nouvelle', 'grand', 'grande', 'petit', 'petite',
+  'enceinte', 'mort', 'morte', 'vivant', 'vivante', 'heureux', 'heureuse', 'bon', 'bonne',
+  'mauvais', 'mauvaise', 'chaud', 'froide', 'froid', 'long', 'longue', 'court', 'courte',
+  'mature', 'malade', 'riche', 'pauvre', 'fort', 'forte', 'faible',
+]);
+
+const NL_ADJECTIVES = new Set([
+  'oud', 'jong', 'nieuw', 'groot', 'klein', 'zwanger', 'dood', 'levend', 'blij', 'verdrietig',
+  'goed', 'slecht', 'warm', 'koud', 'lang', 'kort', 'ziek', 'gezond', 'rijk', 'arm',
+]);
+
+type VocabKind = 'verb' | 'noun' | 'adj';
+
+function hashPick<T>(seed: string, items: readonly T[]): T {
+  let h = 2166136261;
+  for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
+  return items[Math.abs(h) % items.length]!;
+}
+
+/** Keep "to be born" / "a baby" instead of collapsing to the longest token. */
+export function phraseForSentence(raw: string): string {
+  const cleaned = raw.replace(/[–—]/g, '-').trim();
+  if (!cleaned) return '';
+  const first = cleaned.split(/\s*[-/;,|]\s*/)[0]?.trim() ?? cleaned;
+  const clipped = first.replace(/[.,!?]+$/g, '').trim();
+  const words = clipped.split(/\s+/).filter(Boolean);
+  if (/^to\s+/i.test(clipped) && words.length <= 5) return clipped;
+  if (/^(a|an|the|le|la|les|un|une|de|het|een|l['’])\s+/i.test(clipped) && words.length <= 4) {
+    return clipped;
+  }
+  return extractPlayableLemma(raw);
+}
+
+function classifyVocab(word: string, lang: LangCode): VocabKind {
+  const t = word.trim();
+  const low = t.toLowerCase();
+  if (/^to\s+/i.test(t)) return 'verb';
+  if (lang === 'fr' && /^(l['’]|le |la |les |un |une )/i.test(low) === false && wordsAreInfinitive(t)) {
+    return 'verb';
+  }
+  if (lang === 'nl' && /^te\s+/i.test(t)) return 'verb';
+  if (EN_ADJECTIVES.has(low) || FR_ADJECTIVES.has(low) || NL_ADJECTIVES.has(low)) return 'adj';
+  if (lang === 'en' && /^(a|an|the)\s+/i.test(t) === false && /(ous|ful|ish|ive|able)$/i.test(low)) {
+    return 'adj';
+  }
+  if (/(ness|tion|sion|ment|esse|té|heid|age)$/i.test(low.replace(/^(le|la|les|un|une|the|a|an|de|het|een)\s+/i, ''))) {
+    return 'noun';
+  }
+  return 'noun';
+}
+
+function wordsAreInfinitive(text: string): boolean {
+  const w = text.trim();
+  if (/\s/.test(w)) return false;
+  return /(?:er|ir|re|ître)$/i.test(w) && w.length >= 4;
+}
+
+function frNounPhrase(word: string): string {
+  if (/^(l['’]|le |la |les |un |une )/i.test(word)) return word;
+  const low = word.toLowerCase();
+  const fem =
+    /(tion|sion|ure|ade|ette|esse|té|nce|ie)$/i.test(low) ||
+    (/e$/i.test(low) && !/(age|isme|iste|aire|ège|é)$/i.test(low));
+  return fem ? `la ${word}` : `le ${word}`;
+}
+
+function enNounPhrase(word: string): string {
+  if (/^(a|an|the)\s+/i.test(word)) return word;
+  if (/^[aeiou]/i.test(word)) return `an ${word}`;
+  return `a ${word}`;
+}
+
+function nlNounPhrase(word: string): string {
+  if (/^(de|het|een)\s+/i.test(word)) return word;
+  return `de ${word}`;
+}
+
 /** Prefer a short lemma over a glossary fragment like "beetje – een beetje". */
 export function extractPlayableLemma(raw: string): string {
   const cleaned = raw.replace(/[–—]/g, '-').trim();
@@ -56,18 +140,53 @@ export function extractPlayableLemma(raw: string): string {
 }
 
 export function wrapVocabSentence(word: string, lang: LangCode): string {
-  const w = extractPlayableLemma(word);
+  const w = phraseForSentence(word);
   if (!w) return '';
-  switch (lang) {
-    case 'fr':
-      return `Je vois ${w}.`;
-    case 'nl':
-      return `Ik zie ${w}.`;
-    case 'en':
-      return `I see ${w}.`;
-    default:
-      return '';
+  const kind = classifyVocab(w, lang);
+  const seed = `${lang}:${kind}:${w.toLowerCase()}`;
+
+  if (lang === 'fr') {
+    if (kind === 'verb') {
+      return hashPick(seed, [`Je veux ${w}.`, `Il faut ${w}.`, `Nous allons ${w}.`]);
+    }
+    if (kind === 'adj') {
+      return hashPick(seed, [`Il est ${w}.`, `Elle est ${w}.`, `C'est trop ${w}.`]);
+    }
+    const np = frNounPhrase(w);
+    return hashPick(seed, [`C'est ${np}.`, `Voici ${np}.`, `J'ai ${np}.`]);
   }
+
+  if (lang === 'nl') {
+    if (kind === 'verb') {
+      return hashPick(seed, [`Ik wil ${w}.`, `Wij gaan ${w}.`]);
+    }
+    if (kind === 'adj') {
+      return hashPick(seed, [`Hij is ${w}.`, `Het is ${w}.`, `Zij is ${w}.`]);
+    }
+    const np = nlNounPhrase(w);
+    return hashPick(seed, [`Dit is ${np}.`, `Ik heb ${np}.`, `Hier is ${np}.`]);
+  }
+
+  if (lang === 'en') {
+    if (kind === 'verb') {
+      const inf = /^to\s+/i.test(w) ? w : `to ${w}`;
+      return hashPick(seed, [`I want ${inf}.`, `They need ${inf}.`, `We try ${inf}.`]);
+    }
+    if (kind === 'adj') {
+      return hashPick(seed, [`It is ${w}.`, `She is ${w}.`, `He looks ${w}.`]);
+    }
+    const np = enNounPhrase(w);
+    return hashPick(seed, [`This is ${np}.`, `I have ${np}.`, `Here is ${np}.`]);
+  }
+
+  return '';
+}
+
+/** "I see old" / "Je vois vieillesse" — calque, not a real sentence. */
+export function isSeeCalqueSentence(text: string, lemma?: string): boolean {
+  const t = text.trim().replace(/[.!?]+$/g, '');
+  if (/^(see|voir|zien)$/i.test((lemma ?? '').trim())) return false;
+  return /^(i see|je vois|ik zie)\s+[^\s]+$/i.test(t);
 }
 
 export function looksLikeGlossaryFragment(text: string, rawTerm?: string): boolean {
@@ -183,8 +302,8 @@ export function buildLocalTranslateRound(
     resolveLang(definition, pair.defLang) === 'unknown' ? deckLangs.def : resolveLang(definition, pair.defLang);
   if (termLang === 'unknown' || defLang === 'unknown' || termLang === defLang) return null;
 
-  const source = wrapVocabSentence(term, termLang);
-  const target = wrapVocabSentence(definition, defLang);
+  const source = wrapVocabSentence(pair.term, termLang);
+  const target = wrapVocabSentence(pair.definition, defLang);
   if (!source || !target) return null;
   const expected = tokenizePhrase(target);
   if (expected.length === 0) return null;
@@ -251,6 +370,9 @@ export function parseAiTranslateRounds(
     const targetOk = target.toLowerCase().includes(defLemma.toLowerCase());
     if (!sourceOk || !targetOk) continue;
     if (looksLikeGlossaryFragment(source, pair.term) || looksLikeGlossaryFragment(target, pair.definition)) {
+      continue;
+    }
+    if (isSeeCalqueSentence(source, termLemma) || isSeeCalqueSentence(target, defLemma)) {
       continue;
     }
 

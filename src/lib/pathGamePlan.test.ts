@@ -54,10 +54,21 @@ describe('getNextGameForStep listen path', () => {
     expect(pickPathStepGames(0, pairs)).toContain('listen');
   });
 
+  it('includes speak pronunciation on vocab when oral training is on', () => {
+    expect(pickPathStepGames(0, pairs)).toContain('speak');
+    expect(pickPathStepGames(6, pairs)).toContain('speak');
+  });
+
   it('never puts listen on a math sheet', () => {
     setPathSheetType('math');
     expect(pickPathStepGames(0, mathPairs)).not.toContain('listen');
     expect(pickPathStepGames(1, mathPairs)).not.toContain('listen');
+  });
+
+  it('never puts speak on a math sheet', () => {
+    setPathSheetType('math');
+    expect(pickPathStepGames(0, mathPairs)).not.toContain('speak');
+    expect(pickPathStepGames(1, mathPairs)).not.toContain('speak');
   });
 
   it('never puts translate on a math sheet', () => {

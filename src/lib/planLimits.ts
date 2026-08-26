@@ -43,9 +43,9 @@ export const PLAN_PRICES = {
 } as const;
 
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 3, maxWords: 15, historyMax: 7, pathSteps: 10, synthesesPerMonth: 2 },
-  plus: { scansPerDay: Infinity, maxWords: 50, historyMax: Infinity, pathSteps: 15, synthesesPerMonth: 15 },
-  pro: { scansPerDay: Infinity, maxWords: 100, historyMax: Infinity, pathSteps: 20, synthesesPerMonth: 40 },
+  free: { scansPerDay: 3, maxWords: 25, historyMax: 7, pathSteps: 10, synthesesPerMonth: 2 },
+  plus: { scansPerDay: 15, maxWords: 100, historyMax: Infinity, pathSteps: 20, synthesesPerMonth: 15 },
+  pro: { scansPerDay: 30, maxWords: 250, historyMax: Infinity, pathSteps: 30, synthesesPerMonth: 40 },
 } as const;
 
 export const DEFAULT_PATH_STEP_COUNT = PLAN_LIMITS.free.pathSteps;
@@ -115,25 +115,26 @@ function incrementScansToday(): void {
   void import('./sync').then((m) => m.scheduleSync());
 }
 
+export function getDailyScanLimit(plan?: Plan): number {
+  return PLAN_LIMITS[plan ?? getPlan()].scansPerDay;
+}
+
 export function getScansRemaining(): number | typeof Infinity {
   if (!isLoggedIn()) {
     return canGuestScan() ? 1 : 0;
   }
-  const plan = getPlan();
-  const limit = PLAN_LIMITS[plan].scansPerDay;
-  if (limit === Infinity) return Infinity;
+  const limit = getDailyScanLimit();
   const extra = getExtraScanAllowance();
   return Math.max(0, limit + extra - getScansToday());
 }
 
-/** Label for scan quota in UI (∞ for Plus/Pro). */
+/** Used / daily scan quota for the current plan. */
 export function formatScansQuota(): string {
-  const plan = getPlan();
-  if (PLAN_LIMITS[plan].scansPerDay === Infinity) return '∞';
-  const left = getScansRemaining();
-  if (left === Infinity) return '∞';
-  const limit = PLAN_LIMITS.free.scansPerDay;
-  const used = Math.max(0, limit - left);
+  if (!isLoggedIn()) {
+    return canGuestScan() ? '0/1' : '1/1';
+  }
+  const limit = getDailyScanLimit();
+  const used = Math.min(getScansToday(), limit);
   return `${used}/${limit}`;
 }
 
@@ -141,26 +142,18 @@ export function canScan(): boolean {
   if (!isLoggedIn()) {
     return canGuestScan();
   }
-  const plan = getPlan();
-  const limit = PLAN_LIMITS[plan].scansPerDay;
-  if (limit === Infinity) return true;
-  return getScansToday() < limit + getExtraScanAllowance();
+  return getScansToday() < getDailyScanLimit() + getExtraScanAllowance();
 }
 
 export function recordScan(): void {
-  const plan = getPlan();
-  if (PLAN_LIMITS[plan].scansPerDay !== Infinity) {
-    incrementScansToday();
-  }
+  incrementScansToday();
 }
 
-/** Max images per import batch (guest = 1 photo, Free = remaining daily scans, paid = generous cap). */
+/** Max images per import batch (guest = 1 photo, otherwise remaining daily scans). */
 export function getMaxImagesPerImport(): number {
   if (!isLoggedIn()) {
     return canGuestScan() ? 1 : 0;
   }
-  const plan = getPlan();
-  if (PLAN_LIMITS[plan].scansPerDay === Infinity) return 20;
   const remaining = getScansRemaining();
   if (remaining === Infinity) return 20;
   return Math.max(0, remaining);

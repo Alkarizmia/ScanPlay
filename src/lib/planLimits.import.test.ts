@@ -10,7 +10,7 @@ vi.mock('./guestTrial', () => ({
 
 import { isLoggedIn } from './auth';
 import { canGuestScan } from './guestTrial';
-import { clampImagesForImport, getMaxImagesPerImport } from './planLimits';
+import { clampImagesForImport, getMaxImagesPerImport, PLAN_LIMITS } from './planLimits';
 
 function mockFile(name: string): File {
   return new File(['x'], name, { type: 'image/jpeg' });
@@ -57,5 +57,23 @@ describe('import limits', () => {
     vi.mocked(isLoggedIn).mockReturnValue(true);
     localStorage.setItem('scanplay-scans-day', JSON.stringify({ [new Date().toISOString().slice(0, 10)]: 1 }));
     expect(getMaxImagesPerImport()).toBe(2);
+  });
+
+  it('allows 25 / 100 / 250 words per scan by plan', () => {
+    expect(PLAN_LIMITS.free.maxWords).toBe(25);
+    expect(PLAN_LIMITS.plus.maxWords).toBe(100);
+    expect(PLAN_LIMITS.pro.maxWords).toBe(250);
+  });
+
+  it('caps daily scans at 3 / 15 / 30 by plan', () => {
+    expect(PLAN_LIMITS.free.scansPerDay).toBe(3);
+    expect(PLAN_LIMITS.plus.scansPerDay).toBe(15);
+    expect(PLAN_LIMITS.pro.scansPerDay).toBe(30);
+  });
+
+  it('gives 10 / 20 / 30 path buttons by plan', () => {
+    expect(PLAN_LIMITS.free.pathSteps).toBe(10);
+    expect(PLAN_LIMITS.plus.pathSteps).toBe(20);
+    expect(PLAN_LIMITS.pro.pathSteps).toBe(30);
   });
 });

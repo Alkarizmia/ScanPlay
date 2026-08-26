@@ -1,9 +1,9 @@
 export type Plan = 'free' | 'plus' | 'pro';
 
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 3, synthesesPerMonth: 2 },
-  plus: { scansPerDay: Number.POSITIVE_INFINITY, synthesesPerMonth: 15 },
-  pro: { scansPerDay: Number.POSITIVE_INFINITY, synthesesPerMonth: 40 },
+  free: { scansPerDay: 3, synthesesPerMonth: 2, maxWords: 25 },
+  plus: { scansPerDay: 15, synthesesPerMonth: 15, maxWords: 100 },
+  pro: { scansPerDay: 30, synthesesPerMonth: 40, maxWords: 250 },
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

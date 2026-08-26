@@ -29,10 +29,12 @@ function formatTime(seconds: number): string {
 function burstShards() {
   return Array.from({ length: 42 }, (_, i) => ({
     id: i,
-    x: 18 + Math.random() * 64,
+    x: 8 + Math.random() * 84,
+    y: 38 + Math.random() * 28,
     delay: Math.random() * 0.12,
     duration: 0.7 + Math.random() * 0.45,
-    drift: (Math.random() - 0.5) * 140,
+    drift: (Math.random() - 0.5) * 160,
+    dy: (Math.random() - 0.35) * 220,
     size: 6 + Math.random() * 10,
     color: ['#22c55e', '#4ade80', '#fbbf24', '#fb923c', '#ffffff', '#86efac'][i % 6],
     rotate: Math.random() * 360,
@@ -138,6 +140,7 @@ export function LessonCompleteScreen({
         phase !== 'reveal' ? ' lesson-complete-screen--finale' : ''
       }`}
     >
+      <div className="lesson-complete-wash" aria-hidden="true" />
       <div className="lesson-complete-burst" aria-hidden="true">
         {shards.map((p) => (
           <span
@@ -145,12 +148,14 @@ export function LessonCompleteScreen({
             className="lesson-complete-shard"
             style={{
               left: `${p.x}%`,
+              top: `${p.y}%`,
               width: p.size,
               height: p.size,
               background: p.color,
               animationDelay: `${p.delay}s`,
               animationDuration: `${p.duration}s`,
               ['--drift' as string]: `${p.drift}px`,
+              ['--dy' as string]: `${p.dy}px`,
               ['--spin' as string]: `${p.rotate}deg`,
             }}
           />
