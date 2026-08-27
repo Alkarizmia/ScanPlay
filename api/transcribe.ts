@@ -4,8 +4,12 @@ import { getUserFromRequest } from './lib/auth.js';
 const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method === 'GET') {
+    return res.status(200).json({ configured: Boolean(process.env.GROQ_API_KEY?.trim()) });
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'GET, POST');
     return res.status(405).json({ error: 'method_not_allowed' });
   }
 
@@ -41,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const form = new FormData();
   form.append('file', new Blob([new Uint8Array(bytes)], { type: mime }), `speech.${ext}`);
-  form.append('model', 'whisper-large-v3');
+      form.append('model', 'whisper-large-v3-turbo');
   form.append('language', lang);
   form.append('response_format', 'json');
 

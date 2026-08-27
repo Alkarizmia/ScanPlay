@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { gradeSpokenFromCandidates } from './speechRecognition';
+import { gradeSpokenFromCandidates, wordIsHeardInTranscript } from './speechRecognition';
 
 describe('gradeSpokenFromCandidates', () => {
   it('rejects unrelated sentence for target word', () => {
@@ -25,6 +25,12 @@ describe('gradeSpokenFromCandidates', () => {
       phraseSpeech: 'Now pronounce the word bring.',
     });
     expect(['near', 'correct']).toContain(grade);
+  });
+
+  it('highlights mother without requiring the rest of the phrase', () => {
+    expect(wordIsHeardInTranscript('mother', 'mother')).toBe(true);
+    expect(wordIsHeardInTranscript('Mother', 'I said mother')).toBe(true);
+    expect(wordIsHeardInTranscript('surrogate', 'mother')).toBe(false);
   });
 
   it('near match on partial Dutch target word', () => {

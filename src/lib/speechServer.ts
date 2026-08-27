@@ -69,7 +69,7 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   const maxMs = options.maxMs ?? 6000;
   const minSpeechMs = options.minSpeechMs ?? 250;
   const noSpeechMs = options.noSpeechMs ?? 4500;
-  const chunkMs = options.chunkMs ?? 2400;
+  const chunkMs = options.chunkMs ?? 1600;
   const mime = pickMimeType();
 
   if (!mime || typeof window === 'undefined') {
@@ -228,13 +228,34 @@ export async function recordSpeechBlob(maxMs = 7000): Promise<Blob | null> {
   return promise;
 }
 
+export type ServerTranscribeError = 'auth' | 'not_configured' | 'failed';
+
+export interface ServerTranscribeResult {
+  text: string | null;
+  error?: ServerTranscribeError;
+}
+
+export async function probeServerTranscribe(): Promise<'ok' | 'missing_key' | 'down'> {
+  try {
+    const res = await fetch('/api/transcribe');
+    if (!res.ok) return 'down';
+    const data = (await res.json()) as { configured?: boolean };
+    return data.configured ? 'ok' : 'missing_key';
+  } catch {
+    return 'down';
+  }
+}
+
 /** Transcription serveur (Groq Whisper si GROQ_API_KEY sur Vercel). */
-export async function transcribeViaServer(blob: Blob, lang: LangCode | undefined): Promise<string | null> {
+export async function transcribeViaServer(
+  blob: Blob,
+  lang: LangCode | undefined,
+): Promise<ServerTranscribeResult> {
   try {
     const { getSupabase } = await import('./supabase');
     const supabase = getSupabase();
     const token = supabase ? (await supabase.auth.getSession()).data.session?.access_token : null;
-    if (!token) return null;
+    if (!token) return { text: null, error: 'auth' };
 
     const res = await fetch('/api/transcribe', {
       method: 'POST',
@@ -248,11 +269,13 @@ export async function transcribeViaServer(blob: Blob, lang: LangCode | undefined
         lang: LANG_WHISPER[lang ?? 'unknown'],
       }),
     });
-    if (!res.ok) return null;
+    if (res.status === 401) return { text: null, error: 'auth' };
+    if (res.status === 503) return { text: null, error: 'not_configured' };
+    if (!res.ok) return { text: null, error: 'failed' };
     const data = (await res.json()) as { text?: string };
-    return data.text?.trim() || null;
+    return { text: data.text?.trim() || null };
   } catch {
-    return null;
+    return { text: null, error: 'failed' };
   }
 }
 

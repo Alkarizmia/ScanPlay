@@ -7794,6 +7794,12 @@ body {
   border-radius: 6px;
   font-weight: 900;
 }
+.speak-game-word--heard {
+  color: #c9a227;
+  background: color-mix(in srgb, #e8c547 45%, transparent);
+  border-radius: 4px;
+  padding: 0 2px;
+}
 .speak-game-status {
   margin: 0;
   font-size: 0.82rem;

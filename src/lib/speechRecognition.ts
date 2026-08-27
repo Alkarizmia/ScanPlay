@@ -292,6 +292,15 @@ function hasFinalResult(event: SpeechResultEvent): boolean {
   return false;
 }
 
+export function wordIsHeardInTranscript(displayToken: string, spoken: string): boolean {
+  const word = collapseForSpeechMatch(normalizeTypedAnswer(displayToken, false));
+  if (word.length < 2 || !spoken.trim()) return false;
+  const spokenWords = collapseForSpeechMatch(normalizeTypedAnswer(spoken, false))
+    .split(/\s+/)
+    .filter((w) => w.length >= 2);
+  return spokenWords.some((h) => answersMatch(h, word) || isSpokenNearMatch(h, word));
+}
+
 function listenOnce(
   lang: LangCode | undefined,
   onResult: (alternatives: string[]) => void,
@@ -301,6 +310,7 @@ function listenOnce(
   shouldStopEarly?: (alternatives: string[]) => boolean,
   untilStop = false,
   onQuiet?: () => void,
+  onSessionEnd?: () => void,
 ): (commit?: boolean) => void {
   const Ctor = getRecognitionCtor();
   if (!Ctor) {
@@ -398,14 +408,10 @@ function listenOnce(
   rec.onend = () => {
     if (finished) return;
     if (untilStop) {
-      window.setTimeout(() => {
-        if (finished) return;
-        try {
-          rec.start();
-        } catch {
-          /* ignore */
-        }
-      }, 80);
+      finished = true;
+      if (endTimer != null) window.clearTimeout(endTimer);
+      if (timeout != null) window.clearTimeout(timeout);
+      onSessionEnd?.();
       return;
     }
     if (bestInterim.length > 0 && !gotResult) {
@@ -490,6 +496,8 @@ export function listenForSpeech(
     shouldStopEarly?: (alternatives: string[]) => boolean;
     untilStop?: boolean;
     onQuiet?: () => void;
+    /** Browser ended the take (no auto-restart). */
+    onSessionEnd?: () => void;
   },
 ): (commit?: boolean) => void {
   let cancelled = false;
@@ -524,6 +532,7 @@ export function listenForSpeech(
       options?.shouldStopEarly,
       untilStop,
       options?.onQuiet,
+      options?.onSessionEnd,
     );
   };
 
