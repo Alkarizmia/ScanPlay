@@ -1,6 +1,9 @@
 /** Durée minimale d'affichage avant de créditer les ScanCoins (web AdSense). */
 export const WEB_REWARDED_VIEW_SECONDS = 15;
 
+/** Pause l’UI pub (bandeau, boutique, confidentialité). Les variables VITE_ADSENSE_* restent. */
+export const ADSENSE_UI_PAUSED = true;
+
 function envFlag(value: string | undefined, defaultOn = false): boolean {
   if (value == null || value === '') return defaultOn;
   return value === '1' || value.toLowerCase() === 'true';
@@ -37,6 +40,7 @@ export function getAdSenseRewardSlot(): string | null {
 }
 
 export function isAdSenseEnabled(): boolean {
+  if (ADSENSE_UI_PAUSED) return false;
   // AdSense ne remplit jamais localhost / LAN — forcer la simulation en dev local
   if (import.meta.env.DEV && isPrivateDevHost()) return false;
   const defaultOn = !import.meta.env.DEV;

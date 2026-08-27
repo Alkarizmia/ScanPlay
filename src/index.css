@@ -1095,6 +1095,15 @@ body {
 .flashcard.flipped .back {
   transform: rotateY(0);
 }
+html[data-device="desktop"] .flashcard .back {
+  pointer-events: none;
+}
+html[data-device="desktop"] .flashcard.flipped .front {
+  pointer-events: none;
+}
+html[data-device="desktop"] .flashcard.flipped .back {
+  pointer-events: auto;
+}
 .card-label {
   font-size: 0.75rem;
   text-transform: uppercase;

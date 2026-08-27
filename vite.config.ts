@@ -3,11 +3,14 @@ import { resolve } from 'node:path'
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 
-/** Injecte le snippet AdSense si absent de index.html + génère dist/ads.txt au build. */
+/** Injecte le snippet AdSense si absent de index.html + génère dist/ads.txt au build.
+ *  Doit rester aligné avec ADSENSE_UI_PAUSED dans src/lib/ads/config.ts. */
 function adsenseSitePlugin(): Plugin {
+  const uiPaused = true
   return {
     name: 'scanplay-adsense',
     transformIndexHtml(html) {
+      if (uiPaused) return html
       if (html.includes('adsbygoogle.js')) return html
 
       const client = process.env.VITE_ADSENSE_CLIENT?.trim()

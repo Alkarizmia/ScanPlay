@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { ADSENSE_UI_PAUSED } from '../lib/ads/config';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -33,7 +34,7 @@ const PRIVACY_BLOCKS: PrivacyBlock[] = [
   { kind: 'paragraph', key: 'privacyPolicy5' },
   { kind: 'paragraph', key: 'privacyPolicy6' },
   { kind: 'paragraph', key: 'privacyPolicy9' },
-  { kind: 'paragraph', key: 'privacyPolicy10' },
+  ...(ADSENSE_UI_PAUSED ? [] : [{ kind: 'paragraph' as const, key: 'privacyPolicy10' as const }]),
   { kind: 'heading', key: 'privacyAboutHeading' },
   { kind: 'paragraph', key: 'privacyPolicy7' },
   { kind: 'paragraph', key: 'privacyPolicy8' },

@@ -54,6 +54,7 @@ export function FlashcardsGame({
   const pointerStart = useRef<{ x: number; id: number } | null>(null);
   const movedRef = useRef(false);
   const busyRef = useRef(false);
+  const lastPointerTypeRef = useRef<string>('touch');
 
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index + 1, total);
@@ -119,18 +120,32 @@ export function FlashcardsGame({
     answer(gotIt);
   };
 
+  const onCardActivate = () => {
+    if (movedRef.current || busyRef.current) return;
+    setFlipped((f) => {
+      if (!f) playSound('reveal');
+      return !f;
+    });
+  };
+
   const onPointerDown = (e: React.PointerEvent) => {
     if (busyRef.current) return;
     if ((e.target as HTMLElement).closest('button')) return;
+    lastPointerTypeRef.current = e.pointerType;
     pointerStart.current = { x: e.clientX, id: e.pointerId };
     movedRef.current = false;
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    // Mouse: do not capture — capture often swallows the click that flips the card.
+    if (e.pointerType !== 'mouse') {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    }
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
     if (!pointerStart.current || pointerStart.current.id !== e.pointerId) return;
     const dx = e.clientX - pointerStart.current.x;
-    if (Math.abs(dx) > 8) movedRef.current = true;
+    const slop = e.pointerType === 'mouse' ? 16 : 8;
+    if (Math.abs(dx) > slop) movedRef.current = true;
+    if (e.pointerType === 'mouse' && !movedRef.current) return;
     setDragX(dx);
   };
 
@@ -147,14 +162,9 @@ export function FlashcardsGame({
       return;
     }
     setDragX(0);
-  };
-
-  const onCardActivate = () => {
-    if (movedRef.current || busyRef.current) return;
-    setFlipped((f) => {
-      if (!f) playSound('reveal');
-      return !f;
-    });
+    if (e.pointerType === 'mouse' && !movedRef.current) {
+      onCardActivate();
+    }
   };
 
   if (!current) return null;
@@ -208,7 +218,10 @@ export function FlashcardsGame({
             role="button"
             tabIndex={0}
             className={`flashcard ${flipped ? 'flipped' : ''}`}
-            onClick={onCardActivate}
+            onClick={() => {
+              if (lastPointerTypeRef.current === 'mouse') return;
+              onCardActivate();
+            }}
             onKeyDown={(e) => {
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();

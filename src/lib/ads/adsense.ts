@@ -1,4 +1,4 @@
-import { getAdSenseClientId } from './config';
+import { ADSENSE_UI_PAUSED, getAdSenseClientId } from './config';
 import { waitForAdStorageConsent, AD_CONSENT_GRANTED_EVENT } from './consent';
 
 declare global {
@@ -36,6 +36,7 @@ function waitForScriptElement(script: HTMLScriptElement): Promise<void> {
 }
 
 export function ensureAdSenseScript(): Promise<void> {
+  if (ADSENSE_UI_PAUSED) return Promise.resolve();
   const clientId = getAdSenseClientId();
   if (!clientId) return Promise.reject(new Error('adsense_not_configured'));
 

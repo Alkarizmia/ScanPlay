@@ -4,6 +4,7 @@ import { DailyChestOverlay } from './DailyChestOverlay';
 import { RewardedAdSheet } from './RewardedAdSheet';
 import { grantAdConsent } from '../lib/ads/consent';
 import {
+  ADSENSE_UI_PAUSED,
   getAdSenseShopSlot,
   isAdSenseEnabled,
   isAdSimulationMode,
@@ -389,6 +390,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
           />
         </section>
 
+        {!ADSENSE_UI_PAUSED && (
         <section className="shop-section">
           <h2 className="shop-section-title">{t('shopFreeCoins', locale)}</h2>
           {adsLive && <p className="shop-ad-support-hint">{t('shopAdSupportHint', locale)}</p>}
@@ -421,6 +423,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
             />
           )}
         </section>
+        )}
       </main>
 
       <RewardedAdSheet
