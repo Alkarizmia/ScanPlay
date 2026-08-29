@@ -74,6 +74,7 @@ import {
   savePendingGuestDeck,
   takeLastAdoptedGuestDeck,
 } from './lib/pendingGuestDeck';
+import { bumpDailyPlays } from './lib/dailyMissions';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
 import { acknowledgeStreakLoss, shouldShowStreakLostModal } from './lib/wallet';
 import {
@@ -1095,6 +1096,7 @@ export default function App() {
     if (!goldReplay && !technical) {
       const xpMultiplier = getXpMultiplier(stepTier ?? 'bronze') * getXpBoostMultiplier();
       const sessionResult = recordSession(score, xpMultiplier);
+      bumpDailyPlays();
       xpEarned = sessionResult.xpEarned;
       streakUpdated = sessionResult.streakUpdated;
       newStreak = sessionResult.newStreak;
@@ -1735,6 +1737,8 @@ export default function App() {
             if (last) openHistoryDeck(last);
           }}
           onOpenDeck={openHistoryDeck}
+          onOpenAchievements={() => handleTabChange('achievements')}
+          onOpenShop={() => handleTabChange('shop')}
         />
       )}
       {flow === null && tab === 'history' && (

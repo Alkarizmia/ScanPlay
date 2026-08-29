@@ -66,6 +66,7 @@ const CHEST_POOL: ChestReward[] = [
   { type: 'coins', amount: 40, labelKey: 'chestRewardBigCoins' },
   { type: 'xp', amount: 30, labelKey: 'chestRewardXp' },
   { type: 'xp', amount: 50, labelKey: 'chestRewardXp' },
+  { type: 'xp', amount: 75, labelKey: 'chestRewardXp' },
   { type: 'xp_potion', minutes: 15, labelKey: 'chestRewardPotion' },
   { type: 'coins', amount: 60, labelKey: 'chestRewardBigCoins' },
 ];

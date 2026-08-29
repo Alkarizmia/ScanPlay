@@ -1,6 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 
-import { LearningFlow } from './LearningFlow';
 import { Mascot } from './Mascot';
 import { NotificationCenter } from './NotificationCenter';
 import type { AchievementDef } from '../lib/achievements';
@@ -258,8 +257,6 @@ export function ResultsScreen({
           </button>
         )}
         </div>
-
-        <LearningFlow active="score" locale={locale} compact />
       </main>
     </div>
   );

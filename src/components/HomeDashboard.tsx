@@ -1,35 +1,38 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { DailyChestOverlay } from './DailyChestOverlay';
 import { MascotCoach } from './mascot/MascotCoach';
+import { ScanPlayChest } from './ScanPlayChest';
 import { getUnlockedCount } from '../lib/achievements';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
-import { getHistory } from '../lib/history';
+import { getDailyMissions, settleDailyMissionRewards } from '../lib/dailyMissions';
 import { getDateLocale, t } from '../lib/i18n';
 import { canClaimDailyChest, getCoins, getGems } from '../lib/wallet';
 import type { ChestReward } from '../lib/shop';
 import type { ChestRarity } from '../lib/chestRarity';
 import type { Locale } from '../types';
 
-const DAILY_SCAN_GOAL = 2;
-
 interface HomeDashboardProps {
   locale: Locale;
   refreshKey?: number;
   welcomeMessage?: string;
   onRefresh?: () => void;
+  onOpenShop?: () => void;
+  onOpenAchievements?: () => void;
 }
 
 function formatStat(value: number, locale: Locale): string {
   return value.toLocaleString(getDateLocale(locale));
 }
 
-function getScansToday(): number {
-  const today = new Date().toISOString().slice(0, 10);
-  return getHistory().filter((entry) => entry.createdAt.startsWith(today)).length;
-}
-
-export function HomeDashboard({ locale, refreshKey = 0, welcomeMessage, onRefresh }: HomeDashboardProps) {
+export function HomeDashboard({
+  locale,
+  refreshKey = 0,
+  welcomeMessage,
+  onRefresh,
+  onOpenShop,
+  onOpenAchievements,
+}: HomeDashboardProps) {
   void refreshKey;
   const { streak, xp } = getGamification();
   const level = getLevel(xp);
@@ -39,10 +42,18 @@ export function HomeDashboard({ locale, refreshKey = 0, welcomeMessage, onRefres
   const gems = getGems();
   const badges = getUnlockedCount();
   const chestReady = canClaimDailyChest();
-  const scansToday = getScansToday();
-  const scanProgress = Math.min(100, (scansToday / DAILY_SCAN_GOAL) * 100);
+  const missions = getDailyMissions();
   const [missionsOpen, setMissionsOpen] = useState(true);
   const [chestOverlayOpen, setChestOverlayOpen] = useState(false);
+  const [missionTick, setMissionTick] = useState(0);
+  void missionTick;
+
+  useEffect(() => {
+    if (settleDailyMissionRewards()) {
+      setMissionTick((n) => n + 1);
+      onRefresh?.();
+    }
+  }, [refreshKey]);
 
   const handleChestOpened = (_reward: ChestReward, _rarity?: ChestRarity) => {
     onRefresh?.();
@@ -115,25 +126,36 @@ export function HomeDashboard({ locale, refreshKey = 0, welcomeMessage, onRefres
           <span className="dash-stat-val">{formatStat(gems, locale)}</span>
           <span className="dash-stat-label">{t('dashGems', locale)}</span>
         </div>
-        <div className="dash-stat">
+        <button
+          type="button"
+          className="dash-stat dash-stat--btn"
+          onClick={() => onOpenAchievements?.()}
+        >
           <span className="dash-stat-icon icon-glyph icon-glyph--md" aria-hidden="true">
             🏅
           </span>
           <span className="dash-stat-val">{formatStat(badges, locale)}</span>
           <span className="dash-stat-label">{t('dashBadges', locale)}</span>
-        </div>
+        </button>
       </div>
 
       <article className={`dash-card dash-card--chest${chestReady ? ' dash-card--chest-ready' : ''}`}>
-        <div className="dash-chest-visual icon-glyph icon-glyph--xl" aria-hidden="true">
-          📦
-        </div>
-        <div className="dash-chest-copy">
-          <h3 className="dash-chest-title">{t('shopDailyChest', locale)}</h3>
-          <p className={`dash-chest-status${chestReady ? ' ready' : ''}`}>
-            {chestReady ? t('dashChestAvailable', locale) : t('shopChestDone', locale)}
-          </p>
-        </div>
+        <button
+          type="button"
+          className="dash-chest-shop-hit"
+          onClick={() => onOpenShop?.()}
+          aria-label={t('shop', locale)}
+        >
+          <div className="dash-chest-visual" aria-hidden="true">
+            <ScanPlayChest open={!chestReady} size={56} />
+          </div>
+          <div className="dash-chest-copy">
+            <h3 className="dash-chest-title">{t('shopDailyChest', locale)}</h3>
+            <p className={`dash-chest-status${chestReady ? ' ready' : ''}`}>
+              {chestReady ? t('dashChestAvailable', locale) : t('shopChestDone', locale)}
+            </p>
+          </div>
+        </button>
         <button
           type="button"
           className={`btn-primary dash-chest-btn${chestReady ? '' : ' dash-chest-btn--done'}`}
@@ -160,25 +182,52 @@ export function HomeDashboard({ locale, refreshKey = 0, welcomeMessage, onRefres
           </span>
         </button>
         {missionsOpen && (
-          <div className="dash-mission">
-            <div className="dash-mission-icon icon-glyph icon-glyph--md" aria-hidden="true">
-              📄
-            </div>
-            <div className="dash-mission-body">
-              <span className="dash-mission-name">
-                {t('dashMissionScan', locale).replace('{count}', String(DAILY_SCAN_GOAL))}
-              </span>
-              <div className="dash-mission-progress" aria-hidden="true">
-                <div className="dash-mission-progress-fill" style={{ width: `${scanProgress}%` }} />
-              </div>
-            </div>
-            <div className="dash-mission-reward">
-              <span className="dash-mission-reward-xp">+50 XP</span>
-              <span className="dash-mission-reward-coin" aria-hidden="true">
-                🪙
-              </span>
-            </div>
-          </div>
+          <ul className="dash-mission-list">
+            {missions.map((mission) => {
+              const done = mission.current >= mission.goal;
+              const pct = Math.min(100, (mission.current / mission.goal) * 100);
+              const name = mission.count
+                ? t(mission.nameKey, locale).replace('{count}', String(mission.count))
+                : t(mission.nameKey, locale);
+              return (
+                <li
+                  key={mission.id}
+                  className={`dash-mission${done ? ' dash-mission--done' : ''}`}
+                >
+                  <div className="dash-mission-icon" aria-hidden="true">
+                    {mission.id === 'chest' ? (
+                      <ScanPlayChest open={!chestReady} size={32} />
+                    ) : (
+                      <span className="icon-glyph icon-glyph--md">{mission.icon}</span>
+                    )}
+                  </div>
+                  <div className="dash-mission-body">
+                    <span className="dash-mission-name">{name}</span>
+                    <div className="dash-mission-progress" aria-hidden="true">
+                      <div className="dash-mission-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                  </div>
+                  <div className="dash-mission-reward">
+                    {mission.reward.type === 'coins' ? (
+                      <>
+                        <span className="dash-mission-reward-xp">+{mission.reward.amount}</span>
+                        <span className="dash-mission-reward-xp-icon" aria-hidden="true">
+                          🪙
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="dash-mission-reward-xp">+{mission.reward.amount} XP</span>
+                        <span className="dash-mission-reward-xp-icon" aria-hidden="true">
+                          ⚡
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
 

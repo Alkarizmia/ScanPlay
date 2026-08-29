@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { ScanPlayChest } from './ScanPlayChest';
 import { claimDailyChest, type ChestReward } from '../lib/shop';
 import {
   chestRarityLabelKey,
@@ -111,13 +112,15 @@ export function DailyChestOverlay({ open, locale, onClose, onOpened }: DailyChes
           disabled={revealed}
           aria-label={t('shopOpenChest', locale)}
         >
-          {!revealed && <span className="daily-chest-chest-body" aria-hidden="true" />}
-          {revealed && reward && (
-            <span className="daily-chest-reveal" aria-live="polite">
-              <RewardDisplay reward={reward} locale={locale} />
-            </span>
-          )}
+          {!revealed && <ScanPlayChest size={168} className="daily-chest-art" />}
+          {revealed && <ScanPlayChest open size={188} className="daily-chest-art daily-chest-art--open" />}
         </button>
+
+        {revealed && reward && (
+          <span className="daily-chest-reveal" aria-live="polite">
+            <RewardDisplay reward={reward} locale={locale} />
+          </span>
+        )}
 
         {!revealed && (
           <div className="daily-chest-upgrade-row" aria-hidden="true">

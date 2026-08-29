@@ -38,6 +38,8 @@ interface HomeScreenProps {
   onRefresh?: () => void;
   onContinueLast?: () => void;
   onOpenDeck?: (entry: HistoryEntry) => void;
+  onOpenAchievements?: () => void;
+  onOpenShop?: () => void;
 }
 
 const GUEST_PREVIEW_PAIRS = SAMPLE_PAIRS.slice(0, 8);
@@ -63,6 +65,8 @@ export function HomeScreen({
   onRefresh,
   onContinueLast,
   onOpenDeck,
+  onOpenAchievements,
+  onOpenShop,
 }: HomeScreenProps) {
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
@@ -230,6 +234,8 @@ export function HomeScreen({
             refreshKey={refreshKey}
             welcomeMessage={welcomeMessage}
             onRefresh={onRefresh}
+            onOpenShop={onOpenShop}
+            onOpenAchievements={onOpenAchievements}
           />
         )}
 
@@ -385,7 +391,12 @@ export function HomeScreen({
                 const def = getAchievementDef(rec.id);
                 if (!def) return null;
                 return (
-                  <div key={rec.id} className="home-ach-card unlocked">
+                  <button
+                    key={rec.id}
+                    type="button"
+                    className="home-ach-card unlocked"
+                    onClick={onOpenAchievements}
+                  >
                     <span className="home-ach-card-icon" aria-hidden="true">
                       {def.icon}
                     </span>
@@ -396,7 +407,7 @@ export function HomeScreen({
                         month: 'short',
                       })}
                     </time>
-                  </div>
+                  </button>
                 );
               })}
             </div>

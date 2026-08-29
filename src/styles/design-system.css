@@ -441,6 +441,14 @@ body {
   text-align: center;
 }
 
+.dash-stat--btn {
+  margin: 0;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
 .dash-stat-icon {
   display: inline-flex;
   align-items: center;
@@ -474,6 +482,22 @@ body {
   gap: var(--space-3);
 }
 
+.dash-chest-shop-hit {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
 .dash-card--chest-ready {
   border-color: color-mix(in srgb, #38bdf8 35%, var(--surface-border));
   background: linear-gradient(
@@ -488,12 +512,11 @@ body {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  width: 56px;
+  height: 56px;
   overflow: visible;
-  font-size: 2.5rem;
-  min-width: 1.2em;
-  min-height: 1.2em;
-  line-height: 1;
-  filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.45));
+  background: transparent;
+  filter: drop-shadow(0 4px 8px rgba(15, 23, 42, 0.18));
 }
 
 .dash-chest-copy {
@@ -563,12 +586,27 @@ body {
   transform: rotate(-90deg);
 }
 
+.dash-mission-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .dash-mission {
   display: flex;
   align-items: center;
   gap: var(--space-3);
   padding: 0 var(--space-4) var(--space-4);
   overflow: visible;
+}
+
+.dash-mission + .dash-mission {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--surface-border);
+}
+
+.dash-mission--done .dash-mission-name {
+  color: var(--text-muted);
 }
 
 .dash-mission-icon {
@@ -626,7 +664,7 @@ body {
   line-height: 1.2;
 }
 
-.dash-mission-reward-coin {
+.dash-mission-reward-xp-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -910,6 +948,10 @@ body {
   border: 1px solid var(--surface-border);
   text-align: center;
   min-height: 108px;
+  width: 100%;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
 }
 
 .home-ach-card.unlocked {

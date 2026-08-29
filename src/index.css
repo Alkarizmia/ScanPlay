@@ -7227,8 +7227,12 @@ html[data-device="desktop"] .flashcard.flipped .back {
   align-items: center;
   gap: 10px;
 }
-.shop-chest-icon {
-  font-size: 2.5rem;
+.scanplay-chest-art {
+  display: block;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+  background: transparent;
 }
 .shop-chest-desc {
   margin: 0;
@@ -7273,15 +7277,13 @@ html[data-device="desktop"] .flashcard.flipped .back {
 }
 .daily-chest-gift {
   position: relative;
-  width: 160px;
-  height: 160px;
+  width: 220px;
+  height: 220px;
+  padding: 0;
   border: none;
-  border-radius: 50%;
-  background: radial-gradient(circle at 35% 30%, #fef3c7 0%, #fbbf24 45%, #d97706 100%);
-  box-shadow:
-    0 12px 0 #b45309,
-    0 24px 48px rgba(0, 0, 0, 0.35),
-    inset 0 -8px 16px rgba(180, 83, 9, 0.25);
+  border-radius: 28px;
+  background: transparent;
+  box-shadow: none;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -7297,41 +7299,28 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .daily-chest-gift--open {
   animation: daily-chest-pop 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) forwards;
   cursor: default;
-  background: radial-gradient(circle at 35% 30%, #ecfdf5 0%, #34d399 50%, #059669 100%);
-  box-shadow:
-    0 8px 0 #047857,
-    0 0 48px rgba(52, 211, 153, 0.65),
-    0 20px 40px rgba(0, 0, 0, 0.3);
+  background: transparent;
+  box-shadow: 0 0 48px rgba(52, 211, 153, 0.45);
 }
 .daily-chest-stage--rarity.chest-rarity--rare .daily-chest-gift--open {
-  background: radial-gradient(circle at 35% 30%, #eff6ff 0%, #60a5fa 48%, #2563eb 100%);
-  box-shadow:
-    0 8px 0 #1d4ed8,
-    0 0 56px rgba(59, 130, 246, 0.7),
-    0 20px 40px rgba(0, 0, 0, 0.3);
+  background: transparent;
+  box-shadow: 0 0 56px rgba(59, 130, 246, 0.55);
 }
 .daily-chest-stage--rarity.chest-rarity--mythic .daily-chest-gift--open {
-  background: radial-gradient(circle at 35% 30%, #faf5ff 0%, #c084fc 48%, #7e22ce 100%);
-  box-shadow:
-    0 8px 0 #6b21a8,
-    0 0 60px rgba(168, 85, 247, 0.75),
-    0 20px 40px rgba(0, 0, 0, 0.3);
+  background: transparent;
+  box-shadow: 0 0 60px rgba(168, 85, 247, 0.55);
 }
 .daily-chest-stage--rarity.chest-rarity--legendary .daily-chest-gift--open {
-  background: radial-gradient(circle at 35% 30%, #fffbeb 0%, #fbbf24 45%, #d97706 100%);
-  box-shadow:
-    0 8px 0 #b45309,
-    0 0 64px rgba(251, 191, 36, 0.85),
-    0 20px 40px rgba(0, 0, 0, 0.3);
+  background: transparent;
+  box-shadow: 0 0 64px rgba(251, 191, 36, 0.65);
   animation: daily-chest-pop 0.55s cubic-bezier(0.34, 1.4, 0.64, 1) forwards, chest-glow 1.2s ease-in-out 0.55s infinite alternate;
 }
 .daily-chest-reveal {
-  position: absolute;
-  inset: 0;
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 12px;
+  padding: 0;
   animation: daily-chest-reveal-pop 0.5s cubic-bezier(0.34, 1.5, 0.64, 1) 0.15s both;
 }
 .daily-chest-reward-coins,

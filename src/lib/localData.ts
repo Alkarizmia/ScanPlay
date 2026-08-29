@@ -7,6 +7,8 @@ export const USER_DATA_KEYS = [
   'scanplay-multi-scans',
   'scanplay-exam-passes',
   'scanplay-scans-day',
+  'scanplay-plays-day',
+  'scanplay-mission-claims',
   'scanplay-difficult',
   'scanplay-notifications',
   'scanplay-achievement-unlocks',

@@ -2,7 +2,6 @@ import { BrandDecor } from './BrandDecor';
 import { SynthesisActions } from './SynthesisActions';
 import { GamePath } from './GamePath';
 import { GamificationHUD } from './GamificationHUD';
-import { LearningFlow } from './LearningFlow';
 import { LogoWordmark } from './Logo';
 import { NotificationCenter } from './NotificationCenter';
 import { PlanBadge } from './PlanBadge';
@@ -108,8 +107,6 @@ export function ModeSelect({
       <GamificationHUD locale={locale} refreshKey={refreshKey} streakPulseKey={streakPulseKey} />
 
       <main className="mode-main mode-main-path">
-        <LearningFlow active="game" locale={locale} compact />
-
         <button type="button" className="pair-direction-toggle" onClick={cycleDirection}>
           🔄 {directionLabel}
         </button>

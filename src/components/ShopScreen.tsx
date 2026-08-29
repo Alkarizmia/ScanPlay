@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AdSenseSlot } from './AdSenseSlot';
 import { DailyChestOverlay } from './DailyChestOverlay';
+import { ScanPlayChest } from './ScanPlayChest';
 import { RewardedAdSheet } from './RewardedAdSheet';
 import { grantAdConsent } from '../lib/ads/consent';
 import {
@@ -237,14 +238,14 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
         <section className="shop-section">
           <h2 className="shop-section-title">{t('shopDailyChest', locale)}</h2>
           <div className="shop-chest-card">
-            <span className="shop-chest-icon" aria-hidden="true">
-              🎁
-            </span>
+            <ScanPlayChest open={!chestReady} size={96} className="shop-chest-art" />
             <p className="shop-chest-desc">{t('shopDailyChestHint', locale)}</p>
             {chestReward && (
               <p className="shop-chest-reward">
                 {chestReward.type === 'coins' ? (
                   <>🪙 +{chestReward.amount}</>
+                ) : chestReward.type === 'xp' ? (
+                  <>⚡ +{chestReward.amount} XP</>
                 ) : chestReward.type === 'gems' ? (
                   <>💎 +{chestReward.amount}</>
                 ) : chestReward.type === 'achievement' ? (
