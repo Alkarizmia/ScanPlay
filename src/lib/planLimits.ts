@@ -1,5 +1,6 @@
 import type { BillingCycle, Plan, UpgradeReason } from '../types';
 import { isLoggedIn } from './auth';
+import { isLikelyImageFile } from './droppedFiles';
 import { canGuestScan } from './guestTrial';
 import { getExtraScanAllowance } from './wallet';
 
@@ -160,7 +161,7 @@ export function getMaxImagesPerImport(): number {
 }
 
 export function clampImagesForImport(files: File[]): { files: File[]; dropped: number } {
-  const images = files.filter((f) => f.type.startsWith('image/'));
+  const images = files.filter(isLikelyImageFile);
   const max = getMaxImagesPerImport();
   if (images.length <= max) return { files: images, dropped: 0 };
   return { files: images.slice(0, max), dropped: images.length - max };

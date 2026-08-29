@@ -38,6 +38,13 @@ describe('import limits', () => {
     vi.mocked(canGuestScan).mockReturnValue(true);
   });
 
+  it('keeps files with an image extension even if MIME is empty', () => {
+    const nameless = new File(['x'], 'fiche.jpg', { type: '' });
+    const { files, dropped } = clampImagesForImport([nameless]);
+    expect(files).toHaveLength(1);
+    expect(dropped).toBe(0);
+  });
+
   it('limits guests to 1 photo per import', () => {
     expect(getMaxImagesPerImport()).toBe(1);
     const { files, dropped } = clampImagesForImport([mockFile('a.jpg'), mockFile('b.jpg')]);

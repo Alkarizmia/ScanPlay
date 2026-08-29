@@ -4,6 +4,7 @@ import { BrandDecor } from './BrandDecor';
 import { GuestScanBanner } from './GuestScanBanner';
 import { SheetTypePicker } from './SheetTypePicker';
 import { TrainingFocusPicker } from './TrainingFocusPicker';
+import { collectDroppedImageFiles, isLikelyImageFile } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport, PLAN_LIMITS } from '../lib/planLimits';
 import { usePlan } from '../hooks/usePlan';
 import { isLoggedIn } from '../lib/auth';
@@ -55,7 +56,7 @@ export function ImportScreen({
   const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const appendNextPickRef = useRef(false);
-  const [dragOver, setDragOver] = useState(false);
+  const [dragOver, setDragOver] = useState<'file' | 'zone' | null>(null);
   const [picked, setPicked] = useState<File[]>(initialFiles ?? []);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
@@ -82,9 +83,9 @@ export function ImportScreen({
     };
   }, [picked]);
 
-  const ingestFiles = (list: FileList | null, append: boolean) => {
+  const ingestFiles = (list: FileList | File[] | null, append: boolean) => {
     if (!list) return;
-    const incoming = Array.from(list).filter((f) => f.type.startsWith('image/'));
+    const incoming = Array.from(list).filter(isLikelyImageFile);
     if (incoming.length === 0) return;
 
     const merged = append ? [...picked, ...incoming] : incoming;
@@ -121,10 +122,29 @@ export function ImportScreen({
     e.target.value = '';
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDragOver = (e: React.DragEvent, zone: 'file' | 'zone') => {
     e.preventDefault();
-    setDragOver(false);
-    ingestFiles(e.dataTransfer.files, false);
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+    setDragOver(zone);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    const next = e.relatedTarget as Node | null;
+    if (next && e.currentTarget.contains(next)) return;
+    setDragOver(null);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragOver(null);
+    const images = await collectDroppedImageFiles(e.dataTransfer);
+    if (images.length === 0) {
+      onToast?.(t('importDropNoImages', locale));
+      return;
+    }
+    ingestFiles(images, false);
   };
 
   const removePhoto = (index: number) => {
@@ -211,7 +231,15 @@ export function ImportScreen({
             <span className="import-desc">{t('importCameraDesc', locale)}</span>
           </button>
 
-          <button type="button" className="import-card" onClick={() => openFilePicker(false)}>
+          <button
+            type="button"
+            className={`import-card${dragOver === 'file' ? ' import-card--drop-active' : ''}`}
+            onClick={() => openFilePicker(false)}
+            onDragEnter={(e) => handleDragOver(e, 'file')}
+            onDragOver={(e) => handleDragOver(e, 'file')}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+          >
             <span className="import-icon">📁</span>
             <span className="import-title">{t('importFile', locale)}</span>
             <span className="import-desc">
@@ -219,22 +247,19 @@ export function ImportScreen({
             </span>
           </button>
 
-          {isDesktop && (
-            <div
-              className={`import-dropzone ${dragOver ? 'import-dropzone--active' : ''}`}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={handleDrop}
-              onClick={() => openFilePicker(false)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') openFilePicker(false);
-              }}
-            >
+          <div
+            className={`import-dropzone ${dragOver === 'zone' ? 'import-dropzone--active' : ''}`}
+            onDragEnter={(e) => handleDragOver(e, 'zone')}
+            onDragOver={(e) => handleDragOver(e, 'zone')}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onClick={() => openFilePicker(false)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') openFilePicker(false);
+            }}
+          >
               <span className="import-dropzone-icon" aria-hidden="true">
                 📄
               </span>
@@ -242,7 +267,6 @@ export function ImportScreen({
               <span className="import-dropzone-sub">{t('importDropOr', locale)}</span>
               <span className="import-frame-hint">{t('importFrameHint', locale)}</span>
             </div>
-          )}
         </main>
       )}
 

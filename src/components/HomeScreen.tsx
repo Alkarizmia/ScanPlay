@@ -20,6 +20,7 @@ import { isLoggedIn } from '../lib/auth';
 import { getHistory } from '../lib/history';
 import { getDateLocale, t } from '../lib/i18n';
 import { SAMPLE_PAIRS } from '../lib/sample';
+import { collectDroppedImageFiles } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining, PLAN_LIMITS } from '../lib/planLimits';
 import type { DeviceProfile } from '../lib/device';
 import type { HistoryEntry, Locale, StepProgressMap } from '../types';
@@ -83,7 +84,7 @@ export function HomeScreen({
   const welcomeMessage =
     recentDecks.length > 0 ? t('mascotWelcomeBackShort', locale) : t('mascotWelcomeReady', locale);
 
-  const handleFiles = (list: FileList | null) => {
+  const handleFiles = (list: FileList | File[] | null) => {
     if (!list) return;
     const { files: images, dropped } = clampImagesForImport(Array.from(list));
     if (images.length === 0) return;
@@ -97,10 +98,15 @@ export function HomeScreen({
     onScanPlay(images);
   };
 
-  const onDrop = (e: React.DragEvent) => {
+  const onDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    handleFiles(e.dataTransfer.files);
+    const images = await collectDroppedImageFiles(e.dataTransfer);
+    if (images.length === 0) {
+      onToast?.(t('importDropNoImages', locale));
+      return;
+    }
+    handleFiles(images);
   };
 
   const handleInstall = async () => {

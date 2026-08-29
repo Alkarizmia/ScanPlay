@@ -1717,13 +1717,17 @@ html[data-device="desktop"] .flashcard.flipped .back {
   align-items: flex-start;
   gap: 6px;
   padding: 24px;
-  border: none;
+  border: 2px solid transparent;
   border-radius: var(--radius-lg);
   background: var(--bg-card);
   color: var(--text);
   text-align: left;
   cursor: pointer;
   box-shadow: var(--shadow);
+}
+.import-card--drop-active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
 }
 .import-icon {
   font-size: 2rem;
@@ -5494,6 +5498,12 @@ html[data-device="desktop"] .flashcard.flipped .back {
   cursor: pointer;
   transition: border-color 0.2s, background 0.2s;
   box-shadow: var(--shadow);
+}
+
+@media (max-width: 767px) {
+  .import-dropzone {
+    display: none;
+  }
 }
 
 .home-dropzone:hover,
