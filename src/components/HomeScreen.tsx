@@ -122,15 +122,18 @@ export function HomeScreen({
   if (!loggedIn) {
     return (
       <div className={`screen home-screen home-screen-branded home-screen--guest-acquire${isWideGuest ? ' home-screen--guest-tablet' : ''}${isDesktop ? ' home-screen--desktop' : ''}`}>
+        <div className="home-guest-mountains" aria-hidden="true">
+          <div className="home-guest-mountains-track" />
+        </div>
+        <header className="top-bar home-guest-header">
+          <div className="top-bar-brand">
+            <LogoWordmark />
+          </div>
+          <button type="button" className="home-guest-login" onClick={() => onAuth?.()}>
+            {t('connect', locale)}
+          </button>
+        </header>
         <main className="home-guest-main">
-          <header className="top-bar home-guest-header">
-            <div className="top-bar-brand">
-              <LogoWordmark />
-            </div>
-            <button type="button" className="home-guest-login" onClick={() => onAuth?.()}>
-              {t('connect', locale)}
-            </button>
-          </header>
           <div className="home-guest-copy">
             <h1 className="home-guest-title">{t('guestHeroTitle', locale)}</h1>
             <p className="home-guest-sub">{t('guestHeroSub', locale)}</p>

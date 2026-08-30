@@ -460,14 +460,14 @@
   }
 }
 
-/* Guest landing: fill the desktop canvas. Mobile shell unchanged. */
+/* Guest landing: one locked viewport, any platform. */
 html[data-device='desktop']:has(.app-shell--guest),
 html[data-device='desktop']:has(.app-shell--guest) body,
 html[data-device='desktop']:has(.app-shell--guest) #root {
   background: #07110d;
-  min-height: 100dvh;
-  height: auto;
-  max-height: none;
+  height: 100svh;
+  max-height: 100svh;
+  min-height: 0;
   overflow: clip;
 }
 
@@ -482,25 +482,55 @@ html[data-device='desktop']:has(.app-shell--guest) body {
   box-shadow: none;
   display: flex;
   flex-direction: column;
+  grid-template-columns: none;
   min-height: 0;
-  height: auto;
-  overflow: visible;
+  height: 100%;
+  max-height: 100%;
+  overflow: clip;
 }
 
 [data-device='desktop'] .app-shell.app-shell--guest .app-main {
-  flex: 0 0 auto;
+  flex: 1 1 0;
   min-height: 0;
-  height: auto;
-  overflow: visible;
+  height: 100%;
+  max-height: 100%;
+  overflow: clip;
 }
 
 [data-device='desktop'] .app-shell.app-shell--guest .app-main .screen.home-screen--guest-acquire {
   max-width: none;
   margin-inline: 0;
   width: 100%;
+  height: 100%;
+  max-height: 100%;
 }
 
 [data-device='desktop'] .app-shell.app-shell--guest .app-main .screen:not(.home-screen--guest-acquire) {
   max-width: min(640px, calc(100% - 48px));
   margin-inline: auto;
+}
+
+@media (min-width: 900px) {
+  .app-shell.app-shell--guest {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    height: 100%;
+    max-height: 100%;
+    overflow: clip;
+  }
+
+  .app-shell.app-shell--guest .app-main {
+    flex: 1 1 0;
+    min-height: 0;
+    height: 100%;
+    overflow: clip;
+  }
+
+  .app-shell.app-shell--guest .app-main .screen.home-screen--guest-acquire {
+    max-width: none;
+    margin-inline: 0;
+    width: 100%;
+    height: 100%;
+  }
 }
