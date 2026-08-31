@@ -30,12 +30,14 @@ function updateConsentMode(granted: boolean): void {
       ad_storage: 'granted',
       ad_user_data: 'granted',
       ad_personalization: 'granted',
+      analytics_storage: 'granted',
     });
   } else {
     gtag('consent', 'update', {
       ad_storage: 'denied',
       ad_user_data: 'denied',
       ad_personalization: 'denied',
+      analytics_storage: 'denied',
     });
   }
 }

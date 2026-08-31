@@ -13,8 +13,10 @@ import './styles/mascot.css';
 import 'katex/dist/katex.min.css';
 import App from './App.tsx';
 import { initAuth } from './lib/auth';
+import { restoreSavedAdConsent } from './lib/ads/consent';
 
 initTheme();
+restoreSavedAdConsent();
 applyDeviceAttributes(detectDeviceProfile());
 void registerServiceWorker();
 void initAuth();
