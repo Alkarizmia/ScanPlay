@@ -3,8 +3,6 @@
  * Sans consentement explicite, Google AdSense ne sert aucune annonce.
  */
 
-import { ADSENSE_UI_PAUSED } from './config';
-
 const CONSENT_KEY = 'scanplay-ads-consent';
 export const AD_CONSENT_GRANTED_EVENT = 'scanplay-ad-consent-granted';
 
@@ -90,9 +88,8 @@ export function setAdConsent(accepted: boolean): void {
 
 const EEA_LANG_PREFIXES = ['fr', 'nl', 'de', 'es', 'it', 'pt', 'pl', 'en-gb'];
 
-/** Bandeau requis tant que l'utilisateur n'a pas accepté (zone EEE probable). */
+/** Bandeau cookies (GA / pubs) tant que l'utilisateur n'a pas accepté (zone EEE probable). */
 export function needsAdConsentPrompt(): boolean {
-  if (ADSENSE_UI_PAUSED) return false;
   if (hasAdConsent()) return false;
   if (typeof window === 'undefined') return false;
 
