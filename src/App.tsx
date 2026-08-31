@@ -101,6 +101,7 @@ import {
 } from './lib/examEligibility';
 import { getExamPathBudgetSeconds } from './lib/examTimer';
 import { getPathStepCount } from './lib/planLimits';
+import { resolveAnalyticsScreen, trackScreen } from './lib/analytics';
 import { getLocale, setLocale, t } from './lib/i18n';
 import { warmupOcr } from './lib/ocr';
 import { extractPairsFromImage, isAiScanEnabled } from './lib/sheetAnalysis';
@@ -1357,6 +1358,20 @@ export default function App() {
 
   const showBottomNav = isLoggedIn() && (device.kind === 'desktop' || flow === null);
   const waitingForSession = !authReady && !isLoggedIn() && hasStoredAuthSession();
+
+  const lastAnalyticsScreen = useRef<string | null>(null);
+  useEffect(() => {
+    if (waitingForSession) return;
+    const screen = resolveAnalyticsScreen({
+      tab,
+      flow,
+      mode,
+      loggedIn: isLoggedIn(),
+    });
+    if (!screen || lastAnalyticsScreen.current === screen.id) return;
+    lastAnalyticsScreen.current = screen.id;
+    trackScreen(screen);
+  }, [tab, flow, mode, authReady, waitingForSession]);
 
   const restoreGuestDeckToModes = useCallback(
     (entry: HistoryEntry) => {
