@@ -76,7 +76,7 @@ export function resolveAnalyticsScreen(input: {
   }
   if (tab === 'more') return null;
   if (tab === 'home' && !loggedIn) {
-    return { id: 'accueil-visiteur', name: 'Accueil visiteur' };
+    return { id: 'page-de-garde', name: 'Page de garde' };
   }
   return TAB_SCREENS[tab] ?? null;
 }
@@ -94,4 +94,14 @@ export function trackScreen(screen: AnalyticsScreen): void {
     page_title: screen.name,
     page_location: `${window.location.origin}/${screen.id}`,
   });
+}
+
+/** Événements funnel (noms lisibles dans Temps réel → Événements). */
+export function trackEvent(
+  name: string,
+  params?: Record<string, string | number | boolean>,
+): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+  gtag('event', name, params);
 }

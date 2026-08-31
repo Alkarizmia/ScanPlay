@@ -101,7 +101,7 @@ import {
 } from './lib/examEligibility';
 import { getExamPathBudgetSeconds } from './lib/examTimer';
 import { getPathStepCount } from './lib/planLimits';
-import { resolveAnalyticsScreen, trackScreen } from './lib/analytics';
+import { resolveAnalyticsScreen, trackEvent, trackScreen } from './lib/analytics';
 import { getLocale, setLocale, t } from './lib/i18n';
 import { warmupOcr } from './lib/ocr';
 import { extractPairsFromImage, isAiScanEnabled } from './lib/sheetAnalysis';
@@ -543,12 +543,16 @@ export default function App() {
   const openAuth = useCallback((mode: 'login' | 'signup' = 'login') => {
     setGuestPlayGate(false);
     setAuthInitialMode(mode);
+    if (mode === 'signup') {
+      trackEvent('ouverture_inscription', { etape: 'clic_creer_compte' });
+    }
     setFlow('auth');
   }, []);
 
   const promptGuestPlayReady = useCallback((): boolean => {
     if (isLoggedIn()) return false;
     setGuestPlayGate(true);
+    trackEvent('inscription_proposee', { etape: 'apres_scan' });
     return true;
   }, []);
 
@@ -681,6 +685,10 @@ export default function App() {
       playSound('ocrComplete');
       mascotReactScanComplete();
 
+      if (!usedSample) {
+        trackEvent('scan_reussi', { invite: isLoggedIn() ? 'non' : 'oui' });
+      }
+
       if (usedSample) {
         goModes(parsed, thumbnail, false, true);
         return;
@@ -705,9 +713,13 @@ export default function App() {
 
   const startScanFlow = (files?: File[]) => {
     const guestScan = !isLoggedIn();
+    trackEvent('clic_scanner_cours', {
+      depuis: guestScan ? 'page_de_garde' : 'accueil',
+    });
     if (guestScan) {
       if (!canGuestScan()) {
         showToast(t('guestScanUsed', locale));
+        trackEvent('ouverture_inscription', { etape: 'scan_deja_utilise' });
         setFlow('auth');
         return;
       }
@@ -1371,6 +1383,9 @@ export default function App() {
     if (!screen || lastAnalyticsScreen.current === screen.id) return;
     lastAnalyticsScreen.current = screen.id;
     trackScreen(screen);
+    if (screen.id === 'page-de-garde') {
+      trackEvent('page_de_garde');
+    }
   }, [tab, flow, mode, authReady, waitingForSession]);
 
   const restoreGuestDeckToModes = useCallback(
@@ -1648,7 +1663,7 @@ export default function App() {
         onDismiss={dismissUnlock}
       />
       <Toast message={toast} />
-      <AdConsentBanner locale={locale} />
+      <AdConsentBanner locale={locale} delayMs={2500} />
       <MascotCorner locale={locale} enabled={flow === 'playing' || flow === 'lesson'} />
       {showMascotIntro && !waitingForSession && isLoggedIn() && (
         <MascotFirstLaunch locale={locale} onDone={() => setShowMascotIntro(false)} />

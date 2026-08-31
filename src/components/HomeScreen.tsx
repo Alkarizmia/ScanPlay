@@ -18,6 +18,7 @@ import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
 import { getHistory } from '../lib/history';
+import { trackEvent } from '../lib/analytics';
 import { getDateLocale, t } from '../lib/i18n';
 import { SAMPLE_PAIRS } from '../lib/sample';
 import { collectDroppedImageFiles } from '../lib/droppedFiles';
@@ -110,6 +111,7 @@ export function HomeScreen({
   };
 
   const handleInstall = async () => {
+    trackEvent('clic_installer');
     if (canNativeInstall) {
       const ok = await install();
       if (ok) return;
@@ -343,7 +345,14 @@ export function HomeScreen({
         )}
 
         {!loggedIn && canGuestScan() && onAuth && (
-          <button type="button" className="guest-mobile-signup-teaser" onClick={onAuth}>
+          <button
+            type="button"
+            className="guest-mobile-signup-teaser"
+            onClick={() => {
+              trackEvent('ouverture_inscription', { etape: 'page_de_garde' });
+              onAuth();
+            }}
+          >
             {t('guestSignupTeaser', locale)}
           </button>
         )}

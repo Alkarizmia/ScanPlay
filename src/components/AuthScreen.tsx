@@ -10,6 +10,7 @@ import {
   signUp,
 } from '../lib/auth';
 import { t, type TranslationKey } from '../lib/i18n';
+import { trackEvent } from '../lib/analytics';
 import type { Locale } from '../types';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
@@ -93,10 +94,12 @@ export function AuthScreen({
       if (result.needsEmailConfirmation) {
         setAwaitingEmailConfirm(true);
         setInfoKey('authConfirmEmail');
+        if (mode === 'signup') trackEvent('compte_cree', { confirmation: 'email' });
         return;
       }
       if (mode === 'signup') {
         setInfoKey('authSignupSuccess');
+        trackEvent('compte_cree', { confirmation: 'direct' });
       }
       onSuccess();
     } catch (e) {

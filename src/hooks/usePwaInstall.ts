@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { trackEvent } from '../lib/analytics';
 import {
   getInstallPlatform,
   isInAppBrowser,
@@ -28,6 +29,7 @@ export function usePwaInstall() {
     const onInstalled = () => {
       setIsInstalled(true);
       setDeferredPrompt(null);
+      trackEvent('install_reussie');
     };
 
     window.addEventListener('beforeinstallprompt', onBeforeInstall);

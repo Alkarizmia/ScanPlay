@@ -5,14 +5,18 @@ import type { Locale } from '../types';
 
 interface AdConsentBannerProps {
   locale: Locale;
+  /** Laisse la page de garde visible un instant avant le bandeau. */
+  delayMs?: number;
 }
 
-export function AdConsentBanner({ locale }: AdConsentBannerProps) {
+export function AdConsentBanner({ locale, delayMs = 0 }: AdConsentBannerProps) {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    setVisible(needsAdConsentPrompt());
-  }, []);
+    if (!needsAdConsentPrompt()) return;
+    const id = window.setTimeout(() => setVisible(true), delayMs);
+    return () => window.clearTimeout(id);
+  }, [delayMs]);
 
   if (!visible) return null;
 
