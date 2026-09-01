@@ -10,6 +10,7 @@ import './styles/design-system.css';
 import './styles/responsive.css';
 import './styles/lesson-profile.css';
 import './styles/mascot.css';
+import './styles/landing.css';
 import 'katex/dist/katex.min.css';
 import App from './App.tsx';
 import { initAuth } from './lib/auth';

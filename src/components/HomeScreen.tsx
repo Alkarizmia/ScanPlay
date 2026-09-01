@@ -5,7 +5,7 @@ import { BrandDecor } from './BrandDecor';
 import { DeviceBadge } from './DeviceBadge';
 import { HomeDashboard } from './HomeDashboard';
 import { HudStreakStat } from './GamificationHUD';
-import { GamePath } from './GamePath';
+import { LandingPage } from './landing/LandingPage';
 import { LogoWordmark } from './Logo';
 import { NotificationCenter } from './NotificationCenter';
 import { PlanBadge } from './PlanBadge';
@@ -20,11 +20,10 @@ import { isLoggedIn } from '../lib/auth';
 import { getHistory } from '../lib/history';
 import { trackEvent } from '../lib/analytics';
 import { getDateLocale, t } from '../lib/i18n';
-import { SAMPLE_PAIRS } from '../lib/sample';
 import { collectDroppedImageFiles } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining, PLAN_LIMITS } from '../lib/planLimits';
 import type { DeviceProfile } from '../lib/device';
-import type { HistoryEntry, Locale, StepProgressMap } from '../types';
+import type { HistoryEntry, Locale } from '../types';
 
 interface HomeScreenProps {
   locale: Locale;
@@ -43,15 +42,6 @@ interface HomeScreenProps {
   onOpenAchievements?: () => void;
   onOpenShop?: () => void;
 }
-
-const GUEST_PREVIEW_PAIRS = SAMPLE_PAIRS.slice(0, 8);
-const GUEST_PREVIEW_PROGRESS: StepProgressMap = {
-  0: {
-    pct: 100,
-    tier: 'gold',
-    games: { flashcards: { pct: 100, tier: 'gold' } },
-  },
-};
 
 export function HomeScreen({
   locale,
@@ -73,7 +63,6 @@ export function HomeScreen({
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
   const isDesktop = device.kind === 'desktop';
-  const isWideGuest = !isDesktop && device.viewportWidth >= 600;
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [installSheetOpen, setInstallSheetOpen] = useState(false);
@@ -123,77 +112,12 @@ export function HomeScreen({
 
   if (!loggedIn) {
     return (
-      <div className={`screen home-screen home-screen-branded home-screen--guest-acquire${isWideGuest ? ' home-screen--guest-tablet' : ''}${isDesktop ? ' home-screen--desktop' : ''}`}>
-        <div className="home-guest-mountains" aria-hidden="true">
-          <div className="home-guest-mountains-track" />
-        </div>
-        <header className="top-bar home-guest-header">
-          <div className="top-bar-brand">
-            <LogoWordmark />
-          </div>
-          <button type="button" className="home-guest-login" onClick={() => onAuth?.()}>
-            {t('connect', locale)}
-          </button>
-        </header>
-        <main className="home-guest-main">
-          <div className="home-guest-copy">
-            <h1 className="home-guest-title">{t('guestHeroTitle', locale)}</h1>
-            <p className="home-guest-sub">{t('guestHeroSub', locale)}</p>
-            <button type="button" className="btn-primary btn-lg home-guest-cta" onClick={() => onScanPlay()}>
-              <span className="home-guest-cta-icon" aria-hidden="true">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                  <path
-                    d="M4 8h2l1.5-2h9L18 8h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z"
-                    stroke="currentColor"
-                    strokeWidth="1.75"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                  <circle cx="12" cy="14" r="3.5" stroke="currentColor" strokeWidth="1.75" />
-                </svg>
-              </span>
-              {t('guestHeroCta', locale)}
-            </button>
-          </div>
-          <div className="home-guest-stage" aria-hidden="true" inert>
-            <div className="home-guest-device">
-              <aside className="home-guest-sheet">
-                <p className="home-guest-sheet-title">Anglais : vocabulaire</p>
-                <p>
-                  <mark>chat</mark> — cat
-                </p>
-                <p>
-                  <mark>chien</mark> — dog
-                </p>
-                <p>maison — house</p>
-                <p className="home-guest-sheet-title">verbe être (to be)</p>
-                <p>je suis — I am</p>
-                <p>tu es — you are</p>
-              </aside>
-              <div className="home-guest-phone">
-                <div className="home-guest-phone-frame" data-theme="light">
-                  <span className="home-guest-island" />
-                  <div className="home-guest-statusbar">
-                    <span>9:41</span>
-                    <span className="home-guest-statusbar-icons" />
-                  </div>
-                  <div className="home-guest-phone-screen">
-                    <GamePath
-                      locale={locale}
-                      wordCount={GUEST_PREVIEW_PAIRS.length}
-                      pairs={GUEST_PREVIEW_PAIRS}
-                      pathStepCount={10}
-                      onSelect={() => {}}
-                      stepProgress={GUEST_PREVIEW_PROGRESS}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <SiteFooter locale={locale} />
-        </main>
-      </div>
+      <LandingPage
+        locale={locale}
+        device={device}
+        onScanPlay={() => onScanPlay()}
+        onAuth={() => onAuth?.()}
+      />
     );
   }
 

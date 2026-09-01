@@ -460,10 +460,11 @@
   }
 }
 
-/* Guest landing: one locked viewport, any platform. */
-html[data-device='desktop']:has(.app-shell--guest),
-html[data-device='desktop']:has(.app-shell--guest) body,
-html[data-device='desktop']:has(.app-shell--guest) #root {
+/* Guest in-app screens: one locked viewport, any platform.
+   The marketing landing opts out via html[data-landing] and scrolls normally. */
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest),
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest) body,
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest) #root {
   background: #07110d;
   height: 100svh;
   max-height: 100svh;
@@ -497,15 +498,7 @@ html[data-device='desktop']:has(.app-shell--guest) body {
   overflow: clip;
 }
 
-[data-device='desktop'] .app-shell.app-shell--guest .app-main .screen.home-screen--guest-acquire {
-  max-width: none;
-  margin-inline: 0;
-  width: 100%;
-  height: 100%;
-  max-height: 100%;
-}
-
-[data-device='desktop'] .app-shell.app-shell--guest .app-main .screen:not(.home-screen--guest-acquire) {
+[data-device='desktop'] .app-shell.app-shell--guest .app-main .screen:not(.sp-landing) {
   max-width: min(640px, calc(100% - 48px));
   margin-inline: auto;
 }
@@ -527,10 +520,10 @@ html[data-device='desktop']:has(.app-shell--guest) body {
     overflow: clip;
   }
 
-  .app-shell.app-shell--guest .app-main .screen.home-screen--guest-acquire {
+  .app-shell.app-shell--guest .app-main .screen.sp-landing {
     max-width: none;
     margin-inline: 0;
     width: 100%;
-    height: 100%;
+    height: auto;
   }
 }
