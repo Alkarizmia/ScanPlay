@@ -11,6 +11,9 @@ import { ListenGame } from './ListenGame';
 import { SpeakGame } from './SpeakGame';
 import { ClozeGame } from './ClozeGame';
 import { TranslateGame } from './TranslateGame';
+import { DictationGame } from './DictationGame';
+import { ListenPickGame } from './ListenPickGame';
+import { ReorderGame } from './ReorderGame';
 
 interface LessonRunnerProps {
   pairs: WordPair[];
@@ -144,6 +147,12 @@ export function LessonRunner({
         return <ClozeGame {...shared} onNotEnoughPairs={onNotEnoughPairs} />;
       case 'translate':
         return <TranslateGame {...shared} onNotEnoughPairs={onNotEnoughPairs} />;
+      case 'dictation':
+        return <DictationGame {...shared} />;
+      case 'listenpick':
+        return <ListenPickGame {...shared} />;
+      case 'reorder':
+        return <ReorderGame {...shared} />;
       default:
         return null;
     }

@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { getExamTimerSeconds } from '../../lib/examTimer';
-import { playGameCorrectSound, playSound } from '../../lib/sounds';
-import { addCorrectAnswer } from '../../lib/gamification';
-import { vibrateError, vibrateSuccess } from '../../lib/haptics';
+import { playSound } from '../../lib/sounds';
+import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { buildSpeakChallenge, parsePhraseDisplay } from '../../lib/speakPhrases';
@@ -28,6 +27,7 @@ import type { GameCompleteMeta, LangCode, Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
+import { AnswerFeedback } from './AnswerFeedback';
 
 type VoicePhase = 'idle' | 'listening' | 'speaking' | 'analyzing';
 
@@ -73,6 +73,7 @@ export function SpeakGame({
   const [revealed, setRevealed] = useState(false);
   const [grade, setGrade] = useState<AnswerGrade>('wrong');
   const [heard, setHeard] = useState('');
+  const [lastXp, setLastXp] = useState(0);
   const [liveHeard, setLiveHeard] = useState('');
   const [heardVoice, setHeardVoice] = useState(false);
   const [micLevel, setMicLevel] = useState(0);
@@ -128,6 +129,7 @@ export function SpeakGame({
     setRevealed(false);
     setGrade('wrong');
     setHeard('');
+    setLastXp(0);
     setLiveHeard('');
     setMicError(null);
     setShowFallback(false);
@@ -171,24 +173,19 @@ export function SpeakGame({
       setRevealed(true);
       setVoicePhase('idle');
       busyRef.current = false;
+      setLastXp(registerAnswer(g, { pathStep: stepIndex != null }));
+
       if (g === 'correct') {
         const newScore = score + 1;
         setScore(newScore);
         scoreRef.current = newScore;
-        addCorrectAnswer();
         if (current) markCorrected(current);
-        vibrateSuccess();
-        playGameCorrectSound(stepIndex != null);
       } else if (g === 'near') {
         const newScore = score + 0.5;
         setScore(newScore);
         scoreRef.current = newScore;
-        vibrateSuccess();
-        playSound('nearMiss');
-      } else {
-        if (current) recordMistake(current, 'speak', deckId ?? undefined, stepIndex ?? undefined);
-        vibrateError();
-        playSound('wrong');
+      } else if (current) {
+        recordMistake(current, 'speak', deckId ?? undefined, stepIndex ?? undefined);
       }
     },
     [score, current, deckId, stepIndex],
@@ -473,6 +470,38 @@ export function SpeakGame({
       examMode={examMode}
       timeLeft={timeLeft}
       className="speak-game"
+      feedback={
+        revealed ? (
+          <AnswerFeedback
+            locale={locale}
+            grade={selfCheck ? 'near' : grade}
+            xp={selfCheck ? 0 : lastXp}
+            title={
+              selfCheck
+                ? t('speakSelfCheckDone', locale)
+                : grade === 'correct'
+                  ? t('speakCorrect', locale)
+                  : undefined
+            }
+            answer={selfCheck || grade === 'correct' ? undefined : challenge.target}
+            note={
+              selfCheck ? (
+                t('speakSelfCheckNote', locale)
+              ) : (
+                <>
+                  {t('speakApproxNote', locale)}
+                  {heard && (
+                    <>
+                      {' · '}
+                      {t('speakHeard', locale)}: <em>{heard}</em>
+                    </>
+                  )}
+                </>
+              )
+            }
+          />
+        ) : null
+      }
     >
       <div className="game-body speak-game-scroll">
         <p className="speak-game-intro">{t('speakGameIntro', locale)}</p>
@@ -502,36 +531,6 @@ export function SpeakGame({
                 ? t('speakStatusListen', locale)
                 : t('speakStatusReady', locale)}
         </p>
-
-        {revealed && (
-          <p className={`type-game-feedback ${grade === 'wrong' && !selfCheck ? 'wrong' : 'correct'}`}>
-            {selfCheck && (
-              <>
-                {t('speakSelfCheckDone', locale)}
-                <span className="type-game-near-hint"> · {t('typeNearHint', locale)}</span>
-              </>
-            )}
-            {!selfCheck && grade === 'correct' && t('speakCorrect', locale)}
-            {!selfCheck && grade === 'near' && (
-              <>
-                {t('typeNear', locale)}{' '}
-                <strong>{challenge.target}</strong>
-                <span className="type-game-near-hint"> · {t('typeNearHint', locale)}</span>
-              </>
-            )}
-            {!selfCheck && grade === 'wrong' && (
-              <>
-                {t('speakWrong', locale)} → <strong>{challenge.target}</strong>
-              </>
-            )}
-            {!selfCheck && heard && (
-              <span className="type-game-you-wrote">
-                {' '}
-                ({t('speakHeard', locale)}: <em>{heard}</em>)
-              </span>
-            )}
-          </p>
-        )}
 
         {!revealed && (
           <div className="speak-skip-block">

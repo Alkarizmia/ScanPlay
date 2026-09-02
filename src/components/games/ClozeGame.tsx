@@ -1,6 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { playGameCorrectSound, playSound } from '../../lib/sounds';
-import { vibrateError, vibrateSuccess } from '../../lib/haptics';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { FormulaText } from '../FormulaText';
 import { t } from '../../lib/i18n';
@@ -9,6 +8,8 @@ import type { Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
+import { AnswerFeedback } from './AnswerFeedback';
+import { ChoiceCard, type ChoiceState } from './ChoiceCard';
 
 interface ClozeGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -73,18 +74,18 @@ export function ClozeGame({
   onStepProgress,
   maxItems,
 }: ClozeGameProps) {
+  const pool = useMemo(() => getQuizPool(pairs), [pairs]);
   const rounds = useMemo(
     () => buildRounds(pairs, examMode ? 7 : maxItems),
     [pairs, examMode, maxItems],
   );
+  const playable = hasEnoughQuizPairsRelaxed(pairs) && rounds.length > 0;
+
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);
-
-  if (!hasEnoughQuizPairsRelaxed(pairs)) {
-    onNotEnoughPairs?.();
-    return null;
-  }
+  const [lastXp, setLastXp] = useState(0);
+  const notifiedRef = useRef(false);
 
   const round = rounds[index];
   const total = Math.max(1, rounds.length);
@@ -93,37 +94,55 @@ export function ClozeGame({
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
 
-  const finish = useCallback(() => {
-    onComplete(score, total);
-  }, [onComplete, score, total]);
+  useEffect(() => {
+    if (!playable && !notifiedRef.current) {
+      notifiedRef.current = true;
+      onNotEnoughPairs?.();
+    }
+  }, [playable, onNotEnoughPairs]);
+
+  const finish = useCallback(
+    (finalScore: number) => onComplete(finalScore, total),
+    [onComplete, total],
+  );
+
+  const goNext = useCallback(
+    (finalScore: number) => {
+      setPicked(null);
+      setLastXp(0);
+      if (index + 1 >= rounds.length) finish(finalScore);
+      else setIndex((i) => i + 1);
+    },
+    [finish, index, rounds.length],
+  );
 
   const pick = (word: string) => {
     if (!round || picked) return;
     setPicked(word);
     const ok = word.toLowerCase() === round.correct.toLowerCase();
-    if (ok) {
-      setScore((s) => s + 1);
-      playGameCorrectSound(stepIndex != null);
-      vibrateSuccess();
-      const pair = getQuizPool(pairs)[round.pairIndex];
-      if (pair) markCorrected(pair);
-    } else {
-      playSound('wrong');
-      vibrateError();
-      const pair = getQuizPool(pairs)[round.pairIndex];
-      if (pair) recordMistake(pair, 'cloze', deckId ?? undefined, stepIndex ?? undefined);
+    const nextScore = score + (ok ? 1 : 0);
+    setScore(nextScore);
+    setLastXp(registerAnswer(ok ? 'correct' : 'wrong', { pathStep: stepIndex != null }));
+
+    const pair = pool[round.pairIndex];
+    if (pair) {
+      if (ok) markCorrected(pair);
+      else recordMistake(pair, 'cloze', deckId ?? undefined, stepIndex ?? undefined);
     }
-    window.setTimeout(() => {
-      setPicked(null);
-      if (index + 1 >= rounds.length) finish();
-      else setIndex((i) => i + 1);
-    }, 600);
+
+    if (ok) window.setTimeout(() => goNext(nextScore), 620);
   };
 
-  if (!round) {
-    onComplete(0, 1);
-    return null;
-  }
+  if (!playable || !round) return null;
+
+  const missed = picked != null && picked.toLowerCase() !== round.correct.toLowerCase();
+
+  const choiceState = (word: string): ChoiceState => {
+    if (!picked) return 'idle';
+    if (word.toLowerCase() === round.correct.toLowerCase()) return 'correct';
+    if (word === picked) return 'wrong';
+    return 'muted';
+  };
 
   return (
     <LessonGameShell
@@ -133,36 +152,39 @@ export function ClozeGame({
       progress={gameProgressPct(index, total)}
       examMode={examMode}
       className="cloze-game"
+      feedback={
+        missed ? (
+          <AnswerFeedback
+            locale={locale}
+            grade="wrong"
+            answer={round.correct}
+            onContinue={() => goNext(score)}
+          />
+        ) : picked ? (
+          <AnswerFeedback locale={locale} grade="correct" xp={lastXp} />
+        ) : null
+      }
     >
       <main className="game-main scroll-natural">
         <p className="game-instruction">{t('clozeInstruction', locale)}</p>
-        <div className="cloze-prompt">
+        <div className="cloze-prompt" key={index}>
           <span className="cloze-term">
-            <FormulaText text={getQuizPool(pairs)[round.pairIndex]?.term ?? ''} />
+            <FormulaText text={pool[round.pairIndex]?.term ?? ''} />
           </span>
           <p className="cloze-sentence">{round.prompt}</p>
         </div>
-        <div className="cloze-choices">
-          {round.choices.map((word) => {
-            const isPicked = picked === word;
-            const isCorrect = word.toLowerCase() === round.correct.toLowerCase();
-            let cls = 'cloze-choice';
-            if (picked) {
-              if (isCorrect) cls += ' is-correct';
-              else if (isPicked) cls += ' is-wrong';
-            }
-            return (
-              <button
-                key={word}
-                type="button"
-                className={cls}
-                onClick={() => pick(word)}
-                disabled={!!picked}
-              >
-                {word}
-              </button>
-            );
-          })}
+        <div className="choice-list cloze-choices">
+          {round.choices.map((word, i) => (
+            <ChoiceCard
+              key={word}
+              index={i}
+              state={choiceState(word)}
+              disabled={picked != null}
+              onSelect={() => pick(word)}
+            >
+              {word}
+            </ChoiceCard>
+          ))}
         </div>
       </main>
     </LessonGameShell>

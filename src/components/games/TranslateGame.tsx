@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { ScanPlayMascot } from '../mascot/ScanPlayMascot';
-import { playGameCorrectSound, playSound } from '../../lib/sounds';
-import { vibrateError, vibrateSuccess } from '../../lib/haptics';
+import { playSound } from '../../lib/sounds';
+import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { t } from '../../lib/i18n';
 import { coercePlayablePairs } from '../../lib/vocabulary';
@@ -59,6 +59,7 @@ export function TranslateGame({
   const [score, setScore] = useState(0);
   const [picked, setPicked] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Feedback>('idle');
+  const [lastXp, setLastXp] = useState(0);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -91,6 +92,7 @@ export function TranslateGame({
   const goNext = (nextScore: number) => {
     setPicked([]);
     setFeedback('idle');
+    setLastXp(0);
     if (index + 1 >= rounds.length) finish(nextScore);
     else setIndex((i) => i + 1);
   };
@@ -123,20 +125,19 @@ export function TranslateGame({
       setFeedback('ok');
       const nextScore = score + 1;
       setScore(nextScore);
-      playGameCorrectSound(stepIndex != null);
-      vibrateSuccess();
+      setLastXp(registerAnswer('correct', { pathStep: stepIndex != null }));
       if (poolPair) markCorrected(poolPair);
       window.setTimeout(() => goNext(nextScore), 850);
       return;
     }
     if (grade === 'small') {
+      // One tile out of place: let the learner retry, no buzzer, no score change.
       setFeedback('almost');
-      playSound('wrong');
+      playSound('nearMiss');
       return;
     }
     setFeedback('fail');
-    playSound('wrong');
-    vibrateError();
+    registerAnswer('wrong', { pathStep: stepIndex != null });
     if (poolPair) recordMistake(poolPair, 'translate', deckId ?? undefined, stepIndex ?? undefined);
   };
 
@@ -247,7 +248,12 @@ export function TranslateGame({
             </p>
           </div>
         ) : null}
-        {feedback === 'ok' ? <p className="translate-banner-text">{t('translateOk', locale)}</p> : null}
+        {feedback === 'ok' ? (
+          <p className="translate-banner-text">
+            {t('translateOk', locale)}
+            {lastXp > 0 && <span className="answer-feedback-xp">+{lastXp} XP</span>}
+          </p>
+        ) : null}
 
         {feedback === 'fail' ? (
           <button type="button" className="btn-primary btn-lg translate-check" onClick={() => goNext(score)}>

@@ -2,11 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { playSound } from '../../lib/sounds';
 import { getExamTimerSeconds } from '../../lib/examTimer';
-import { addCorrectAnswer } from '../../lib/gamification';
-import { vibrateSuccess } from '../../lib/haptics';
+import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
-import { dispatchMascotReaction } from '../../lib/mascot/reactions';
 import { getLocale, t } from '../../lib/i18n';
 import { FormulaText } from '../FormulaText';
 import type { Locale, WordPair } from '../../types';
@@ -86,15 +84,12 @@ export function FlashcardsGame({
       if (!current || busyRef.current) return;
       busyRef.current = true;
       if (gotIt) {
-        addCorrectAnswer();
+        registerAnswer('correct', { pathStep: stepIndex != null });
         markCorrected(current);
-        vibrateSuccess();
-        playSound('correct');
-        dispatchMascotReaction({
-          type: 'correct',
-          messageKey: knownRef.current % 2 === 0 ? 'mascotFlashSuper' : 'mascotFlashNice',
-        });
       } else {
+        // Self-assessment: "still learning" is a choice, not a mistake — no buzzer.
+        registerAnswer('wrong', { silent: true });
+        playSound('whoosh');
         recordMistake(current, 'flashcards', deckId ?? undefined, stepIndex ?? undefined);
       }
       const nextKnown = known + (gotIt ? 1 : 0);

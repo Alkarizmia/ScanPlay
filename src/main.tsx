@@ -9,6 +9,7 @@ import './index.css';
 import './styles/design-system.css';
 import './styles/responsive.css';
 import './styles/lesson-profile.css';
+import './styles/game-ui.css';
 import './styles/mascot.css';
 import './styles/landing.css';
 import 'katex/dist/katex.min.css';

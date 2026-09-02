@@ -4,7 +4,7 @@ import { Mascot } from './Mascot';
 import { NotificationCenter } from './NotificationCenter';
 import type { AchievementDef } from '../lib/achievements';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
-import { t } from '../lib/i18n';
+import { t, type TranslationKey } from '../lib/i18n';
 import { isTechnicalResult } from '../lib/stepProgress';
 import type { GameMode, Locale, SessionResult, StepTier } from '../types';
 
@@ -25,7 +25,7 @@ interface ResultsScreenProps {
   onHome: () => void;
 }
 
-const MODE_KEYS: Record<GameMode, 'flashcards' | 'quiz' | 'match' | 'modeType' | 'modeSpeak' | 'modeListen' | 'modeTrueFalse' | 'modeCloze' | 'modeTranslate'> = {
+const MODE_KEYS: Record<GameMode, TranslationKey> = {
   flashcards: 'flashcards',
   quiz: 'quiz',
   match: 'match',
@@ -35,6 +35,9 @@ const MODE_KEYS: Record<GameMode, 'flashcards' | 'quiz' | 'match' | 'modeType' |
   truefalse: 'modeTrueFalse',
   cloze: 'modeCloze',
   translate: 'modeTranslate',
+  dictation: 'modeDictation',
+  listenpick: 'modeListenPick',
+  reorder: 'modeReorder',
 };
 
 const TIER_LABEL: Record<StepTier, 'tierGold' | 'tierIron' | 'tierBronze'> = {

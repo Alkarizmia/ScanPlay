@@ -10,6 +10,8 @@ interface LessonGameShellProps {
   examMode?: boolean;
   timeLeft?: number;
   className?: string;
+  /** Shared answer banner, pinned under the game body. */
+  feedback?: ReactNode;
   children: ReactNode;
 }
 
@@ -22,11 +24,18 @@ export function LessonGameShell({
   examMode,
   timeLeft,
   className = '',
+  feedback,
   children,
 }: LessonGameShellProps) {
   if (embedded) {
-    return <div className={`lesson-embedded-pane${className ? ` ${className}` : ''}`}>{children}</div>;
+    return (
+      <div className={`lesson-embedded-pane${className ? ` ${className}` : ''}`}>
+        {children}
+        {feedback}
+      </div>
+    );
   }
+
   return (
     <div className={`screen game-screen flow-screen${className ? ` ${className}` : ''}`}>
       <GameHeader
@@ -37,6 +46,7 @@ export function LessonGameShell({
         timeLeft={timeLeft}
       />
       {children}
+      {feedback}
     </div>
   );
 }

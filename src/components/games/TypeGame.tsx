@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { getExamTimerSeconds } from '../../lib/examTimer';
-import { playGameCorrectSound, playSound } from '../../lib/sounds';
-import { addCorrectAnswer } from '../../lib/gamification';
-import { vibrateError, vibrateSuccess } from '../../lib/haptics';
+import { playSound } from '../../lib/sounds';
+import { registerAnswer } from '../../lib/gameFeedback';
 import { FormulaText } from '../FormulaText';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
@@ -21,6 +20,8 @@ import { ReportErrorSheet } from '../ReportErrorSheet';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
+import { AnswerFeedback } from './AnswerFeedback';
+import { ChoiceCard, type ChoiceState } from './ChoiceCard';
 
 interface TypeGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -59,6 +60,7 @@ export function TypeGame({
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [grade, setGrade] = useState<AnswerGrade>('wrong');
+  const [lastXp, setLastXp] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const scoreRef = useRef(0);
   scoreRef.current = score;
@@ -104,6 +106,7 @@ export function TypeGame({
     setSelectedOption(null);
     setRevealed(false);
     setGrade('wrong');
+    setLastXp(0);
     if (!useChoiceMode) inputRef.current?.focus();
   }, [index, useChoiceMode]);
 
@@ -115,24 +118,19 @@ export function TypeGame({
   const applyGrade = (g: AnswerGrade) => {
     setGrade(g);
     setRevealed(true);
+    setLastXp(registerAnswer(g, { pathStep: stepIndex != null }));
+
     if (g === 'correct') {
       const newScore = score + 1;
       setScore(newScore);
       scoreRef.current = newScore;
-      addCorrectAnswer();
       if (current) markCorrected(current);
-      vibrateSuccess();
-      playGameCorrectSound(stepIndex != null);
     } else if (g === 'near') {
       const newScore = score + 0.5;
       setScore(newScore);
       scoreRef.current = newScore;
-      vibrateSuccess();
-      playSound('nearMiss');
-    } else {
-      if (current) recordMistake(current, 'type', deckId ?? undefined, stepIndex ?? undefined);
-      vibrateError();
-      playSound('wrong');
+    } else if (current) {
+      recordMistake(current, 'type', deckId ?? undefined, stepIndex ?? undefined);
     }
   };
 
@@ -165,6 +163,29 @@ export function TypeGame({
       progress={gameProgressPct(index + 1, total)}
       examMode={examMode}
       timeLeft={timeLeft}
+      feedback={
+        revealed ? (
+          <AnswerFeedback
+            locale={locale}
+            grade={grade}
+            xp={lastXp}
+            answer={grade === 'correct' ? undefined : <FormulaText text={expected} />}
+            note={
+              grade === 'near' ? (
+                <>
+                  {t('typeNearHint', locale)}
+                  {input.trim() && (
+                    <>
+                      {' · '}
+                      {t('typeYouWrote', locale)}: <em>{input.trim()}</em>
+                    </>
+                  )}
+                </>
+              ) : undefined
+            }
+          />
+        ) : null
+      }
     >
       <div className="game-body type-game-body">
         <p className="type-game-prompt">
@@ -190,21 +211,25 @@ export function TypeGame({
         )}
 
         {useChoiceMode ? (
-          <div className="quiz-options type-game-options">
-            {choiceOptions.map((opt) => {
-              let cls = 'quiz-option';
-              if (revealed && opt === expected) cls += ' correct';
-              else if (revealed && opt === selectedOption && opt !== expected) cls += ' wrong';
+          <div className="choice-list type-game-options">
+            {choiceOptions.map((opt, i) => {
+              const state: ChoiceState = !revealed
+                ? 'idle'
+                : opt === expected
+                  ? 'correct'
+                  : opt === selectedOption
+                    ? 'wrong'
+                    : 'muted';
               return (
-                <button
+                <ChoiceCard
                   key={opt}
-                  type="button"
-                  className={cls}
-                  onClick={() => pickOption(opt)}
+                  index={i}
+                  state={state}
                   disabled={revealed}
+                  onSelect={() => pickOption(opt)}
                 >
                   <FormulaText text={opt} />
-                </button>
+                </ChoiceCard>
               );
             })}
           </div>
@@ -236,35 +261,6 @@ export function TypeGame({
           </>
         )}
 
-        {revealed && (
-          <p className={`type-game-feedback ${grade === 'wrong' ? 'wrong' : 'correct'}`}>
-            {grade === 'correct' && t('typeCorrect', locale)}
-            {grade === 'near' && (
-              <>
-                {t('typeNear', locale)}{' '}
-                <span className="type-game-expected type-game-expected--near">
-                  <FormulaText text={expected} />
-                </span>
-                <span className="type-game-near-hint"> · {t('typeNearHint', locale)}</span>
-                {input.trim() && (
-                  <span className="type-game-you-wrote">
-                    {' '}
-                    ({t('typeYouWrote', locale)}: <em>{input.trim()}</em>)
-                  </span>
-                )}
-              </>
-            )}
-            {grade === 'wrong' && (
-              <>
-                {t('typeWrong', locale)}
-                <span className="type-game-expected">
-                  {' '}
-                  → <FormulaText text={expected} />
-                </span>
-              </>
-            )}
-          </p>
-        )}
       </div>
 
       <div className={`game-actions${revealed && grade === 'wrong' ? ' game-actions--stacked' : ''}`}>

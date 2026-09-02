@@ -4,8 +4,17 @@ import { clearStreakRestoreOffer, consumeStreakFreezeCharge, getStreakFreezeChar
 
 const KEY = 'scanplay-gamification';
 
-const XP_CORRECT = 10;
-const XP_SESSION = 50;
+/**
+ * Single XP scale for every game. `recordSession` is the only function that
+ * writes XP for answers — games display these values live but never credit them,
+ * so an answer can never be counted twice.
+ */
+export const XP_PER_CORRECT = 10;
+export const XP_PER_NEAR = 5;
+export const XP_SESSION_BONUS = 50;
+
+const XP_CORRECT = XP_PER_CORRECT;
+const XP_SESSION = XP_SESSION_BONUS;
 
 function load(): GamificationState {
   try {
@@ -207,9 +216,7 @@ export function restoreStreakValue(streak: number): void {
   save(state);
 }
 
-export function addCorrectAnswer(): number {
-  const state = load();
-  state.xp += XP_CORRECT;
-  save(state);
-  return XP_CORRECT;
+/** XP a finished mini-game will grant, for previews before `recordSession` runs. */
+export function previewSessionXp(correctCount: number, xpMultiplier = 1): number {
+  return Math.max(1, Math.round((correctCount * XP_CORRECT + XP_SESSION) * xpMultiplier));
 }

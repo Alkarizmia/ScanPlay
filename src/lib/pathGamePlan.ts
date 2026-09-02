@@ -9,19 +9,23 @@ import {
 import { canSpeak } from './speech';
 import { isOralAllowedForSheet, canUseTranslateGame } from './pathSheetType';
 import { filterModesByFocus, isModeAllowedByFocus } from './trainingFocus';
+import { hasEnoughReorderPairs } from './reorderRounds';
+import { hasEnoughListenPickPairs } from './listenPickRounds';
+import { hasEnoughDictationPairs } from './dictationRounds';
+import { sortByDifficulty } from './gameDifficulty';
 
-const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'translate', 'quiz', 'match', 'truefalse', 'cloze', 'listen', 'speak'];
+const STEP_CYCLE: GameMode[] = ['flashcards', 'type', 'translate', 'quiz', 'match', 'truefalse', 'cloze', 'reorder', 'listen', 'speak'];
 
 /** 3–4 jeux par leçon, ordre varié (style parcours accumulé). */
 const NODE_GAME_TEMPLATES: GameMode[][] = [
   ['flashcards', 'translate', 'speak'],
   ['quiz', 'match', 'listen'],
   ['flashcards', 'match', 'truefalse', 'speak'],
-  ['translate', 'quiz', 'cloze'],
+  ['translate', 'reorder', 'quiz', 'cloze'],
   ['match', 'flashcards', 'listen', 'truefalse'],
   ['flashcards', 'quiz', 'translate', 'speak'],
   ['truefalse', 'match', 'listen'],
-  ['translate', 'quiz', 'listen'],
+  ['reorder', 'translate', 'quiz', 'listen'],
 ];
 
 function listenAvailable(): boolean {
@@ -41,12 +45,43 @@ function speakPlayable(pairs: WordPair[]): boolean {
   return coercePlayablePairs(pairs).length >= 1;
 }
 
-/** When oral training is on: keep listen + speak in the lesson (vocab/notes only). */
-function ensureOralGames(games: GameMode[], pairs: WordPair[]): GameMode[] {
-  const written = games.filter((g) => g !== 'listen' && g !== 'speak');
+function listenPickPlayable(pairs: WordPair[]): boolean {
+  if (!isOralAllowedForSheet()) return false;
+  if (!isModeAllowedByFocus('listenpick')) return false;
+  if (!listenAvailable()) return false;
+  return hasEnoughListenPickPairs(coercePlayablePairs(pairs));
+}
+
+function dictationPlayable(pairs: WordPair[]): boolean {
+  if (!isOralAllowedForSheet()) return false;
+  if (!isModeAllowedByFocus('dictation')) return false;
+  if (!listenAvailable()) return false;
+  return hasEnoughDictationPairs(coercePlayablePairs(pairs));
+}
+
+function reorderPlayable(pairs: WordPair[]): boolean {
+  if (!isModeAllowedByFocus('reorder')) return false;
+  return hasEnoughReorderPairs(coercePlayablePairs(pairs));
+}
+
+const ORAL_SLOT_MODES: GameMode[] = ['listen', 'speak', 'listenpick', 'dictation'];
+
+/**
+ * When oral training is on: keep two oral games per lesson (vocab/notes only).
+ * Odd nodes swap in the harder ear games so the ear work also progresses
+ * from "recognise a meaning" to "spell what you heard".
+ */
+function ensureOralGames(games: GameMode[], pairs: WordPair[], stepIndex = 0): GameMode[] {
+  const written = games.filter((g) => !ORAL_SLOT_MODES.includes(g));
+  const harder = stepIndex % 2 === 1;
+
   const oral: GameMode[] = [];
-  if (listenPlayable(pairs)) oral.push('listen');
-  if (speakPlayable(pairs)) oral.push('speak');
+  if (harder && listenPickPlayable(pairs)) oral.push('listenpick');
+  else if (listenPlayable(pairs)) oral.push('listen');
+
+  if (harder && dictationPlayable(pairs)) oral.push('dictation');
+  else if (speakPlayable(pairs)) oral.push('speak');
+
   if (oral.length === 0) return games.slice(0, 4);
 
   const mixed: GameMode[] = [];
@@ -72,6 +107,15 @@ export function resolveStepMode(preferred: GameMode, pairs: WordPair[]): GameMod
     }
     if (mode === 'speak') {
       return speakPlayable(playable);
+    }
+    if (mode === 'listenpick') {
+      return listenPickPlayable(playable);
+    }
+    if (mode === 'dictation') {
+      return dictationPlayable(playable);
+    }
+    if (mode === 'reorder') {
+      return reorderPlayable(playable);
     }
     if (mode === 'translate') {
       return canUseTranslateGame(playable);
@@ -101,7 +145,7 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   const out: GameMode[] = [];
 
   for (const preferred of template) {
-    if ((preferred === 'listen' || preferred === 'speak') && !isOralAllowedForSheet()) continue;
+    if (ORAL_SLOT_MODES.includes(preferred) && !isOralAllowedForSheet()) continue;
     if (preferred === 'translate' && !canUseTranslateGame(playable.length > 0 ? playable : pairs)) continue;
     if (!isModeAllowedByFocus(preferred)) continue;
     const mode = resolveStepMode(preferred, playable.length > 0 ? playable : pairs);
@@ -113,11 +157,15 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   }
 
   let filtered = filterModesByFocus(out);
-  if (filtered.length >= 2) return ensureOralGames(filtered.slice(0, 4), playable.length > 0 ? playable : pairs);
+  if (filtered.length >= 2) {
+    return sortByDifficulty(
+      ensureOralGames(filtered.slice(0, 4), playable.length > 0 ? playable : pairs, stepIndex),
+    );
+  }
 
   for (const fallback of STEP_CYCLE) {
     if (filtered.length >= 2) break;
-    if ((fallback === 'listen' || fallback === 'speak') && !isOralAllowedForSheet()) continue;
+    if (ORAL_SLOT_MODES.includes(fallback) && !isOralAllowedForSheet()) continue;
     if (fallback === 'translate' && !canUseTranslateGame(playable.length > 0 ? playable : pairs)) continue;
     if (!isModeAllowedByFocus(fallback)) continue;
     const mode = resolveStepMode(fallback, playable.length > 0 ? playable : pairs);
@@ -129,7 +177,9 @@ export function pickPathStepGames(stepIndex: number, pairs: WordPair[]): GameMod
   }
 
   const filled = filtered.length > 0 ? filtered : filterModesByFocus(['flashcards']);
-  return ensureOralGames(filled, playable.length > 0 ? playable : pairs);
+  return sortByDifficulty(
+    ensureOralGames(filled, playable.length > 0 ? playable : pairs, stepIndex),
+  );
 }
 
 /** @deprecated use pickPathStepGames — kept for exam / legacy single-mode paths. */

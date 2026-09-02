@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
+import { getGameHudSnapshot } from '../lib/gameFeedback';
 import { playSound } from '../lib/sounds';
 import { hapticBurst, hapticLevelUp } from '../lib/haptics';
 import { t } from '../lib/i18n';
@@ -56,6 +57,8 @@ export function LessonCompleteScreen({
   const totalXp = session.games.reduce((sum, g) => sum + g.xpEarned, 0);
   const avgPct =
     totalQuestions > 0 ? Math.round((totalScore / totalQuestions) * 100) : 0;
+  const { streak } = getGamification();
+  const { bestCombo } = getGameHudSnapshot();
 
   const xpAfter = getGamification().xp;
   const levelBefore = getLevel(xpBefore);
@@ -187,6 +190,19 @@ export function LessonCompleteScreen({
           <span className="lesson-stat-value">{formatTime(totalTime)}</span>
         </div>
       </div>
+
+      {(streak > 0 || bestCombo >= 3) && (
+        <div className={`lesson-complete-chips${showRest ? ' is-in' : ''}`}>
+          {streak > 0 && (
+            <span className="game-hud-chip game-hud-chip--streak">
+              <span aria-hidden="true">🔥</span> {streak} · {t('streak', locale)}
+            </span>
+          )}
+          {bestCombo >= 3 && (
+            <span className="game-hud-chip game-hud-chip--combo">×{bestCombo}</span>
+          )}
+        </div>
+      )}
 
       <div
         className={`lesson-xp-bar-wrap${phase === 'charge' && barPct > 82 ? ' lesson-xp-bar-wrap--hot' : ''}${

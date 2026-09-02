@@ -73,7 +73,16 @@ export function sanitizeTextForSpeech(text: string): string {
     .trim();
 }
 
-export async function speakText(text: string, lang?: LangCode): Promise<void> {
+export interface SpeakOptions {
+  /** Speech rate; defaults to a slightly-slower-than-natural 0.84. */
+  rate?: number;
+}
+
+export async function speakText(
+  text: string,
+  lang?: LangCode,
+  options?: SpeakOptions,
+): Promise<void> {
   if (!canSpeak() || !text.trim()) return;
 
   const spoken = sanitizeTextForSpeech(text);
@@ -87,7 +96,7 @@ export async function speakText(text: string, lang?: LangCode): Promise<void> {
   const utterance = new SpeechSynthesisUtterance(spoken);
   utterance.lang = langTag;
   if (voice) utterance.voice = voice;
-  utterance.rate = 0.84;
+  utterance.rate = Math.min(1.5, Math.max(0.4, options?.rate ?? 0.84));
   utterance.pitch = 1;
   window.speechSynthesis.speak(utterance);
 }

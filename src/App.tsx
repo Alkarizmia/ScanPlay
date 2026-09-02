@@ -66,6 +66,15 @@ import { TrueFalseGame } from './components/games/TrueFalseGame';
 import { ClozeGame } from './components/games/ClozeGame';
 import { TranslateGame } from './components/games/TranslateGame';
 import { TypeGame } from './components/games/TypeGame';
+import { DictationGame } from './components/games/DictationGame';
+import { ListenPickGame } from './components/games/ListenPickGame';
+import { ReorderGame } from './components/games/ReorderGame';
+import { resetGameHud } from './lib/gameFeedback';
+import {
+  getMistakePairs,
+  MISTAKE_SESSION_GAMES,
+  MIN_MISTAKE_SESSION_PAIRS,
+} from './lib/mistakeSession';
 import { canGuestScan, recordGuestScan, beginGuestPlaySession, clearGuestPlaySession } from './lib/guestTrial';
 import {
   adoptPendingGuestDeckIntoHistory,
@@ -214,6 +223,7 @@ export default function App() {
     stepIndex: number;
     mode: GameMode;
   } | null>(null);
+  const [mistakeSession, setMistakeSession] = useState<WordPair[] | null>(null);
   const [guestPlayGate, setGuestPlayGate] = useState(false);
   const [authInitialMode, setAuthInitialMode] = useState<'login' | 'signup'>('login');
   const [streakClaimPulse, setStreakClaimPulse] = useState(0);
@@ -533,6 +543,9 @@ export default function App() {
     [historyId, deckThumbnail, examRunStart, locale, showToast, refresh, pathStepCount, pairs, stepProgress],
   );
 
+  /** Set only by the dev-only `window.scanplayDemo()` shortcut. */
+  const devGuestBypass = useRef(false);
+
   const requireAuth = useCallback((): boolean => {
     if (isLoggedIn()) return true;
     setAuthInitialMode('login');
@@ -550,6 +563,7 @@ export default function App() {
   }, []);
 
   const promptGuestPlayReady = useCallback((): boolean => {
+    if (import.meta.env.DEV && devGuestBypass.current) return false;
     if (isLoggedIn()) return false;
     setGuestPlayGate(true);
     trackEvent('inscription_proposee', { etape: 'apres_scan' });
@@ -1045,6 +1059,7 @@ export default function App() {
       });
       sessionStart.current = Date.now();
       playSound('quizStart');
+      resetGameHud();
       if (hasResume) showToast(t('lessonResume', locale));
       setFlow('lesson');
       return;
@@ -1055,8 +1070,34 @@ export default function App() {
     if (historyId) updateHistoryMode(historyId, m);
     sessionStart.current = Date.now();
     playSound('quizStart');
+    resetGameHud();
     setFlow('playing');
   };
+
+  // Dev-only shortcuts into the sample deck, so the game screens can be exercised
+  // without going through scan + auth. Stripped from production builds.
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    const w = window as Window & {
+      scanplayDemo?: () => void;
+      scanplayGame?: (mode: GameMode) => void;
+    };
+    w.scanplayDemo = () => {
+      devGuestBypass.current = true;
+      goModes(SAMPLE_PAIRS, undefined, false, true);
+    };
+    w.scanplayGame = (m: GameMode) => {
+      devGuestBypass.current = true;
+      setPairs(SAMPLE_PAIRS);
+      setMode(m);
+      resetGameHud();
+      setFlow('playing');
+    };
+    return () => {
+      delete w.scanplayDemo;
+      delete w.scanplayGame;
+    };
+  }, [goModes]);
 
   const dismissUnlock = useCallback(() => {
     const rest = unlockQueueRef.current.slice(1);
@@ -1810,8 +1851,41 @@ export default function App() {
           onOpenTab={handleTabChange}
         />
       )}
-      {flow === null && tab === 'mistakes' && (
-        <MistakesScreen locale={locale} refreshKey={refreshKey} />
+      {flow === null && tab === 'mistakes' && !mistakeSession && (
+        <MistakesScreen
+          locale={locale}
+          refreshKey={refreshKey}
+          onReplay={() => {
+            const deck = getMistakePairs(8);
+            if (deck.length < MIN_MISTAKE_SESSION_PAIRS) {
+              showToast(t('mistakesPlayEmpty', locale));
+              return;
+            }
+            resetGameHud();
+            playSound('quizStart');
+            setMistakeSession(deck);
+          }}
+        />
+      )}
+      {mistakeSession && (
+        <LessonRunner
+          pairs={mistakeSession}
+          locale={locale}
+          games={MISTAKE_SESSION_GAMES}
+          stepIndex={-1}
+          deckId={historyId}
+          sheetType={sheetType}
+          onExit={() => setMistakeSession(null)}
+          onSubGameStart={() => {}}
+          onSubGameComplete={(_mode, score, _total, continues) => {
+            const { xpEarned } = recordSession(score);
+            if (!continues) {
+              setMistakeSession(null);
+              setRefreshKey((k) => k + 1);
+              showToast(`+${xpEarned} XP`);
+            }
+          }}
+        />
       )}
       {flow === null && tab === 'achievements' && (
         <AchievementsScreen locale={locale} refreshKey={refreshKey} />
@@ -2054,6 +2128,36 @@ export default function App() {
           onComplete={endGame}
           onExit={appGoBack}
           onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
+        />
+      )}
+      {flow === 'playing' && mode === 'dictation' && (
+        <DictationGame
+          pairs={playPairs}
+          locale={locale}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+        />
+      )}
+      {flow === 'playing' && mode === 'listenpick' && (
+        <ListenPickGame
+          pairs={playPairs}
+          locale={locale}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+        />
+      )}
+      {flow === 'playing' && mode === 'reorder' && (
+        <ReorderGame
+          pairs={playPairs}
+          locale={locale}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
         />
       )}
       {flow === 'lesson' && activeStepIndex !== null && (

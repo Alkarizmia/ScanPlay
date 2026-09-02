@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
-import { playGameCorrectSound, playSound } from '../../lib/sounds';
+import { playSound } from '../../lib/sounds';
 import { getExamTimerSeconds } from '../../lib/examTimer';
-import { vibrateError, vibrateSuccess } from '../../lib/haptics';
+import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
 import { FormulaText } from '../FormulaText';
@@ -114,9 +114,8 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
     });
 
     if (selected.pairId === card.pairId && selected.kind !== card.kind) {
-      vibrateSuccess();
-      playSound('matchPerfect');
-      playGameCorrectSound(stepIndex != null);
+      registerAnswer('correct', { pathStep: stepIndex != null });
+      playSound('matchSnap');
       markCorrected(pairById[card.pairId]);
       const next = new Set(matched);
       next.add(card.pairId);
@@ -127,8 +126,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
         setTimeout(finish, 400);
       }
     } else {
-      vibrateError();
-      playSound('wrong');
+      registerAnswer('wrong', { pathStep: stepIndex != null });
       const wrongPair = pairById[selected.pairId];
       if (wrongPair) {
         recordMistake(wrongPair, 'match', deckId ?? undefined, stepIndex ?? undefined);

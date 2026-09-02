@@ -1,7 +1,17 @@
 import type { GameMode, TrainingFocus } from '../types';
 
-const WRITTEN_MODES: GameMode[] = ['flashcards', 'type', 'quiz', 'match', 'truefalse', 'cloze', 'translate'];
-const ORAL_MODES: GameMode[] = ['listen', 'speak'];
+const WRITTEN_MODES: GameMode[] = [
+  'flashcards',
+  'type',
+  'quiz',
+  'match',
+  'truefalse',
+  'cloze',
+  'translate',
+  'reorder',
+];
+/** Dictation needs speech synthesis to exist at all, so it lives with the oral pool. */
+const ORAL_MODES: GameMode[] = ['listen', 'speak', 'listenpick', 'dictation'];
 
 const DEFAULT_FOCUS: TrainingFocus[] = ['written', 'oral'];
 

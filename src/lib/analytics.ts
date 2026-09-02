@@ -31,6 +31,9 @@ const GAME_SCREENS: Record<GameMode, AnalyticsScreen> = {
   truefalse: { id: 'jeu-vrai-faux', name: 'Jeu · Vrai/Faux' },
   cloze: { id: 'jeu-trous', name: 'Jeu · Texte à trous' },
   translate: { id: 'jeu-traduction', name: 'Jeu · Traduction' },
+  dictation: { id: 'jeu-dictee', name: 'Jeu · Dictée' },
+  listenpick: { id: 'jeu-mot-entendu', name: 'Jeu · Mot entendu' },
+  reorder: { id: 'jeu-remise-en-ordre', name: 'Jeu · Remise en ordre' },
 };
 
 const FLOW_SCREENS: Record<FlowScreen, AnalyticsScreen> = {

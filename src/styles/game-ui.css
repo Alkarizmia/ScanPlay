@@ -1,0 +1,571 @@
+/**
+ * ScanPlay — shared game surface.
+ * One HUD, one answer card, one feedback banner for all mini-games.
+ */
+
+/* ---------- HUD ---------- */
+
+.game-header--hud {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  padding: 4px 0 10px;
+}
+
+.game-header-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 36px;
+}
+
+.game-header--hud .game-header-exit {
+  margin-left: -6px;
+}
+
+.game-hud {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  min-height: 28px;
+}
+
+.game-hud-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.78rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.game-hud-chip--streak {
+  background: color-mix(in srgb, #f97316 16%, transparent);
+  color: #ea580c;
+}
+
+.game-hud-chip--xp {
+  background: var(--accent-dim);
+  color: var(--accent);
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.game-hud-chip--xp.is-pulsing {
+  animation: sp-chip-pop 0.6s var(--ease-spring);
+}
+
+.game-hud-chip--combo {
+  background: color-mix(in srgb, #a855f7 18%, transparent);
+  color: #a855f7;
+  animation: sp-chip-pop 0.5s var(--ease-spring);
+}
+
+.game-hud-chip--timer {
+  background: color-mix(in srgb, var(--text-muted) 16%, transparent);
+  color: var(--text);
+}
+
+.game-header--hud .game-header-timer {
+  min-width: 0;
+}
+
+.game-header-progress {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+@keyframes sp-chip-pop {
+  0% {
+    transform: scale(1);
+  }
+  35% {
+    transform: scale(1.22);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* ---------- Question block ---------- */
+
+.game-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 0 2px;
+  animation: sp-rise 0.28s var(--ease-out) both;
+}
+
+.game-eyebrow {
+  font-size: 0.7rem;
+  font-weight: 750;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.game-question {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: clamp(1.4rem, 6vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+@keyframes sp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Answer cards ---------- */
+
+.choice-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: auto;
+  padding-bottom: 8px;
+}
+
+.choice-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 52px;
+  padding: 14px 16px;
+  border: 2px solid var(--surface-border);
+  border-bottom-width: 4px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.98rem;
+  font-weight: 650;
+  text-align: left;
+  cursor: pointer;
+  animation: sp-rise 0.26s var(--ease-out) both;
+  animation-delay: calc(var(--stagger, 0) * 45ms);
+  transition:
+    transform var(--duration-fast) var(--ease-out),
+    border-color var(--duration-fast) linear,
+    background var(--duration-fast) linear;
+}
+
+.choice-card:disabled {
+  cursor: default;
+}
+
+.choice-card:not(:disabled):active {
+  transform: translateY(2px);
+  border-bottom-width: 2px;
+}
+
+.choice-card:focus-visible {
+  outline: 3px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.choice-card-text {
+  flex: 1;
+  min-width: 0;
+  word-break: break-word;
+}
+
+.choice-card-mark {
+  flex-shrink: 0;
+  font-weight: 900;
+  font-size: 1.05rem;
+}
+
+.choice-card--selected {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+}
+
+.choice-card--correct {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent);
+  animation: sp-answer-pop 0.36s var(--ease-spring);
+}
+
+.choice-card--wrong {
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  color: var(--danger);
+  animation: sp-shake 0.32s ease;
+}
+
+.choice-card--muted {
+  opacity: 0.45;
+}
+
+@keyframes sp-answer-pop {
+  0% {
+    transform: scale(1);
+  }
+  45% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes sp-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-5px);
+  }
+  50% {
+    transform: translateX(5px);
+  }
+  75% {
+    transform: translateX(-3px);
+  }
+}
+
+/* ---------- Feedback banner ---------- */
+
+.answer-feedback {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 10px -16px -4px;
+  padding: 14px 16px calc(14px + env(safe-area-inset-bottom));
+  border-top: 2px solid transparent;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  animation: sp-feedback-in 0.24s var(--ease-out) both;
+}
+
+.lesson-embedded-pane .answer-feedback {
+  margin-bottom: 0;
+}
+
+.answer-feedback--correct {
+  background: var(--accent-dim);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.answer-feedback--near {
+  background: color-mix(in srgb, #f59e0b 14%, transparent);
+  border-color: color-mix(in srgb, #f59e0b 40%, transparent);
+}
+
+.answer-feedback--wrong {
+  background: color-mix(in srgb, var(--danger) 12%, transparent);
+  border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+}
+
+.answer-feedback-main {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.answer-feedback-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #fff;
+}
+
+.answer-feedback--correct .answer-feedback-icon {
+  background: var(--accent);
+}
+
+.answer-feedback--near .answer-feedback-icon {
+  background: #f59e0b;
+}
+
+.answer-feedback--wrong .answer-feedback-icon {
+  background: var(--danger);
+}
+
+.answer-feedback-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.answer-feedback-title {
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.answer-feedback--correct .answer-feedback-title {
+  color: var(--accent);
+}
+
+.answer-feedback--near .answer-feedback-title {
+  color: #b45309;
+}
+
+.answer-feedback--wrong .answer-feedback-title {
+  color: var(--danger);
+}
+
+.answer-feedback-answer {
+  font-size: 0.95rem;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.answer-feedback-label {
+  font-size: 0.72rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.answer-feedback-note {
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--text-muted);
+  word-break: break-word;
+}
+
+.answer-feedback-xp {
+  flex-shrink: 0;
+  align-self: center;
+  padding: 5px 11px;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+  animation: sp-chip-pop 0.5s var(--ease-spring);
+}
+
+.answer-feedback-cta {
+  width: 100%;
+  min-height: 48px;
+}
+
+@keyframes sp-feedback-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ---------- Per-game touches ---------- */
+
+.game-hint-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.type-grade-near .type-answer-input,
+.type-answer-input.is-near {
+  border-color: #f59e0b;
+}
+
+.match-card-wrap.matched .match-card {
+  animation: sp-match-out 0.36s var(--ease-out) forwards;
+}
+
+@keyframes sp-match-out {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  40% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(0.92);
+    opacity: 0.32;
+  }
+}
+
+/* ---------- Dictation ---------- */
+
+.dictation-body {
+  gap: 14px;
+}
+
+.dictation-body .listen-audio-card {
+  gap: 10px;
+}
+
+.dictation-slow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  min-height: 40px;
+}
+
+/* ---------- Reorder ---------- */
+
+.reorder-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.reorder-clue {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 2px solid var(--surface-border);
+  font-size: 1.1rem;
+  font-weight: 750;
+  text-align: center;
+  animation: sp-rise 0.28s var(--ease-out) both;
+}
+
+.reorder-answer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-content: flex-start;
+  min-height: 104px;
+  padding: 12px;
+  border: 2px dashed var(--surface-border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--bg-card) 55%, transparent);
+}
+
+.reorder-answer-empty {
+  display: block;
+  width: 100%;
+  min-height: 44px;
+}
+
+.reorder-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  padding-bottom: 8px;
+}
+
+.reorder-tile {
+  animation: sp-rise 0.22s var(--ease-out) both;
+  transition: transform var(--duration-fast) var(--ease-out);
+}
+
+.reorder-tile:not(:disabled):active {
+  transform: translateY(2px);
+}
+
+/* ---------- Lesson complete ---------- */
+
+.lesson-complete-chips {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  opacity: 0;
+  transition: opacity var(--duration-slow) var(--ease-out);
+}
+
+.lesson-complete-chips.is-in {
+  opacity: 1;
+}
+
+/* ---------- Mistakes replay ---------- */
+
+.mistakes-replay {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 16px;
+}
+
+.mistakes-replay-hint {
+  margin: 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+/* ---------- Wider screens ---------- */
+
+@media (min-width: 768px) {
+  .choice-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .choice-list--single {
+    grid-template-columns: 1fr;
+  }
+
+  .game-question {
+    font-size: 2.1rem;
+  }
+
+  .answer-feedback {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .answer-feedback-cta {
+    width: auto;
+    min-width: 180px;
+  }
+}
+
+/* ---------- Motion / accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .choice-card,
+  .game-prompt,
+  .answer-feedback,
+  .game-hud-chip--xp.is-pulsing,
+  .game-hud-chip--combo,
+  .answer-feedback-xp,
+  .choice-card--correct,
+  .choice-card--wrong,
+  .match-card-wrap.matched .match-card {
+    animation: none;
+  }
+
+  .choice-card {
+    transition: none;
+  }
+}

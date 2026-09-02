@@ -265,6 +265,9 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                   <li>{t('modeTrueFalse', locale)}</li>
                   <li>{t('modeCloze', locale)}</li>
                   <li>{t('modeTranslate', locale)}</li>
+                  <li>{t('modeDictation', locale)}</li>
+                  <li>{t('modeListenPick', locale)}</li>
+                  <li>{t('modeReorder', locale)}</li>
                 </ul>
               </li>
               <li>

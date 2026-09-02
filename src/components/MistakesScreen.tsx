@@ -1,10 +1,12 @@
 import { getMistakes, getMistakeStats } from '../lib/mistakes';
+import { canReplayMistakes } from '../lib/mistakeSession';
 import { t, type TranslationKey } from '../lib/i18n';
 import type { GameMode, Locale } from '../types';
 
 interface MistakesScreenProps {
   locale: Locale;
   refreshKey: number;
+  onReplay?: () => void;
 }
 
 const MODE_KEYS: Record<GameMode, TranslationKey> = {
@@ -17,12 +19,16 @@ const MODE_KEYS: Record<GameMode, TranslationKey> = {
   truefalse: 'modeTrueFalse',
   cloze: 'modeCloze',
   translate: 'modeTranslate',
+  dictation: 'modeDictation',
+  listenpick: 'modeListenPick',
+  reorder: 'modeReorder',
 };
 
-export function MistakesScreen({ locale, refreshKey }: MistakesScreenProps) {
+export function MistakesScreen({ locale, refreshKey, onReplay }: MistakesScreenProps) {
   void refreshKey;
   const mistakes = getMistakes();
   const stats = getMistakeStats();
+  const canReplay = onReplay != null && canReplayMistakes();
 
   return (
     <div className="screen tab-screen mistakes-screen">
@@ -35,6 +41,15 @@ export function MistakesScreen({ locale, refreshKey }: MistakesScreenProps) {
 
       <main className="mistakes-main scroll-natural">
         <p className="mistakes-intro">{t('mistakesIntro', locale)}</p>
+
+        {canReplay && (
+          <div className="mistakes-replay">
+            <button type="button" className="btn-primary btn-lg" onClick={onReplay}>
+              {t('mistakesPlayCta', locale)}
+            </button>
+            <p className="mistakes-replay-hint">{t('mistakesPlayHint', locale)}</p>
+          </div>
+        )}
 
         {mistakes.length === 0 ? (
           <div className="empty-state">
