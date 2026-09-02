@@ -118,7 +118,12 @@ export function LessonCompleteScreen({
     const revealTimer = window.setTimeout(() => {
       setPhase('reveal');
       playSound('goalComplete');
-      if (leveledUp) playSound('levelUp');
+      if (leveledUp) {
+        playSound('levelUp');
+        hapticLevelUp();
+      } else {
+        hapticBurst();
+      }
       setDisplayXp(xpAfter);
     }, fillMs + 900);
 

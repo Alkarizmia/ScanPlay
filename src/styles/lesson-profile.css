@@ -291,44 +291,67 @@
 .lesson-complete-stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 12px;
+  margin: 8px 0 28px;
 }
 .lesson-stat-card {
-  border-radius: var(--radius-md);
-  border: 2px solid var(--border);
-  padding: 12px 8px;
+  --stat-color: var(--text-muted);
+  position: relative;
+  border-radius: 16px;
+  border: 2px solid var(--stat-color);
+  /* Thicker bottom edge: reads as a raised tile instead of a flat outline. */
+  border-bottom-width: 5px;
+  padding: 12px 8px 10px;
   text-align: center;
-  background: var(--surface);
+  background: color-mix(in srgb, var(--stat-color) 12%, var(--surface));
+  box-shadow: 0 10px 20px -14px color-mix(in srgb, var(--stat-color) 70%, transparent);
 }
-.lesson-stat-card--xp { border-color: #f59e0b; }
-.lesson-stat-card--score { border-color: #22c55e; }
-.lesson-stat-card--time { border-color: #3b82f6; }
+.lesson-complete-stats.is-in .lesson-stat-card {
+  animation: sp-stat-pop 0.42s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.lesson-complete-stats.is-in .lesson-stat-card:nth-child(2) { animation-delay: 0.09s; }
+.lesson-complete-stats.is-in .lesson-stat-card:nth-child(3) { animation-delay: 0.18s; }
+@keyframes sp-stat-pop {
+  from { opacity: 0; transform: translateY(14px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+.lesson-stat-card--xp { --stat-color: #f59e0b; }
+.lesson-stat-card--score { --stat-color: #22c55e; }
+.lesson-stat-card--time { --stat-color: #3b82f6; }
 .lesson-stat-label {
   display: block;
   font-size: 0.65rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.04em;
-  color: var(--text-muted);
+  color: color-mix(in srgb, var(--stat-color) 72%, var(--text));
 }
 .lesson-stat-value {
   display: block;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   font-weight: 900;
-  margin-top: 4px;
+  line-height: 1.15;
+  margin-top: 6px;
+  color: var(--stat-color);
+}
+@media (prefers-reduced-motion: reduce) {
+  .lesson-complete-stats.is-in .lesson-stat-card { animation: none; }
 }
 .lesson-xp-bar-wrap {
   position: relative;
-  height: 12px;
+  height: 20px;
   border-radius: 999px;
   background: var(--border);
   overflow: hidden;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
+  box-shadow: inset 0 2px 5px -2px rgba(15, 23, 42, 0.35);
 }
 .lesson-xp-bar {
   height: 100%;
-  background: linear-gradient(90deg, #22c55e, #4ade80);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #16a34a, #4ade80);
+  /* Glossy top edge so the bar reads as filled volume, not a flat rectangle. */
+  box-shadow: inset 0 3px 0 -1px rgba(255, 255, 255, 0.45);
   transition: width 0.3s ease;
 }
 .lesson-xp-bar-label {
@@ -337,8 +360,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.72rem;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.55);
 }
 .lesson-complete-footer {
   display: flex;

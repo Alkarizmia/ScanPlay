@@ -13,6 +13,8 @@ interface AnswerFeedbackProps {
   xp?: number;
   onContinue?: () => void;
   continueLabel?: string;
+  /** Opens the "report an error" sheet: the mistake may come from ScanPlay. */
+  onReport?: () => void;
   /** Override the default headline (e.g. pronunciation wording). */
   title?: string;
 }
@@ -35,6 +37,7 @@ export function AnswerFeedback({
   xp = 0,
   onContinue,
   continueLabel,
+  onReport,
   title,
 }: AnswerFeedbackProps) {
   if (!grade) return null;
@@ -58,10 +61,19 @@ export function AnswerFeedback({
         {xp > 0 && <span className="answer-feedback-xp">+{xp} XP</span>}
       </div>
 
-      {onContinue && (
-        <button type="button" className="btn-primary answer-feedback-cta" onClick={onContinue}>
-          {continueLabel ?? t('lessonContinue', locale)}
-        </button>
+      {(onContinue || onReport) && (
+        <div className="answer-feedback-actions">
+          {onReport && (
+            <button type="button" className="answer-feedback-report" onClick={onReport}>
+              {t('reportErrorBtn', locale)}
+            </button>
+          )}
+          {onContinue && (
+            <button type="button" className="btn-primary answer-feedback-cta" onClick={onContinue}>
+              {continueLabel ?? t('lessonContinue', locale)}
+            </button>
+          )}
+        </div>
       )}
     </div>
   );

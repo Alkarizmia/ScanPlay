@@ -7,6 +7,25 @@ import { getModeDifficulty, sortByDifficulty } from './gameDifficulty';
 import { pickPathStepGames } from './pathGamePlan';
 import { setPathSheetType } from './pathSheetType';
 import { resetTrainingFocus, setTrainingFocus } from './trainingFocus';
+import { fixOcrLine, repairSplitArticle } from './vocabulary';
+
+describe('article splitting', () => {
+  it('keeps real articles intact', () => {
+    expect(fixOcrLine('Appliquer une théorie')).toBe('Appliquer une théorie');
+    expect(fixOcrLine('Une théorie')).toBe('Une théorie');
+    expect(fixOcrLine('Voici la compétence')).toBe('Voici la compétence');
+  });
+
+  it('still splits fused articles', () => {
+    expect(fixOcrLine('dezoon van')).toBe('de zoon van');
+    expect(fixOcrLine('lefils')).toBe('le fils');
+  });
+
+  it('repairs decks scanned before the fix', () => {
+    expect(repairSplitArticle('Appliquer un e théorie')).toBe('Appliquer une théorie');
+    expect(repairSplitArticle('de s maisons')).toBe('des maisons');
+  });
+});
 
 const vocabPairs: WordPair[] = [
   { term: 'beat', definition: 'battre', termLang: 'en', defLang: 'fr' },

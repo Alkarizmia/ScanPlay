@@ -28,6 +28,7 @@ import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
+import { ReportErrorSheet } from '../ReportErrorSheet';
 
 type VoicePhase = 'idle' | 'listening' | 'speaking' | 'analyzing';
 
@@ -37,6 +38,7 @@ interface SpeakGameProps extends EmbeddedGameProps {
   examMode?: boolean;
   deckId?: string | null;
   stepIndex?: number | null;
+  onToast?: (message: string) => void;
   onComplete: (score: number, total: number, meta?: GameCompleteMeta) => void;
   onExit: () => void;
 }
@@ -47,6 +49,7 @@ export function SpeakGame({
   examMode,
   deckId,
   stepIndex,
+  onToast,
   onComplete,
   onExit,
   embedded = false,
@@ -82,6 +85,7 @@ export function SpeakGame({
   const [showFallback, setShowFallback] = useState(false);
   const [selfCheck, setSelfCheck] = useState(false);
   const [skipMenu, setSkipMenu] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const stopRef = useRef<((commit?: boolean) => void) | null>(null);
   const busyRef = useRef(false);
   const ignoreResultRef = useRef(false);
@@ -484,6 +488,7 @@ export function SpeakGame({
                   : undefined
             }
             answer={selfCheck || grade === 'correct' ? undefined : challenge.target}
+            onReport={selfCheck || grade === 'correct' ? undefined : () => setReportOpen(true)}
             note={
               selfCheck ? (
                 t('speakSelfCheckNote', locale)
@@ -492,8 +497,8 @@ export function SpeakGame({
                   {t('speakApproxNote', locale)}
                   {heard && (
                     <>
-                      {' · '}
-                      {t('speakHeard', locale)}: <em>{heard}</em>
+                      {' '}
+                      {t('speakHeard', locale)} : <em>{heard}</em>
                     </>
                   )}
                 </>
@@ -624,6 +629,28 @@ export function SpeakGame({
             </button>
           </div>
         </>
+      )}
+
+      {reportOpen && current && challenge && (
+        <ReportErrorSheet
+          locale={locale}
+          context={{
+            game: 'speak',
+            locale,
+            prompt: challenge.phraseDisplay,
+            expected: challenge.target,
+            userAnswer: heard,
+            grade,
+            deckId,
+            stepIndex,
+            questionIndex: index,
+            questionTotal: total,
+          }}
+          onClose={() => setReportOpen(false)}
+          onSent={(viaMailto) => {
+            onToast?.(t(viaMailto ? 'reportErrorSentMailto' : 'reportErrorSent', locale));
+          }}
+        />
       )}
 
       <div className="game-actions">

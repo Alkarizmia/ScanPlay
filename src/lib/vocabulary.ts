@@ -30,11 +30,17 @@ export function fixOcrLine(line: string): string {
     .replace(/\b(r[eé]ussit)\s+pa(\s*[.,!?]|$)/gi, '$1 pas$2')
     .replace(/\bne\s+pa(\s*[.,!?]|$)/gi, 'ne pas$1');
 
-  // Fused NL/FR articles glued to the next word (common on phone OCR).
-  s = s.replace(/\b(de|het|een|le|la|les|un|une)([a-zàâäéèêëïîôùûüçœæ])/gi, '$1 $2');
-  s = s.replace(/^(de|het|le|la|les|un|une)([a-zàâäéèêëïîôùûüçœæ])/i, '$1 $2');
+  // Fused NL/FR articles glued to the next word (dezoon → de zoon, lefils → le fils).
+  // Longest article first, and the tail must be a real word start: without that,
+  // "une théorie" matches `un` + `e` and becomes "un e théorie".
+  s = s.replace(/\b(une|un|les|le|la|het|een|de)([a-zàâäéèêëïîôùûüçœæ]{2,})\b/gi, '$1 $2');
 
-  return s.replace(/\s{2,}/g, ' ').trim();
+  return repairSplitArticle(s).replace(/\s{2,}/g, ' ').trim();
+}
+
+/** Undo the article split older scans stored: "un e théorie" → "une théorie". */
+export function repairSplitArticle(text: string): string {
+  return text.replace(/\b(un|le|la|de|het|een|les)\s+([es])\b(?=\s*\p{L})/giu, '$1$2');
 }
 
 export function isInstructionText(text: string): boolean {
@@ -137,7 +143,18 @@ export function isValidVocabPair(pair: WordPair, options?: { mathSheet?: boolean
   return isCoherentPair(pair);
 }
 
-export function sanitizePairs(pairs: WordPair[], options?: { mathSheet?: boolean }): WordPair[] {
+/** Decks scanned before the article fix still hold "un e théorie": clean them on read. */
+export function repairPairs(pairs: WordPair[]): WordPair[] {
+  return pairs.map((p) => {
+    const term = repairSplitArticle(p.term);
+    const definition = repairSplitArticle(p.definition);
+    if (term === p.term && definition === p.definition) return p;
+    return { ...p, term, definition };
+  });
+}
+
+export function sanitizePairs(rawPairs: WordPair[], options?: { mathSheet?: boolean }): WordPair[] {
+  const pairs = repairPairs(rawPairs);
   const seen = new Set<string>();
   const filtered = pairs.filter((p) => {
     if (!isValidVocabPair(p, options)) return false;
@@ -448,7 +465,7 @@ export function coercePlayablePairs(raw: WordPair[], options?: { mathSheet?: boo
   if (strict.length > 0) return strict;
 
   const seen = new Set<string>();
-  const filtered = raw.filter((p) => {
+  const filtered = repairPairs(raw).filter((p) => {
     if (p.term.length < 2 || p.definition.length < 2) return false;
     if (isInstructionText(p.term) || isInstructionText(p.definition)) return false;
     const mathLike = isMathLikeText(p.term) || isMathLikeText(p.definition);
