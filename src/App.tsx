@@ -1088,6 +1088,7 @@ export default function App() {
     const w = window as Window & {
       scanplayDemo?: () => void;
       scanplayGame?: (mode: GameMode) => void;
+      scanplayReview?: () => void;
     };
     w.scanplayDemo = () => {
       devGuestBypass.current = true;
@@ -1100,9 +1101,16 @@ export default function App() {
       resetGameHud();
       setFlow('playing');
     };
+    w.scanplayReview = () => {
+      devGuestBypass.current = true;
+      setPairs(SAMPLE_PAIRS);
+      setIgnoredScanPairs([]);
+      setFlow('reviewCards');
+    };
     return () => {
       delete w.scanplayDemo;
       delete w.scanplayGame;
+      delete w.scanplayReview;
     };
   }, [goModes]);
 

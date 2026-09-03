@@ -184,6 +184,29 @@ describe('translateRounds', () => {
     expect(parseAiTranslateRounds({ rounds: [{ term: 'auto', source: 'Hallo', target: 'Salut' }] }, pairs)).toBeNull();
   });
 
+  it('pairs Here is with Voici, not I have, and keeps all answer tiles', () => {
+    const pen: WordPair = { term: 'Pen', definition: 'stylo', termLang: 'en', defLang: 'fr' };
+    const round = buildLocalTranslateRound(pen, 0, [pen]);
+    expect(round).toBeTruthy();
+    expect(round!.source).toMatch(/pen/i);
+    expect(round!.source).not.toMatch(/Pen/);
+    if (/^Here is/i.test(round!.source)) {
+      expect(round!.expected.join(' ')).toMatch(/Voici/i);
+      expect(round!.bank.some((tile) => tile.text.toLowerCase() === 'voici')).toBe(true);
+      expect(round!.bank.some((tile) => tile.text.toLowerCase() === 'un')).toBe(true);
+      expect(round!.bank.some((tile) => tile.text.toLowerCase() === 'stylo')).toBe(true);
+    }
+    if (/^I have/i.test(round!.source)) {
+      expect(round!.expected.join(' ')).toMatch(/J'ai/i);
+    }
+    if (/^This is/i.test(round!.source)) {
+      expect(round!.expected.join(' ')).toMatch(/C'est/i);
+    }
+    for (const token of round!.expected) {
+      expect(round!.bank.some((tile) => tile.text.toLowerCase() === token.toLowerCase())).toBe(true);
+    }
+  });
+
   it('builds brick rounds for pictured everyday words without lang tags', () => {
     const pictured: WordPair[] = [
       { term: 'Apple', definition: 'pomme' },

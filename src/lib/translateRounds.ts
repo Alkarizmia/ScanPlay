@@ -56,10 +56,23 @@ const NL_ADJECTIVES = new Set([
 
 type VocabKind = 'verb' | 'noun' | 'adj';
 
-function hashPick<T>(seed: string, items: readonly T[]): T {
+function hashSlot(seed: string, n: number): number {
   let h = 2166136261;
   for (let i = 0; i < seed.length; i++) h = Math.imul(h ^ seed.charCodeAt(i), 16777619);
-  return items[Math.abs(h) % items.length]!;
+  return Math.abs(h) % n;
+}
+
+function pickAligned<T>(items: readonly T[], slot: number | undefined, seed: string): T {
+  const i = slot === undefined ? hashSlot(seed, items.length) : ((slot % items.length) + items.length) % items.length;
+  return items[i]!;
+}
+
+/** Keep acronyms; otherwise lowercase so "Here is a Pen" becomes "Here is a pen". */
+function lemmaInSentence(word: string): string {
+  const w = phraseForSentence(word);
+  if (!w) return '';
+  if (/^[A-Z0-9]{2,}$/.test(w)) return w;
+  return w.toLowerCase();
 }
 
 /** Keep "to be born" / "a baby" instead of collapsing to the longest token. */
@@ -106,7 +119,7 @@ function frNounPhrase(word: string): string {
   const fem =
     /(tion|sion|ure|ade|ette|esse|té|nce|ie)$/i.test(low) ||
     (/e$/i.test(low) && !/(age|isme|iste|aire|ège|é)$/i.test(low));
-  return fem ? `la ${word}` : `le ${word}`;
+  return fem ? `une ${word}` : `un ${word}`;
 }
 
 function enNounPhrase(word: string): string {
@@ -140,50 +153,71 @@ export function extractPlayableLemma(raw: string): string {
   return cleaned.split(/\s+/)[0] ?? cleaned;
 }
 
-export function wrapVocabSentence(word: string, lang: LangCode): string {
-  const w = phraseForSentence(word);
+export function wrapVocabSentence(word: string, lang: LangCode, slot?: number): string {
+  const w = lemmaInSentence(word);
   if (!w) return '';
   const kind = classifyVocab(w, lang);
   const seed = `${lang}:${kind}:${w.toLowerCase()}`;
 
   if (lang === 'fr') {
     if (kind === 'verb') {
-      return hashPick(seed, [`Je veux ${w}.`, `Il faut ${w}.`, `Nous allons ${w}.`]);
+      return pickAligned([`Je veux ${w}.`, `Il faut ${w}.`, `Nous allons ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
-      return hashPick(seed, [`Il est ${w}.`, `Elle est ${w}.`, `C'est trop ${w}.`]);
+      return pickAligned([`Il est ${w}.`, `Elle est ${w}.`, `C'est trop ${w}.`], slot, seed);
     }
     const np = frNounPhrase(w);
-    return hashPick(seed, [`C'est ${np}.`, `Voici ${np}.`, `J'ai ${np}.`]);
+    return pickAligned([`C'est ${np}.`, `Voici ${np}.`, `J'ai ${np}.`], slot, seed);
   }
 
   if (lang === 'nl') {
     if (kind === 'verb') {
-      return hashPick(seed, [`Ik wil ${w}.`, `Wij gaan ${w}.`]);
+      return pickAligned([`Ik wil ${w}.`, `Wij gaan ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
-      return hashPick(seed, [`Hij is ${w}.`, `Het is ${w}.`, `Zij is ${w}.`]);
+      return pickAligned([`Hij is ${w}.`, `Het is ${w}.`, `Zij is ${w}.`], slot, seed);
     }
     const np = nlNounPhrase(w);
-    return hashPick(seed, [`Dit is ${np}.`, `Ik heb ${np}.`, `Hier is ${np}.`]);
+    return pickAligned([`Dit is ${np}.`, `Hier is ${np}.`, `Ik heb ${np}.`], slot, seed);
   }
 
   if (lang === 'en') {
     if (kind === 'verb') {
       const inf = /^to\s+/i.test(w) ? w : `to ${w}`;
-      return hashPick(seed, [`I want ${inf}.`, `They need ${inf}.`, `We try ${inf}.`]);
+      return pickAligned([`I want ${inf}.`, `They need ${inf}.`, `We try ${inf}.`], slot, seed);
     }
     if (kind === 'adj') {
-      return hashPick(seed, [`It is ${w}.`, `She is ${w}.`, `He looks ${w}.`]);
+      return pickAligned([`It is ${w}.`, `She is ${w}.`, `He looks ${w}.`], slot, seed);
     }
     const np = enNounPhrase(w);
-    return hashPick(seed, [`This is ${np}.`, `I have ${np}.`, `Here is ${np}.`]);
+    return pickAligned([`This is ${np}.`, `Here is ${np}.`, `I have ${np}.`], slot, seed);
   }
 
   return '';
 }
 
 /** "I see old" / "Je vois vieillesse" — calque, not a real sentence. */
+/** "Here is a pen" must not be paired with "J'ai un stylo". */
+export function framesMatch(source: string, target: string): boolean {
+  const s = source.trim();
+  const t = target.trim();
+  const frames: { src: RegExp; dst: RegExp }[] = [
+    { src: /^here is\b/i, dst: /^(voici|hier is)\b/i },
+    { src: /^voici\b/i, dst: /^(here is|hier is)\b/i },
+    { src: /^this is\b/i, dst: /^(c['’]est|dit is|esto es)\b/i },
+    { src: /^c['’]est\b/i, dst: /^(this is|dit is)\b/i },
+    { src: /^i have\b/i, dst: /^(j['’]ai|ik heb|tengo)\b/i },
+    { src: /^j['’]ai\b/i, dst: /^(i have|ik heb)\b/i },
+    { src: /^hier is\b/i, dst: /^(voici|here is)\b/i },
+    { src: /^ik heb\b/i, dst: /^(j['’]ai|i have)\b/i },
+    { src: /^dit is\b/i, dst: /^(c['’]est|this is)\b/i },
+  ];
+  for (const { src, dst } of frames) {
+    if (src.test(s)) return dst.test(t);
+  }
+  return true;
+}
+
 export function isSeeCalqueSentence(text: string, lemma?: string): boolean {
   const t = text.trim().replace(/[.!?]+$/g, '');
   if (/^(see|voir|zien)$/i.test((lemma ?? '').trim())) return false;
@@ -318,8 +352,9 @@ export function buildLocalTranslateRound(
     if (termLang === defLang) return null;
   }
 
-  const source = wrapVocabSentence(pair.term, termLang);
-  const target = wrapVocabSentence(pair.definition, defLang);
+  const slot = hashSlot(`${term}|${definition}|${termLang}|${defLang}`, 3);
+  const source = wrapVocabSentence(pair.term, termLang, slot);
+  const target = wrapVocabSentence(pair.definition, defLang, slot);
   if (!source || !target) return null;
   const expected = tokenizePhrase(target);
   if (expected.length === 0) return null;
@@ -391,6 +426,7 @@ export function parseAiTranslateRounds(
     if (isSeeCalqueSentence(source, termLemma) || isSeeCalqueSentence(target, defLemma)) {
       continue;
     }
+    if (!framesMatch(source, target)) continue;
 
     const expected = tokenizePhrase(target);
     if (expected.length < 2) continue;
