@@ -14,6 +14,7 @@ import { TranslateGame } from './TranslateGame';
 import { DictationGame } from './DictationGame';
 import { ListenPickGame } from './ListenPickGame';
 import { ImagePickGame } from './ImagePickGame';
+import { ReorderGame } from './ReorderGame';
 
 interface LessonRunnerProps {
   pairs: WordPair[];
