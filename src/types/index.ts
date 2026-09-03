@@ -10,7 +10,8 @@ export type GameMode =
   | 'translate'
   | 'dictation'
   | 'listenpick'
-  | 'reorder';
+  | 'reorder'
+  | 'imagepick';
 
 export type SheetType = 'vocab' | 'notes' | 'definitions' | 'math';
 

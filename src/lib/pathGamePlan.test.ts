@@ -59,16 +59,13 @@ describe('getNextGameForStep listen path', () => {
     expect(pickPathStepGames(6, pairs)).toContain('speak');
   });
 
-  it('never puts listen on a math sheet', () => {
+  it('lets math lessons hear the formula name, never latex dictation', () => {
     setPathSheetType('math');
-    expect(pickPathStepGames(0, mathPairs)).not.toContain('listen');
-    expect(pickPathStepGames(1, mathPairs)).not.toContain('listen');
-  });
-
-  it('never puts speak on a math sheet', () => {
-    setPathSheetType('math');
-    expect(pickPathStepGames(0, mathPairs)).not.toContain('speak');
-    expect(pickPathStepGames(1, mathPairs)).not.toContain('speak');
+    const games = pickPathStepGames(0, mathPairs);
+    expect(games).not.toContain('translate');
+    expect(games).not.toContain('listenpick');
+    expect(games).not.toContain('dictation');
+    expect(games.length).toBe(4);
   });
 
   it('never puts translate on a math sheet', () => {

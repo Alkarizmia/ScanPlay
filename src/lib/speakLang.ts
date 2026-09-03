@@ -20,3 +20,27 @@ export function resolveSpeakLang(pair: WordPair): LangCode {
 
   return 'unknown';
 }
+
+export function resolveSideLang(pair: WordPair, side: 'term' | 'def'): LangCode {
+  if (side === 'term') return resolveSpeakLang(pair);
+
+  if (pair.defLang && pair.defLang !== 'unknown') return pair.defLang;
+  const fromDef = detectLang(pair.definition);
+  if (fromDef !== 'unknown') return fromDef;
+
+  const termLang = resolveSpeakLang(pair);
+  if (termLang === 'fr') return 'nl';
+  if (termLang === 'nl') return 'fr';
+  if (termLang === 'en') return 'fr';
+  return 'unknown';
+}
+
+/** True when the scanned pair is two different languages (vocab, not a monolingual note). */
+export function pairHasDistinctLangs(pair: WordPair): boolean {
+  const termLang = resolveSideLang(pair, 'term');
+  const defLang = resolveSideLang(pair, 'def');
+  if (termLang !== 'unknown' && defLang !== 'unknown') return termLang !== defLang;
+  const term = pair.term.trim().toLowerCase();
+  const def = pair.definition.trim().toLowerCase();
+  return Boolean(term && def && term !== def);
+}

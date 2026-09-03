@@ -2,12 +2,21 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import type { WordPair } from '../types';
 import { buildListenPickRounds, hasEnoughListenPickPairs } from './listenPickRounds';
 import { buildReorderRounds, hasEnoughReorderPairs } from './reorderRounds';
-import { getDictationPool, hasEnoughDictationPairs } from './dictationRounds';
+import { buildImagePickRounds, hasEnoughImagePickPairs } from './imagePickRounds';
+import { buildDictationRounds, getDictationPool, hasEnoughDictationPairs } from './dictationRounds';
+import { splitVocabAlternatives } from './vocabTokens';
 import { getModeDifficulty, sortByDifficulty } from './gameDifficulty';
 import { pickPathStepGames } from './pathGamePlan';
 import { setPathSheetType } from './pathSheetType';
 import { resetTrainingFocus, setTrainingFocus } from './trainingFocus';
 import { fixOcrLine, repairSplitArticle } from './vocabulary';
+
+describe('vocab alternative lists', () => {
+  it('splits comma lists that are not sentences', () => {
+    expect(splitVocabAlternatives('défi, difficultés')).toEqual(['défi', 'difficultés']);
+    expect(splitVocabAlternatives('the cat sleeps on the mat.')).toEqual(['the cat sleeps on the mat.']);
+  });
+});
 
 describe('article splitting', () => {
   it('keeps real articles intact', () => {
@@ -60,9 +69,21 @@ describe('reorder rounds', () => {
     }
   });
 
-  it('skips single-word and math pairs', () => {
+  it('skips single-word vocab', () => {
     expect(hasEnoughReorderPairs(vocabPairs)).toBe(false);
-    expect(hasEnoughReorderPairs(mathPairs)).toBe(false);
+  });
+
+  it('rebuilds a formula from bricks', () => {
+    const rounds = buildReorderRounds(
+      [
+        { term: 'Aire du cercle', definition: 'π × r^2' },
+        { term: 'Newton', definition: 'F = m × a' },
+      ],
+      { maxRounds: 2, seed: 'math' },
+    );
+    expect(rounds).toHaveLength(2);
+    expect(rounds[0]?.expected).toEqual(['π', '×', 'r', '^', '2']);
+    expect(rounds[0]?.clue).toBe('Aire du cercle');
   });
 });
 
@@ -75,16 +96,22 @@ describe('listen discrimination rounds', () => {
       expect(round.options).toHaveLength(4);
       expect(round.options).toContain(round.target);
       expect(new Set(round.options).size).toBe(4);
+      expect(round.spoken).not.toBe(round.target);
+      expect(round.options).not.toContain(round.spoken);
     }
   });
 
-  it('prefers look-alike distractors', () => {
-    const round = buildListenPickRounds(vocabPairs, { maxRounds: 1, seed: 'test' })[0];
-    expect(round?.target).toBe('beat');
-    expect(round?.options).toContain('bean');
+  it('hears English then picks French, then the reverse', () => {
+    const rounds = buildListenPickRounds(vocabPairs, { maxRounds: 2, seed: 'test' });
+    expect(rounds[0]?.spoken).toBe('beat');
+    expect(rounds[0]?.target).toBe('battre');
+    expect(rounds[0]?.lang).toBe('en');
+    expect(rounds[1]?.spoken).toBe('haricot');
+    expect(rounds[1]?.target).toBe('bean');
+    expect(rounds[1]?.lang).toBe('fr');
   });
 
-  it('needs at least four short words', () => {
+  it('needs at least four short bilingual words', () => {
     expect(hasEnoughListenPickPairs(vocabPairs.slice(0, 2))).toBe(false);
     expect(hasEnoughListenPickPairs(notesPairs)).toBe(false);
   });
@@ -100,10 +127,72 @@ describe('dictation pool', () => {
     const terms = getDictationPool([
       { term: 'x = 2y + 1', definition: 'équation de la droite' },
       { term: 'une très longue phrase que personne ne peut réécrire', definition: 'trop long' },
-      { term: 'walk', definition: 'marcher' },
+      { term: 'walk', definition: 'marcher', termLang: 'en', defLang: 'fr' },
     ]).map((p) => p.term);
 
     expect(terms).toEqual(['walk']);
+  });
+
+  it('speaks one language and asks to write the other', () => {
+    const rounds = buildDictationRounds(vocabPairs, { maxRounds: 2, seed: 'test', sheetType: 'vocab' });
+    expect(rounds[0]?.spoken).toBe('beat');
+    expect(rounds[0]?.accepted).toEqual(['battre']);
+    expect(rounds[0]?.lang).toBe('en');
+    expect(rounds[1]?.spoken).toBe('haricot');
+    expect(rounds[1]?.accepted).toEqual(['bean']);
+    expect(rounds[1]?.lang).toBe('fr');
+  });
+
+  it('accepts either word from a scanned comma list', () => {
+    const rounds = buildDictationRounds(
+      [
+        { term: 'challenge', definition: 'défi, difficultés', termLang: 'en', defLang: 'fr' },
+        { term: 'growth', definition: 'croissance', termLang: 'en', defLang: 'fr' },
+      ],
+      { maxRounds: 1, seed: 'list', sheetType: 'vocab' },
+    );
+    expect(rounds[0]?.spoken).toBe('challenge');
+    expect(rounds[0]?.accepted).toEqual(['défi', 'difficultés']);
+  });
+});
+
+describe('image pick rounds', () => {
+  it('asks for the picture of a scanned word', () => {
+    const rounds = buildImagePickRounds(
+      [
+        { term: 'apple', definition: 'pomme', termLang: 'en', defLang: 'fr' },
+        { term: 'run', definition: 'courir', termLang: 'en', defLang: 'fr' },
+      ],
+      { maxRounds: 1, seed: 'pic' },
+    );
+    expect(rounds[0]?.prompt.toLowerCase()).toMatch(/apple|pomme/);
+    expect(rounds[0]?.options).toHaveLength(4);
+    expect(rounds[0]?.options.some((art) => art.id === 'pomme')).toBe(true);
+  });
+
+  it('needs a known everyday word', () => {
+    expect(hasEnoughImagePickPairs(vocabPairs)).toBe(false);
+    expect(
+      hasEnoughImagePickPairs([{ term: 'car', definition: 'voiture', termLang: 'en', defLang: 'fr' }]),
+    ).toBe(true);
+  });
+
+  it('links scanned verbs to the matching picture', () => {
+    expect(buildImagePickRounds([{ term: 'to read', definition: 'lire' }], { maxRounds: 1 })[0]?.targetId).toBe(
+      'livre',
+    );
+    expect(buildImagePickRounds([{ term: 'boire', definition: 'to drink' }], { maxRounds: 1 })[0]?.targetId).toBe(
+      'eau',
+    );
+    expect(
+      buildImagePickRounds([{ term: 'conduire', definition: 'to drive' }], { maxRounds: 1 })[0]?.targetId,
+    ).toBe('voiture');
+    expect(buildImagePickRounds([{ term: 'dog', definition: 'chien' }], { maxRounds: 1 })[0]?.targetId).toBe(
+      'chien',
+    );
+    expect(buildImagePickRounds([{ term: 'avion', definition: 'plane' }], { maxRounds: 1 })[0]?.targetId).toBe(
+      'avion',
+    );
   });
 });
 
@@ -146,6 +235,14 @@ describe('new modes in the path', () => {
     setPathSheetType('notes');
     setTrainingFocus(['written']);
     expect(pickPathStepGames(3, notesPairs)).toContain('reorder');
+  });
+
+  it('keeps four games on notes and math lessons', () => {
+    setPathSheetType('notes');
+    expect(pickPathStepGames(0, notesPairs).length).toBe(4);
+    setPathSheetType('math');
+    expect(pickPathStepGames(0, mathPairs).length).toBe(4);
+    setPathSheetType('vocab');
   });
 
   it('never puts the audio games on a math sheet', () => {

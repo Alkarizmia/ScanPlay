@@ -27,8 +27,25 @@ function tokenize(text: string): string[] {
 }
 
 /** The sentence-like side of a pair — works for notes sheets, not only bilingual ones. */
+function tokenizeFormula(text: string): string[] {
+  const matches = text
+    .replace(/\s+/g, ' ')
+    .trim()
+    .match(/\\[a-zA-Z]+(?:\{[^}]+\})?|[A-Za-z]+|\d+(?:\.\d+)?|[π√∞±≤≥≠]|[²³¹⁰⁴⁵⁶⁷⁸⁹]+|[=+\-×÷*/^()[\]{}<>\\]|[^\s]/g);
+  return (matches ?? []).filter((token) => token.trim().length > 0);
+}
+
 export function pickReorderSource(pair: WordPair): { clue: string; sentence: string } | null {
-  if (isMathLikeText(pair.term) || isMathLikeText(pair.definition)) return null;
+  const mathPair = isMathLikeText(pair.term) || isMathLikeText(pair.definition);
+  if (mathPair) {
+    const formulaSide = isMathLikeText(pair.definition) ? pair.definition : pair.term;
+    const clueSide = formulaSide === pair.definition ? pair.term : pair.definition;
+    const tokens = tokenizeFormula(formulaSide);
+    if (tokens.length >= 3 && tokens.length <= 12) {
+      return { clue: clueSide, sentence: tokens.join(' ') };
+    }
+    return null;
+  }
 
   const defWords = tokenize(pair.definition);
   if (defWords.length >= MIN_WORDS && defWords.length <= MAX_WORDS) {

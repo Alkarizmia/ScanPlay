@@ -13,9 +13,14 @@ export function getPathSheetType(): SheetType {
   return currentSheetType;
 }
 
-/** Oral / speak games only for vocab lists and course notes — not formulas or Q/A definitions. */
+/** Oral games: vocab/notes freely; definitions = term↔sense; math = spoken name only. */
 export function isOralAllowedForSheet(sheetType: SheetType = getPathSheetType()): boolean {
-  return sheetType === 'vocab' || sheetType === 'notes';
+  return (
+    sheetType === 'vocab' ||
+    sheetType === 'notes' ||
+    sheetType === 'definitions' ||
+    sheetType === 'math'
+  );
 }
 
 const MATH_COURSE_WORD =

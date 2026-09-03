@@ -4,7 +4,7 @@
   "framework": "vite",
   "rewrites": [
     { "source": "/ads.txt", "destination": "/ads.txt" },
-    { "source": "/((?!api/|assets/|logo\\.png|icon-192\\.png|icon-512\\.png|favicon\\.svg|logo\\.svg|manifest\\.json|sw\\.js|ads\\.txt|privacy\\.html|robots\\.txt|sitemap\\.xml).*)", "destination": "/index.html" }
+    { "source": "/((?!api/|assets/|game-art/|mascot/|chest/|brand/|logo\\.png|icon-192\\.png|icon-512\\.png|favicon\\.svg|logo\\.svg|manifest\\.json|sw\\.js|ads\\.txt|privacy\\.html|robots\\.txt|sitemap\\.xml).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

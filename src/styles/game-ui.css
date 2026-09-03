@@ -565,6 +565,38 @@
     font-size: 2.1rem;
   }
 
+.imagepick-prompt {
+  text-align: center;
+  margin: 4px 0 0;
+}
+
+.imagepick-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.imagepick-card {
+  min-height: 132px;
+  padding: 12px;
+  justify-content: center;
+}
+
+.imagepick-card .choice-card-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.imagepick-art {
+  width: 100%;
+  max-height: 112px;
+  object-fit: contain;
+  pointer-events: none;
+}
+
   .answer-feedback {
     flex-direction: row;
     align-items: center;

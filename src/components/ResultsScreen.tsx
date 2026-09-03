@@ -37,6 +37,7 @@ const MODE_KEYS: Record<GameMode, TranslationKey> = {
   translate: 'modeTranslate',
   dictation: 'modeDictation',
   listenpick: 'modeListenPick',
+  imagepick: 'modeImagePick',
   reorder: 'modeReorder',
 };
 

@@ -66,12 +66,30 @@ function dedupe(pairs: WordPair[]): WordPair[] {
   });
 }
 
-function parseDefinitionsSheet(lines: string[]): WordPair[] {
-  const fromSeparators = lines
-    .map(parseLinePair)
-    .filter((p): p is WordPair => p !== null && isBasicPair(p));
-  if (fromSeparators.length >= 2) return dedupe(fromSeparators);
-  return dedupe(parseAdjacentLines(lines));
+const NOTES_MAX_WORDS = 15;
+const DEF_MAX_WORDS = 12;
+
+const KEYWORD_STOP = new Set([
+  'le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'et', 'ou', 'en', 'au', 'aux',
+  'the', 'a', 'an', 'of', 'and', 'or', 'to', 'in', 'on',
+  'de', 'het', 'een', 'van', 'en', 'of',
+  'el', 'los', 'las', 'un', 'una', 'y', 'o',
+]);
+
+function clipWords(text: string, max: number): string {
+  const words = text.split(/\s+/).filter(Boolean);
+  if (words.length <= max) return words.join(' ');
+  return words.slice(0, max).join(' ');
+}
+
+function keywordFromSentence(sentence: string): string {
+  const words = sentence
+    .replace(/[.,;:!?]/g, '')
+    .split(/\s+/)
+    .filter((w) => w.length >= 4 && !KEYWORD_STOP.has(w.toLowerCase()));
+  const best = [...words].sort((a, b) => b.length - a.length)[0];
+  if (best) return best;
+  return sentence.split(/\s+/).slice(0, 3).join(' ');
 }
 
 function parseNotesSheet(lines: string[]): WordPair[] {
@@ -81,14 +99,37 @@ function parseNotesSheet(lines: string[]): WordPair[] {
     if (!cleaned || isTitleLine(cleaned)) continue;
     const sep = parseLinePair(cleaned);
     if (sep && isBasicPair(sep)) {
-      pairs.push(sep);
+      pairs.push({
+        term: clipWords(sep.term, 6),
+        definition: clipWords(sep.definition, NOTES_MAX_WORDS),
+      });
       continue;
     }
-    if (cleaned.length >= 8 && cleaned.length <= 90) {
-      pairs.push({ term: cleaned.slice(0, 40), definition: cleaned });
+    if (cleaned.length >= 8) {
+      const sentence = clipWords(cleaned, NOTES_MAX_WORDS);
+      pairs.push({ term: keywordFromSentence(sentence), definition: sentence });
     }
   }
   return dedupe(pairs);
+}
+
+function parseDefinitionsSheet(lines: string[]): WordPair[] {
+  const fromSeparators = lines
+    .map(parseLinePair)
+    .filter((p): p is WordPair => p !== null && isBasicPair(p))
+    .map((p) => ({
+      ...p,
+      term: clipWords(p.term, 6),
+      definition: clipWords(p.definition, DEF_MAX_WORDS),
+    }));
+  if (fromSeparators.length >= 2) return dedupe(fromSeparators);
+  return dedupe(
+    parseAdjacentLines(lines).map((p) => ({
+      ...p,
+      term: clipWords(p.term, 6),
+      definition: clipWords(p.definition, DEF_MAX_WORDS),
+    })),
+  );
 }
 
 function parseMathLinePair(line: string): WordPair | null {

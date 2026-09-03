@@ -33,6 +33,7 @@ const GAME_SCREENS: Record<GameMode, AnalyticsScreen> = {
   translate: { id: 'jeu-traduction', name: 'Jeu · Traduction' },
   dictation: { id: 'jeu-dictee', name: 'Jeu · Dictée' },
   listenpick: { id: 'jeu-mot-entendu', name: 'Jeu · Mot entendu' },
+  imagepick: { id: 'jeu-image', name: 'Jeu · Image' },
   reorder: { id: 'jeu-remise-en-ordre', name: 'Jeu · Remise en ordre' },
 };
 

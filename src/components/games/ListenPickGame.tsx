@@ -21,7 +21,7 @@ interface ListenPickGameProps extends EmbeddedGameProps {
   onExit: () => void;
 }
 
-/** Hear a word, pick it among look-alikes — trains the ear, not the meaning. */
+/** Hear a word in one language, pick its match from the scanned list in the other. */
 export function ListenPickGame({
   pairs,
   locale,
@@ -52,7 +52,7 @@ export function ListenPickGame({
   const total = Math.max(1, rounds.length);
 
   const play = useCallback(() => {
-    if (round) void speakText(round.target, round.lang);
+    if (round) void speakText(round.spoken, round.lang);
   }, [round]);
 
   useEffect(() => {
@@ -96,7 +96,9 @@ export function ListenPickGame({
   if (!round) return null;
 
   const missed = picked != null && picked !== round.target;
-  const meaning = pool[round.pairIndex]?.definition;
+  const meaning = pool[round.pairIndex]
+    ? `${round.spoken} → ${round.target}`
+    : undefined;
 
   const optionState = (option: string): ChoiceState => {
     if (!picked) return 'idle';

@@ -14,7 +14,7 @@ import {
   pickTypeGameOptions,
   type AnswerGrade,
 } from '../../lib/vocabulary';
-import { resolveSpeakLang } from '../../lib/speakLang';
+import { resolveSideLang } from '../../lib/speakLang';
 import type { Locale, SheetType, WordPair } from '../../types';
 import { ReportErrorSheet } from '../ReportErrorSheet';
 import { gameProgressPct } from './GameHeader';
@@ -70,8 +70,9 @@ export function TypeGame({
     sheetType === 'math' ||
     Boolean(current && (isMathLikeText(current.term) || isMathLikeText(current.definition)));
   const useVisual = sheetType === 'vocab' && Boolean(current?.visual) && !mathLike;
-  const prompt = useVisual ? '' : (current?.term ?? '');
-  const expected = current?.definition ?? '';
+  const typeKeyword = sheetType === 'definitions' || sheetType === 'notes';
+  const prompt = useVisual ? '' : typeKeyword ? (current?.definition ?? '') : (current?.term ?? '');
+  const expected = typeKeyword ? (current?.term ?? '') : (current?.definition ?? '');
   const choiceOptions = useMemo(() => {
     if (!current || mathLike || !isLongExpectedAnswer(expected)) return [];
     return pickTypeGameOptions(current, pool, 3, `${deckId ?? 'type'}-${index}-${expected.slice(0, 12)}`);
@@ -206,7 +207,11 @@ export function TypeGame({
             <h2 className="type-game-term">
               <FormulaText text={prompt} />
             </h2>
-            <HearButton text={current.term} lang={resolveSpeakLang(current)} locale={locale} />
+            <HearButton
+              text={typeKeyword ? current.definition : current.term}
+              lang={resolveSideLang(current, typeKeyword ? 'def' : 'term')}
+              locale={locale}
+            />
           </div>
         )}
 

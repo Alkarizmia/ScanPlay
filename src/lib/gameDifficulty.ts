@@ -18,6 +18,7 @@ const MODE_DIFFICULTY: Record<GameMode, DifficultyLevel> = {
   truefalse: DIFFICULTY_RECOGNITION,
   listen: DIFFICULTY_RECOGNITION,
   listenpick: DIFFICULTY_RECOGNITION,
+  imagepick: DIFFICULTY_RECOGNITION,
   match: DIFFICULTY_RECALL,
   cloze: DIFFICULTY_RECALL,
   reorder: DIFFICULTY_RECALL,

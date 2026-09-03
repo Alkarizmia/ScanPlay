@@ -13,7 +13,7 @@ import { ClozeGame } from './ClozeGame';
 import { TranslateGame } from './TranslateGame';
 import { DictationGame } from './DictationGame';
 import { ListenPickGame } from './ListenPickGame';
-import { ReorderGame } from './ReorderGame';
+import { ImagePickGame } from './ImagePickGame';
 
 interface LessonRunnerProps {
   pairs: WordPair[];
@@ -136,11 +136,11 @@ export function LessonRunner({
       case 'match':
         return <MatchGame {...shared} />;
       case 'quiz':
-        return <QuizGame {...shared} onNotEnoughPairs={onNotEnoughPairs} />;
+        return <QuizGame {...shared} sheetType={sheetType} onNotEnoughPairs={onNotEnoughPairs} />;
       case 'type':
         return <TypeGame {...shared} sheetType={sheetType} onToast={onToast} />;
       case 'listen':
-        return <ListenGame {...shared} onNotEnoughPairs={onNotEnoughPairs} />;
+        return <ListenGame {...shared} sheetType={sheetType} onNotEnoughPairs={onNotEnoughPairs} />;
       case 'speak':
         return <SpeakGame {...shared} />;
       case 'cloze':
@@ -151,6 +151,8 @@ export function LessonRunner({
         return <DictationGame {...shared} />;
       case 'listenpick':
         return <ListenPickGame {...shared} />;
+      case 'imagepick':
+        return <ImagePickGame {...shared} />;
       case 'reorder':
         return <ReorderGame {...shared} />;
       default:

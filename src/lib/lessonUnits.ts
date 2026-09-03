@@ -29,6 +29,7 @@ export function getGameUnitCount(mode: GameMode, pairs: WordPair[], examMode = f
     case 'listen':
       return capLessonItems(Math.min(getQuizPool(pairs).length, examMode ? 10 : 6), examMode);
     case 'listenpick':
+    case 'imagepick':
       return capLessonItems(Math.min(getQuizPool(pairs).length, 6), examMode);
     case 'dictation':
       return capLessonItems(Math.min(pairs.length, 6), examMode);

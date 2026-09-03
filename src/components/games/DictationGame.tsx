@@ -2,10 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
-import { resolveSpeakLang } from '../../lib/speakLang';
 import { speakText } from '../../lib/speech';
-import { getDictationPool } from '../../lib/dictationRounds';
-import { gradeTypedAnswer, type AnswerGrade } from '../../lib/vocabulary';
+import { buildDictationRounds } from '../../lib/dictationRounds';
+import { coercePlayablePairs, gradeTypedAnswer, type AnswerGrade } from '../../lib/vocabulary';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -33,9 +32,14 @@ export function DictationGame({
   maxItems,
 }: DictationGameProps) {
   const deck = useMemo(
-    () => getDictationPool(pairs).slice(0, Math.max(1, maxItems ?? 4)),
-    [pairs, maxItems],
+    () =>
+      buildDictationRounds(pairs, {
+        maxRounds: Math.max(1, maxItems ?? 4),
+        seed: deckId ?? 'dictation',
+      }),
+    [pairs, maxItems, deckId],
   );
+  const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
 
   const [index, setIndex] = useState(0);
   const [input, setInput] = useState('');
@@ -44,16 +48,16 @@ export function DictationGame({
   const [score, setScore] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const current = deck[index];
+  const round = deck[index];
+  const current = round ? pool[round.pairIndex] : undefined;
   const total = Math.max(1, deck.length);
-  const lang = current ? resolveSpeakLang(current) : 'unknown';
 
   const play = useCallback(
     (slow = false) => {
-      if (!current) return;
-      void speakText(current.term, lang, slow ? { rate: 0.65 } : undefined);
+      if (!round) return;
+      void speakText(round.spoken, round.lang, slow ? { rate: 0.65 } : undefined);
     },
-    [current, lang],
+    [round],
   );
 
   useEffect(() => {
@@ -61,15 +65,21 @@ export function DictationGame({
   }, [embedded, onStepProgress, index, total]);
 
   useEffect(() => {
-    if (!current) return;
+    if (!round) return;
     const timer = window.setTimeout(() => play(), 350);
     inputRef.current?.focus();
     return () => window.clearTimeout(timer);
-  }, [current, play]);
+  }, [round, play]);
 
   const submit = () => {
-    if (!current || grade || !input.trim()) return;
-    const result = gradeTypedAnswer(input, current.term);
+    if (!round || !current || grade || !input.trim()) return;
+    const result = round.accepted.reduce<AnswerGrade>((best, accepted) => {
+      if (best === 'correct') return best;
+      const next = gradeTypedAnswer(input, accepted);
+      if (next === 'correct') return 'correct';
+      if (next === 'near') return 'near';
+      return best;
+    }, 'wrong');
     setGrade(result);
     setLastXp(registerAnswer(result, { pathStep: stepIndex != null }));
 
@@ -92,7 +102,7 @@ export function DictationGame({
     else setIndex((i) => i + 1);
   };
 
-  if (!current) return null;
+  if (!round || !current) return null;
 
   return (
     <LessonGameShell
@@ -107,7 +117,7 @@ export function DictationGame({
             locale={locale}
             grade={grade}
             xp={lastXp}
-            answer={grade === 'correct' ? undefined : current.term}
+            answer={grade === 'correct' ? undefined : round.accepted.join(' / ')}
             note={grade === 'near' ? t('typeNearHint', locale) : undefined}
             onContinue={next}
             continueLabel={index >= deck.length - 1 ? t('typeFinish', locale) : t('typeNext', locale)}

@@ -14,9 +14,9 @@ import {
   MIN_QUIZ_PAIRS_RELAXED,
   pickQuizOptions,
 } from '../../lib/vocabulary';
-import { resolveSpeakLang } from '../../lib/speakLang';
+import { resolveSideLang } from '../../lib/speakLang';
 import { seededShuffle } from '../../lib/seededRandom';
-import type { Locale, WordPair } from '../../types';
+import type { Locale, SheetType, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
@@ -29,6 +29,7 @@ interface QuizGameProps extends EmbeddedGameProps {
   examMode?: boolean;
   deckId?: string | null;
   stepIndex?: number | null;
+  sheetType?: SheetType;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
   onNotEnoughPairs?: () => void;
@@ -50,6 +51,7 @@ export function QuizGame({
   examMode,
   deckId,
   stepIndex,
+  sheetType = 'vocab',
   onComplete,
   onExit,
   onNotEnoughPairs,
@@ -91,11 +93,14 @@ export function QuizGame({
   }, [pairs, onNotEnoughPairs]);
 
   const q = questions[index];
+  const reverse = sheetType !== 'vocab' && index % 2 === 1;
+  const promptText = q ? (reverse ? q.definition : q.term) : '';
+  const answerText = q ? (reverse ? q.term : q.definition) : '';
 
   const options = useMemo(() => {
     if (!q || quizPool.length < MIN_QUIZ_PAIRS_RELAXED) return [];
-    return pickQuizOptions(q, quizPool, 3, shuffleSeed);
-  }, [q, quizPool, shuffleSeed]);
+    return pickQuizOptions(q, quizPool, 3, shuffleSeed, reverse ? 'term' : 'definition');
+  }, [q, quizPool, shuffleSeed, reverse]);
 
   useEffect(() => {
     if (!examMode) return;
@@ -132,7 +137,7 @@ export function QuizGame({
     setSelected(opt);
     setRevealed(true);
 
-    const correct = opt === q.definition;
+    const correct = opt === answerText;
     const newScore = score + (correct ? 1 : 0);
     setScore(newScore);
     scoreRef.current = newScore;
@@ -164,11 +169,11 @@ export function QuizGame({
 
   if (!q) return null;
 
-  const missed = revealed && selected !== q.definition;
+  const missed = revealed && selected !== answerText;
 
   const optionState = (opt: string): ChoiceState => {
     if (!revealed) return 'idle';
-    if (opt === q.definition) return 'correct';
+    if (opt === answerText) return 'correct';
     if (opt === selected) return 'wrong';
     return 'muted';
   };
@@ -186,7 +191,7 @@ export function QuizGame({
           <AnswerFeedback
             locale={locale}
             grade="wrong"
-            answer={<FormulaText text={q.definition} />}
+            answer={<FormulaText text={answerText} />}
             onContinue={() => advance(score)}
           />
         ) : revealed ? (
@@ -196,10 +201,10 @@ export function QuizGame({
     >
       <div className="game-body quiz-body">
         <div className="game-prompt" key={index}>
-          <span className="game-eyebrow">{t('quizPrompt', locale)}</span>
+          <span className="game-eyebrow">{t(reverse ? 'quizPromptReverse' : 'quizPrompt', locale)}</span>
           <h2 className="game-question quiz-term">
-            <FormulaText text={q.term} />
-            <HearButton text={q.term} lang={resolveSpeakLang(q)} locale={locale} iconOnly />
+            <FormulaText text={promptText} />
+            <HearButton text={promptText} lang={resolveSideLang(q, reverse ? 'def' : 'term')} locale={locale} iconOnly />
           </h2>
         </div>
 

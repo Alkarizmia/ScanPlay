@@ -440,17 +440,21 @@ export function pickQuizOptions(
   pool: WordPair[],
   count = 3,
   seed?: string,
+  field: 'definition' | 'term' = 'definition',
 ): string[] {
+  const valueOf = (pair: WordPair) => (field === 'definition' ? pair.definition : pair.term);
+  const prompt = field === 'definition' ? correct.term : correct.definition;
+  const target = valueOf(correct);
   const wrong = pool
-    .filter((p) => p.definition !== correct.definition)
-    .filter((p) => isValidQuizDistractor(correct.term, p.definition))
-    .map((p) => p.definition);
+    .filter((p) => valueOf(p) !== target)
+    .filter((p) => isValidQuizDistractor(prompt, valueOf(p)))
+    .map((p) => valueOf(p));
 
   const unique = [...new Set(wrong)];
   const mix = (arr: string[]) => (seed ? seededShuffle(arr, `${seed}-opts-${correct.term}`) : shuffle(arr));
   const picks = mix(unique).slice(0, count);
 
-  return mix([correct.definition, ...picks]);
+  return mix([target, ...picks]);
 }
 
 /** Enough clean pairs to start a path (adaptive modes per step). */

@@ -59,7 +59,7 @@ export function SpeakGame({
   const pool = useMemo(
     () =>
       coercePlayablePairs(pairs).filter(
-        (p) => !isMathLikeText(p.term) && !isMathLikeText(p.definition) && p.term.length >= 2,
+        (p) => !isMathLikeText(p.term) && p.term.trim().split(/\s+/).length <= 6 && p.term.length >= 2,
       ),
     [pairs],
   );

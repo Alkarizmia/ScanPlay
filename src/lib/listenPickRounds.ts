@@ -1,13 +1,16 @@
 import type { LangCode, WordPair } from '../types';
-import { resolveSpeakLang } from './speakLang';
+import { pairHasDistinctLangs, resolveSideLang } from './speakLang';
 import { seededShuffle } from './seededRandom';
+import { pickVocabToken, splitVocabAlternatives } from './vocabTokens';
 import { coercePlayablePairs, isMathLikeText } from './vocabulary';
 
 export interface ListenPickRound {
   pairIndex: number;
-  /** The word actually spoken. */
-  target: string;
+  /** Word actually spoken — never the same language as the options. */
+  spoken: string;
   lang: LangCode;
+  /** Correct option (translation / other side). */
+  target: string;
   options: string[];
 }
 
@@ -37,18 +40,19 @@ function distance(a: string, b: string): number {
   return row[b.length]!;
 }
 
-/** Short single words only — a spoken sentence is not a discrimination exercise. */
-function isPickable(pair: WordPair): boolean {
-  const term = pair.term.trim();
-  if (term.length < 2 || term.length > 24) return false;
-  if (term.split(/\s+/).length > 2) return false;
-  return !isMathLikeText(term);
+function isShortVocab(text: string): boolean {
+  return splitVocabAlternatives(text).some((token) => {
+    const term = token.trim();
+    if (term.length < 2 || term.length > 24) return false;
+    if (term.split(/\s+/).length > 2) return false;
+    return !isMathLikeText(term);
+  });
 }
 
-/**
- * Distractors that sound plausible: closest spelling first, so the learner has to
- * actually hear the difference instead of eliminating by shape.
- */
+function isPickable(pair: WordPair): boolean {
+  return pairHasDistinctLangs(pair) && isShortVocab(pair.term) && isShortVocab(pair.definition);
+}
+
 function pickDistractors(target: string, candidates: string[], count: number): string[] {
   const normalizedTarget = normalize(target);
   return candidates
@@ -59,28 +63,58 @@ function pickDistractors(target: string, candidates: string[], count: number): s
     .map((entry) => entry.word);
 }
 
+function uniqueTokens(values: string[]): string[] {
+  const seen = new Set<string>();
+  const tokens: string[] = [];
+  for (const value of values) {
+    const token = splitVocabAlternatives(value)[0]?.trim() ?? value.trim();
+    const key = normalize(token);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    tokens.push(token);
+  }
+  return tokens;
+}
+
+/**
+ * Hear language A, pick the matching scanned word in language B.
+ * Direction alternates so audio and options are never the same language.
+ */
 export function buildListenPickRounds(
   pairs: WordPair[],
   options: { maxRounds?: number; seed?: string } = {},
 ): ListenPickRound[] {
   const { maxRounds = 6, seed = 'listenpick' } = options;
-  const pool = coercePlayablePairs(pairs).filter(isPickable);
+  const playable = coercePlayablePairs(pairs);
+  const pool = playable.filter(isPickable);
   if (pool.length < MIN_CANDIDATES) return [];
 
-  const words = [...new Set(pool.map((p) => p.term.trim()))];
-  if (words.length < MIN_CANDIDATES) return [];
+  const termTokens = uniqueTokens(pool.map((p) => p.term));
+  const defTokens = uniqueTokens(pool.map((p) => p.definition));
 
   const rounds: ListenPickRound[] = [];
   for (let i = 0; i < pool.length && rounds.length < maxRounds; i++) {
     const pair = pool[i]!;
-    const target = pair.term.trim();
-    const distractors = pickDistractors(target, words, 3);
+    const hearTerm = i % 2 === 0;
+    const spokenSide = hearTerm ? pair.term : pair.definition;
+    const answerSide = hearTerm ? pair.definition : pair.term;
+    const spoken = pickVocabToken(spokenSide, `${seed}-spoken-${i}`);
+    const target = splitVocabAlternatives(answerSide)[0]?.trim() ?? answerSide.trim();
+    const candidates = hearTerm ? defTokens : termTokens;
+    const distractors = pickDistractors(target, candidates, 3);
     if (distractors.length < 3) continue;
 
+    const spokenLang = resolveSideLang(pair, hearTerm ? 'term' : 'def');
+    const answerLang = resolveSideLang(pair, hearTerm ? 'def' : 'term');
+    if (spokenLang !== 'unknown' && answerLang !== 'unknown' && spokenLang === answerLang) {
+      continue;
+    }
+
     rounds.push({
-      pairIndex: i,
+      pairIndex: playable.indexOf(pair),
+      spoken,
+      lang: spokenLang,
       target,
-      lang: resolveSpeakLang(pair),
       options: seededShuffle([target, ...distractors], `${seed}-${i}`),
     });
   }

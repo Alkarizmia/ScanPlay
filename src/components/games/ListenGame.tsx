@@ -7,14 +7,16 @@ import { HearButton } from '../HearButton';
 import { FormulaText } from '../FormulaText';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { speakText } from '../../lib/speech';
-import { resolveSpeakLang } from '../../lib/speakLang';
+import { pairHasDistinctLangs, resolveSideLang } from '../../lib/speakLang';
+import { pickVocabToken, splitVocabAlternatives } from '../../lib/vocabTokens';
+import { seededShuffle } from '../../lib/seededRandom';
 import {
   getQuizPool,
   hasEnoughQuizPairsRelaxed,
+  isValidQuizDistractor,
   MIN_QUIZ_PAIRS_RELAXED,
-  pickQuizOptions,
 } from '../../lib/vocabulary';
-import type { Locale, WordPair } from '../../types';
+import type { Locale, SheetType, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
@@ -28,6 +30,7 @@ interface ListenGameProps extends EmbeddedGameProps {
   examMode?: boolean;
   deckId?: string | null;
   stepIndex?: number | null;
+  sheetType?: SheetType;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
   onNotEnoughPairs?: () => void;
@@ -48,6 +51,7 @@ export function ListenGame({
   examMode,
   deckId,
   stepIndex,
+  sheetType = 'vocab',
   onComplete,
   onExit,
   onNotEnoughPairs,
@@ -72,10 +76,36 @@ export function ListenGame({
   scoreRef.current = score;
 
   const q = questions[index];
-  const options = useMemo(
-    () => (q ? pickQuizOptions(q, quizPool, 3, `${deckId ?? 'listen'}-${index}`) : []),
-    [q, quizPool, deckId, index],
-  );
+  const bilingual = Boolean(q && pairHasDistinctLangs(q));
+  const hearTerm =
+    !q ||
+    sheetType === 'math' ||
+    (sheetType === 'notes'
+      ? false
+      : sheetType === 'definitions'
+        ? index % 2 === 0
+        : !bilingual || index % 2 === 0);
+  const seed = `${deckId ?? 'listen'}-${index}`;
+  const spoken = q
+    ? pickVocabToken(hearTerm ? q.term : q.definition, `${seed}-spoken`)
+    : '';
+  const spokenLang = q ? resolveSideLang(q, hearTerm ? 'term' : 'def') : 'unknown';
+  const answer = q
+    ? (splitVocabAlternatives(hearTerm ? q.definition : q.term)[0]?.trim() ?? '')
+    : '';
+  const options = useMemo(() => {
+    if (!q) return [];
+    const prompt = hearTerm ? q.term : q.definition;
+    const sideOf = (pair: WordPair) => (hearTerm ? pair.definition : pair.term);
+    const tokenOf = (pair: WordPair) => splitVocabAlternatives(sideOf(pair))[0]?.trim() ?? sideOf(pair);
+    const wrong = quizPool
+      .filter((p) => sideOf(p) !== sideOf(q))
+      .filter((p) => isValidQuizDistractor(prompt, sideOf(p)))
+      .map(tokenOf);
+    const unique = [...new Set(wrong)].filter((word) => word !== answer);
+    const picks = seededShuffle(unique, `${seed}-opts`).slice(0, 3);
+    return seededShuffle([answer, ...picks], `${seed}-mix`);
+  }, [q, quizPool, seed, hearTerm, answer]);
   const timerSeconds = examMode ? getExamTimerSeconds('listen', questions.length) : 0;
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
 
@@ -104,10 +134,10 @@ export function ListenGame({
   useEffect(() => {
     if (!q) return;
     const timer = window.setTimeout(() => {
-      void speakText(q.term, resolveSpeakLang(q));
+      void speakText(spoken, spokenLang);
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [index, q]);
+  }, [index, q, spoken, spokenLang]);
 
   useEffect(() => {
     if (!examMode || timerSeconds <= 0) return;
@@ -141,7 +171,7 @@ export function ListenGame({
     setSelected(opt);
     setRevealed(true);
 
-    const ok = opt === q.definition;
+    const ok = opt === answer;
     const nextScore = score + (ok ? 1 : 0);
     setScore(nextScore);
     scoreRef.current = nextScore;
@@ -170,11 +200,11 @@ export function ListenGame({
 
   if (!q) return null;
 
-  const missed = revealed && selected !== q.definition;
+  const missed = revealed && selected !== answer;
 
   const optionState = (opt: string): ChoiceState => {
     if (!revealed) return 'idle';
-    if (opt === q.definition) return 'correct';
+    if (opt === answer) return 'correct';
     if (opt === selected) return 'wrong';
     return 'muted';
   };
@@ -193,12 +223,12 @@ export function ListenGame({
           <AnswerFeedback
             locale={locale}
             grade="wrong"
-            answer={<FormulaText text={q.definition} />}
-            note={q.term}
+            answer={<FormulaText text={answer} />}
+            note={spoken}
             onContinue={() => goNext(score)}
           />
         ) : revealed ? (
-          <AnswerFeedback locale={locale} grade="correct" xp={lastXp} answer={q.term} />
+          <AnswerFeedback locale={locale} grade="correct" xp={lastXp} answer={spoken} />
         ) : null
       }
     >
@@ -209,8 +239,8 @@ export function ListenGame({
             🎧
           </span>
           <HearButton
-            text={q.term}
-            lang={resolveSpeakLang(q)}
+            text={spoken}
+            lang={spokenLang}
             locale={locale}
             className="listen-hear-btn"
           />

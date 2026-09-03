@@ -9,6 +9,7 @@ const WRITTEN_MODES: GameMode[] = [
   'cloze',
   'translate',
   'reorder',
+  'imagepick',
 ];
 /** Dictation needs speech synthesis to exist at all, so it lives with the oral pool. */
 const ORAL_MODES: GameMode[] = ['listen', 'speak', 'listenpick', 'dictation'];
@@ -31,7 +32,12 @@ export function resetTrainingFocus(): void {
 }
 
 export function isTrainingFocusApplicable(sheetType: string): boolean {
-  return sheetType === 'vocab' || sheetType === 'notes';
+  return (
+    sheetType === 'vocab' ||
+    sheetType === 'notes' ||
+    sheetType === 'definitions' ||
+    sheetType === 'math'
+  );
 }
 
 export function isModeAllowedByFocus(mode: GameMode, focus: TrainingFocus[] = getTrainingFocus()): boolean {

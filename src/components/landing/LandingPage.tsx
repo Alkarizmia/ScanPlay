@@ -268,6 +268,7 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                   <li>{t('modeDictation', locale)}</li>
                   <li>{t('modeListenPick', locale)}</li>
                   <li>{t('modeReorder', locale)}</li>
+                  <li>{t('modeImagePick', locale)}</li>
                 </ul>
               </li>
               <li>

@@ -69,6 +69,7 @@ import { TypeGame } from './components/games/TypeGame';
 import { DictationGame } from './components/games/DictationGame';
 import { ListenPickGame } from './components/games/ListenPickGame';
 import { ReorderGame } from './components/games/ReorderGame';
+import { ImagePickGame } from './components/games/ImagePickGame';
 import { resetGameHud } from './lib/gameFeedback';
 import {
   getMistakePairs,
@@ -2026,6 +2027,7 @@ export default function App() {
           examMode={examMode}
           deckId={historyId}
           stepIndex={activeStepIndex}
+          sheetType={sheetType}
           shuffleSeed={multiplayerSession?.room.quizSeed}
           onComplete={endGame}
           onExit={appGoBack}
@@ -2067,6 +2069,7 @@ export default function App() {
           examMode={examMode}
           deckId={historyId}
           stepIndex={activeStepIndex}
+          sheetType={sheetType}
           onComplete={endGame}
           onExit={appGoBack}
           onNotEnoughPairs={() => showToast(t('stepNeedMoreWords', locale))}
@@ -2152,6 +2155,16 @@ export default function App() {
       )}
       {flow === 'playing' && mode === 'reorder' && (
         <ReorderGame
+          pairs={playPairs}
+          locale={locale}
+          deckId={historyId}
+          stepIndex={activeStepIndex}
+          onComplete={endGame}
+          onExit={appGoBack}
+        />
+      )}
+      {flow === 'playing' && mode === 'imagepick' && (
+        <ImagePickGame
           pairs={playPairs}
           locale={locale}
           deckId={historyId}
