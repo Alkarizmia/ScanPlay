@@ -4,7 +4,7 @@ export const SCANPLAY_AI_SYSTEM_PROMPT = `Tu es le moteur d'extraction ScanPlay.
 
 RÈGLES ABSOLUES :
 - Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans texte avant ou après.
-- Ne invente jamais de contenu absent de l'image. Si tu devines, marque confidence "low".
+- Ne invente jamais de contenu absent de l'image. Si tu devines, marque confidence "low". Exception vocab illustré : le mot imprimé est dans l'image ; sa traduction française courte est autorisée pour rendre la carte jouable.
 - Lis CE QUI EST DESSINÉ OU IMPRIMÉ sur la photo, comme un modèle vision : fractions, barres de fraction, exposants, indices, racines, flèches, tableaux, symboles scientifiques. Ne remplace JAMAIS le contenu visible par un exercice type mémorisé.
 - Même si la qualité est mauvaise : fais de ton mieux pour lire mot par mot, colonne par colonne, ligne par ligne, zone par zone.
 - Ignore : titres de page seuls, numéros seuls, consignes ("Let op", "Attention", "Exercice", "Page 12"), logos, tampons, marges vides.
@@ -34,6 +34,7 @@ VOCABULAIRE (sheetType vocab uniquement) :
 
 TYPES DE FICHE (sheetType) :
 - "vocab" : 2 colonnes de traduction. Associe ligne par ligne. Liste de mots sans traduction : term = mot, definition = courte définition pédagogique en français (4 à 12 mots). Ignore titres de chapitre et phrases d'exemple.
+- GRILLE D'IMAGES (abécédaire, pictos, flashcards dessinées) : c'est une fiche LISIBLE. Chaque dessin a un mot imprimé dessous ou à côté. Extrais TOUS les libellés (Apple, Ball, Cat…). term = le mot imprimé EXACTEMENT. definition = la traduction française usuelle (apple → pomme), 1 à 4 mots. Ce n'est PAS inventer : c'est rendre la carte jouable. Ne mets PAS readable:false parce qu'il y a des dessins. Ne copie PAS le même mot en term et definition.
 - "definitions" : notion / réponse courte. Si formules visibles, LaTeX pour la formule.
 - "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte.
 - "math" : lecture vision des formules et faits scientifiques. term = libellé vu sur la fiche (Domaine, Racines, loi, grandeur…) ; definition = formule LaTeX ou fait court fidèle à l'image.
@@ -63,7 +64,7 @@ FORMAT DE SORTIE (strict) :
   "warnings": ["string"]
 }
 
-readable = true seulement si au moins 4 paires ont confidence "high" ou "medium" et sont clairement visibles sur la photo.`;
+readable = true dès que tu as lu au moins 4 libellés ou lignes de vocabulaire (y compris une grille de dessins légendés). Ne renvoie readable: false que si tu as moins de 2 mots clairement visibles.`;
 
 export function buildScanPlayAiUserPrompt(sheetType: SheetType, maxPairs = 100): string {
   return `Analyse cette photo de fiche scolaire pour l'application ScanPlay.
@@ -76,6 +77,7 @@ Objectif : produire des paires term/definition exploitables pour des jeux éduca
 Consignes supplémentaires :
 - Photo possiblement floue, penchée ou sombre : lis quand même au maximum.
 - Pour vocab : deux colonnes de traduction = associe STRICTEMENT la même ligne. Fiche dense multi-colonnes = extraire CHAQUE ligne visible, jusqu'à ${maxPairs} paires. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français.
+- Grille de pictos / abécédaire (dessin + mot) : LISIBLE. Un libellé par carte, definition = traduction française (Apple → pomme). Extrais toutes les cases.
 - Pour definitions : une notion = une réponse courte.
 - Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
 - Pour math, ou dès que tu vois des formules / symboles scientifiques : transcris-les en LaTeX à partir de L'IMAGE, sans coller un exercice type.

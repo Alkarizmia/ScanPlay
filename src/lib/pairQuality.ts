@@ -1,4 +1,4 @@
-import { lookupLoanwordGloss } from './loanwordGlosses';
+import { lookupVocabGloss } from './loanwordGlosses';
 import type { WordPair } from '../types';
 
 const TITLE_FRAGMENT = /^(vocabulaire|quelques mots|dans la (lan|langue)|liste de|un peu de)\b/i;
@@ -112,8 +112,25 @@ function hasFrenchArticle(text: string): boolean {
   return /\b(l['']|le|la|les|un|une|des|du|au|aux)\s+\S/i.test(text);
 }
 
+function normalizeGlossKey(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '');
+}
+
+function glossMatches(term: string, definition: string): boolean {
+  const gloss = lookupVocabGloss(term);
+  if (!gloss) return false;
+  const g = normalizeGlossKey(gloss);
+  const d = normalizeGlossKey(definition);
+  return g === d || g.includes(d) || d.includes(g);
+}
+
 function isLikelyTranslationPair(term: string, definition: string): boolean {
-  if (lookupLoanwordGloss(term) && lookupLoanwordGloss(definition)) return false;
+  if (glossMatches(term, definition) || glossMatches(definition, term)) return true;
+  if (lookupVocabGloss(term) && lookupVocabGloss(definition)) return false;
 
   if (hasDutchArticle(term) && hasFrenchArticle(definition)) return true;
   if (hasFrenchArticle(term) && hasDutchArticle(definition)) return true;
@@ -130,14 +147,14 @@ function isLikelyTranslationPair(term: string, definition: string): boolean {
   const dl = detectLangSimple(definition);
   if (tl !== 'unknown' && dl !== 'unknown' && tl !== dl) return true;
 
-  if ((termFr || defFr) && !lookupLoanwordGloss(term)) return true;
+  if ((termFr || defFr) && !lookupVocabGloss(term)) return true;
 
   if (
     /^[a-zàâäéèêëïîôùûüç'()-]{3,14}$/i.test(term) &&
     /^[a-zàâäéèêëïîôùûüç'()-]{3,16}$/i.test(definition) &&
     term.toLowerCase() !== definition.toLowerCase() &&
-    !lookupLoanwordGloss(term) &&
-    !lookupLoanwordGloss(definition)
+    !lookupVocabGloss(term) &&
+    !lookupVocabGloss(definition)
   ) {
     return true;
   }
@@ -155,7 +172,8 @@ export function isPlayableDefinition(definition: string, term: string): boolean 
   const termWords = term.trim().split(/\s+/).length;
 
   if (defWords >= 2 || def.length >= 14) return true;
-  if (lookupLoanwordGloss(term) && defWords >= 2) return true;
+  if (glossMatches(term, definition)) return true;
+  if (lookupVocabGloss(term) && defWords >= 2) return true;
 
   if (
     looksLikeStandaloneVocabWord(term) &&
@@ -210,7 +228,7 @@ export function enrichPairWithGloss(pair: WordPair): WordPair | null {
   if (isExampleSentence(pair.term)) return null;
   if (isExampleSentence(pair.definition) && pair.definition.split(/\s+/).length >= 4) return null;
 
-  const gloss = lookupLoanwordGloss(pair.term);
+  const gloss = lookupVocabGloss(pair.term);
   const wrongColumnPair =
     looksLikeStandaloneVocabWord(pair.term) &&
     looksLikeStandaloneVocabWord(pair.definition) &&

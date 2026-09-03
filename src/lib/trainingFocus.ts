@@ -32,12 +32,7 @@ export function resetTrainingFocus(): void {
 }
 
 export function isTrainingFocusApplicable(sheetType: string): boolean {
-  return (
-    sheetType === 'vocab' ||
-    sheetType === 'notes' ||
-    sheetType === 'definitions' ||
-    sheetType === 'math'
-  );
+  return sheetType === 'vocab' || sheetType === 'notes' || sheetType === 'definitions';
 }
 
 export function isModeAllowedByFocus(mode: GameMode, focus: TrainingFocus[] = getTrainingFocus()): boolean {

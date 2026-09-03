@@ -5,6 +5,7 @@ import {
   parseColumnText,
   isTitleLine,
   reconcileWordListPairs,
+  collectGlossedLabelsFromText,
 } from './columnParser';
 import { fixOcrLine, isInstructionText } from './vocabulary';
 
@@ -183,7 +184,13 @@ function parseVocabSheet(text: string): WordPair[] {
     pairs = dedupe([...pairs, ...parseAdjacentLines(lines)]);
   }
 
-  return reconcileWordListPairs(pairs, text).slice(0, 250);
+  pairs = reconcileWordListPairs(pairs, text);
+  const glossedLabels = collectGlossedLabelsFromText(text);
+  if (glossedLabels.length >= 4 && glossedLabels.length > pairs.length) {
+    return glossedLabels.slice(0, 250);
+  }
+
+  return pairs.slice(0, 250);
 }
 
 /** Extract pairs from OCR text. */

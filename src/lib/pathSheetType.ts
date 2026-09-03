@@ -1,5 +1,6 @@
 import type { LangCode, SheetType, WordPair } from '../types';
 import { detectLang } from './columnParser';
+import { lookupVocabGloss } from './loanwordGlosses';
 import { looksLikeLatex } from './mathText';
 import { isMathLikeText } from './vocabulary';
 
@@ -13,14 +14,9 @@ export function getPathSheetType(): SheetType {
   return currentSheetType;
 }
 
-/** Oral games: vocab/notes freely; definitions = term↔sense; math = spoken name only. */
+/** Oral games: vocab, notes, definitions. Never math/science formulas. */
 export function isOralAllowedForSheet(sheetType: SheetType = getPathSheetType()): boolean {
-  return (
-    sheetType === 'vocab' ||
-    sheetType === 'notes' ||
-    sheetType === 'definitions' ||
-    sheetType === 'math'
-  );
+  return sheetType === 'vocab' || sheetType === 'notes' || sheetType === 'definitions';
 }
 
 const MATH_COURSE_WORD =
@@ -46,7 +42,25 @@ export function inferColumnLangs(pairs: WordPair[]): { term: LangCode; def: Lang
   };
 }
 
-/** Phrase tiles: bilingual vocab only — never maths, never same-language course notes. */
+function glossNorm(text: string): string {
+  return text
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{M}/gu, '');
+}
+
+export function pairLooksTranslatable(pair: WordPair): boolean {
+  const tl = pair.termLang && pair.termLang !== 'unknown' ? pair.termLang : detectLang(pair.term);
+  const dl = pair.defLang && pair.defLang !== 'unknown' ? pair.defLang : detectLang(pair.definition);
+  if (tl !== 'unknown' && dl !== 'unknown' && tl !== dl) return true;
+  const gloss = lookupVocabGloss(pair.term);
+  if (gloss && glossNorm(gloss) === glossNorm(pair.definition)) return true;
+  const back = lookupVocabGloss(pair.definition);
+  return Boolean(back && glossNorm(back) === glossNorm(pair.term));
+}
+
+/** Phrase tiles: bilingual vocab — including pictured word lists (apple → pomme). */
 export function canUseTranslateGame(
   pairs: WordPair[],
   sheetType: SheetType = getPathSheetType(),
@@ -56,8 +70,9 @@ export function canUseTranslateGame(
   const mathHits = pairs.filter(pairLooksLikeMathCourse).length;
   if (mathHits >= Math.max(1, Math.ceil(pairs.length * 0.35))) return false;
   const langs = inferColumnLangs(pairs);
-  if (langs.term === 'unknown' || langs.def === 'unknown') return false;
-  return langs.term !== langs.def;
+  if (langs.term !== 'unknown' && langs.def !== 'unknown' && langs.term !== langs.def) return true;
+  const hits = pairs.filter(pairLooksTranslatable).length;
+  return hits >= 1 && hits >= Math.min(2, Math.ceil(pairs.length * 0.35));
 }
 
 /** @deprecated use canUseTranslateGame(pairs) — sheet type alone is not enough. */

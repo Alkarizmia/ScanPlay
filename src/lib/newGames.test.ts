@@ -237,6 +237,12 @@ describe('new modes in the path', () => {
     expect(pickPathStepGames(3, notesPairs)).toContain('reorder');
   });
 
+  it('keeps word bricks on notes when training oral', () => {
+    setPathSheetType('notes');
+    setTrainingFocus(['written', 'oral']);
+    expect(pickPathStepGames(2, notesPairs)).toContain('reorder');
+  });
+
   it('keeps four games on notes and math lessons', () => {
     setPathSheetType('notes');
     expect(pickPathStepGames(0, notesPairs).length).toBe(4);
@@ -245,12 +251,15 @@ describe('new modes in the path', () => {
     setPathSheetType('vocab');
   });
 
-  it('never puts the audio games on a math sheet', () => {
+  it('never puts oral or picture games on a math sheet', () => {
     setPathSheetType('math');
-    for (const step of [0, 1, 2, 3]) {
+    for (const step of [0, 1, 2, 3, 6]) {
       const games = pickPathStepGames(step, mathPairs);
+      expect(games).not.toContain('listen');
+      expect(games).not.toContain('speak');
       expect(games).not.toContain('listenpick');
       expect(games).not.toContain('dictation');
+      expect(games).not.toContain('imagepick');
     }
   });
 

@@ -1,6 +1,6 @@
 import type { LangCode, WordPair } from '../types';
 import { fixOcrLine, isInstructionText } from './vocabulary';
-import { lookupLoanwordGloss } from './loanwordGlosses';
+import { lookupVocabGloss } from './loanwordGlosses';
 import {
   enrichTeachablePairs,
   isExampleSentence,
@@ -186,7 +186,7 @@ export function wordListHint(word: string): string {
 export function buildWordListPair(word: string): WordPair | null {
   const w = primarySegment(word).trim();
   if (!w || w.length < 2 || isGarbageVocabTerm(w)) return null;
-  const gloss = lookupLoanwordGloss(w);
+  const gloss = lookupVocabGloss(w);
   if (!gloss) return null;
   return {
     term: w,
@@ -201,12 +201,36 @@ export function extractWordsFromCell(cell: string): string[] {
   const cleaned = fixOcrLine(cell.trim());
   if (!cleaned) return [];
 
-  const parts = cleaned.split(/\s+(?=[A-ZÀ-Ÿ])/).map((p) => p.trim()).filter(Boolean);
-  if (parts.length >= 2 && parts.every((p) => isShortVocabToken(p))) {
-    return parts;
+  const titleParts = cleaned.split(/\s+(?=[A-ZÀ-Ÿ])/).map((p) => p.trim()).filter(Boolean);
+  if (titleParts.length >= 2 && titleParts.every((p) => isShortVocabToken(p))) {
+    return titleParts;
+  }
+
+  const spaceParts = cleaned.split(/\s+/).filter(Boolean);
+  if (
+    spaceParts.length >= 2 &&
+    spaceParts.every((p) => isShortVocabToken(p) && /^[A-Za-zÀ-ÿ''-]+$/.test(p))
+  ) {
+    return spaceParts;
   }
 
   return [primarySegment(cleaned)];
+}
+
+export function collectGlossedLabelsFromText(text: string): WordPair[] {
+  const words: string[] = [];
+  for (const line of text.split(/\r?\n/)) {
+    const cleaned = fixOcrLine(line.trim());
+    if (!cleaned || isTitleLine(cleaned)) continue;
+    const cols = splitLineIntoColumns(cleaned);
+    const cells = cols ? [cols[0], cols[1]] : [cleaned];
+    for (const cell of cells) {
+      words.push(...extractWordsFromCell(cell));
+    }
+  }
+  return dedupeWordListPairs(
+    words.map((w) => buildWordListPair(w)).filter((p): p is WordPair => p !== null),
+  );
 }
 
 function dedupeWordListPairs(pairs: WordPair[]): WordPair[] {

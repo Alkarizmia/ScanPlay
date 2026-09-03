@@ -92,6 +92,13 @@ interface SizedImage {
   height: number;
 }
 
+function countShortWords(text: string): number {
+  return text
+    .split(/\s+/)
+    .map((w) => w.replace(/[^A-Za-zÀ-ÿ'-]/g, ''))
+    .filter((w) => w.length >= 3 && w.length <= 16).length;
+}
+
 function loadSizedImage(file: File, maxWidth = 1200): Promise<SizedImage> {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -155,21 +162,44 @@ async function cropBlob(source: Blob, sx: number, sy: number, sw: number, sh: nu
   });
 }
 
-async function recognizeBlob(blob: Blob, langs: string): Promise<string> {
+async function recognizeBlob(
+  blob: Blob,
+  langs: string,
+  pageSegMode: string = PSM.AUTO,
+): Promise<string> {
   const worker = await getWorker(langs);
+  await worker.setParameters({
+    tessedit_pageseg_mode: pageSegMode as typeof PSM.AUTO,
+    preserve_interword_spaces: '1',
+  });
   const result = await withTimeout(worker.recognize(blob), OCR_TIMEOUT_MS, 'recognize-timeout');
   return result.data.text;
 }
 
 async function extractVocabColumns(file: File, langs: string): Promise<string> {
-  const { blob, width, height } = await loadSizedImage(file);
+  const { blob, width, height } = await loadSizedImage(file, 1800);
   const splitX = Math.round(width * 0.48);
 
   let fullText = '';
   try {
-    fullText = await recognizeBlob(blob, langs);
+    fullText = await recognizeBlob(blob, langs, PSM.AUTO);
   } catch {
     /* optional */
+  }
+
+  if (countShortWords(fullText) < 8) {
+    try {
+      const sparse = await recognizeBlob(blob, langs, '11');
+      if (countShortWords(sparse) > countShortWords(fullText)) {
+        fullText = sparse;
+      }
+    } catch {
+      /* keep AUTO result */
+    }
+  }
+
+  if (countShortWords(fullText) >= 8) {
+    return fullText;
   }
 
   try {
@@ -178,8 +208,8 @@ async function extractVocabColumns(file: File, langs: string): Promise<string> {
       cropBlob(blob, splitX, 0, width - splitX, height),
     ]);
     const [leftText, rightText] = await Promise.all([
-      recognizeBlob(leftBlob, langs),
-      recognizeBlob(rightBlob, langs),
+      recognizeBlob(leftBlob, langs, PSM.AUTO),
+      recognizeBlob(rightBlob, langs, PSM.AUTO),
     ]);
     const merged = mergeDualColumnOcr(leftText, rightText);
     const tabLines = merged.trim().split('\n').filter((l) => l.includes('\t')).length;
@@ -190,7 +220,7 @@ async function extractVocabColumns(file: File, langs: string): Promise<string> {
     /* fall through */
   }
 
-  return fullText || recognizeBlob(blob, langs);
+  return fullText || recognizeBlob(blob, langs, PSM.AUTO);
 }
 
 export async function extractTextFromImage(

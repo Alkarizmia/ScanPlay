@@ -1,3 +1,5 @@
+import { lookupEverydayGloss } from './everydayGlosses';
+
 /** Courtes définitions pédagogiques pour listes « mots français en anglais » (OCR / secours). */
 const GLOSSES: Record<string, string> = {
   apéritif: 'Boisson servie avant le repas',
@@ -43,4 +45,9 @@ function normalizeKey(word: string): string {
 export function lookupLoanwordGloss(word: string): string | null {
   const key = normalizeKey(word);
   return GLOSSES[key] ?? null;
+}
+
+/** Loanword gloss, or everyday picture-dictionary translation (apple → pomme). */
+export function lookupVocabGloss(word: string): string | null {
+  return lookupLoanwordGloss(word) ?? lookupEverydayGloss(word);
 }

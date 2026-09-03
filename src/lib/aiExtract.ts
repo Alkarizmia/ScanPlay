@@ -1,3 +1,4 @@
+import { lookupVocabGloss } from './loanwordGlosses';
 import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
@@ -48,7 +49,11 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
     .map((p) => {
       const scientific = options?.mathSheet || isScientificPair(p);
       const rawTerm = scientific ? p.term.trim() : stripVocabDecorations(p.term.trim());
-      const rawDef = scientific ? p.definition.trim() : stripVocabDecorations(p.definition.trim());
+      let rawDef = scientific ? p.definition.trim() : stripVocabDecorations(p.definition.trim());
+      if (!scientific && rawTerm.toLowerCase() === rawDef.toLowerCase()) {
+        const gloss = lookupVocabGloss(rawTerm);
+        if (gloss) rawDef = gloss;
+      }
       const term = scientific ? rawTerm.slice(0, 120) : fixOcrLine(rawTerm).slice(0, 55);
       const definition = scientific
         ? rawDef.slice(0, 280)

@@ -183,4 +183,14 @@ describe('translateRounds', () => {
     expect(ok?.[0]?.source).toContain('auto');
     expect(parseAiTranslateRounds({ rounds: [{ term: 'auto', source: 'Hallo', target: 'Salut' }] }, pairs)).toBeNull();
   });
+
+  it('builds brick rounds for pictured everyday words without lang tags', () => {
+    const pictured: WordPair[] = [
+      { term: 'Apple', definition: 'pomme' },
+      { term: 'Cat', definition: 'chat' },
+    ];
+    const rounds = buildLocalTranslateRounds(pictured, 2);
+    expect(rounds.length).toBeGreaterThan(0);
+    expect(rounds[0]?.expected.join(' ').toLowerCase()).toMatch(/pomme|chat/);
+  });
 });

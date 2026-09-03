@@ -50,6 +50,18 @@ describe('getNextGameForStep listen path', () => {
     expect(games).toContain('translate');
   });
 
+  it('keeps the brick game on notes even when oral training fills two slots', () => {
+    setPathSheetType('notes');
+    const notes: WordPair[] = [
+      { term: 'Révolution française', definition: 'elle commence en mille sept cent quatre vingt neuf' },
+      { term: 'Photosynthèse', definition: 'la plante transforme la lumiere en energie' },
+      { term: 'Gravité', definition: 'les corps massifs attirent les autres corps' },
+    ];
+    expect(pickPathStepGames(0, notes)).toContain('reorder');
+    expect(pickPathStepGames(2, notes)).toContain('reorder');
+    setPathSheetType('vocab');
+  });
+
   it('includes listen on the first vocab node when oral training is on', () => {
     expect(pickPathStepGames(0, pairs)).toContain('listen');
   });
@@ -59,13 +71,20 @@ describe('getNextGameForStep listen path', () => {
     expect(pickPathStepGames(6, pairs)).toContain('speak');
   });
 
-  it('lets math lessons hear the formula name, never latex dictation', () => {
+  it('keeps math lessons on formula games, never oral or pictures', () => {
     setPathSheetType('math');
-    const games = pickPathStepGames(0, mathPairs);
-    expect(games).not.toContain('translate');
-    expect(games).not.toContain('listenpick');
-    expect(games).not.toContain('dictation');
-    expect(games.length).toBe(4);
+    const formulaGames = new Set(['flashcards', 'quiz', 'match', 'type', 'cloze', 'truefalse', 'reorder']);
+    for (const step of [0, 1, 2, 3, 6, 7]) {
+      const games = pickPathStepGames(step, mathPairs);
+      expect(games.length).toBe(4);
+      expect(games).not.toContain('listen');
+      expect(games).not.toContain('speak');
+      expect(games).not.toContain('listenpick');
+      expect(games).not.toContain('dictation');
+      expect(games).not.toContain('imagepick');
+      expect(games).not.toContain('translate');
+      expect(games.every((g) => formulaGames.has(g))).toBe(true);
+    }
   });
 
   it('never puts translate on a math sheet', () => {

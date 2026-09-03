@@ -991,8 +991,14 @@ export default function App() {
 
     const play = getPlayPairs(base, stepIndex ?? null, pairDirection);
     let resolved = resolveStepMode(m, play);
-    if (resolved === 'listen' && !isOralAllowedForSheet(sheetType)) {
-      resolved = resolveStepMode('flashcards', play);
+    if (
+      (resolved === 'listen' ||
+        resolved === 'speak' ||
+        resolved === 'listenpick' ||
+        resolved === 'dictation') &&
+      !isOralAllowedForSheet(sheetType)
+    ) {
+      resolved = resolveStepMode('type', play);
     }
     if (resolved === 'listen') {
       if (!canSpeak()) {

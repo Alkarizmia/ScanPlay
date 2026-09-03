@@ -68,6 +68,15 @@ describe('aiExtract', () => {
     expect(ignored.every((p) => p.quality === 'uncertain')).toBe(true);
   });
 
+  it('glosses identical picture-label pairs from vision JSON', () => {
+    const mapped = mapAiPairsToWordPairs([
+      { term: 'Apple', definition: 'Apple', termLang: 'en', defLang: 'en', confidence: 'high' },
+      { term: 'Cat', definition: 'Cat', termLang: 'en', defLang: 'en', confidence: 'high' },
+    ]);
+    expect(mapped.find((p) => p.term === 'Apple')?.definition.toLowerCase()).toBe('pomme');
+    expect(mapped.find((p) => p.term === 'Cat')?.definition.toLowerCase()).toBe('chat');
+  });
+
   it('rejects invalid payload', () => {
     expect(parseAiExtractResponse(null)).toBeNull();
     expect(parseAiExtractResponse({ pairs: [] })).toBeNull();

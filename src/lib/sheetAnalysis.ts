@@ -1,5 +1,5 @@
 import { analyzeSheetWithAi, collectIgnoredAiPairs, isAiScanEnabled, mapAiPairsToWordPairs } from './aiExtract';
-import { reconcileWordListPairs } from './columnParser';
+import { collectGlossedLabelsFromText, reconcileWordListPairs } from './columnParser';
 import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
 import { canOpenGamePath, coercePlayablePairs } from './vocabulary';
@@ -42,6 +42,12 @@ export async function extractPairsFromImage(
             );
         if (canOpenGamePath(pairs)) {
           return { pairs, source: 'ai', ignored };
+        }
+        const fromLabels = collectGlossedLabelsFromText(
+          ai.pairs.map((p) => `${p.term} ${p.definition}`).join('\n'),
+        );
+        if (canOpenGamePath(fromLabels)) {
+          return { pairs: fromLabels, source: 'ai', ignored };
         }
       }
     } catch {

@@ -1,7 +1,8 @@
 import type { LangCode, WordPair } from '../types';
 import { detectLang } from './columnParser';
 import { coercePlayablePairs, isMathLikeText } from './vocabulary';
-import { inferColumnLangs } from './pathSheetType';
+import { inferColumnLangs, pairLooksTranslatable } from './pathSheetType';
+import { lookupVocabGloss } from './loanwordGlosses';
 
 export type TranslateGrade = 'correct' | 'small' | 'big';
 
@@ -296,11 +297,26 @@ export function buildLocalTranslateRound(
   if (!term || !definition) return null;
 
   const deckLangs = inferColumnLangs(pool.length > 0 ? pool : [pair]);
-  const termLang =
+  let termLang =
     resolveLang(term, pair.termLang) === 'unknown' ? deckLangs.term : resolveLang(term, pair.termLang);
-  const defLang =
+  let defLang =
     resolveLang(definition, pair.defLang) === 'unknown' ? deckLangs.def : resolveLang(definition, pair.defLang);
-  if (termLang === 'unknown' || defLang === 'unknown' || termLang === defLang) return null;
+  if (termLang === 'unknown' || defLang === 'unknown' || termLang === defLang) {
+    if (!pairLooksTranslatable(pair)) return null;
+    const gloss = lookupVocabGloss(term);
+    const back = lookupVocabGloss(definition);
+    if (gloss && gloss.toLowerCase() === definition.toLowerCase()) {
+      termLang = termLang === 'unknown' ? 'en' : termLang;
+      defLang = 'fr';
+    } else if (back && back.toLowerCase() === term.toLowerCase()) {
+      termLang = 'fr';
+      defLang = defLang === 'unknown' ? 'en' : defLang;
+    } else {
+      termLang = termLang === 'unknown' ? 'en' : termLang;
+      defLang = defLang === 'unknown' || defLang === termLang ? 'fr' : defLang;
+    }
+    if (termLang === defLang) return null;
+  }
 
   const source = wrapVocabSentence(pair.term, termLang);
   const target = wrapVocabSentence(pair.definition, defLang);

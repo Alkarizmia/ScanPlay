@@ -189,7 +189,7 @@ export const CARTOON_ART: CartoonArt[] = [
   {
     id: 'crayon',
     src: '/game-art/game-crayon.png',
-    aliases: ['crayon', 'pencil', 'potlood', 'lapiz', 'lápiz', 'ecrire', 'écrire', 'write', 'schrijven', 'escribir'],
+    aliases: ['crayon', 'pencil', 'potlood', 'lapiz', 'lápiz', 'pen', 'stylo', 'ecrire', 'écrire', 'write', 'schrijven', 'escribir'],
   },
   {
     id: 'ballon',

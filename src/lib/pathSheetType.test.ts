@@ -28,6 +28,15 @@ describe('canUseTranslateGame', () => {
     expect(canUseTranslateGame(pairs, 'math')).toBe(false);
   });
 
+  it('allows pictured everyday vocab even without lang tags', () => {
+    const pairs: WordPair[] = [
+      { term: 'Apple', definition: 'pomme' },
+      { term: 'Cat', definition: 'chat' },
+      { term: 'Dog', definition: 'chien' },
+    ];
+    expect(canUseTranslateGame(pairs, 'vocab')).toBe(true);
+  });
+
   it('blocks same-language French notes', () => {
     const pairs: WordPair[] = [
       { term: 'Domaine', definition: 'ensemble de definition', termLang: 'fr', defLang: 'fr' },

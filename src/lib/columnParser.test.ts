@@ -7,7 +7,7 @@ import {
   splitLineIntoColumns,
 } from './columnParser';
 import { parseContent } from './parser';
-import { fixOcrLine } from './vocabulary';
+import { canOpenGamePath, fixOcrLine } from './vocabulary';
 
 const FR_IN_EN_FIXTURE = `
 Quelques mots français dans la langue anglaise
@@ -95,5 +95,38 @@ describe('parser word list integration', () => {
     const pairs = parseContent(FR_IN_EN_FIXTURE, 'vocab');
     expect(pairs.some((p) => p.term.toLowerCase() === 'apéritif' && p.definition === 'Machine')).toBe(false);
     expect(pairs.length).toBeGreaterThanOrEqual(6);
+  });
+
+  it('turns an illustrated A-Z grid into playable EN→FR cards', () => {
+    const ocr = `
+Apple
+Ball
+Cat
+Dog
+Egg
+Fish
+Goat
+Hat
+Ice
+Jug
+Kite
+Lion
+Milk
+Orange
+Pen
+Queen
+`.trim();
+    const pairs = parseContent(ocr, 'vocab');
+    const byTerm = Object.fromEntries(pairs.map((p) => [p.term.toLowerCase(), p.definition.toLowerCase()]));
+    expect(pairs.length).toBeGreaterThanOrEqual(12);
+    expect(byTerm.apple).toBe('pomme');
+    expect(byTerm.cat).toBe('chat');
+    expect(byTerm.dog).toBe('chien');
+    expect(byTerm.milk).toBe('lait');
+    expect(byTerm.queen).toBe('reine');
+    expect(pairs.some((p) => p.term.toLowerCase() === 'apple' && p.definition.toLowerCase() === 'ball')).toBe(
+      false,
+    );
+    expect(canOpenGamePath(pairs)).toBe(true);
   });
 });
