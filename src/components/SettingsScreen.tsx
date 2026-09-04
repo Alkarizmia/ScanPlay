@@ -2,13 +2,17 @@ import { SubscriptionSection } from './SubscriptionSection';
 import { AccountPasswordSection } from './AccountPasswordSection';
 import { PrivacyPolicySheet } from './PrivacyPolicySheet';
 import { AudioSettingsScreen } from './AudioSettingsScreen';
+import { InstallAppSheet } from './InstallAppSheet';
 import { useMemo, useState } from 'react';
 import { getUser, signOut } from '../lib/auth';
 import { DeviceBadge } from './DeviceBadge';
 import type { DeviceProfile } from '../lib/device';
 import { t } from '../lib/i18n';
 import { setPreference } from '../lib/preferences';
+import { hapticTap } from '../lib/haptics';
+import { trackEvent } from '../lib/analytics';
 import { usePlan } from '../hooks/usePlan';
+import { usePwaInstall } from '../hooks/usePwaInstall';
 import { planLabel, setPlan } from '../lib/planLimits';
 import { isStripeCheckoutEnabled } from '../lib/stripeCheckout';
 import { usePreferences } from '../hooks/usePreferences';
@@ -47,6 +51,9 @@ export function SettingsScreen({
 }: SettingsScreenProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
   const [audioOpen, setAudioOpen] = useState(false);
+  const [installSheetOpen, setInstallSheetOpen] = useState(false);
+  const { canNativeInstall, canShowInstall, isInstalled, install, platform, isInAppBrowser } =
+    usePwaInstall();
   const { theme, setTheme } = useTheme();
   const user = getUser();
   const plan = usePlan();
@@ -77,10 +84,19 @@ export function SettingsScreen({
   const updatePref = <K extends keyof typeof prefs>(key: K, value: (typeof prefs)[K]) => {
     const prev = prefs[key];
     setPreference(key, value);
-    if (key === 'sound') {
-      if (value && !prev) playSound('tap');
-    }
+    if (key === 'sound' && value && !prev) playSound('tap');
   };
+
+  const handleInstall = async () => {
+    trackEvent('clic_installer');
+    if (canNativeInstall) {
+      const ok = await install();
+      if (ok) return;
+    }
+    setInstallSheetOpen(true);
+  };
+
+  const showInstallButton = canShowInstall || isInAppBrowser;
 
   if (audioOpen) {
     return <AudioSettingsScreen locale={locale} onBack={() => setAudioOpen(false)} />;
@@ -183,8 +199,37 @@ export function SettingsScreen({
               aria-label={prefs.sound ? t('soundOn', locale) : t('soundOff', locale)}
             />
           </div>
+          <div className="settings-row">
+            <span>{prefs.music ? t('musicOn', locale) : t('musicOff', locale)}</span>
+            <button
+              type="button"
+              className={`toggle ${prefs.music ? 'on' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                updatePref('music', !prefs.music);
+              }}
+              role="switch"
+              aria-checked={prefs.music}
+              aria-label={prefs.music ? t('musicOn', locale) : t('musicOff', locale)}
+            />
+          </div>
+          <div className="settings-row">
+            <span>{prefs.vibration ? t('vibrationOn', locale) : t('vibrationOff', locale)}</span>
+            <button
+              type="button"
+              className={`toggle ${prefs.vibration ? 'on' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                updatePref('vibration', !prefs.vibration);
+                if (!prefs.vibration) hapticTap();
+              }}
+              role="switch"
+              aria-checked={prefs.vibration}
+              aria-label={prefs.vibration ? t('vibrationOn', locale) : t('vibrationOff', locale)}
+            />
+          </div>
           <button type="button" className="btn-secondary audio-settings-link" onClick={() => setAudioOpen(true)}>
-            🔊 {t('openAudioSettings', locale)}
+            {t('openAudioSettings', locale)}
           </button>
           <div className="settings-row">
             <span>{prefs.notifications ? t('notificationsOn', locale) : t('notificationsOff', locale)}</span>
@@ -238,6 +283,20 @@ export function SettingsScreen({
         </section>
 
         <section className="settings-section">
+          <h3 className="settings-label">{t('settingsHelp', locale)}</h3>
+          <p className="settings-hint">{t('settingsContactHint', locale)}</p>
+          <a className="btn-secondary" href="mailto:support@scanplay.org">
+            {t('settingsContact', locale)}
+          </a>
+          {showInstallButton && (
+            <button type="button" className="btn-secondary" onClick={() => void handleInstall()}>
+              {t('installApp', locale)}
+            </button>
+          )}
+          {isInstalled && <p className="settings-hint">{t('installAppInstalled', locale)}</p>}
+        </section>
+
+        <section className="settings-section">
           <h3 className="settings-label">{t('about', locale)}</h3>
           <p className="about-text">{t('aboutText', locale)}</p>
         </section>
@@ -262,6 +321,15 @@ export function SettingsScreen({
       </main>
 
       <PrivacyPolicySheet open={privacyOpen} locale={locale} onClose={() => setPrivacyOpen(false)} />
+      <InstallAppSheet
+        open={installSheetOpen}
+        locale={locale}
+        platform={platform}
+        canNativeInstall={canNativeInstall}
+        isInAppBrowser={isInAppBrowser}
+        onClose={() => setInstallSheetOpen(false)}
+        onNativeInstall={install}
+      />
     </div>
   );
 }

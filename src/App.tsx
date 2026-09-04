@@ -1394,11 +1394,13 @@ export default function App() {
         } else {
           showToast(t('stripeSyncPending', loc));
         }
+        setFlow('pricing');
       };
       void runSync();
     } else if (stripe === 'cancel') {
       void import('./lib/stripeCheckout').then((m) => m.clearPendingCheckout());
       showToast(t('stripeCancel', loc));
+      setFlow('pricing');
     }
 
     params.delete('stripe');

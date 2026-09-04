@@ -4,7 +4,6 @@ import { usePlan } from '../hooks/usePlan';
 import { BrandDecor } from './BrandDecor';
 import { DeviceBadge } from './DeviceBadge';
 import { HomeDashboard } from './HomeDashboard';
-import { HudStreakStat } from './GamificationHUD';
 import { LandingPage } from './landing/LandingPage';
 import { LogoWordmark } from './Logo';
 import { NotificationCenter } from './NotificationCenter';
@@ -60,6 +59,7 @@ export function HomeScreen({
   onOpenAchievements,
   onOpenShop,
 }: HomeScreenProps) {
+  void streakPulseKey;
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
   const isDesktop = device.kind === 'desktop';
@@ -133,15 +133,7 @@ export function HomeScreen({
         </div>
         <div className="top-bar-actions">
           {loggedIn && (
-            <>
-              <HudStreakStat
-                locale={locale}
-                refreshKey={refreshKey}
-                streakPulseKey={streakPulseKey}
-                className="top-bar-streak"
-              />
-              <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
-            </>
+            <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
           )}
           {!loggedIn && canGuestScan() && isDesktop && (
             <span className="top-bar-guest-pill" title={t('guestScanBannerTitle', locale)}>
@@ -160,17 +152,6 @@ export function HomeScreen({
             onAuth={onAuth}
             className="guest-scan-banner--home-top"
             variant={isDesktop ? 'default' : 'mobile'}
-          />
-        )}
-
-        {loggedIn && (
-          <HomeDashboard
-            locale={locale}
-            refreshKey={refreshKey}
-            welcomeMessage={welcomeMessage}
-            onRefresh={onRefresh}
-            onOpenShop={onOpenShop}
-            onOpenAchievements={onOpenAchievements}
           />
         )}
 
@@ -266,6 +247,17 @@ export function HomeScreen({
             </div>
           )}
         </section>
+        )}
+
+        {loggedIn && (
+          <HomeDashboard
+            locale={locale}
+            refreshKey={refreshKey}
+            welcomeMessage={welcomeMessage}
+            onRefresh={onRefresh}
+            onOpenShop={onOpenShop}
+            onOpenAchievements={onOpenAchievements}
+          />
         )}
 
         {!loggedIn && canGuestScan() && onAuth && (

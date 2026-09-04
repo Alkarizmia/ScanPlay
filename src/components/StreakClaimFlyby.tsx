@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { StreakFlame } from './icons/StreakFlame';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -25,7 +26,7 @@ export function StreakClaimFlyby({ locale, streak, pulseKey }: StreakClaimFlybyP
     <div className="streak-claim-flyby" role="status" aria-live="polite">
       <div className="streak-claim-anchor">
         <span className="streak-claim-flame" aria-hidden="true">
-          🔥
+          <StreakFlame lit size={28} />
         </span>
         <span className="streak-claim-plus" aria-hidden="true">
           +1

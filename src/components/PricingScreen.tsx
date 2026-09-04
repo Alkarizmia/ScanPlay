@@ -35,7 +35,7 @@ interface PricingScreenProps {
 const PLANS: Plan[] = ['free', 'plus', 'pro'];
 
 const EXCLUSIVE_PERKS: Record<Plan, TranslationKey[]> = {
-  free: ['compareHistory'],
+            free: ['compareHistory', 'compareReplay'],
   plus: ['planPerkSpaced', 'planPerkSynthesis', 'planPerkStats'],
   pro: ['planPerkSpaced', 'planPerkSynthesis', 'planPerkStats', 'planPerkExam', 'planPerkShare'],
 };
@@ -52,7 +52,8 @@ const ROWS: CompareRow[] = [
   { labelKey: 'compareScans', free: `${PLAN_LIMITS.free.scansPerDay}/j`, plus: `${PLAN_LIMITS.plus.scansPerDay}/j`, pro: `${PLAN_LIMITS.pro.scansPerDay}/j` },
   { labelKey: 'compareWords', free: String(PLAN_LIMITS.free.maxWords), plus: String(PLAN_LIMITS.plus.maxWords), pro: String(PLAN_LIMITS.pro.maxWords) },
   { labelKey: 'comparePath', free: String(PLAN_LIMITS.free.pathSteps), plus: String(PLAN_LIMITS.plus.pathSteps), pro: String(PLAN_LIMITS.pro.pathSteps) },
-  { labelKey: 'compareHistory', free: '7', plus: '∞', pro: '∞' },
+  { labelKey: 'compareHistory', free: `${PLAN_LIMITS.free.historyMax}`, plus: '∞', pro: '∞' },
+  { labelKey: 'compareReplay', free: `${PLAN_LIMITS.free.historyReplay}`, plus: `${PLAN_LIMITS.plus.historyReplay}`, pro: `${PLAN_LIMITS.pro.historyReplay}` },
   { labelKey: 'compareSpaced', free: '·', plus: '✓', pro: '✓' },
   { labelKey: 'compareSynthesis', free: '2/m', plus: '15/m', pro: '40/m' },
   { labelKey: 'compareStats', free: '·', plus: '✓', pro: '✓' },

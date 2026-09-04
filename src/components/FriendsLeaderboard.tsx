@@ -9,6 +9,7 @@ import { isUserOnline } from '../lib/social/presence';
 import type { PublicPlayer } from '../lib/social/types';
 
 import { FriendPresenceAvatar } from './FriendPresenceAvatar';
+import { StreakFlame } from './icons/StreakFlame';
 
 import { t } from '../lib/i18n';
 
@@ -194,7 +195,9 @@ export function FriendsLeaderboard({ friends, locale, onOpenFriend }: FriendsLea
 
                 <span>{row.xp} XP</span>
 
-                <span>{row.streak} 🔥</span>
+                <span className="friends-leaderboard-streak">
+                  {row.streak} <StreakFlame lit={row.streak > 0} size={12} />
+                </span>
 
                 <span>{row.achievementCount} 🏆</span>
 

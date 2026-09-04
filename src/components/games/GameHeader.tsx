@@ -3,6 +3,7 @@ import { useGameHud } from '../../hooks/useGameHud';
 import { getGamification } from '../../lib/gamification';
 import { t } from '../../lib/i18n';
 import type { Locale } from '../../types';
+import { StreakFlame } from '../icons/StreakFlame';
 import { GameProgressBar, gameProgressPct } from './GameProgressBar';
 
 export { gameProgressPct };
@@ -70,7 +71,7 @@ export function GameHeader({
           )}
           {showStreak && (
             <span className="game-hud-chip game-hud-chip--streak" title={t('streak', locale)}>
-              <span aria-hidden="true">🔥</span> {streak}
+              <StreakFlame lit={streak > 0} size={14} /> {streak}
             </span>
           )}
           {showXp && (

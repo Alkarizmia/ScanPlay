@@ -8,6 +8,16 @@ import { canReplayHistoryEntry } from '../lib/historyReplay';
 import { resolveHistoryEntryMeta, getHistorySubjectLabel } from '../lib/historySubject';
 import { formatHistoryDuration, formatHistoryScore, getHistoryPathProgress } from '../lib/historyProgress';
 import { getHistoryCardThumbnail } from '../lib/subjectThumbnail';
+import {
+  HistoryChartIcon,
+  HistoryClockIcon,
+  HistoryDecksIcon,
+  HistoryExamIcon,
+  HistoryLockIcon,
+  HistoryPathIcon,
+  HistoryPlayIcon,
+  HistoryStarIcon,
+} from './icons/HistoryIcons';
 import { getDateLocale, t, type TranslationKey } from '../lib/i18n';
 import { resolvePathStepCount } from '../lib/stepProgress';
 import type { HistoryEntry, Locale, UpgradeReason } from '../types';
@@ -116,9 +126,9 @@ export function HistoryScreen({
     }
   };
 
-  const tabs: { id: HistoryView; labelKey: TranslationKey; icon: string }[] = [
-    { id: 'path', labelKey: 'historyTabDecks', icon: '📋' },
-    { id: 'exam', labelKey: 'historyTabExams', icon: '🎓' },
+  const tabs: { id: HistoryView; labelKey: TranslationKey; icon: 'path' | 'exam' }[] = [
+    { id: 'path', labelKey: 'historyTabDecks', icon: 'path' },
+    { id: 'exam', labelKey: 'historyTabExams', icon: 'exam' },
   ];
 
   const renderDeckCard = (entry: HistoryEntry) => {
@@ -138,7 +148,7 @@ export function HistoryScreen({
           {thumb ? (
             <img src={thumb} alt="" className="history-grid-thumb" />
           ) : (
-            <div className="history-grid-thumb history-grid-thumb--fallback">📄</div>
+            <div className="history-grid-thumb history-grid-thumb--fallback" />
           )}
           {scorePct != null && (
             <span className="history-score-badge">{formatHistoryScore(scorePct)}</span>
@@ -151,7 +161,7 @@ export function HistoryScreen({
           <p className="history-grid-date">{formatDate(entry.lastPlayedAt ?? entry.createdAt, locale)}</p>
           {entry.lastXpEarned != null && (
             <p className="history-grid-xp">
-              <span aria-hidden="true">⭐</span> +{entry.lastXpEarned} XP
+              <HistoryStarIcon className="history-inline-icon history-inline-icon--xp" /> +{entry.lastXpEarned} XP
             </p>
           )}
 
@@ -161,12 +171,13 @@ export function HistoryScreen({
             onClick={() => handleOpen(entry)}
           >
             {replayLocked ? (
-              <>🔒 {t('historyReplayLocked', locale)}</>
+              <>
+                <HistoryLockIcon className="history-inline-icon" />
+                {t('historyReplayLocked', locale)}
+              </>
             ) : (
               <>
-                <span className="history-review-play" aria-hidden="true">
-                  ▶
-                </span>
+                <HistoryPlayIcon className="history-inline-icon" />
                 {t('historyReview', locale)}
               </>
             )}
@@ -248,7 +259,7 @@ export function HistoryScreen({
           <div className="history-stats-row">
             <div className="history-stat-card">
               <span className="history-stat-icon" aria-hidden="true">
-                📚
+                <HistoryDecksIcon />
               </span>
               <div>
                 <strong>{entries.length}</strong>
@@ -258,7 +269,7 @@ export function HistoryScreen({
             {avgScore != null && (
               <div className="history-stat-card">
                 <span className="history-stat-icon" aria-hidden="true">
-                  📈
+                  <HistoryChartIcon />
                 </span>
                 <div>
                   <strong>{formatHistoryScore(avgScore)}</strong>
@@ -280,7 +291,9 @@ export function HistoryScreen({
                 setVisibleCount(PAGE_SIZE);
               }}
             >
-              <span aria-hidden="true">{item.icon}</span>
+              <span className="history-filter-icon" aria-hidden="true">
+                {item.icon === 'path' ? <HistoryPathIcon /> : <HistoryExamIcon />}
+              </span>
               {t(item.labelKey, locale)}
             </button>
           ))}
@@ -354,7 +367,7 @@ export function HistoryScreen({
                         {exam.thumbnail ? (
                           <img src={exam.thumbnail} alt="" className="history-grid-thumb" />
                         ) : (
-                          <div className="history-grid-thumb history-grid-thumb--fallback">🎓</div>
+                          <div className="history-grid-thumb history-grid-thumb--fallback history-grid-thumb--exam" />
                         )}
                         <span
                           className={`history-score-badge${exam.passed ? '' : ' history-score-badge--fail'}`}
@@ -367,7 +380,7 @@ export function HistoryScreen({
                         <h4 className="history-grid-title">{exam.deckTitle}</h4>
                         <p className="history-grid-date">{formatDate(exam.createdAt, locale)}</p>
                         <p className="history-grid-xp history-exam-duration">
-                          <span aria-hidden="true">⏱️</span>{' '}
+                          <HistoryClockIcon className="history-inline-icon" />{' '}
                           {t('historyExamPathTime', locale).replace('{time}', duration)}
                         </p>
                         <p className="history-exam-meta">

@@ -100,16 +100,18 @@ export async function ensureScanPlayProductLabel(
 
 type SessionParams = Stripe.Checkout.SessionCreateParams;
 
-export async function createScanPlayCheckoutSession(
+function isRetryableCheckoutError(message: string): boolean {
+  return /branding|icon|logo|url|file|adaptive.?pricing/i.test(message);
+}
+
+async function createCheckoutWithBrandingAttempts(
   stripe: Stripe,
   params: SessionParams,
   appUrl: string,
 ): Promise<Stripe.Checkout.Session> {
   const branding = await buildScanPlayCheckoutBranding(stripe, appUrl);
-  const withBranding: SessionParams = { ...params, branding_settings: branding };
-
   const attempts: SessionParams[] = [
-    withBranding,
+    { ...params, branding_settings: branding },
     {
       ...params,
       branding_settings: {
@@ -118,10 +120,7 @@ export async function createScanPlayCheckoutSession(
         background_color: SCANPLAY_BG,
       },
     },
-    {
-      ...params,
-      branding_settings: { display_name: 'ScanPlay' },
-    },
+    { ...params, branding_settings: { display_name: 'ScanPlay' } },
     params,
   ];
 
@@ -132,11 +131,31 @@ export async function createScanPlayCheckoutSession(
     } catch (err) {
       lastError = err;
       const message = err instanceof Error ? err.message : String(err);
-      if (!/branding|icon|logo|url|file/i.test(message)) throw err;
+      if (!isRetryableCheckoutError(message)) throw err;
     }
   }
 
   throw lastError;
+}
+
+export async function createScanPlayCheckoutSession(
+  stripe: Stripe,
+  params: SessionParams,
+  appUrl: string,
+): Promise<Stripe.Checkout.Session> {
+  const localized: SessionParams = {
+    ...params,
+    adaptive_pricing: { enabled: true },
+  };
+
+  try {
+    return await createCheckoutWithBrandingAttempts(stripe, localized, appUrl);
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    if (!/adaptive.?pricing/i.test(message)) throw err;
+    console.warn('createScanPlayCheckoutSession: adaptive pricing skipped', err);
+    return createCheckoutWithBrandingAttempts(stripe, params, appUrl);
+  }
 }
 
 const portalConfigCache: { id: string | null } = { id: null };

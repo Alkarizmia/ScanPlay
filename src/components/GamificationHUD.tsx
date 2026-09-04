@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { getCoins, isXpBoostActive } from '../lib/wallet';
+import { StreakFlame } from './icons/StreakFlame';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -53,7 +54,7 @@ export function HudStreakStat({
       title={t('streak', locale)}
     >
       <span className={`hud-duo-icon hud-flame ${streakActive ? 'lit' : ''}`} aria-hidden="true">
-        🔥
+        <StreakFlame lit={streakActive} size={18} />
       </span>
       <span className="hud-duo-val">{streak}</span>
     </div>

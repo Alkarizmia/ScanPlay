@@ -5,6 +5,7 @@ import { playSound } from '../lib/sounds';
 import { hapticBurst, hapticLevelUp } from '../lib/haptics';
 import { t } from '../lib/i18n';
 import { ScanPlayMascot } from './mascot/ScanPlayMascot';
+import { StreakFlame } from './icons/StreakFlame';
 import type { AchievementDef } from '../lib/achievements';
 import type { LessonSession, Locale } from '../types';
 
@@ -200,7 +201,7 @@ export function LessonCompleteScreen({
         <div className={`lesson-complete-chips${showRest ? ' is-in' : ''}`}>
           {streak > 0 && (
             <span className="game-hud-chip game-hud-chip--streak">
-              <span aria-hidden="true">🔥</span> {streak} · {t('streak', locale)}
+              <StreakFlame lit size={14} /> {streak} · {t('streak', locale)}
             </span>
           )}
           {bestCombo >= 3 && (

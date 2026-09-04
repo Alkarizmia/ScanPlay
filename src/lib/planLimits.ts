@@ -44,9 +44,9 @@ export const PLAN_PRICES = {
 } as const;
 
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 2, maxWords: 25, historyMax: 7, pathSteps: 10, synthesesPerMonth: 2 },
-  plus: { scansPerDay: 10, maxWords: 100, historyMax: Infinity, pathSteps: 20, synthesesPerMonth: 15 },
-  pro: { scansPerDay: 15, maxWords: 250, historyMax: Infinity, pathSteps: 30, synthesesPerMonth: 40 },
+  free: { scansPerDay: 2, maxWords: 25, historyMax: 7, historyReplay: 2, pathSteps: 10, synthesesPerMonth: 2 },
+  plus: { scansPerDay: 10, maxWords: 100, historyMax: Infinity, historyReplay: 4, pathSteps: 20, synthesesPerMonth: 15 },
+  pro: { scansPerDay: 15, maxWords: 250, historyMax: Infinity, historyReplay: 7, pathSteps: 30, synthesesPerMonth: 40 },
 } as const;
 
 export const DEFAULT_PATH_STEP_COUNT = PLAN_LIMITS.free.pathSteps;

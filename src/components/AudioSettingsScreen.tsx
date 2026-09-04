@@ -73,6 +73,20 @@ export function AudioSettingsScreen({ locale, onBack }: AudioSettingsScreenProps
 
           <div className="settings-row">
             <div className="audio-toggle-copy">
+              <span>{prefs.music ? t('musicOn', locale) : t('musicOff', locale)}</span>
+              <small>{t('musicHint', locale)}</small>
+            </div>
+            <button
+              type="button"
+              className={`toggle ${prefs.music ? 'on' : ''}`}
+              onClick={() => updatePref('music', !prefs.music)}
+              role="switch"
+              aria-checked={prefs.music}
+            />
+          </div>
+
+          <div className="settings-row">
+            <div className="audio-toggle-copy">
               <span>{prefs.vibration ? t('vibrationOn', locale) : t('vibrationOff', locale)}</span>
               <small>{t('vibrationHint', locale)}</small>
             </div>

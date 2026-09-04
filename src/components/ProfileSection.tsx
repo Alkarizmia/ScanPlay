@@ -19,6 +19,8 @@ import { createProfileAvatar } from '../lib/thumbnail';
 import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
 import type { Locale, TabId } from '../types';
+import { StreakFlame } from './icons/StreakFlame';
+import { NavIcon } from './icons/NavIcon';
 import { SubscriptionSection } from './SubscriptionSection';
 import { ProfilePseudoTuto } from './ProfilePseudoTuto';
 
@@ -194,7 +196,9 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
                 {stats.streak > 0 && (
                   <>
                     {' · '}
-                    <span className="profile-header-streak">🔥 {stats.streak}</span>
+                    <span className="profile-header-streak">
+                      <StreakFlame lit size={14} /> {stats.streak}
+                    </span>
                   </>
                 )}
               </p>
@@ -325,20 +329,32 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
         {onOpenTab && (
           <nav className="profile-shortcuts" aria-label={t('profileShortcuts', locale)}>
             <p className="profile-picker-label">{t('profileShortcuts', locale)}</p>
-            <div className="profile-shortcut-grid">
-              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('shop')}>
-                {t('navChest', locale)}
-              </button>
-              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('mistakes')}>
-                {t('mistakes', locale)}
-              </button>
-              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('achievements')}>
-                {t('achievements', locale)}
-              </button>
-              <button type="button" className="btn-secondary profile-shortcut-btn" onClick={() => onOpenTab('settings')}>
-                {t('settings', locale)}
-              </button>
-            </div>
+            <ul className="profile-shortcut-list">
+              {(
+                [
+                  { id: 'settings' as const, labelKey: 'settings' as const, featured: true },
+                  { id: 'shop' as const, labelKey: 'shopTitle' as const, featured: false },
+                  { id: 'mistakes' as const, labelKey: 'mistakes' as const, featured: false },
+                  { id: 'achievements' as const, labelKey: 'achievements' as const, featured: false },
+                ]
+              ).map((item) => (
+                <li key={item.id}>
+                  <button
+                    type="button"
+                    className={`profile-shortcut-row${item.featured ? ' profile-shortcut-row--featured' : ''}`}
+                    onClick={() => onOpenTab(item.id)}
+                  >
+                    <span className="profile-shortcut-icon" aria-hidden="true">
+                      <NavIcon tab={item.id} />
+                    </span>
+                    <span className="profile-shortcut-label">{t(item.labelKey, locale)}</span>
+                    <span className="profile-shortcut-chevron" aria-hidden="true">
+                      ›
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
           </nav>
         )}
 

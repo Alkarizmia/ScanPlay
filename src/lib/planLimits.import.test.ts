@@ -83,4 +83,10 @@ describe('import limits', () => {
     expect(PLAN_LIMITS.plus.pathSteps).toBe(20);
     expect(PLAN_LIMITS.pro.pathSteps).toBe(30);
   });
+
+  it('gives 2 / 4 / 7 replayable history decks by plan', () => {
+    expect(PLAN_LIMITS.free.historyReplay).toBe(2);
+    expect(PLAN_LIMITS.plus.historyReplay).toBe(4);
+    expect(PLAN_LIMITS.pro.historyReplay).toBe(7);
+  });
 });

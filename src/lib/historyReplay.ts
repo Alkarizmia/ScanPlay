@@ -1,13 +1,11 @@
 import { getHistory } from './history';
-import { getPlan } from './planLimits';
+import { getPlan, PLAN_LIMITS } from './planLimits';
 import type { Plan } from '../types';
 
 /** How many most recent history decks can be replayed. */
 export function getHistoryReplaySlots(plan?: Plan): number {
   const p = plan ?? getPlan();
-  if (p === 'pro') return 3;
-  if (p === 'plus') return 2;
-  return 1;
+  return PLAN_LIMITS[p].historyReplay;
 }
 
 export function canReplayHistoryEntry(entryId: string, plan?: Plan): boolean {

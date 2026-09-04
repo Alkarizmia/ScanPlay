@@ -237,7 +237,7 @@
 }
 
 [data-device='mobile'] .bottom-nav-item.active .bottom-nav-icon {
-  padding: 3px 8px;
+  padding: 5px 12px;
 }
 
 [data-device='mobile'] .nav-icon-svg {

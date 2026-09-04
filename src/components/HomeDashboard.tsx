@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { DailyChestOverlay } from './DailyChestOverlay';
+import { StreakFlame } from './icons/StreakFlame';
 import { MascotCoach } from './mascot/MascotCoach';
 import { ScanPlayChest } from './ScanPlayChest';
 import { getUnlockedCount } from '../lib/achievements';
@@ -61,31 +62,25 @@ export function HomeDashboard({
 
   return (
     <div className="home-dashboard" aria-label={t('homeProgressLabel', locale)}>
-      <article className="dash-card dash-card--streak">
-        <div className="dash-streak-body">
+      <article className="dash-card dash-card--welcome">
+        <div className="dash-welcome-row">
           <MascotCoach
             className="dash-streak-coach"
             expression={streak > 0 ? 'streak' : 'welcome'}
-            size={56}
-            message={welcomeMessage}
-            placement="bubble-above"
+            size={40}
+            placement="compact"
+            bubble={false}
             idle
             celebrate={streak > 0}
           />
-          <div className="dash-streak-copy">
-            <span className="dash-streak-label">
-              <span className="icon-glyph icon-glyph--sm" aria-hidden="true">
-                🔥
-              </span>{' '}
-              {t('dashStreakTitle', locale)}
-            </span>
-            <strong className="dash-streak-days">
-              {t('dashStreakDays', locale).replace('{count}', String(streak))}
-            </strong>
-            <p className="dash-streak-msg">
-              {streak > 0 ? t('dashStreakKeep', locale) : t('homeStreakCta', locale)}
-            </p>
-          </div>
+          <p className="dash-welcome-msg">{welcomeMessage}</p>
+          <span
+            className={`dash-streak-badge${streak > 0 ? ' dash-streak-badge--lit' : ''}`}
+            title={t('dashStreakTitle', locale)}
+          >
+            <StreakFlame lit={streak > 0} size={16} />
+            <span className="dash-streak-badge-val">{streak}</span>
+          </span>
         </div>
       </article>
 
