@@ -119,11 +119,18 @@ export function ReviewCardsScreen({
 
   return (
     <div className="screen flow-screen review-cards-screen">
+      <div className="import-ambient" aria-hidden="true">
+        <span className="import-ambient-orb import-ambient-orb--a" />
+        <span className="import-ambient-orb import-ambient-orb--b" />
+        <span className="import-ambient-orb import-ambient-orb--c" />
+        <span className="import-ambient-sheen" />
+      </div>
       <header className="top-bar review-cards-top">
         <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
           ←
         </button>
         <h2 className="screen-title">{t('reviewCardsTitle', locale)}</h2>
+        <span className="top-spacer" />
       </header>
 
       <main className="review-cards-main scroll-natural">

@@ -1,21 +1,3 @@
-const KEY = 'scanplay-mascot-intro-seen';
-
-export function hasSeenMascotIntro(): boolean {
-  try {
-    return localStorage.getItem(KEY) === '1';
-  } catch {
-    return true;
-  }
-}
-
-export function markMascotIntroSeen(): void {
-  try {
-    localStorage.setItem(KEY, '1');
-  } catch {
-    /* ignore */
-  }
-}
-
 const ABSENCE_KEY = 'scanplay-last-visit';
 const ABSENCE_MS = 3 * 24 * 60 * 60 * 1000;
 

@@ -52,6 +52,7 @@ export function PlanCard({ locale, refreshKey = 0, onUpgrade, onToast }: PlanCar
       : !loggedIn
         ? [{ ok: true, text: t('planPerkFreeAccountScans', locale) }]
         : []),
+    { ok: true, text: t(plan === 'free' ? 'planPerkScanAiFree' : 'planPerkScanAiPaid', locale) },
     { ok: true, text: `${limits.maxWords} ${t('planPerkWords', locale)}` },
     { ok: true, text: t('planPerkPath', locale).replace('{n}', String(limits.pathSteps)) },
     { ok: hasFeature('spaced', plan), text: t('planPerkSpaced', locale) },

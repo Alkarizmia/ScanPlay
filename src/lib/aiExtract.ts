@@ -43,8 +43,52 @@ function stripVocabDecorations(text: string): string {
     .trim();
 }
 
+function looksLikeVocabAtom(text: string): boolean {
+  const t = text.trim();
+  if (t.length < 2 || t.length > 55) return false;
+  if (looksLikeLatex(t) || isMathLikeText(t)) return false;
+  return t.split(/\s+/).length <= 6;
+}
+
+/** Split "riche (adj) / pauvre (adj)" × "rijk / arm" into two playable cards. */
+export function expandAlignedVocabPairs(pairs: AiExtractPair[]): AiExtractPair[] {
+  const out: AiExtractPair[] = [];
+  for (const p of pairs) {
+    if (looksLikeLatex(p.term) || looksLikeLatex(p.definition)) {
+      out.push(p);
+      continue;
+    }
+    const termParts = splitAlignedVocabCells(p.term);
+    const defParts = splitAlignedVocabCells(p.definition);
+    if (
+      termParts.length >= 2 &&
+      termParts.length === defParts.length &&
+      termParts.length <= 4 &&
+      termParts.every(looksLikeVocabAtom) &&
+      defParts.every(looksLikeVocabAtom)
+    ) {
+      for (let i = 0; i < termParts.length; i += 1) {
+        out.push({ ...p, term: termParts[i], definition: defParts[i] });
+      }
+      continue;
+    }
+    out.push(p);
+  }
+  return out;
+}
+
+function splitAlignedVocabCells(text: string): string[] {
+  const stripped = stripVocabDecorations(text.trim());
+  if (!/\s+[\/|]\s+/.test(stripped)) return [stripped];
+  return stripped
+    .split(/\s+[\/|]\s+/)
+    .map((part) => part.trim())
+    .filter(Boolean);
+}
+
 export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
-  const mapped = pairs
+  const source = options?.mathSheet ? pairs : expandAlignedVocabPairs(pairs);
+  const mapped = source
     .filter((p) => p.term?.trim() && p.definition?.trim())
     .map((p) => {
       const scientific = options?.mathSheet || isScientificPair(p);
@@ -143,33 +187,47 @@ export function parseAiExtractResponse(raw: unknown, fallbackSheetType?: SheetTy
   };
 }
 
-function loadImageForAi(file: File, maxWidth = 1200): Promise<{ base64: string; mimeType: string }> {
+const AI_SCAN_MAX_SIDE = 2800;
+const AI_SCAN_MAX_PIXELS = 8_000_000;
+const AI_SCAN_JPEG_QUALITY = 0.93;
+
+function scaleForAi(width: number, height: number): { w: number; h: number } {
+  const sideScale = Math.min(1, AI_SCAN_MAX_SIDE / Math.max(width, height, 1));
+  const pixelScale = Math.min(1, Math.sqrt(AI_SCAN_MAX_PIXELS / Math.max(1, width * height)));
+  const scale = Math.min(sideScale, pixelScale);
+  return {
+    w: Math.max(1, Math.round(width * scale)),
+    h: Math.max(1, Math.round(height * scale)),
+  };
+}
+
+async function decodeSheetImage(
+  file: File,
+): Promise<{ source: CanvasImageSource; width: number; height: number; cleanup: () => void }> {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      return {
+        source: bitmap,
+        width: bitmap.width,
+        height: bitmap.height,
+        cleanup: () => bitmap.close(),
+      };
+    } catch {
+      /* Image() fallback for older browsers */
+    }
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
     img.onload = () => {
-      const scale = Math.min(1, maxWidth / img.width);
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        URL.revokeObjectURL(url);
-        reject(new Error('Canvas unavailable'));
-        return;
-      }
-      ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      const mimeType = 'image/jpeg';
-      const dataUrl = canvas.toDataURL(mimeType, maxWidth >= 1600 ? 0.9 : 0.85);
-      const base64 = dataUrl.split(',')[1] ?? '';
-      if (!base64) {
-        reject(new Error('Encode failed'));
-        return;
-      }
-      resolve({ base64, mimeType });
+      resolve({
+        source: img,
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
+        cleanup: () => URL.revokeObjectURL(url),
+      });
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
@@ -177,6 +235,28 @@ function loadImageForAi(file: File, maxWidth = 1200): Promise<{ base64: string; 
     };
     img.src = url;
   });
+}
+
+async function loadImageForAi(file: File): Promise<{ base64: string; mimeType: string }> {
+  const decoded = await decodeSheetImage(file);
+  try {
+    const { w, h } = scaleForAi(decoded.width, decoded.height);
+    const canvas = document.createElement('canvas');
+    canvas.width = w;
+    canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Canvas unavailable');
+    ctx.filter = 'contrast(1.14) saturate(1.04) brightness(1.03)';
+    ctx.drawImage(decoded.source, 0, 0, w, h);
+    ctx.filter = 'none';
+    const mimeType = 'image/jpeg';
+    const dataUrl = canvas.toDataURL(mimeType, AI_SCAN_JPEG_QUALITY);
+    const base64 = dataUrl.split(',')[1] ?? '';
+    if (!base64) throw new Error('Encode failed');
+    return { base64, mimeType };
+  } finally {
+    decoded.cleanup();
+  }
 }
 
 export function isAiScanEnabled(): boolean {
@@ -199,10 +279,7 @@ export async function analyzeSheetWithAi(
   } = await supabase.auth.getSession();
   if (!session) return null;
 
-  const { base64, mimeType } = await loadImageForAi(
-    file,
-    sheetType === 'vocab' ? 1800 : 1600,
-  );
+  const { base64, mimeType } = await loadImageForAi(file);
 
   const maxPairs = getMaxWords();
 

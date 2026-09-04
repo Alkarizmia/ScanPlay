@@ -1,4 +1,4 @@
-import type { BillingCycle, Plan, UpgradeReason } from '../types';
+import type { BillingCycle, Locale, Plan, UpgradeReason } from '../types';
 import { isLoggedIn } from './auth';
 import { isLikelyImageFile } from './droppedFiles';
 import { canGuestScan } from './guestTrial';
@@ -39,14 +39,14 @@ function notifyPlanChanged(): void {
 }
 
 export const PLAN_PRICES = {
-  plus: { monthly: 4.99, annual: 49.99 },
-  pro: { monthly: 9.99, annual: 99.99 },
+  plus: { monthly: 12.99, annual: 129 },
+  pro: { monthly: 19.99, annual: 199 },
 } as const;
 
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 3, maxWords: 25, historyMax: 7, pathSteps: 10, synthesesPerMonth: 2 },
-  plus: { scansPerDay: 15, maxWords: 100, historyMax: Infinity, pathSteps: 20, synthesesPerMonth: 15 },
-  pro: { scansPerDay: 30, maxWords: 250, historyMax: Infinity, pathSteps: 30, synthesesPerMonth: 40 },
+  free: { scansPerDay: 2, maxWords: 25, historyMax: 7, pathSteps: 10, synthesesPerMonth: 2 },
+  plus: { scansPerDay: 10, maxWords: 100, historyMax: Infinity, pathSteps: 20, synthesesPerMonth: 15 },
+  pro: { scansPerDay: 15, maxWords: 250, historyMax: Infinity, pathSteps: 30, synthesesPerMonth: 40 },
 } as const;
 
 export const DEFAULT_PATH_STEP_COUNT = PLAN_LIMITS.free.pathSteps;
@@ -205,6 +205,22 @@ export function getUpgradeReasonForScan(): UpgradeReason | null {
   }
   if (!canScan()) return 'scans';
   return null;
+}
+
+/** How much Plus/Pro multiply Free quotas (shown on the pricing cards). */
+export function planGapVsFree(plan: Plan): { scanFactor: number; wordFactor: number } | null {
+  if (plan === 'free') return null;
+  return {
+    scanFactor: PLAN_LIMITS[plan].scansPerDay / PLAN_LIMITS.free.scansPerDay,
+    wordFactor: PLAN_LIMITS[plan].maxWords / PLAN_LIMITS.free.maxWords,
+  };
+}
+
+export function formatGapFactor(n: number, locale: Locale): string {
+  if (Number.isInteger(n)) return String(n);
+  const rounded = Math.round(n * 10) / 10;
+  const sep = locale === 'en' ? '.' : ',';
+  return String(rounded).replace('.', sep);
 }
 
 export function planLabel(plan: Plan): string {

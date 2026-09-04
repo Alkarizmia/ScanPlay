@@ -1,12 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
 
-import { BrandDecor } from './BrandDecor';
 import { GuestScanBanner } from './GuestScanBanner';
 import { SheetTypePicker } from './SheetTypePicker';
 import { TrainingFocusPicker } from './TrainingFocusPicker';
 import { collectDroppedImageFiles, isLikelyImageFile } from '../lib/droppedFiles';
-import { clampImagesForImport, getMaxImagesPerImport, PLAN_LIMITS } from '../lib/planLimits';
-import { usePlan } from '../hooks/usePlan';
+import { clampImagesForImport, getMaxImagesPerImport } from '../lib/planLimits';
 import { isLoggedIn } from '../lib/auth';
 import { canGuestScan } from '../lib/guestTrial';
 import { isTrainingFocusApplicable } from '../lib/trainingFocus';
@@ -56,12 +54,11 @@ export function ImportScreen({
   const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const appendNextPickRef = useRef(false);
-  const [dragOver, setDragOver] = useState<'file' | 'zone' | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const [picked, setPicked] = useState<File[]>(initialFiles ?? []);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
-  const plan = usePlan();
   const maxPhotos = getMaxImagesPerImport();
   const guestMode = !isLoggedIn();
   const guestTrial = guestMode && canGuestScan();
@@ -122,23 +119,23 @@ export function ImportScreen({
     e.target.value = '';
   };
 
-  const handleDragOver = (e: React.DragEvent, zone: 'file' | 'zone') => {
+  const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     e.dataTransfer.dropEffect = 'copy';
-    setDragOver(zone);
+    setDragOver(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     const next = e.relatedTarget as Node | null;
     if (next && e.currentTarget.contains(next)) return;
-    setDragOver(null);
+    setDragOver(false);
   };
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    setDragOver(null);
+    setDragOver(false);
     const images = await collectDroppedImageFiles(e.dataTransfer);
     if (images.length === 0) {
       onToast?.(t('importDropNoImages', locale));
@@ -190,8 +187,17 @@ export function ImportScreen({
 
   return (
     <div
-      className={`screen flow-screen import-screen${isDesktop ? ' import-screen--desktop' : ''}${step === 'configure' ? ' import-screen--configure' : ''}${step === 'photos' ? ' import-screen--photos' : ''}`}
+      className={`screen flow-screen import-screen${isDesktop ? ' import-screen--desktop' : ''}${step === 'pick' ? ' import-screen--pick' : ''}${step === 'configure' ? ' import-screen--configure' : ''}${step === 'photos' ? ' import-screen--photos' : ''}`}
     >
+      {(step === 'pick' || step === 'configure') && (
+        <div className="import-ambient" aria-hidden="true">
+          <span className="import-ambient-orb import-ambient-orb--a" />
+          <span className="import-ambient-orb import-ambient-orb--b" />
+          <span className="import-ambient-orb import-ambient-orb--c" />
+          <span className="import-ambient-sheen" />
+        </div>
+      )}
+
       <header className="top-bar">
         <button type="button" className="icon-btn" onClick={handleBack} aria-label={t('back', locale)}>
           ←
@@ -201,7 +207,7 @@ export function ImportScreen({
       </header>
 
       {step === 'pick' && (
-        <main className="import-main scroll-natural">
+        <main className="import-main import-main--pick scroll-natural">
           {showGuestBanner && <GuestScanBanner locale={locale} onAuth={onAuth} compact />}
 
           {importError && (
@@ -210,63 +216,45 @@ export function ImportScreen({
             </div>
           )}
 
-          <ul className="import-plan-words" aria-label={t('importPlanWordsTitle', locale)}>
-            {(['free', 'plus', 'pro'] as const).map((tier) => (
-              <li key={tier} className={plan === tier ? 'is-current' : undefined}>
-                {t(
-                  tier === 'free'
-                    ? 'importPlanWordsFree'
-                    : tier === 'plus'
-                      ? 'importPlanWordsPlus'
-                      : 'importPlanWordsPro',
-                  locale,
-                ).replace('{n}', String(PLAN_LIMITS[tier].maxWords))}
-              </li>
-            ))}
-          </ul>
+          {!isDesktop && (
+            <div className="import-pick-actions">
+              <button type="button" className="import-card import-card--primary" onClick={() => openCamera(false)}>
+                <span className="import-icon" aria-hidden="true">
+                  📸
+                </span>
+                <span className="import-title">{t('importCamera', locale)}</span>
+                <span className="import-desc">{t('importCameraDesc', locale)}</span>
+              </button>
 
-          <button type="button" className="import-card import-card--primary" onClick={() => openCamera(false)}>
-            <span className="import-icon">📸</span>
-            <span className="import-title">{t('importCamera', locale)}</span>
-            <span className="import-desc">{t('importCameraDesc', locale)}</span>
-          </button>
+              <button type="button" className="import-card" onClick={() => openFilePicker(false)}>
+                <span className="import-icon" aria-hidden="true">
+                  📁
+                </span>
+                <span className="import-title">{t('importFile', locale)}</span>
+                <span className="import-desc">{t('importFileDesc', locale)}</span>
+              </button>
+            </div>
+          )}
 
-          <button
-            type="button"
-            className={`import-card${dragOver === 'file' ? ' import-card--drop-active' : ''}`}
-            onClick={() => openFilePicker(false)}
-            onDragEnter={(e) => handleDragOver(e, 'file')}
-            onDragOver={(e) => handleDragOver(e, 'file')}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-          >
-            <span className="import-icon">📁</span>
-            <span className="import-title">{t('importFile', locale)}</span>
-            <span className="import-desc">
-              {isDesktop ? t('importFileDescDesktop', locale) : t('importFileDesc', locale)}
-            </span>
-          </button>
-
-          <div
-            className={`import-dropzone ${dragOver === 'zone' ? 'import-dropzone--active' : ''}`}
-            onDragEnter={(e) => handleDragOver(e, 'zone')}
-            onDragOver={(e) => handleDragOver(e, 'zone')}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onClick={() => openFilePicker(false)}
-            role="button"
-            tabIndex={0}
-            onKeyDown={(e) => {
-              if (e.key === 'Enter' || e.key === ' ') openFilePicker(false);
-            }}
-          >
+          {isDesktop && (
+            <button
+              type="button"
+              className={`import-dropzone${dragOver ? ' import-dropzone--active' : ''}`}
+              onClick={() => openFilePicker(false)}
+              onDragEnter={handleDragOver}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={(e) => void handleDrop(e)}
+            >
+              <span className="import-dropzone-glow" aria-hidden="true" />
               <span className="import-dropzone-icon" aria-hidden="true">
                 📄
               </span>
               <span className="import-dropzone-title">{t('importDrop', locale)}</span>
               <span className="import-dropzone-sub">{t('importDropOr', locale)}</span>
               <span className="import-frame-hint">{t('importFrameHint', locale)}</span>
-            </div>
+            </button>
+          )}
         </main>
       )}
 
@@ -348,11 +336,7 @@ export function ImportScreen({
 
       {step === 'configure' && (
         <main className="import-config-main scroll-natural">
-          <BrandDecor />
-          <div className="import-config-center premium-card">
-            <span className="import-config-badge">
-              {t('importPicked', locale).replace('{count}', String(picked.length))}
-            </span>
+          <div className="import-config-center">
             <h3 className="import-config-heading">{t('sheetTypeTitle', locale)}</h3>
             <p className="import-config-sub">{t('importConfigureSub', locale)}</p>
 

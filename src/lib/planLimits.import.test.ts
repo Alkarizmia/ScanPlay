@@ -63,7 +63,7 @@ describe('import limits', () => {
   it('allows logged-in free users up to remaining daily scans', () => {
     vi.mocked(isLoggedIn).mockReturnValue(true);
     localStorage.setItem('scanplay-scans-day', JSON.stringify({ [new Date().toISOString().slice(0, 10)]: 1 }));
-    expect(getMaxImagesPerImport()).toBe(2);
+    expect(getMaxImagesPerImport()).toBe(1);
   });
 
   it('allows 25 / 100 / 250 words per scan by plan', () => {
@@ -72,10 +72,10 @@ describe('import limits', () => {
     expect(PLAN_LIMITS.pro.maxWords).toBe(250);
   });
 
-  it('caps daily scans at 3 / 15 / 30 by plan', () => {
-    expect(PLAN_LIMITS.free.scansPerDay).toBe(3);
-    expect(PLAN_LIMITS.plus.scansPerDay).toBe(15);
-    expect(PLAN_LIMITS.pro.scansPerDay).toBe(30);
+      it('caps daily scans at 2 / 10 / 15 by plan', () => {
+    expect(PLAN_LIMITS.free.scansPerDay).toBe(2);
+    expect(PLAN_LIMITS.plus.scansPerDay).toBe(10);
+    expect(PLAN_LIMITS.pro.scansPerDay).toBe(15);
   });
 
   it('gives 10 / 20 / 30 path buttons by plan', () => {

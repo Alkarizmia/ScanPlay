@@ -77,6 +77,16 @@ describe('aiExtract', () => {
     expect(mapped.find((p) => p.term === 'Cat')?.definition.toLowerCase()).toBe('chat');
   });
 
+  it('keeps extraction warnings from vision JSON', () => {
+    const result = parseAiExtractResponse({
+      readable: true,
+      sheetType: 'vocab',
+      pairs: [{ term: 'cat', definition: 'chat' }],
+      warnings: ['extraction_truncated', 'bas de page flou'],
+    });
+    expect(result?.warnings).toEqual(['extraction_truncated', 'bas de page flou']);
+  });
+
   it('rejects invalid payload', () => {
     expect(parseAiExtractResponse(null)).toBeNull();
     expect(parseAiExtractResponse({ pairs: [] })).toBeNull();
@@ -109,5 +119,32 @@ describe('aiExtract', () => {
     ]);
     expect(mapped[0]?.term).toBe('de zoon');
     expect(mapped[0]?.definition).toBe('le fils');
+  });
+
+  it('splits opposite rows into one card per word and strips phonetics', () => {
+    const mapped = mapAiPairsToWordPairs([
+      {
+        term: 'riche (adj) / pauvre (adj)',
+        definition: 'rijk [rɛjk] / arm [arm]',
+        termLang: 'fr',
+        defLang: 'nl',
+        confidence: 'high',
+      },
+      {
+        term: 'séparément (adv)',
+        definition: "apart [a'part]",
+        termLang: 'fr',
+        defLang: 'nl',
+        confidence: 'high',
+      },
+    ]);
+    expect(mapped).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ term: 'riche (adj)', definition: 'rijk' }),
+        expect.objectContaining({ term: 'pauvre (adj)', definition: 'arm' }),
+        expect.objectContaining({ term: 'séparément (adv)', definition: 'apart' }),
+      ]),
+    );
+    expect(mapped).toHaveLength(3);
   });
 });

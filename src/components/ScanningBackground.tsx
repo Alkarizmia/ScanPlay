@@ -1,10 +1,11 @@
-/** Lightweight CSS-only animated background for loading (mobile-safe) */
+/** GPU-friendly orbs: transform-only, clipped, no layout shift. */
 export function ScanningBackground() {
   return (
-    <div className="scanning-bg" aria-hidden="true">
-      <span className="scanning-orb scanning-orb-a" />
-      <span className="scanning-orb scanning-orb-b" />
-      <span className="scanning-orb scanning-orb-c" />
+    <div className="import-ambient scanning-bg" aria-hidden="true">
+      <span className="import-ambient-orb import-ambient-orb--a" />
+      <span className="import-ambient-orb import-ambient-orb--b" />
+      <span className="import-ambient-orb import-ambient-orb--c" />
+      <span className="import-ambient-sheen" />
     </div>
   );
 }

@@ -47,8 +47,6 @@ import { ShopScreen } from './components/ShopScreen';
 import { Toast } from './components/Toast';
 import { UpgradeModal } from './components/UpgradeModal';
 import { MascotCorner } from './components/mascot/MascotCorner';
-import { MascotFirstLaunch } from './components/mascot/MascotFirstLaunch';
-import { hasSeenMascotIntro } from './lib/mascot/firstLaunch';
 import { shouldWelcomeBack } from './lib/mascot/firstLaunch';
 import {
   mascotReactBadge,
@@ -261,7 +259,6 @@ export default function App() {
   const lessonSessionRef = useRef<LessonSession | null>(null);
   lessonSessionRef.current = lessonSession;
   const [navMoreOpen, setNavMoreOpen] = useState(false);
-  const [showMascotIntro, setShowMascotIntro] = useState(() => !hasSeenMascotIntro());
   const [authReady, setAuthReady] = useState(() => isAuthReady());
   const welcomeBackChecked = useRef(false);
   const wasLoggedInRef = useRef(isLoggedIn());
@@ -1721,9 +1718,6 @@ export default function App() {
       <Toast message={toast} />
       <AdConsentBanner locale={locale} delayMs={2500} />
       <MascotCorner locale={locale} enabled={flow === 'playing' || flow === 'lesson'} />
-      {showMascotIntro && !waitingForSession && isLoggedIn() && (
-        <MascotFirstLaunch locale={locale} onDone={() => setShowMascotIntro(false)} />
-      )}
 
       {showBottomNav && (
         <>

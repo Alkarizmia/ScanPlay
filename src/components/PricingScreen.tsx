@@ -4,8 +4,10 @@ import { usePlan } from '../hooks/usePlan';
 import { isLoggedIn } from '../lib/auth';
 import { t, type TranslationKey } from '../lib/i18n';
 import {
+  formatGapFactor,
   getBillingCycle,
   PLAN_LIMITS,
+  planGapVsFree,
   planMonthlyEquivalent,
   planPrice,
   setBillingCycle,
@@ -32,10 +34,10 @@ interface PricingScreenProps {
 
 const PLANS: Plan[] = ['free', 'plus', 'pro'];
 
-const PLAN_HIGHLIGHTS: Record<Plan, TranslationKey[]> = {
-  free: ['compareScans', 'compareWords', 'comparePath', 'compareHistory'],
-  plus: ['compareScans', 'compareWords', 'comparePath', 'compareHistory', 'planPerkSpaced', 'planPerkSynthesis', 'planPerkStats'],
-  pro: ['compareScans', 'compareWords', 'comparePath', 'compareHistory', 'planPerkSpaced', 'planPerkSynthesis', 'planPerkStats', 'planPerkExam', 'planPerkShare'],
+const EXCLUSIVE_PERKS: Record<Plan, TranslationKey[]> = {
+  free: ['compareHistory'],
+  plus: ['planPerkSpaced', 'planPerkSynthesis', 'planPerkStats'],
+  pro: ['planPerkSpaced', 'planPerkSynthesis', 'planPerkStats', 'planPerkExam', 'planPerkShare'],
 };
 
 type CompareRow = {
@@ -46,6 +48,7 @@ type CompareRow = {
 };
 
 const ROWS: CompareRow[] = [
+  { labelKey: 'compareScanAi', free: 'gpt-4.1', plus: 'gpt-5.5', pro: 'gpt-5.5' },
   { labelKey: 'compareScans', free: `${PLAN_LIMITS.free.scansPerDay}/j`, plus: `${PLAN_LIMITS.plus.scansPerDay}/j`, pro: `${PLAN_LIMITS.pro.scansPerDay}/j` },
   { labelKey: 'compareWords', free: String(PLAN_LIMITS.free.maxWords), plus: String(PLAN_LIMITS.plus.maxWords), pro: String(PLAN_LIMITS.pro.maxWords) },
   { labelKey: 'comparePath', free: String(PLAN_LIMITS.free.pathSteps), plus: String(PLAN_LIMITS.plus.pathSteps), pro: String(PLAN_LIMITS.pro.pathSteps) },
@@ -73,15 +76,9 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
     void refreshPlanFromStripe();
   }, [refreshKey]);
 
-  const orderedPlans = useMemo(() => {
-    if (current === 'free') return PLANS;
-    return [current, ...PLANS.filter((p) => p !== current)];
-  }, [current]);
-
-  const upgradeTarget = useMemo<Plan | null>(() => {
-    if (current === 'free') return 'plus';
-    if (current === 'plus') return 'pro';
-    return null;
+  const paidPlans = useMemo<Plan[]>(() => {
+    if (current === 'pro') return ['pro', 'plus'];
+    return ['plus', 'pro'];
   }, [current]);
 
   const handleBillingCycle = (cycle: BillingCycle) => {
@@ -154,16 +151,14 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
       }
       return t('current', locale);
     }
-    return t('select', locale);
+    return t('planSelectNamed', locale).replace('{plan}', planTitle(plan, locale));
   };
 
   const planButtonDisabled = (plan: Plan) => {
     if (plan === current && current === 'free') return true;
     if (plan === 'free' && current !== 'free') return true;
     if (checkoutLoading) return true;
-    return (
-      isStripeCheckoutEnabled() && plan !== 'free' && !canCheckoutPlan(current, plan)
-    );
+    return isStripeCheckoutEnabled() && plan !== 'free' && !canCheckoutPlan(current, plan);
   };
 
   return (
@@ -177,56 +172,101 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
       </header>
 
       <main className="pricing-main scroll-natural">
+        <p className="pricing-intro">{t('pricingIntro', locale)}</p>
         <BillingCycleToggle locale={locale} value={billingCycle} onChange={handleBillingCycle} />
 
-        {current !== 'free' && (
+        {current === 'free' ? (
+          <p className="pricing-free-status" role="status">
+            {t('planCurrentFreeHint', locale).replace('{scans}', String(PLAN_LIMITS.free.scansPerDay))}
+          </p>
+        ) : (
           <p className="pricing-active-plan" role="status">
             {t('yourPlan', locale)} : <strong>{planTitle(current, locale)}</strong>
           </p>
         )}
 
         <div className="pricing-cards">
-          {orderedPlans.map((plan) => (
-            <div key={plan} className={`pricing-card ${plan === current ? 'current' : ''}`}>
-              <div className="pricing-header">
-                <div>
-                  <h3>{planTitle(plan, locale)}</h3>
-                  {plan === current && <span className="pricing-current-pill">{t('current', locale)}</span>}
-                </div>
-                <div className="pricing-price-block">
-                  <span className="pricing-price">
-                    {planPrice(plan, billingCycle)}
-                    {plan !== 'free' && <small>{priceSuffix(plan)}</small>}
-                  </span>
-                  {billingCycle === 'annual' && plan !== 'free' && (
-                    <span className="pricing-equivalent">
-                      {t('billingEquivalentMonthly', locale).replace(
-                        '{price}',
-                        planMonthlyEquivalent(plan) ?? '',
-                      )}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <ul className="pricing-highlights">
-                {PLAN_HIGHLIGHTS[plan].map((key) => (
-                  <li key={key}>{t(key, locale)}</li>
-                ))}
-              </ul>
-              <button
-                type="button"
-                className={
-                  plan === current && current === 'free'
-                    ? 'btn-secondary pricing-select-btn'
-                    : 'btn-primary pricing-select-btn'
-                }
-                disabled={planButtonDisabled(plan)}
-                onClick={() => void handlePlanAction(plan)}
+          {paidPlans.map((plan) => {
+            const limits = PLAN_LIMITS[plan];
+            const gap = planGapVsFree(plan);
+            const featured = plan === 'plus' && current === 'free';
+            const isCurrent = plan === current;
+            return (
+              <article
+                key={plan}
+                className={`pricing-card pricing-card--${plan}${featured ? ' pricing-card--featured' : ''}${isCurrent ? ' current' : ''}`}
               >
-                {planButtonLabel(plan)}
-              </button>
-            </div>
-          ))}
+                <div className="pricing-header">
+                  <div className="pricing-header-copy">
+                    <div className="pricing-title-row">
+                      <h3>{planTitle(plan, locale)}</h3>
+                      {featured && <span className="pricing-popular">{t('planPopular', locale)}</span>}
+                      {isCurrent && <span className="pricing-current-pill">{t('current', locale)}</span>}
+                    </div>
+                    <p className="pricing-tagline">
+                      {t(plan === 'plus' ? 'planPlusTagline' : 'planProTagline', locale)}
+                    </p>
+                  </div>
+                  <div className="pricing-price-block">
+                    <span className="pricing-price">
+                      {planPrice(plan, billingCycle)}
+                      <small>{priceSuffix(plan)}</small>
+                    </span>
+                    {billingCycle === 'annual' && (
+                      <span className="pricing-equivalent">
+                        {t('billingEquivalentMonthly', locale).replace(
+                          '{price}',
+                          planMonthlyEquivalent(plan) ?? '',
+                        )}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pricing-metrics">
+                  <div className="pricing-metric">
+                    <strong>{limits.scansPerDay}</strong>
+                    <span>{t('planCardScansLabel', locale)}</span>
+                  </div>
+                  <div className="pricing-metric">
+                    <strong>{limits.maxWords}</strong>
+                    <span>{t('planCardWordsLabel', locale)}</span>
+                  </div>
+                  <div className="pricing-metric">
+                    <strong>GPT-5.5</strong>
+                    <span>{t('planCardAiLabel', locale)}</span>
+                  </div>
+                </div>
+
+                {gap && (
+                  <div className="pricing-gap-chips">
+                    <span>
+                      ×{formatGapFactor(gap.scanFactor, locale)} {t('planCardScansLabel', locale)}
+                    </span>
+                    <span>
+                      ×{formatGapFactor(gap.wordFactor, locale)} {t('planCardWordsLabel', locale)}
+                    </span>
+                    <span>vs Free</span>
+                  </div>
+                )}
+
+                <ul className="pricing-highlights">
+                  {EXCLUSIVE_PERKS[plan].map((key) => (
+                    <li key={key}>{t(key, locale)}</li>
+                  ))}
+                </ul>
+
+                <button
+                  type="button"
+                  className={isCurrent ? 'btn-secondary pricing-select-btn' : 'btn-primary pricing-select-btn'}
+                  disabled={planButtonDisabled(plan)}
+                  onClick={() => void handlePlanAction(plan)}
+                >
+                  {planButtonLabel(plan)}
+                </button>
+              </article>
+            );
+          })}
         </div>
 
         <section className="pricing-compare-section">
@@ -264,22 +304,6 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
           <p className="pricing-upgrade-policy">{t('subscriptionUpgradeBlockedHint', locale)}</p>
         )}
       </main>
-
-      {upgradeTarget && (
-        <div className="pricing-sticky-cta">
-          <button
-            type="button"
-            className="btn-primary btn-lg"
-            onClick={() => void select(upgradeTarget)}
-            disabled={
-              checkoutLoading ||
-              (isStripeCheckoutEnabled() && !canCheckoutPlan(current, upgradeTarget))
-            }
-          >
-            {t('select', locale)} {planTitle(upgradeTarget, locale)}
-          </button>
-        </div>
-      )}
     </div>
   );
 }

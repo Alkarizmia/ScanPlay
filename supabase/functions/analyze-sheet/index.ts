@@ -6,8 +6,17 @@ import {
   incrementScanCount,
   PLAN_LIMITS,
 } from '../_shared/planQuotas.ts';
-import { resolveScanModel } from '../_shared/openaiModels.ts';
-import { SCANPLAY_AI_SYSTEM_PROMPT, buildScanUserPrompt } from '../_shared/scanPrompt.ts';
+import {
+  isReasoningVisionModel,
+  resolveScanModel,
+  scanImageDetail,
+  scanReasoningEffort,
+} from '../_shared/openaiModels.ts';
+import {
+  SCANPLAY_AI_SYSTEM_PROMPT,
+  SCANPLAY_EXTRACT_JSON_SCHEMA,
+  buildScanUserPrompt,
+} from '../_shared/scanPrompt.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,6 +28,83 @@ interface AnalyzeBody {
   mimeType?: string;
   sheetType?: string;
   maxPairs?: number;
+}
+
+function outputBudget(sheetType: string, maxPairs: number): number {
+  const scientific = sheetType === 'math' || sheetType === 'notes' || sheetType === 'definitions';
+  if (scientific) return 12000;
+  return Math.min(32000, 2000 + maxPairs * 90);
+}
+
+function buildOpenAiBody(
+  model: string,
+  sheetType: string,
+  maxPairs: number,
+  imageBase64: string,
+  mimeType: string,
+  imageDetail: 'high' | 'original',
+) {
+  const userPrompt = buildScanUserPrompt(sheetType, maxPairs);
+  const reasoning = isReasoningVisionModel(model);
+  const body: Record<string, unknown> = {
+    model,
+    response_format: {
+      type: 'json_schema',
+      json_schema: SCANPLAY_EXTRACT_JSON_SCHEMA,
+    },
+    messages: [
+      { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: userPrompt },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:${mimeType};base64,${imageBase64}`,
+              detail: imageDetail,
+            },
+          },
+        ],
+      },
+    ],
+  };
+
+  if (reasoning) {
+    body.max_completion_tokens = outputBudget(sheetType, maxPairs);
+    body.reasoning_effort = scanReasoningEffort(sheetType);
+  } else {
+    body.temperature = 0.1;
+    body.max_tokens = outputBudget(sheetType, maxPairs);
+  }
+
+  return body;
+}
+
+async function requestOpenAi(
+  openaiKey: string,
+  body: Record<string, unknown>,
+): Promise<{ ok: boolean; status: number; text: string }> {
+  const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${openaiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+  const text = await openaiRes.text();
+  return { ok: openaiRes.ok, status: openaiRes.status, text };
+}
+
+function shouldRetryWithoutOriginal(errText: string): boolean {
+  const lower = errText.toLowerCase();
+  return (
+    lower.includes('image_url.detail') ||
+    lower.includes("'original'") ||
+    lower.includes('"original"') ||
+    (lower.includes('detail') && lower.includes('invalid'))
+  );
 }
 
 Deno.serve(async (req) => {
@@ -68,9 +154,7 @@ Deno.serve(async (req) => {
       : null;
 
     const plan = await fetchUserPlan(supabase, user.id);
-    const statsData = supabaseAdmin
-      ? await fetchUserStatsData(supabaseAdmin, user.id)
-      : {};
+    const statsData = supabaseAdmin ? await fetchUserStatsData(supabaseAdmin, user.id) : {};
     const scanQuotaError = assertCanScan(plan, statsData);
     if (scanQuotaError) {
       return new Response(JSON.stringify({ error: scanQuotaError }), {
@@ -94,49 +178,40 @@ Deno.serve(async (req) => {
       planCap,
       Math.max(4, Number.isFinite(Number(requestedMax)) ? Number(requestedMax) : planCap),
     );
-    const userPrompt = buildScanUserPrompt(sheetType, maxPairs);
-    const scientificSheet = sheetType === 'math' || sheetType === 'notes' || sheetType === 'definitions';
-    const vocabTokens = Math.min(16000, 800 + maxPairs * 80);
 
-    const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${openaiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: resolveScanModel(),
-        response_format: { type: 'json_object' },
-        temperature: 0.1,
-        max_tokens: scientificSheet ? 4000 : vocabTokens,
-        messages: [
-          { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: [
-              { type: 'text', text: userPrompt },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:${mimeType};base64,${imageBase64}`,
-                  detail: 'high',
-                },
-              },
-            ],
-          },
-        ],
-      }),
-    });
+    const model = resolveScanModel(plan);
+    const firstDetail = scanImageDetail(model);
+    let openaiCall = await requestOpenAi(
+      openaiKey,
+      buildOpenAiBody(model, sheetType, maxPairs, imageBase64, mimeType, firstDetail),
+    );
 
-    if (!openaiRes.ok) {
-      const errText = await openaiRes.text();
-      return new Response(JSON.stringify({ error: 'OpenAI request failed', detail: errText }), {
+    if (!openaiCall.ok && firstDetail === 'original' && shouldRetryWithoutOriginal(openaiCall.text)) {
+      openaiCall = await requestOpenAi(
+        openaiKey,
+        buildOpenAiBody(model, sheetType, maxPairs, imageBase64, mimeType, 'high'),
+      );
+    }
+
+    if (!openaiCall.ok) {
+      return new Response(JSON.stringify({ error: 'OpenAI request failed', detail: openaiCall.text }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const openaiJson = await openaiRes.json();
+    let openaiJson: {
+      choices?: Array<{ finish_reason?: string; message?: { content?: string } }>;
+    };
+    try {
+      openaiJson = JSON.parse(openaiCall.text) as typeof openaiJson;
+    } catch {
+      return new Response(JSON.stringify({ error: 'Invalid OpenAI envelope' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     const content = openaiJson?.choices?.[0]?.message?.content;
 
     if (!content || typeof content !== 'string') {
@@ -154,6 +229,17 @@ Deno.serve(async (req) => {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
+    }
+
+    if (
+      openaiJson?.choices?.[0]?.finish_reason === 'length' &&
+      parsed &&
+      typeof parsed === 'object'
+    ) {
+      const rec = parsed as Record<string, unknown>;
+      const warnings = Array.isArray(rec.warnings) ? rec.warnings.filter((w) => typeof w === 'string') : [];
+      warnings.push('extraction_truncated');
+      rec.warnings = warnings;
     }
 
     if (supabaseAdmin) {

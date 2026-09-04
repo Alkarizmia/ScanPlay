@@ -1,7 +1,8 @@
-import { useEffect, useRef, type CSSProperties } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { ScanningBackground } from './ScanningBackground';
 import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 import { getScanAdventureState, type ScanPixMood } from '../lib/scanAdventure';
+import { nextScanTalkOffset, scanTalkLine, scanTalkPhase } from '../lib/scanLoadingLines';
 import type { MascotExpression } from '../lib/mascot/types';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
@@ -26,26 +27,20 @@ function moodToExpression(mood: ScanPixMood): MascotExpression {
   }
 }
 
-function bubbleForProgress(locale: Locale, pct: number, status: string): string {
-  const demo = t('demoLoading', locale);
-  const reading = t('reading', locale);
-  const scanningAi = t('scanningAi', locale);
-  const scanning = t('scanning', locale);
-  const building = t('building', locale);
-
-  if (status === demo) return status;
-  if (status === building || pct >= 92) return building;
-  if (status !== reading && status !== scanningAi && status !== scanning) return status;
-  if (pct < 40) return reading;
-  if (pct < 80) return scanningAi;
-  return building;
-}
-
 export function ScanningScreen({ locale, progress, status }: ScanningScreenProps) {
   const pct = Math.min(100, Math.max(0, progress));
   const adventure = getScanAdventureState(pct);
   const atEnd = pct >= 99;
   const lastBlipRef = useRef(0);
+  const offsetRef = useRef(nextScanTalkOffset());
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      setTick((n) => n + 1);
+    }, 3200);
+    return () => window.clearInterval(id);
+  }, []);
 
   useEffect(() => {
     const milestones = [25, 50, 75, 99];
@@ -62,7 +57,9 @@ export function ScanningScreen({ locale, progress, status }: ScanningScreenProps
     ? { left: '100%', transform: 'translate(-100%, -50%)' }
     : { left: `${Math.max(8, pct)}%`, transform: 'translate(-50%, -50%)' };
 
-  const bubbleText = bubbleForProgress(locale, pct, status);
+  const phase = scanTalkPhase(locale, pct, status);
+  const bubbleText =
+    phase === 'passthrough' ? status : scanTalkLine(locale, phase, offsetRef.current, tick);
   const runnerExpression = moodToExpression(adventure.mood);
 
   return (
