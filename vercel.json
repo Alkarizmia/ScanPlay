@@ -23,11 +23,5 @@
       "source": "/sw.js",
       "headers": [{ "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" }]
     }
-  ],
-  "crons": [
-    {
-      "path": "/api/lifecycle-emails",
-      "schedule": "0 17 * * *"
-    }
   ]
 }
