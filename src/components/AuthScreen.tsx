@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { BackIcon } from './icons/BackIcon';
 import { LogoWordmark } from './Logo';
 import { SiteFooter } from './SiteFooter';
 import {
@@ -215,10 +216,16 @@ export function AuthScreen({
 
   return (
     <div className="screen flow-screen auth-screen" data-theme="light">
+      <aside className="auth-aside" aria-hidden="true">
+        <LogoWordmark />
+        <p className="auth-aside-tagline">{t('tagline', locale)}</p>
+        <p className="auth-aside-sub">{t('subtagline', locale)}</p>
+      </aside>
+      <div className="auth-panel">
       <header className="top-bar">
         {onBack ? (
           <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
-            ←
+            <BackIcon />
           </button>
         ) : (
           <LogoWordmark />
@@ -449,6 +456,7 @@ export function AuthScreen({
         )}
         <SiteFooter locale={locale} />
       </main>
+      </div>
     </div>
   );
 }

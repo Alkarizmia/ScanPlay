@@ -503,6 +503,13 @@ html[data-device='desktop']:has(.app-shell--guest) body {
   margin-inline: auto;
 }
 
+[data-device='desktop'] .app-shell.app-shell--guest .app-main .screen.auth-screen {
+  max-width: none;
+  margin-inline: 0;
+  width: 100%;
+  height: 100%;
+}
+
 @media (min-width: 900px) {
   .app-shell.app-shell--guest {
     max-width: none;
@@ -526,4 +533,239 @@ html[data-device='desktop']:has(.app-shell--guest) body {
     width: 100%;
     height: auto;
   }
+}
+
+/* ── Desktop-only app chrome (logged-in + auth). Mobile selectors untouched. ── */
+html[data-device='desktop']:has(.auth-screen),
+html[data-device='desktop']:has(.auth-screen) body,
+html[data-device='desktop']:has(.auth-screen) #root {
+  background:
+    radial-gradient(ellipse at 12% 10%, rgba(88, 204, 2, 0.18) 0%, transparent 52%),
+    #f1f5f9;
+  height: auto;
+  max-height: none;
+  min-height: 100svh;
+  overflow: auto;
+}
+
+[data-device='desktop'] .app-shell.app-shell--guest:has(.auth-screen) {
+  height: auto;
+  max-height: none;
+  min-height: 100svh;
+  overflow: auto;
+  background: transparent;
+}
+
+[data-device='desktop'] .app-shell.app-shell--guest:has(.auth-screen) .app-main {
+  overflow: auto;
+  height: auto;
+  max-height: none;
+}
+
+[data-device='desktop'] .auth-screen {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-height: 100svh;
+  overflow: auto;
+  background: transparent;
+  padding: 0;
+}
+
+[data-device='desktop'] .auth-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(440px, calc(100% - 48px));
+  margin: 32px auto;
+  padding: 8px 28px 28px;
+  background: #fff;
+  border-radius: 24px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
+  min-height: 0;
+}
+
+[data-device='desktop'] .auth-panel .top-bar {
+  padding-top: 16px;
+}
+
+@media (min-width: 960px) {
+  [data-device='desktop'] .auth-screen {
+    grid-template-columns: minmax(280px, 1fr) minmax(420px, 560px);
+    align-items: stretch;
+    padding: 0;
+  }
+
+  [data-device='desktop'] .auth-aside {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 12px;
+    padding: 48px 56px;
+    background:
+      radial-gradient(ellipse at 30% 20%, rgba(88, 204, 2, 0.28) 0%, transparent 55%),
+      linear-gradient(165deg, #14350c 0%, #1a4d12 48%, #0f172a 100%);
+    color: #f8fafc;
+  }
+
+  [data-device='desktop'] .auth-aside .wordmark,
+  [data-device='desktop'] .auth-aside .wordmark-text {
+    color: #fff;
+    filter: none;
+  }
+
+  [data-device='desktop'] .auth-aside .wordmark-accent {
+    color: #86efac;
+  }
+
+  [data-device='desktop'] .auth-aside-tagline {
+    margin: 16px 0 0;
+    font-size: clamp(1.6rem, 2.4vw, 2.15rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.2;
+    max-width: 16ch;
+  }
+
+  [data-device='desktop'] .auth-aside-sub {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+    color: rgba(248, 250, 252, 0.78);
+    max-width: 36ch;
+  }
+
+  [data-device='desktop'] .auth-panel {
+    margin: 0;
+    width: 100%;
+    max-width: none;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: 24px 48px 40px;
+    justify-content: center;
+  }
+
+  [data-device='desktop'] .auth-panel .top-bar .scanplay-logo,
+  [data-device='desktop'] .auth-panel .top-bar .wordmark {
+    display: none;
+  }
+}
+
+[data-device='desktop'] .app-shell:not(.app-shell--guest) {
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  min-height: 100vh;
+  box-shadow: none;
+  grid-template-columns: 232px minmax(0, 1fr);
+}
+
+[data-device='desktop'] {
+  --sidebar-w: 232px;
+  --content-wide: 920px;
+  --content-max: 1080px;
+}
+
+[data-device='desktop'] .app-main .screen {
+  max-width: none;
+}
+
+[data-device='desktop'] .home-screen--desktop .top-bar-brand {
+  display: none;
+}
+
+[data-device='desktop'] .home-screen--desktop .top-bar {
+  justify-content: flex-end;
+}
+
+[data-device='desktop'] .home-screen--premium.home-screen--desktop .home-main,
+[data-device='desktop'] .home-screen--desktop .home-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 1120px;
+  margin-inline: auto;
+  width: 100%;
+  gap: 20px;
+  text-align: left;
+}
+
+[data-device='desktop'] .home-continue-block {
+  padding: 24px 28px;
+}
+
+[data-device='desktop'] .home-continue-hint {
+  text-align: left;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+[data-device='desktop'] .home-continue-cta,
+[data-device='desktop'] .home-continue-scan {
+  width: auto;
+  min-width: 220px;
+}
+
+@media (min-width: 1100px) {
+  [data-device='desktop'] .home-screen--premium.home-screen--desktop .home-main,
+  [data-device='desktop'] .home-screen--desktop .home-main {
+    grid-template-columns: minmax(0, 1.15fr) minmax(300px, 400px);
+    align-items: start;
+    max-width: 1200px;
+    gap: 24px 28px;
+  }
+
+  [data-device='desktop'] .home-screen--desktop .home-continue-block,
+  [data-device='desktop'] .home-screen--desktop .home-scan-hero,
+  [data-device='desktop'] .home-screen--desktop .home-section,
+  [data-device='desktop'] .home-screen--desktop .home-install-btn,
+  [data-device='desktop'] .home-screen--desktop .home-install-done,
+  [data-device='desktop'] .home-screen--desktop .text-link,
+  [data-device='desktop'] .home-screen--desktop .plan-card,
+  [data-device='desktop'] .home-screen--desktop .site-footer {
+    grid-column: 1;
+  }
+
+  [data-device='desktop'] .home-screen--desktop .home-dashboard {
+    grid-column: 2;
+    grid-row: 1 / span 12;
+  }
+
+  [data-device='desktop'] .home-continue-block {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px 16px;
+  }
+
+  [data-device='desktop'] .home-continue-hint {
+    grid-column: 1 / -1;
+  }
+
+  [data-device='desktop'] .home-continue-cta,
+  [data-device='desktop'] .home-continue-scan {
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+[data-device='desktop'] .bottom-nav--desktop {
+  padding: 20px 14px;
+  justify-content: flex-start;
+}
+
+[data-device='desktop'] .bottom-nav-items {
+  flex: 0 0 auto;
+  justify-content: flex-start;
+}
+
+[data-device='desktop'] .gamification-hud-wrap,
+[data-device='desktop'] .gamification-hud,
+[data-device='desktop'] .mode-main-path,
+[data-device='desktop'] .settings-main,
+[data-device='desktop'] .achievements-main,
+[data-device='desktop'] .friends-main,
+[data-device='desktop'] .shop-main,
+[data-device='desktop'] .mistakes-main,
+[data-device='desktop'] .import-main {
+  max-width: 1080px;
 }

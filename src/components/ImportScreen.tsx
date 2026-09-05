@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { GuestScanBanner } from './GuestScanBanner';
+import { BackIcon } from './icons/BackIcon';
 import { SheetTypePicker } from './SheetTypePicker';
 import { TrainingFocusPicker } from './TrainingFocusPicker';
 import { collectDroppedImageFiles, isLikelyImageFile } from '../lib/droppedFiles';
@@ -200,7 +201,7 @@ export function ImportScreen({
 
       <header className="top-bar">
         <button type="button" className="icon-btn" onClick={handleBack} aria-label={t('back', locale)}>
-          ←
+          <BackIcon />
         </button>
         <h2 className="screen-title">{screenTitle}</h2>
         <span className="top-spacer" />

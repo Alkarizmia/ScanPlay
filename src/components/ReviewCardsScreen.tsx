@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../lib/i18n';
 import { canOpenGamePath } from '../lib/vocabulary';
 import { FormulaText } from './FormulaText';
+import { BackIcon } from './icons/BackIcon';
 import type { Locale, WordPair } from '../types';
 
 interface ReviewCardsScreenProps {
@@ -127,7 +128,7 @@ export function ReviewCardsScreen({
       </div>
       <header className="top-bar review-cards-top">
         <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
-          ←
+          <BackIcon />
         </button>
         <h2 className="screen-title">{t('reviewCardsTitle', locale)}</h2>
         <span className="top-spacer" />

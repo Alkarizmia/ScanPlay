@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { BillingCycleToggle } from './BillingCycleToggle';
+import { BackIcon } from './icons/BackIcon';
 import { usePlan } from '../hooks/usePlan';
 import { isLoggedIn } from '../lib/auth';
 import { t, type TranslationKey } from '../lib/i18n';
@@ -166,7 +167,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
     <div className="screen flow-screen pricing-screen">
       <header className="top-bar top-bar-safe">
         <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
-          ←
+          <BackIcon />
         </button>
         <h2 className="screen-title">{t('pricingTitle', locale)}</h2>
         <span className="top-spacer" />

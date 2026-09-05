@@ -7,6 +7,7 @@ import {
 } from '../lib/social/rooms';
 import { avatarEmojiFromId } from '../lib/social/avatars';
 import type { MultiplayerRoom, RoomPlayer } from '../lib/social/types';
+import { BackIcon } from './icons/BackIcon';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -76,7 +77,7 @@ export function MultiplayerLobby({
       <div className="screen flow-screen">
         <header className="top-bar">
           <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
-            ←
+            <BackIcon />
           </button>
           <h2 className="screen-title">{t('friendsLobbyTitle', locale)}</h2>
         </header>
@@ -91,7 +92,7 @@ export function MultiplayerLobby({
     <div className="screen flow-screen multiplayer-lobby">
       <header className="top-bar">
         <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
-          ←
+          <BackIcon />
         </button>
         <h2 className="screen-title">{t('friendsLobbyTitle', locale)}</h2>
       </header>

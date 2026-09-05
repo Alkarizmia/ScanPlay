@@ -186,10 +186,16 @@ body {
 }
 
 .icon-btn {
-  border-radius: var(--radius-sm);
+  border-radius: 14px;
   border: 1px solid var(--surface-border);
+  border-bottom: 3px solid color-mix(in srgb, var(--text) 14%, var(--surface-border));
   background: var(--bg-card);
-  color: var(--text-muted);
+  color: var(--text);
+}
+
+.icon-btn .back-icon {
+  display: block;
+  flex-shrink: 0;
 }
 
 /* Bottom nav — glass bar */

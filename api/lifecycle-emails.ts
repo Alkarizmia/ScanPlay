@@ -58,17 +58,38 @@ async function sendResendEmail(params: {
   return res.ok;
 }
 
-function isFrench(locale: string | null | undefined): boolean {
+function parseBody(req: VercelRequest): { kind?: string; otherUserId?: string } {
+  const raw = req.body as unknown;
+  if (!raw) return {};
+  if (typeof raw === 'string') {
+    try {
+      return JSON.parse(raw) as { kind?: string; otherUserId?: string };
+    } catch {
+      return {};
+    }
+  }
+  return raw as { kind?: string; otherUserId?: string };
+}
+
+function isFrench(locale?: string | null): boolean {
   const tag = (locale ?? 'fr').toLowerCase();
   return tag === 'fr' || tag.startsWith('fr-');
 }
 
 function wrapHtml(title: string, body: string, cta: string): string {
-  const url = getAppUrl() || 'https://scanplay.org';
+  const url = (getAppUrl() || 'https://scanplay.org').replace(/\/$/, '');
+  const logo = `${url}/logo.png`;
   return `<!doctype html>
 <html><body style="margin:0;background:#f8fafc;font-family:Inter,system-ui,sans-serif;color:#0f172a;">
   <div style="max-width:520px;margin:24px auto;padding:28px;background:#fff;border-radius:16px;border:1px solid #e2e8f0;">
-    <p style="margin:0 0 8px;font-weight:800;color:#16a34a;">ScanPlay</p>
+    <table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 16px;">
+      <tr>
+        <td style="vertical-align:middle;padding:0 10px 0 0;">
+          <img src="${logo}" alt="ScanPlay" width="40" height="40" style="display:block;border:0;border-radius:10px;" />
+        </td>
+        <td style="vertical-align:middle;font-weight:800;color:#16a34a;font-size:18px;">ScanPlay</td>
+      </tr>
+    </table>
     <h1 style="margin:0 0 12px;font-size:1.35rem;">${title}</h1>
     <p style="margin:0 0 20px;line-height:1.55;color:#334155;">${body}</p>
     <p><a href="${url}" style="display:inline-block;padding:12px 18px;background:#58cc02;color:#14350c;font-weight:800;text-decoration:none;border-radius:12px;">${cta}</a></p>
@@ -131,7 +152,7 @@ async function sendClaimedMail(
   ]);
 
   const email = userData.user?.email;
-  if (!email || !userData.user?.email_confirmed_at) return false;
+  if (!email) return false;
   if (!options?.ignoreAlerts && profile && profile.email_alerts === false) return false;
 
   const { error } = await admin.from('scanplay_email_log').insert({
@@ -142,7 +163,6 @@ async function sendClaimedMail(
   if (error) {
     if (error.code === '23505') return false;
     console.warn('email log insert', error.message);
-    return false;
   }
 
   const mail = buildLifecycleMail(kind, profile?.locale as string | undefined, extra);
@@ -165,20 +185,7 @@ async function handleFriendNotify(req: VercelRequest, res: VercelResponse) {
   const admin = tryGetSupabaseAdmin();
   if (!admin) return res.status(503).json({ error: 'supabase_not_configured' });
 
-  const body = (req.body ?? {}) as { kind?: string; otherUserId?: string };
-
-  if (body.kind === 'test') {
-    const sent = await sendClaimedMail(
-      admin,
-      user.id,
-      'streak',
-      `test:${user.id}:${Date.now()}`,
-      { streak: 7 },
-      { ignoreAlerts: true },
-    );
-    return res.status(200).json({ ok: sent, to: user.email ?? null });
-  }
-
+  const body = parseBody(req);
   const otherUserId = body.otherUserId?.trim();
   if (!otherUserId) return res.status(400).json({ error: 'invalid_payload' });
 
@@ -299,12 +306,8 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
-    const body = req.body as { kind?: string } | undefined;
-    if (
-      body?.kind === 'test' ||
-      body?.kind === 'friend_request' ||
-      body?.kind === 'friend_accepted'
-    ) {
+    const body = parseBody(req);
+    if (body.kind === 'friend_request' || body.kind === 'friend_accepted') {
       return handleFriendNotify(req, res);
     }
   }

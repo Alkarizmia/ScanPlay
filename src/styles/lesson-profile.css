@@ -876,3 +876,12 @@
   font-weight: 900;
   color: #22c55e;
 }
+
+[data-device='desktop'] .bottom-nav-items--four .bottom-nav-item {
+  flex: none;
+  width: 100%;
+}
+
+[data-device='desktop'] .bottom-nav-items--four .bottom-nav-label {
+  font-size: 0.85rem;
+}

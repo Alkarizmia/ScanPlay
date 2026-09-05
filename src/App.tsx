@@ -1918,7 +1918,6 @@ export default function App() {
           }}
           onPricing={() => setFlow('pricing')}
           onRefresh={refresh}
-          onToast={showToast}
           highlightPasswordRecovery={passwordRecoveryHighlight}
           onPasswordHighlightDone={() => setPasswordRecoveryHighlight(false)}
         />

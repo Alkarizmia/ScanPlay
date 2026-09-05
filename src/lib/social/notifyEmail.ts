@@ -1,9 +1,9 @@
 import { getSupabase } from '../supabase';
 
 export async function notifyLifecycleEmail(payload: {
-  kind: 'friend_request' | 'friend_accepted' | 'test';
+  kind: 'friend_request' | 'friend_accepted';
   otherUserId?: string;
-}): Promise<{ ok: boolean; to?: string | null }> {
+}): Promise<{ ok: boolean; to?: string | null; error?: string }> {
   const supabase = getSupabase();
   if (!supabase) return { ok: false };
   const { data } = await supabase.auth.getSession();
@@ -19,8 +19,12 @@ export async function notifyLifecycleEmail(payload: {
       },
       body: JSON.stringify(payload),
     });
-    const json = (await res.json().catch(() => ({}))) as { ok?: boolean; to?: string | null };
-    return { ok: Boolean(res.ok && json.ok), to: json.to };
+    const json = (await res.json().catch(() => ({}))) as {
+      ok?: boolean;
+      to?: string | null;
+      error?: string;
+    };
+    return { ok: Boolean(res.ok && json.ok), to: json.to, error: json.error };
   } catch {
     return { ok: false };
   }

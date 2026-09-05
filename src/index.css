@@ -194,15 +194,16 @@ body {
   width: 44px;
   height: 44px;
   border: none;
-  border-radius: 12px;
+  border-radius: 14px;
   background: var(--bg-elevated);
-  color: var(--text-muted);
+  color: var(--text);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.25rem;
   cursor: pointer;
   box-shadow: var(--shadow);
+  line-height: 0;
 }
 .icon-btn:active {
   transform: scale(0.96);
@@ -4230,6 +4231,12 @@ html[data-device="desktop"] .flashcard.flipped .back {
   overflow: hidden;
   background: var(--bg);
   color: var(--text);
+}
+.auth-aside {
+  display: none;
+}
+.auth-panel {
+  display: contents;
 }
 .auth-screen .field-input {
   border-color: var(--surface-border);

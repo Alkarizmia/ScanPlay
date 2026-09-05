@@ -1,4 +1,5 @@
 import { createPortal } from 'react-dom';
+import { BackIcon } from './icons/BackIcon';
 import { ADSENSE_UI_PAUSED } from '../lib/ads/config';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -53,7 +54,7 @@ export function PrivacyPolicySheet({ open, locale, onClose }: PrivacyPolicySheet
       />
       <div className="privacy-sheet" role="dialog" aria-labelledby="privacy-sheet-title">
         <button type="button" className="icon-btn privacy-sheet-close" onClick={onClose} aria-label={t('back', locale)}>
-          ←
+          <BackIcon />
         </button>
         <h3 id="privacy-sheet-title" className="install-sheet-title">
           {t('privacySection', locale)}

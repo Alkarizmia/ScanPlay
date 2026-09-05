@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { BackIcon } from './icons/BackIcon';
 import { t, type TranslationKey } from '../lib/i18n';
 import { setPreference } from '../lib/preferences';
 import { playSound, SOUND_PREVIEW_IDS, type SoundId } from '../lib/sounds';
@@ -30,7 +31,7 @@ export function AudioSettingsScreen({ locale, onBack }: AudioSettingsScreenProps
     <div className="screen tab-screen audio-settings-screen">
       <header className="top-bar">
         <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
-          ←
+          <BackIcon />
         </button>
         <h2 className="screen-title">{t('audioSettingsTitle', locale)}</h2>
         <span className="top-spacer" />

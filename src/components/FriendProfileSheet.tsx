@@ -1,4 +1,5 @@
 import { FriendAchievementsGrid } from './FriendAchievementsGrid';
+import { BackIcon } from './icons/BackIcon';
 
 import { PlayerAvatar } from './PlayerAvatar';
 
@@ -136,7 +137,7 @@ export function FriendProfileSheet({
 
         <button type="button" className="icon-btn friend-profile-close" onClick={onClose} aria-label={t('back', locale)}>
 
-          ←
+          <BackIcon />
 
         </button>
 
