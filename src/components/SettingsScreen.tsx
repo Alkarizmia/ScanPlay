@@ -45,7 +45,7 @@ export function SettingsScreen({
   onLogout,
   onPricing,
   onRefresh,
-  onToast: _onToast,
+  onToast,
   highlightPasswordRecovery = false,
   onPasswordHighlightDone,
 }: SettingsScreenProps) {
@@ -250,6 +250,24 @@ export function SettingsScreen({
               }
             />
           </div>
+          {isLoggedIn && (
+            <button
+              type="button"
+              className="btn-secondary audio-settings-link"
+              onClick={() => {
+                void import('../lib/social/notifyEmail').then(async (m) => {
+                  const result = await m.notifyLifecycleEmail({ kind: 'test' });
+                  onToast?.(
+                    result.ok
+                      ? t('emailTestSent', locale)
+                      : t('emailTestFail', locale),
+                  );
+                });
+              }}
+            >
+              {t('emailTestSend', locale)}
+            </button>
+          )}
           <div className="settings-row">
             <span>{t('language', locale)}</span>
             <select

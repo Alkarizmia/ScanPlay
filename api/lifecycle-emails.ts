@@ -123,6 +123,7 @@ async function sendClaimedMail(
   kind: MailKind,
   dedupeKey: string,
   extra: { streak?: number; fromName?: string },
+  options?: { ignoreAlerts?: boolean },
 ): Promise<boolean> {
   const [{ data: userData }, { data: profile }] = await Promise.all([
     admin.auth.admin.getUserById(toUserId),
@@ -131,7 +132,7 @@ async function sendClaimedMail(
 
   const email = userData.user?.email;
   if (!email || !userData.user?.email_confirmed_at) return false;
-  if (profile && profile.email_alerts === false) return false;
+  if (!options?.ignoreAlerts && profile && profile.email_alerts === false) return false;
 
   const { error } = await admin.from('scanplay_email_log').insert({
     user_id: toUserId,
@@ -165,6 +166,19 @@ async function handleFriendNotify(req: VercelRequest, res: VercelResponse) {
   if (!admin) return res.status(503).json({ error: 'supabase_not_configured' });
 
   const body = (req.body ?? {}) as { kind?: string; otherUserId?: string };
+
+  if (body.kind === 'test') {
+    const sent = await sendClaimedMail(
+      admin,
+      user.id,
+      'streak',
+      `test:${user.id}:${Date.now()}`,
+      { streak: 7 },
+      { ignoreAlerts: true },
+    );
+    return res.status(200).json({ ok: sent, to: user.email ?? null });
+  }
+
   const otherUserId = body.otherUserId?.trim();
   if (!otherUserId) return res.status(400).json({ error: 'invalid_payload' });
 
@@ -286,7 +300,11 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === 'POST') {
     const body = req.body as { kind?: string } | undefined;
-    if (body?.kind === 'friend_request' || body?.kind === 'friend_accepted') {
+    if (
+      body?.kind === 'test' ||
+      body?.kind === 'friend_request' ||
+      body?.kind === 'friend_accepted'
+    ) {
       return handleFriendNotify(req, res);
     }
   }
