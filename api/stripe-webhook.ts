@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type Stripe from 'stripe';
-import { getSupabaseAdmin } from './lib/auth.js';
-import { getStripe } from './lib/stripe.js';
-import { subscriptionToProfileFields, upsertUserSubscription } from './lib/subscriptionSync.js';
+import { getSupabaseAdmin } from '../server/auth.js';
+import { getStripe } from '../server/stripe.js';
+import { subscriptionToProfileFields, upsertUserSubscription } from '../server/subscriptionSync.js';
 
 export const config = {
   api: {

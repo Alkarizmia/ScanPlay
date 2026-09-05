@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getSupabaseAdmin, getUserFromRequest } from './lib/auth.js';
+import { getSupabaseAdmin, getUserFromRequest } from '../server/auth.js';
 
 const USER_TABLES = [
   'scanplay_exam_history',

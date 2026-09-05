@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserFromRequest, tryGetSupabaseAdmin } from './lib/auth.js';
-import { createScanPlayPortalSession } from './lib/scanplayBranding.js';
-import { resolveStripeCustomerId, verifyStripeCustomerForUser } from './lib/subscriptionSync.js';
-import { getAppUrl, getStripe } from './lib/stripe.js';
+import { getUserFromRequest, tryGetSupabaseAdmin } from '../server/auth.js';
+import { createScanPlayPortalSession } from '../server/scanplayBranding.js';
+import { resolveStripeCustomerId, verifyStripeCustomerForUser } from '../server/subscriptionSync.js';
+import { getAppUrl, getStripe } from '../server/stripe.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

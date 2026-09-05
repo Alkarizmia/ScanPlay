@@ -1,9 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import Stripe from 'stripe';
-import { getUserFromRequest } from './lib/auth.js';
-import { createScanPlayCheckoutSession, ensureScanPlayProductLabel } from './lib/scanplayBranding.js';
-import { getActivePaidSubscription, syncUserSubscriptionFromStripe } from './lib/subscriptionSync.js';
-import { getAppUrl, getPriceId, getStripe, type BillingCycle, type PaidPlan } from './lib/stripe.js';
+import { getUserFromRequest } from '../server/auth.js';
+import { createScanPlayCheckoutSession, ensureScanPlayProductLabel } from '../server/scanplayBranding.js';
+import { getActivePaidSubscription, syncUserSubscriptionFromStripe } from '../server/subscriptionSync.js';
+import { getAppUrl, getPriceId, getStripe, type BillingCycle, type PaidPlan } from '../server/stripe.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

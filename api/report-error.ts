@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserFromRequest } from './lib/auth.js';
+import { getUserFromRequest } from '../server/auth.js';
 
 const SUPPORT_EMAIL = 'support@scanplay.org';
 const FROM_EMAIL = 'ScanPlay <support@scanplay.org>';

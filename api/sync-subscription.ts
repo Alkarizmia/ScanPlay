@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserFromRequest } from './lib/auth.js';
-import { syncUserSubscriptionFromStripe } from './lib/subscriptionSync.js';
+import { getUserFromRequest } from '../server/auth.js';
+import { syncUserSubscriptionFromStripe } from '../server/subscriptionSync.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {

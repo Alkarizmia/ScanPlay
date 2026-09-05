@@ -1,8 +1,8 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { getUserFromRequest, tryGetSupabaseAdmin } from './lib/auth.js';
-import { getAppUrl } from './lib/stripe.js';
+import { getUserFromRequest, tryGetSupabaseAdmin } from '../server/auth.js';
+import { getAppUrl } from '../server/stripe.js';
 
 type MailKind = 'streak' | 'friend_request' | 'friend_accepted';
 

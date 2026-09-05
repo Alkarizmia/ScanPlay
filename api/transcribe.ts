@@ -1,5 +1,5 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { getUserFromRequest } from './lib/auth.js';
+import { getUserFromRequest } from '../server/auth.js';
 
 const MAX_AUDIO_BYTES = 4 * 1024 * 1024;
 
