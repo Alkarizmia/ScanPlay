@@ -55,7 +55,7 @@ Si plusieurs SaaS utilisent le **même compte Stripe**, le Dashboard applique le
 
 ScanPlay force dans `api/create-checkout-session.ts` :
 
-- **Carte uniquement** (`payment_method_types: ['card']`) — PayPal reste actif pour tes autres produits
+- **Moyens dynamiques** (Dashboard Stripe) + **PayPal exclu** (`excluded_payment_method_types: ['paypal']`) — Google Pay / Apple Pay / Bancontact peuvent s’afficher sans coller PayPal des autres produits
 - **Branding ScanPlay** par session : nom **ScanPlay**, icône verte ScanPlay (upload Stripe), couleurs ScanPlay
 - **Produits** renommés automatiquement en **ScanPlay Plus** / **ScanPlay Pro** pour les `price_` configurés dans Vercel
 

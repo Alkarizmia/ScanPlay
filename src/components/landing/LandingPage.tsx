@@ -1,12 +1,12 @@
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useMemo, type ReactNode } from 'react';
 
 import { LogoWordmark } from '../Logo';
 import {
   CameraIcon,
   FlameIcon,
   PathPhoneMock,
-  ProgressCardMock,
   QuizPhoneMock,
+  ProgressCardMock,
   SheetMock,
   SparkIcon,
   TrophyIcon,
@@ -14,7 +14,7 @@ import {
 import { usePassed, useReveal } from './useReveal';
 import { trackEvent } from '../../lib/analytics';
 import { t } from '../../lib/i18n';
-import type { TranslationKey } from '../../lib/i18n';
+import { landingLangFromNavigator, lt, type LandingCopyKey } from '../../lib/landingI18n';
 import type { DeviceProfile } from '../../lib/device';
 import type { Locale } from '../../types';
 
@@ -37,19 +37,30 @@ interface Testimonial {
 }
 const TESTIMONIALS: Testimonial[] = [];
 
-const STEPS: { num: string; title: TranslationKey; body: TranslationKey }[] = [
-  { num: '01', title: 'lpStep1Title', body: 'lpStep1Body' },
-  { num: '02', title: 'lpStep2Title', body: 'lpStep2Body' },
-  { num: '03', title: 'lpStep3Title', body: 'lpStep3Body' },
+const STEPS: {
+  num: string;
+  title: LandingCopyKey;
+  body: LandingCopyKey;
+  icon: typeof CameraIcon;
+}[] = [
+  { num: '01', title: 'lpStep1Title', body: 'lpStep1Body', icon: CameraIcon },
+  { num: '02', title: 'lpStep2Title', body: 'lpStep2Body', icon: SparkIcon },
+  { num: '03', title: 'lpStep3Title', body: 'lpStep3Body', icon: TrophyIcon },
 ];
 
-const BENEFITS: { title: TranslationKey; body: TranslationKey }[] = [
+const BENEFITS: { title: LandingCopyKey; body: LandingCopyKey }[] = [
   { title: 'lpBenefit1Title', body: 'lpBenefit1Body' },
   { title: 'lpBenefit2Title', body: 'lpBenefit2Body' },
   { title: 'lpBenefit3Title', body: 'lpBenefit3Body' },
 ];
 
-const FAQ: { q: TranslationKey; a: TranslationKey }[] = [
+const WHY: { title: LandingCopyKey; body: LandingCopyKey }[] = [
+  { title: 'lpWhy1Title', body: 'lpWhy1Body' },
+  { title: 'lpWhy2Title', body: 'lpWhy2Body' },
+  { title: 'lpWhy3Title', body: 'lpWhy3Body' },
+];
+
+const FAQ: { q: LandingCopyKey; a: LandingCopyKey }[] = [
   { q: 'lpFaq1Q', a: 'lpFaq1A' },
   { q: 'lpFaq2Q', a: 'lpFaq2A' },
   { q: 'lpFaq3Q', a: 'lpFaq3A' },
@@ -82,18 +93,21 @@ function Section({
   );
 }
 
-export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageProps) {
+export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: LandingPageProps) {
   const isDesktop = device.kind === 'desktop';
+  const lang = useMemo(() => landingLangFromNavigator(), []);
+  const locale: Locale = lang;
   const { ref: heroCtaRef, passed: heroCtaPassed } = usePassed<HTMLDivElement>();
 
   // The guest app shell locks html/body scrolling for the in-app screens.
   // The landing needs the document to scroll, so flag it only while mounted.
   useEffect(() => {
     document.documentElement.dataset.landing = 'true';
+    document.documentElement.lang = lang;
     return () => {
       delete document.documentElement.dataset.landing;
     };
-  }, []);
+  }, [lang]);
 
   const scan = (placement: string) => {
     trackEvent('clic_cta_landing', { emplacement: placement });
@@ -108,14 +122,14 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
   const ctaNote = (
     <p className="lp-cta-note">
       <ShieldIcon />
-      {t('lpHeroCtaNote', locale)}
+      {lt('lpHeroCtaNote', locale)}
     </p>
   );
 
   return (
-    <div className="screen sp-landing">
+    <div className="screen sp-landing" lang={lang}>
       <a className="lp-skip" href="#lp-main">
-        {t('lpSkipToContent', locale)}
+        {lt('lpSkipToContent', locale)}
       </a>
 
       <header className="lp-header">
@@ -125,10 +139,10 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
           </div>
 
           {isDesktop && (
-            <nav className="lp-nav" aria-label={t('lpNavLabel', locale)}>
-              <a href="#comment-ca-marche">{t('lpNavHow', locale)}</a>
-              <a href="#le-produit">{t('lpNavProduct', locale)}</a>
-              <a href="#questions">{t('lpNavFaq', locale)}</a>
+            <nav className="lp-nav" aria-label={lt('lpNavLabel', locale)}>
+              <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
+              <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </nav>
           )}
 
@@ -142,7 +156,7 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                 className="lp-btn lp-btn--primary lp-btn--sm"
                 onClick={() => scan('header')}
               >
-                {t('lpHeroCta', locale)}
+                {lt('lpHeroCta', locale)}
               </button>
             )}
           </div>
@@ -153,17 +167,36 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         {/* ---------- HERO ---------- */}
         <section className="lp-hero" aria-labelledby="lp-hero-title">
           <div className="lp-container lp-hero-inner">
-            <div className="lp-hero-copy">
+            <div className="lp-hero-intro">
               <p className="lp-eyebrow">
                 <SparkIcon />
-                {t('lpHeroEyebrow', locale)}
+                {lt('lpHeroEyebrow', locale)}
               </p>
 
               <h1 id="lp-hero-title" className="lp-hero-title">
-                {t('lpHeroTitle', locale)}
+                {lt('lpHeroTitle', locale)}
               </h1>
+            </div>
 
-              <p className="lp-hero-sub">{t('lpHeroSub', locale)}</p>
+            <div className="lp-hero-visual">
+              <p className="sr-only">{lt('lpVisualAlt', locale)}</p>
+              <div className="lp-transform">
+                <SheetMock locale={locale} />
+                <span className="lp-transform-arrow" aria-hidden="true">
+                  <ArrowIcon />
+                  <span>{lt('lpVisualScan', locale)}</span>
+                </span>
+                <div className="lp-transform-phone">
+                  <span className="lp-phone-label" aria-hidden="true">
+                    {lt('lpVisualGame', locale)}
+                  </span>
+                  <QuizPhoneMock locale={locale} />
+                </div>
+              </div>
+            </div>
+
+            <div className="lp-hero-rest">
+              <p className="lp-hero-sub">{lt('lpHeroSub', locale)}</p>
 
               <div className="lp-hero-actions" ref={heroCtaRef}>
                 <button
@@ -172,33 +205,16 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                   onClick={() => scan('hero')}
                 >
                   <CameraIcon />
-                  {t('lpHeroCta', locale)}
+                  {lt('lpHeroCta', locale)}
                 </button>
                 {ctaNote}
               </div>
 
               <ul className="lp-hero-chips">
-                <li>{t('lpHeroChip1', locale)}</li>
-                <li>{t('lpHeroChip2', locale)}</li>
-                <li>{t('lpHeroChip3', locale)}</li>
+                <li>{lt('lpHeroChip1', locale)}</li>
+                <li>{lt('lpHeroChip2', locale)}</li>
+                <li>{lt('lpHeroChip3', locale)}</li>
               </ul>
-            </div>
-
-            <div className="lp-hero-visual">
-              <p className="sr-only">{t('lpVisualAlt', locale)}</p>
-              <div className="lp-transform">
-                <SheetMock locale={locale} />
-                <span className="lp-transform-arrow" aria-hidden="true">
-                  <ArrowIcon />
-                  <span>{t('lpVisualScan', locale)}</span>
-                </span>
-                <div className="lp-transform-phone">
-                  <span className="lp-phone-label" aria-hidden="true">
-                    {t('lpVisualGame', locale)}
-                  </span>
-                  <QuizPhoneMock locale={locale} />
-                </div>
-              </div>
             </div>
           </div>
         </section>
@@ -206,20 +222,26 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         {/* ---------- HOW IT WORKS ---------- */}
         <Section id="comment-ca-marche" className="lp-section--steps" labelledBy="lp-steps-title">
           <header className="lp-section-head">
-            <h2 id="lp-steps-title">{t('lpStepsTitle', locale)}</h2>
-            <p>{t('lpStepsSub', locale)}</p>
+            <h2 id="lp-steps-title">{lt('lpStepsTitle', locale)}</h2>
+            <p>{lt('lpStepsSub', locale)}</p>
           </header>
 
           <ol className="lp-steps">
-            {STEPS.map((step) => (
-              <li key={step.num} className="lp-step">
-                <span className="lp-step-num" aria-hidden="true">
-                  {step.num}
-                </span>
-                <h3>{t(step.title, locale)}</h3>
-                <p>{t(step.body, locale)}</p>
-              </li>
-            ))}
+            {STEPS.map((step) => {
+              const Icon = step.icon;
+              return (
+                <li key={step.num} className="lp-step">
+                  <span className="lp-step-mark" aria-hidden="true">
+                    <span className="lp-step-icon">
+                      <Icon />
+                    </span>
+                    <span className="lp-step-num">{step.num}</span>
+                  </span>
+                  <h3>{lt(step.title, locale)}</h3>
+                  <p>{lt(step.body, locale)}</p>
+                </li>
+              );
+            })}
           </ol>
 
           <div className="lp-section-cta">
@@ -229,7 +251,7 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
               onClick={() => scan('etapes')}
             >
               <CameraIcon />
-              {t('lpHeroCta', locale)}
+              {lt('lpHeroCta', locale)}
             </button>
             {ctaNote}
           </div>
@@ -238,8 +260,8 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         {/* ---------- PRODUCT ---------- */}
         <Section id="le-produit" className="lp-section--product" labelledBy="lp-product-title">
           <header className="lp-section-head">
-            <h2 id="lp-product-title">{t('lpProductTitle', locale)}</h2>
-            <p>{t('lpProductSub', locale)}</p>
+            <h2 id="lp-product-title">{lt('lpProductTitle', locale)}</h2>
+            <p>{lt('lpProductSub', locale)}</p>
           </header>
 
           <div className="lp-product-grid">
@@ -249,12 +271,12 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
 
             <ul className="lp-product-list">
               <li>
-                <h3>{t('lpProduct1Title', locale)}</h3>
-                <p>{t('lpProduct1Body', locale)}</p>
+                <h3>{lt('lpProduct1Title', locale)}</h3>
+                <p>{lt('lpProduct1Body', locale)}</p>
               </li>
               <li>
-                <h3>{t('lpProduct2Title', locale)}</h3>
-                <p>{t('lpProduct2Body', locale)}</p>
+                <h3>{lt('lpProduct2Title', locale)}</h3>
+                <p>{lt('lpProduct2Body', locale)}</p>
                 <ul className="lp-tags">
                   <li>{t('flashcards', locale)}</li>
                   <li>{t('quiz', locale)}</li>
@@ -272,8 +294,8 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                 </ul>
               </li>
               <li>
-                <h3>{t('lpProduct3Title', locale)}</h3>
-                <p>{t('lpProduct3Body', locale)}</p>
+                <h3>{lt('lpProduct3Title', locale)}</h3>
+                <p>{lt('lpProduct3Body', locale)}</p>
               </li>
             </ul>
           </div>
@@ -283,22 +305,36 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         <Section className="lp-section--problem" labelledBy="lp-problem-title">
           <div className="lp-problem">
             <div className="lp-problem-side">
-              <p className="lp-kicker">{t('lpProblemKicker', locale)}</p>
-              <h2 id="lp-problem-title">{t('lpProblemTitle', locale)}</h2>
-              <p className="lp-problem-body">{t('lpProblemBody', locale)}</p>
+              <p className="lp-kicker">{lt('lpProblemKicker', locale)}</p>
+              <h2 id="lp-problem-title">{lt('lpProblemTitle', locale)}</h2>
+              <p className="lp-problem-body">{lt('lpProblemBody', locale)}</p>
             </div>
             <div className="lp-problem-side lp-problem-side--solution">
-              <p className="lp-kicker lp-kicker--accent">{t('lpSolutionKicker', locale)}</p>
-              <h3>{t('lpSolutionTitle', locale)}</h3>
-              <p className="lp-problem-body">{t('lpSolutionBody', locale)}</p>
+              <p className="lp-kicker lp-kicker--accent">{lt('lpSolutionKicker', locale)}</p>
+              <h3>{lt('lpSolutionTitle', locale)}</h3>
+              <p className="lp-problem-body">{lt('lpSolutionBody', locale)}</p>
             </div>
           </div>
 
           <ul className="lp-benefits">
             {BENEFITS.map((benefit) => (
               <li key={benefit.title}>
-                <h3>{t(benefit.title, locale)}</h3>
-                <p>{t(benefit.body, locale)}</p>
+                <h3>{lt(benefit.title, locale)}</h3>
+                <p>{lt(benefit.body, locale)}</p>
+              </li>
+            ))}
+          </ul>
+        </Section>
+
+        <Section className="lp-section--why" labelledBy="lp-why-title">
+          <h2 id="lp-why-title" className="lp-why-title">
+            {lt('lpWhyTitle', locale)}
+          </h2>
+          <ul className="lp-why-list">
+            {WHY.map((item) => (
+              <li key={item.title}>
+                <h3>{lt(item.title, locale)}</h3>
+                <p>{lt(item.body, locale)}</p>
               </li>
             ))}
           </ul>
@@ -308,8 +344,8 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         <Section className="lp-section--game" labelledBy="lp-game-title">
           <div className="lp-game">
             <div className="lp-game-copy">
-              <h2 id="lp-game-title">{t('lpGameTitle', locale)}</h2>
-              <p className="lp-section-sub">{t('lpGameSub', locale)}</p>
+              <h2 id="lp-game-title">{lt('lpGameTitle', locale)}</h2>
+              <p className="lp-section-sub">{lt('lpGameSub', locale)}</p>
 
               <ul className="lp-game-list">
                 <li>
@@ -317,17 +353,17 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                     <SparkIcon />
                   </span>
                   <div>
-                    <h3>{t('lpGameXpTitle', locale)}</h3>
-                    <p>{t('lpGameXpBody', locale)}</p>
+                    <h3>{lt('lpGameXpTitle', locale)}</h3>
+                    <p>{lt('lpGameXpBody', locale)}</p>
                   </div>
                 </li>
                 <li>
                   <span className="lp-game-icon" aria-hidden="true">
-                    <FlameIcon />
+                    <FlameIcon size={22} />
                   </span>
                   <div>
-                    <h3>{t('lpGameStreakTitle', locale)}</h3>
-                    <p>{t('lpGameStreakBody', locale)}</p>
+                    <h3>{lt('lpGameStreakTitle', locale)}</h3>
+                    <p>{lt('lpGameStreakBody', locale)}</p>
                   </div>
                 </li>
                 <li>
@@ -335,8 +371,8 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
                     <TrophyIcon />
                   </span>
                   <div>
-                    <h3>{t('lpGameAchTitle', locale)}</h3>
-                    <p>{t('lpGameAchBody', locale)}</p>
+                    <h3>{lt('lpGameAchTitle', locale)}</h3>
+                    <p>{lt('lpGameAchBody', locale)}</p>
                   </div>
                 </li>
               </ul>
@@ -352,7 +388,7 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         {TESTIMONIALS.length > 0 && (
           <Section className="lp-section--proof" labelledBy="lp-proof-title">
             <header className="lp-section-head">
-              <h2 id="lp-proof-title">{t('lpProofTitle', locale)}</h2>
+              <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
             </header>
             <ul className="lp-proof-grid">
               {TESTIMONIALS.map((item) => (
@@ -371,21 +407,21 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         {/* ---------- FAQ ---------- */}
         <Section id="questions" className="lp-section--faq" labelledBy="lp-faq-title">
           <header className="lp-section-head">
-            <h2 id="lp-faq-title">{t('lpFaqTitle', locale)}</h2>
-            <p>{t('lpFaqSub', locale)}</p>
+            <h2 id="lp-faq-title">{lt('lpFaqTitle', locale)}</h2>
+            <p>{lt('lpFaqSub', locale)}</p>
           </header>
 
           <div className="lp-faq">
             {FAQ.map((item) => (
               <details key={item.q} className="lp-faq-item">
                 <summary>
-                  {t(item.q, locale)}
+                  {lt(item.q, locale)}
                   <span className="lp-faq-chevron" aria-hidden="true">
                     <ChevronIcon />
                   </span>
                 </summary>
                 <div className="lp-faq-answer">
-                  <p>{t(item.a, locale)}</p>
+                  <p>{lt(item.a, locale)}</p>
                   {item.q === 'lpFaq6Q' && (
                     <a href="/privacy.html" className="lp-inline-link">
                       {t('privacyOpen', locale)}
@@ -400,19 +436,19 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         {/* ---------- FINAL CTA ---------- */}
         <Section className="lp-section--final" labelledBy="lp-final-title">
           <div className="lp-final">
-            <h2 id="lp-final-title">{t('lpFinalTitle', locale)}</h2>
-            <p>{t('lpFinalSub', locale)}</p>
+            <h2 id="lp-final-title">{lt('lpFinalTitle', locale)}</h2>
+            <p>{lt('lpFinalSub', locale)}</p>
             <button
               type="button"
               className="lp-btn lp-btn--primary lp-btn--lg"
               onClick={() => scan('final')}
             >
               <CameraIcon />
-              {t('lpHeroCta', locale)}
+              {lt('lpHeroCta', locale)}
             </button>
             {ctaNote}
             <p className="lp-final-login">
-              {t('lpFinalHasAccount', locale)}{' '}
+              {lt('lpFinalHasAccount', locale)}{' '}
               <button type="button" className="lp-inline-link" onClick={login}>
                 {t('connect', locale)}
               </button>
@@ -425,18 +461,18 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         <div className="lp-container lp-footer-inner">
           <div className="lp-footer-brand">
             <LogoWordmark />
-            <p>{t('lpFooterTagline', locale)}</p>
+            <p>{lt('lpFooterTagline', locale)}</p>
           </div>
 
-          <nav className="lp-footer-nav" aria-label={t('lpFooterNavLabel', locale)}>
+          <nav className="lp-footer-nav" aria-label={lt('lpFooterNavLabel', locale)}>
             <div>
-              <p className="lp-footer-nav-title">{t('lpFooterProduct', locale)}</p>
-              <a href="#comment-ca-marche">{t('lpNavHow', locale)}</a>
-              <a href="#le-produit">{t('lpNavProduct', locale)}</a>
-              <a href="#questions">{t('lpNavFaq', locale)}</a>
+              <p className="lp-footer-nav-title">{lt('lpFooterProduct', locale)}</p>
+              <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
+              <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </div>
             <div>
-              <p className="lp-footer-nav-title">{t('lpFooterHelp', locale)}</p>
+              <p className="lp-footer-nav-title">{lt('lpFooterHelp', locale)}</p>
               <a href="mailto:support@scanplay.org">support@scanplay.org</a>
               <a href="/privacy.html">{t('privacyOpen', locale)}</a>
             </div>
@@ -444,7 +480,7 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
         </div>
 
         <p className="lp-footer-legal">
-          © {new Date().getFullYear()} ScanPlay · {t('lpFooterRights', locale)}
+          © {new Date().getFullYear()} ScanPlay · {lt('lpFooterRights', locale)}
         </p>
       </footer>
 
@@ -459,9 +495,9 @@ export function LandingPage({ locale, device, onScanPlay, onAuth }: LandingPageP
             aria-hidden={!heroCtaPassed}
           >
             <CameraIcon size={20} />
-            {t('lpHeroCta', locale)}
+            {lt('lpHeroCta', locale)}
           </button>
-          <p className="lp-sticky-note">{t('lpStickyNote', locale)}</p>
+          <p className="lp-sticky-note">{lt('lpStickyNote', locale)}</p>
         </div>
       )}
     </div>

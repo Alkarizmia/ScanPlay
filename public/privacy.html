@@ -1,60 +1,472 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Politique de confidentialité de ScanPlay — scanplay.org" />
-    <title>Politique de confidentialité — ScanPlay</title>
+    <meta
+      name="description"
+      content="Privacy policy for ScanPlay — scanplay.org. How we collect, use and protect your data."
+    />
+    <title>Privacy policy — ScanPlay</title>
     <link rel="icon" type="image/png" href="/logo.png" />
     <style>
-      :root { color-scheme: light dark; }
+      :root {
+        color-scheme: light;
+      }
       body {
         font-family: Inter, system-ui, -apple-system, sans-serif;
-        line-height: 1.6;
+        line-height: 1.65;
         max-width: 720px;
         margin: 0 auto;
         padding: 24px 20px 48px;
         color: #0f172a;
         background: #f8fafc;
       }
-      @media (prefers-color-scheme: dark) {
-        body { color: #e2e8f0; background: #0f172a; }
-        a { color: #4ade80; }
+      h1 {
+        font-size: 1.75rem;
+        font-weight: 800;
+        margin: 0 0 0.25rem;
+        letter-spacing: -0.02em;
       }
-      h1 { font-size: 1.75rem; margin-bottom: 0.25rem; }
-      h2 { font-size: 1.1rem; margin-top: 1.75rem; }
-      p, li { font-size: 0.95rem; }
-      .meta { color: #64748b; font-size: 0.85rem; margin-bottom: 1.5rem; }
-      a { color: #16a34a; }
-      nav { margin-bottom: 1.5rem; font-size: 0.9rem; }
+      h2 {
+        font-size: 1.12rem;
+        font-weight: 800;
+        margin-top: 1.75rem;
+        margin-bottom: 0.5rem;
+      }
+      p,
+      li {
+        font-size: 0.95rem;
+      }
+      ul {
+        padding-left: 1.2rem;
+        margin: 0.4rem 0 0.8rem;
+      }
+      li {
+        margin: 0.35rem 0;
+      }
+      .meta {
+        color: #64748b;
+        font-size: 0.85rem;
+        margin: 0 0 1.25rem;
+      }
+      a {
+        color: #16a34a;
+      }
+      nav {
+        margin-bottom: 1.25rem;
+        font-size: 0.9rem;
+      }
+      .lang-tabs {
+        display: flex;
+        gap: 8px;
+        margin: 0 0 20px;
+        padding: 4px;
+        max-width: 220px;
+        background: #f1f5f9;
+        border-radius: 14px;
+      }
+      .lang-tab {
+        flex: 1;
+        padding: 12px 16px;
+        border: none;
+        border-radius: 10px;
+        background: transparent;
+        color: #64748b;
+        font-family: inherit;
+        font-size: 0.95rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .lang-tab.active {
+        background: #ffffff;
+        color: #0f172a;
+        box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
+      }
+      .privacy-copy[hidden] {
+        display: none;
+      }
     </style>
   </head>
   <body>
-    <nav><a href="/">← Retour à ScanPlay</a></nav>
-    <h1>Politique de confidentialité</h1>
-    <p class="meta">ScanPlay — scanplay.org · Dernière mise à jour : juin 2026</p>
+    <nav><a href="/" data-i18n-back>← Back to ScanPlay</a></nav>
 
-    <h2>Éditeur</h2>
-    <p>
-      ScanPlay est édité par Bilal El Fahmi pour t'aider à réviser via des mini-jeux.
-      Contact : <a href="mailto:support@scanplay.org">support@scanplay.org</a>
-    </p>
+    <div class="lang-tabs" role="tablist" aria-label="Language">
+      <button type="button" class="lang-tab active" role="tab" aria-selected="true" data-lang="en">
+        EN
+      </button>
+      <button type="button" class="lang-tab" role="tab" aria-selected="false" data-lang="fr">
+        FR
+      </button>
+    </div>
 
-    <h2>Données collectées</h2>
-    <p>Avec un compte : email, pseudo, avatar, progression (XP, série, fiches, erreurs, succès), abonnement et préférences (langue, thème, sons).</p>
-    <p>Synchronisation cloud via Supabase. Profil public partagé avec tes amis : pseudo, avatar, statistiques et succès débloqués.</p>
-    <p>Scan de fiches : le texte extrait reste dans ton historique. Si l'analyse IA est activée, l'image peut être traitée par OpenAI uniquement pour extraire le vocabulaire.</p>
+    <article id="privacy-en" class="privacy-copy" lang="en">
+      <h1>Privacy policy</h1>
+      <p class="meta">ScanPlay — scanplay.org · Last updated: September 2026</p>
 
-    <h2>Paiements (Stripe)</h2>
-    <p>Les abonnements Plus/Pro sont gérés par Stripe. Les données de paiement sont traitées par Stripe selon leur propre politique de confidentialité.</p>
+      <h2>Who we are</h2>
+      <p>
+        ScanPlay is a progressive web app at <strong>scanplay.org</strong>, published by
+        <strong>Bilal El Fahmi</strong>. It turns your study sheets into short revision games. It is
+        an independent project and does not replace your course, teacher or school.
+      </p>
+      <p>
+        Contact:
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+      </p>
 
-    <h2>Conservation et droits</h2>
-    <p>Tes données ne sont pas vendues. Pour supprimer ton compte, contacte <a href="mailto:support@scanplay.org">support@scanplay.org</a> depuis l'adresse email de ton compte. Tu peux aussi demander l'accès à tes données à la même adresse.</p>
+      <h2>What this policy covers</h2>
+      <p>
+        This page explains which data we collect when you use ScanPlay, why we collect it, who
+        processes it, how long we keep it, and what rights you have. It applies to the website, the
+        installable app (PWA) and related services (account, scans, games, subscriptions).
+      </p>
 
-    <h2>About (English)</h2>
-    <p>
-      ScanPlay turns study sheets into short games. We use Supabase for sync, optional OpenAI for sheet analysis,
-      and Stripe for subscriptions. Contact: <a href="mailto:support@scanplay.org">support@scanplay.org</a>.
-    </p>
+      <h2>Data we collect</h2>
+      <p>Depending on how you use ScanPlay, we may process:</p>
+      <ul>
+        <li>
+          <strong>Account:</strong> email address, password (stored hashed by our auth provider, never
+          in plain text on our side), display name, avatar.
+        </li>
+        <li>
+          <strong>Progress:</strong> XP, level, day streak, scanned decks, cards, mistakes, achievements,
+          coins and similar in-app rewards.
+        </li>
+        <li>
+          <strong>Subscription:</strong> plan (Free, Plus, Pro), billing cycle, renewal or end dates
+          (payment card details are not stored by ScanPlay).
+        </li>
+        <li>
+          <strong>Preferences:</strong> language, theme, sound and vibration settings, stored in your
+          account and/or in your browser.
+        </li>
+        <li>
+          <strong>Guest use:</strong> you can try a first scan without an account. That session stays
+          on your device until you sign in to save it.
+        </li>
+      </ul>
+
+      <h2>Sheet scans and artificial intelligence</h2>
+      <p>
+        When you photograph or upload a sheet, we extract text to build study cards. The extracted
+        text and the deck stay in your history while your account exists (subject to plan limits).
+      </p>
+      <p>
+        If AI analysis is enabled for your scan, the image may be sent to <strong>OpenAI</strong>
+        solely to read the sheet and extract vocabulary or study items. We do not use your sheets to
+        train a public model for other people. Do not scan documents you are not allowed to digitise.
+      </p>
+
+      <h2>Cloud sync, friends and multiplayer</h2>
+      <p>
+        When you are signed in, data is synchronised with <strong>Supabase</strong> (hosting and
+        database) so you can resume on another device. Your notes are tied to your account and are
+        not published to everyone.
+      </p>
+      <p>
+        If you use friends features, your public profile shared with people you connect with may
+        include display name, avatar, stats and unlocked achievements.
+      </p>
+      <p>
+        Multiplayer sessions may store a room code, scores and lobby presence for the duration of
+        the game, then they are no longer kept for that purpose.
+      </p>
+
+      <h2>Payments (Stripe)</h2>
+      <p>
+        Plus and Pro subscriptions are billed by <strong>Stripe</strong>. Card numbers and payment
+        data are processed by Stripe under
+        <a href="https://stripe.com/privacy" rel="noopener noreferrer">Stripe’s privacy policy</a>.
+        ScanPlay receives subscription status, not your full card number.
+      </p>
+      <p>
+        Changing plan (for example Plus to Pro) is only available after the current paid period
+        ends, once automatic renewal is cancelled. End and renewal dates are shown in your profile.
+      </p>
+
+      <h2>Cookies, device storage and ads</h2>
+      <p>
+        We use storage in your browser for the session, language, theme and similar preferences
+        needed for the app to work. A signed-in session uses authentication cookies or tokens from
+        our providers.
+      </p>
+      <p>
+        If advertising is turned on, ScanPlay may use <strong>Google AdSense</strong>. Google may
+        set cookies to serve and measure ads. You can accept or refuse non-essential cookies via the
+        on-site banner when it is shown.
+      </p>
+
+      <h2>Why we process this data</h2>
+      <ul>
+        <li>to provide the service: scan, generate games, save progress, sync across devices;</li>
+        <li>to create and secure your account, and send confirmation or password-reset emails;</li>
+        <li>to manage subscriptions and customer support;</li>
+        <li>to operate optional social and multiplayer features you choose to use;</li>
+        <li>to keep the product working (security, abuse prevention, essential diagnostics).</li>
+      </ul>
+      <p>We do not sell your personal data.</p>
+
+      <h2>Retention</h2>
+      <p>
+        Account and history data are kept while your account is active. Guest data stays on the
+        device. Multiplayer presence is kept only for the session. Payment records follow Stripe’s
+        retention rules. If you ask us to delete your account, we delete or anonymise personal data
+        we control, except what we must keep for legal, tax or security reasons.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        Depending on where you live (including the EU/EEA and similar laws), you may request access
+        to your data, correction, deletion, restriction, portability, or to object to certain
+        processing. You may also lodge a complaint with your local data protection authority.
+      </p>
+      <p>
+        To access or delete your account data, email
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+        from the address you use to sign in. We may need to verify that the request comes from you.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        ScanPlay is aimed at high-school and university students. It is not directed at children
+        under 13 (or the digital-consent age in your country). If you believe a child has created an
+        account, contact us and we will delete it.
+      </p>
+
+      <h2>Security and processors</h2>
+      <p>
+        We use HTTPS and restrict access to production systems. No method of transmission is 100%
+        secure. Main processors: Supabase (hosting, auth, database), OpenAI (optional scan
+        analysis), Stripe (payments), and Vercel (hosting the website). Each applies its own
+        security and privacy terms.
+      </p>
+
+      <h2>Changes</h2>
+      <p>
+        We may update this policy when the product changes. The date at the top will be revised. For
+        material changes we may also notify you in the app or by email if you have an account.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions about privacy:
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+      </p>
+    </article>
+
+    <article id="privacy-fr" class="privacy-copy" lang="fr" hidden>
+      <h1>Politique de confidentialité</h1>
+      <p class="meta">ScanPlay — scanplay.org · Dernière mise à jour : septembre 2026</p>
+
+      <h2>Qui nous sommes</h2>
+      <p>
+        ScanPlay est une application web progressive disponible sur
+        <strong>scanplay.org</strong>, éditée par <strong>Bilal El Fahmi</strong>. Elle transforme tes
+        fiches de cours en mini-jeux de révision. C’est un projet indépendant, qui ne remplace ni ton
+        cours, ni ton professeur, ni ton établissement.
+      </p>
+      <p>
+        Contact :
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+      </p>
+
+      <h2>Ce que couvre cette page</h2>
+      <p>
+        Ce document explique quelles données nous collectons quand tu utilises ScanPlay, pourquoi,
+        qui les traite, combien de temps nous les gardons, et quels sont tes droits. Il s’applique au
+        site, à l’application installable (PWA) et aux services liés (compte, scans, jeux,
+        abonnements).
+      </p>
+
+      <h2>Données collectées</h2>
+      <p>Selon l’usage, nous pouvons traiter :</p>
+      <ul>
+        <li>
+          <strong>Compte :</strong> adresse email, mot de passe (stocké de façon hachée par le
+          prestataire d’authentification, jamais en clair de notre côté), pseudo, avatar.
+        </li>
+        <li>
+          <strong>Progression :</strong> XP, niveau, série de jours, fiches scannées, cartes, erreurs,
+          succès, pièces et récompenses similaires.
+        </li>
+        <li>
+          <strong>Abonnement :</strong> formule (Free, Plus, Pro), cycle de facturation, dates de fin
+          ou de renouvellement (ScanPlay ne stocke pas les numéros de carte).
+        </li>
+        <li>
+          <strong>Préférences :</strong> langue, thème, sons et vibration, dans le compte et/ou le
+          navigateur.
+        </li>
+        <li>
+          <strong>Invité :</strong> tu peux faire un premier scan sans compte. La session reste sur
+          l’appareil jusqu’à ce que tu te connectes pour la sauvegarder.
+        </li>
+      </ul>
+
+      <h2>Scans de fiches et intelligence artificielle</h2>
+      <p>
+        Quand tu photographies ou envoies une fiche, nous en extrayons le texte pour créer des cartes.
+        Le texte et le paquet restent dans ton historique tant que le compte existe (sous réserve des
+        limites de ton offre).
+      </p>
+      <p>
+        Si l’analyse IA est activée pour le scan, l’image peut être envoyée à
+        <strong>OpenAI</strong> uniquement pour lire la fiche et extraire le vocabulaire ou les
+        éléments à réviser. Nous n’utilisons pas tes fiches pour entraîner un modèle public destiné à
+        d’autres personnes. Ne scanne pas de documents que tu n’as pas le droit de numériser.
+      </p>
+
+      <h2>Synchronisation, amis et multijoueur</h2>
+      <p>
+        Une fois connecté, les données sont synchronisées avec <strong>Supabase</strong> (hébergement
+        et base de données) pour reprendre sur un autre appareil. Tes cours sont rattachés à ton
+        compte et ne sont pas publics.
+      </p>
+      <p>
+        Si tu utilises les amis, le profil visible par les personnes avec qui tu es lié peut
+        inclure le pseudo, l’avatar, des statistiques et les succès débloqués.
+      </p>
+      <p>
+        En multijoueur, un code de salon, des scores et la présence en salle peuvent être stockés le
+        temps de la partie, puis ne sont plus conservés à cette fin.
+      </p>
+
+      <h2>Paiements (Stripe)</h2>
+      <p>
+        Les abonnements Plus et Pro sont facturés par <strong>Stripe</strong>. Les données de
+        paiement sont traitées par Stripe selon
+        <a href="https://stripe.com/privacy" rel="noopener noreferrer">sa propre politique</a>.
+        ScanPlay reçoit le statut d’abonnement, pas le numéro complet de ta carte.
+      </p>
+      <p>
+        Un changement de formule (par exemple Plus vers Pro) n’est possible qu’à la fin de la période
+        déjà payée, après annulation du renouvellement automatique. Les dates sont visibles dans ton
+        profil.
+      </p>
+
+      <h2>Cookies, stockage local et publicités</h2>
+      <p>
+        Nous utilisons le stockage du navigateur pour la session, la langue, le thème et d’autres
+        préférences nécessaires au fonctionnement. Une session connectée s’appuie sur des cookies ou
+        jetons d’authentification de nos prestataires.
+      </p>
+      <p>
+        Si les publicités sont activées, ScanPlay peut utiliser <strong>Google AdSense</strong>.
+        Google peut déposer des cookies pour afficher et mesurer les annonces. Tu peux accepter ou
+        refuser les cookies non essentiels via le bandeau du site, lorsqu’il est affiché.
+      </p>
+
+      <h2>Pourquoi nous traitons ces données</h2>
+      <ul>
+        <li>fournir le service : scan, jeux, sauvegarde, synchronisation ;</li>
+        <li>créer et sécuriser le compte, envoyer les emails de confirmation ou de réinitialisation ;</li>
+        <li>gérer les abonnements et le support ;</li>
+        <li>faire fonctionner les options sociales et multijoueur que tu choisis d’utiliser ;</li>
+        <li>assurer le fonctionnement (sécurité, abus, diagnostics essentiels).</li>
+      </ul>
+      <p>Tes données ne sont pas vendues.</p>
+
+      <h2>Conservation</h2>
+      <p>
+        Les données de compte et d’historique sont conservées tant que le compte est actif. Les
+        données invité restent sur l’appareil. La présence multijoueur est limitée à la session. Les
+        traces de paiement suivent les règles de Stripe. Si tu demandes la suppression du compte, nous
+        supprimons ou anonymisons les données personnelles que nous contrôlons, sauf obligation
+        légale, fiscale ou de sécurité.
+      </p>
+
+      <h2>Tes droits</h2>
+      <p>
+        Selon ton pays (notamment UE/EEE), tu peux demander l’accès, la rectification, l’effacement,
+        la limitation, la portabilité, ou t’opposer à certains traitements. Tu peux aussi saisir
+        l’autorité de protection des données de ton pays.
+      </p>
+      <p>
+        Pour accéder à tes données ou supprimer le compte, écris à
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+        depuis l’email de connexion. Nous pouvons vérifier que la demande vient bien de toi.
+      </p>
+
+      <h2>Mineurs</h2>
+      <p>
+        ScanPlay s’adresse aux lycéens et étudiants. Il n’est pas destiné aux enfants de moins de 13
+        ans (ou de l’âge de consentement numérique de ton pays). Si un enfant a créé un compte,
+        contacte-nous : nous le supprimerons.
+      </p>
+
+      <h2>Sécurité et sous-traitants</h2>
+      <p>
+        Les échanges passent en HTTPS. Aucune transmission n’est sûre à 100 %. Principaux
+        prestataires : Supabase (hébergement, auth, base), OpenAI (analyse optionnelle des scans),
+        Stripe (paiements) et Vercel (hébergement du site). Chacun applique ses propres conditions.
+      </p>
+
+      <h2>Modifications</h2>
+      <p>
+        Cette politique peut évoluer avec le produit. La date en haut sera mise à jour. En cas de
+        changement important, nous pourrons aussi t’en informer dans l’app ou par email si tu as un
+        compte.
+      </p>
+
+      <h2>Contact</h2>
+      <p>
+        Questions confidentialité :
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+      </p>
+    </article>
+
+    <script>
+      (function () {
+        var storageKey = 'scanplay-privacy-lang';
+        var en = document.getElementById('privacy-en');
+        var fr = document.getElementById('privacy-fr');
+        var back = document.querySelector('[data-i18n-back]');
+        var tabs = document.querySelectorAll('.lang-tab');
+        var titles = {
+          en: 'Privacy policy — ScanPlay',
+          fr: 'Politique de confidentialité — ScanPlay',
+        };
+        var descriptions = {
+          en: 'Privacy policy for ScanPlay — scanplay.org. How we collect, use and protect your data.',
+          fr: 'Politique de confidentialité de ScanPlay — scanplay.org. Quelles données nous collectons et comment nous les protégeons.',
+        };
+        var backLabel = {
+          en: '← Back to ScanPlay',
+          fr: '← Retour à ScanPlay',
+        };
+
+        function setLang(lang) {
+          var isFr = lang === 'fr';
+          document.documentElement.lang = isFr ? 'fr' : 'en';
+          document.title = isFr ? titles.fr : titles.en;
+          var meta = document.querySelector('meta[name="description"]');
+          if (meta) meta.setAttribute('content', isFr ? descriptions.fr : descriptions.en);
+          en.hidden = isFr;
+          fr.hidden = !isFr;
+          if (back) back.textContent = isFr ? backLabel.fr : backLabel.en;
+          tabs.forEach(function (tab) {
+            var on = tab.getAttribute('data-lang') === (isFr ? 'fr' : 'en');
+            tab.classList.toggle('active', on);
+            tab.setAttribute('aria-selected', on ? 'true' : 'false');
+          });
+          try {
+            sessionStorage.setItem(storageKey, isFr ? 'fr' : 'en');
+          } catch (e) {}
+        }
+
+        tabs.forEach(function (tab) {
+          tab.addEventListener('click', function () {
+            setLang(tab.getAttribute('data-lang'));
+          });
+        });
+
+        var saved = '';
+        try {
+          saved = sessionStorage.getItem(storageKey) || '';
+        } catch (e) {}
+        setLang(saved === 'fr' ? 'fr' : 'en');
+      })();
+    </script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LogoWordmark } from './Logo';
 import { SiteFooter } from './SiteFooter';
 import {
@@ -199,8 +199,22 @@ export function AuthScreen({
   const showForgotFooter = mode === 'login' && !awaitingEmailConfirm;
   const showInvalidCredentialsHint = mode === 'login' && errorKey === 'authInvalidCredentials';
 
+  useEffect(() => {
+    const html = document.documentElement;
+    const prevTheme = html.getAttribute('data-theme');
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    const prevThemeColor = themeColor?.getAttribute('content') ?? null;
+    html.setAttribute('data-theme', 'light');
+    themeColor?.setAttribute('content', '#f8fafc');
+    return () => {
+      if (prevTheme) html.setAttribute('data-theme', prevTheme);
+      else html.removeAttribute('data-theme');
+      if (prevThemeColor !== null) themeColor?.setAttribute('content', prevThemeColor);
+    };
+  }, []);
+
   return (
-    <div className="screen flow-screen auth-screen">
+    <div className="screen flow-screen auth-screen" data-theme="light">
       <header className="top-bar">
         {onBack ? (
           <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>

@@ -57,7 +57,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       mode: 'subscription',
       line_items: [{ price: priceId, quantity: 1 }],
       allow_promotion_codes: true,
-      payment_method_types: ['card'],
+      // Dynamic methods (Google Pay, Apple Pay, Bancontact…) come from the
+      // Stripe Dashboard. PayPal stays off ScanPlay so it does not leak from
+      // other products on the same Stripe account.
+      excluded_payment_method_types: ['paypal'],
       success_url: `${appUrl}/?stripe=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${appUrl}/?stripe=cancel`,
       client_reference_id: user.id,

@@ -1,3 +1,5 @@
+import { StreakFlame } from '../icons/StreakFlame';
+import { lt, type LandingLang } from '../../lib/landingI18n';
 import { t } from '../../lib/i18n';
 import type { Locale } from '../../types';
 
@@ -39,6 +41,24 @@ export function SheetMock({ locale }: { locale: Locale }) {
         <span className="lp-sheet-scanline" />
       </div>
     </figure>
+  );
+}
+
+/**
+ * Slot for a real in-app capture. No gameplay screenshot or GIF exists in the
+ * repo yet (`public/marketing/hero-guest-path.png` is an old path mock, not a game).
+ */
+export function HeroGameCapture({ lang }: { lang: LandingLang }) {
+  return (
+    <div className="lp-phone lp-phone--hero" aria-hidden="true">
+      <div className="lp-phone-frame">
+        <span className="lp-phone-island" />
+        <div className="lp-phone-screen lp-phone-screen--capture">
+          {/* TODO: remplacer par vraie capture app */}
+          <p className="lp-capture-placeholder">{lt('lpCapturePlaceholder', lang)}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -125,7 +145,7 @@ export function ProgressCardMock({ locale }: { locale: Locale }) {
     <div className="lp-progress-card" aria-hidden="true">
       <div className="lp-progress-row">
         <span className="lp-progress-flame">
-          <FlameIcon />
+          <FlameIcon size={24} />
         </span>
         <span className="lp-progress-text">
           <strong>7</strong>
@@ -147,12 +167,8 @@ export function ProgressCardMock({ locale }: { locale: Locale }) {
 
 /* ---------- icons ---------- */
 
-export function FlameIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 2c.7 3.2-1.2 4.6-2.6 6.1C8 9.6 7 11 7 13.4A5 5 0 0 0 12 22a5 5 0 0 0 5-5.2c0-2.4-1.3-3.9-2.6-5.5-.6.8-1.3 1.3-2.1 1.5.6-2.2.6-4.4-.3-6.4-.3-.8-.7-1.6-1.2-2.3.4.3.8.6 1.2.9Z" />
-    </svg>
-  );
+export function FlameIcon({ size = 16 }: { size?: number }) {
+  return <StreakFlame lit size={size} />;
 }
 
 function CheckIcon() {

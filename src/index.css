@@ -4216,6 +4216,22 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .auth-screen {
   min-height: 0;
   overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+}
+.auth-screen .field-input {
+  border-color: var(--surface-border);
+  background: var(--bg-card);
+  color: var(--text);
+}
+.auth-screen .auth-google-btn {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  color: #0f172a;
+}
+.auth-screen .auth-tab.active {
+  background: var(--bg-card);
+  color: var(--text);
 }
 .auth-main {
   flex: 1;
