@@ -3,59 +3,66 @@ import { getPathStepCount } from './planLimits';
 import { unpackDeckProgress } from './examEligibility';
 import { buildHistoryTitle, detectHistorySubject } from './historySubject';
 
-import { isLoggedIn } from './auth';
+import { getUserId, isLoggedIn } from './auth';
 import { getLocale } from './i18n';
 import { getHistoryMax } from './planLimits';
 
 
 
 const KEY = 'scanplay-history';
+const LAST_HOME_KEY = 'scanplay-last-home-deck';
 
+function lastHomeStorageKey(): string {
+  const userId = getUserId();
+  return userId ? `${LAST_HOME_KEY}:${userId}` : LAST_HOME_KEY;
+}
 
+function rememberLastHomeDeck(entry: { id: string; title: string } | undefined) {
+  if (!entry?.id || !entry.title) return;
+  try {
+    localStorage.setItem(lastHomeStorageKey(), JSON.stringify({ id: entry.id, title: entry.title }));
+  } catch {
+    /* quota */
+  }
+}
+
+export function peekLastHomeDeck(): { id: string; title: string } | null {
+  try {
+    const raw = localStorage.getItem(lastHomeStorageKey());
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as { id?: string; title?: string };
+    if (!parsed.id || !parsed.title) return null;
+    return { id: parsed.id, title: parsed.title };
+  } catch {
+    return null;
+  }
+}
+
+export function getHistory(): HistoryEntry[] {
+  const entries = loadHistoryRaw().sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+  if (entries[0]) rememberLastHomeDeck(entries[0]);
+  return entries;
+}
 
 export function loadHistoryRaw(): HistoryEntry[] {
-
   try {
-
     return JSON.parse(localStorage.getItem(KEY) ?? '[]');
-
   } catch {
-
     return [];
-
   }
-
 }
-
-
 
 export function saveHistoryRaw(entries: HistoryEntry[]): void {
-
   localStorage.setItem(KEY, JSON.stringify(entries));
-
 }
-
-
 
 function save(entries: HistoryEntry[]): void {
   if (!isLoggedIn()) return;
   saveHistoryRaw(entries);
   void import('./sync').then((m) => m.scheduleSync());
 }
-
-
-
-export function getHistory(): HistoryEntry[] {
-
-  return loadHistoryRaw().sort(
-
-    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-
-  );
-
-}
-
-
 
 function autoTitle(pairs: WordPair[], sheetType?: SheetType): string {
   const locale = getLocale();

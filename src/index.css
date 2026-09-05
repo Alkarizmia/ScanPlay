@@ -1432,6 +1432,42 @@ html[data-device="desktop"] .flashcard.flipped .back {
   max-width: 280px;
 }
 
+.home-install-card {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  padding: 18px 16px 16px;
+  border-radius: 20px;
+  background: color-mix(in srgb, var(--accent) 12%, var(--bg-card));
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--surface-border));
+}
+
+.home-install-card-title {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.home-install-card-body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.home-install-card-cta {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 4px;
+}
+
+.home-install-card-later {
+  align-self: center;
+}
+
 .home-install-done {
   text-align: center;
   color: var(--accent);

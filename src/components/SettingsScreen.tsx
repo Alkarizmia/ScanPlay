@@ -274,6 +274,23 @@ export function SettingsScreen({
           </p>
         </section>
 
+        {!isInstalled && (
+          <section className="settings-section">
+            <h3 className="settings-label">{t('installHomeTitle', locale)}</h3>
+            <p className="settings-hint">{t('installHomeBody', locale)}</p>
+            {(showInstallButton || canNativeInstall) && (
+              <button type="button" className="btn-primary" onClick={() => void handleInstall()}>
+                {t('installApp', locale)}
+              </button>
+            )}
+          </section>
+        )}
+        {isInstalled && (
+          <section className="settings-section">
+            <p className="settings-hint">{t('installAppInstalled', locale)}</p>
+          </section>
+        )}
+
         <section className="settings-section">
           <h3 className="settings-label">{t('privacySection', locale)}</h3>
           <p className="settings-hint">{t('privacyIntro', locale)}</p>
@@ -289,12 +306,6 @@ export function SettingsScreen({
           <a className="btn-secondary" href="mailto:support@scanplay.org">
             {t('settingsContact', locale)}
           </a>
-          {showInstallButton && (
-            <button type="button" className="btn-secondary" onClick={() => void handleInstall()}>
-              {t('installApp', locale)}
-            </button>
-          )}
-          {isInstalled && <p className="settings-hint">{t('installAppInstalled', locale)}</p>}
         </section>
 
         <section className="settings-section">

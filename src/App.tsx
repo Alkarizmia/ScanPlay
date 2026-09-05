@@ -96,7 +96,7 @@ import { notifyAchievementUnlock, notifyGoldStep, notifyStreakMilestone } from '
 import { playSound, playStreakSound, stopAllMusic } from './lib/sounds';
 import { hapticAchievement, hapticLevelUp } from './lib/haptics';
 import { hasStoredAuthSession, initAuth, isAuthReady, isLoggedIn, onPasswordRecovery, consumePasswordRecoveryPending, setupSyncLifecycle, waitForAuth } from './lib/auth';
-import { addHistoryEntry, canAddHistory, getHistory, readDeckProgress, touchHistoryPlayed, updateHistoryDeckProgress, updateHistoryMode, updateHistorySessionStats, getHistoryEntry } from './lib/history';
+import { addHistoryEntry, canAddHistory, getHistory, getHistoryEntry, peekLastHomeDeck, readDeckProgress, touchHistoryPlayed, updateHistoryDeckProgress, updateHistoryMode, updateHistorySessionStats } from './lib/history';
 import { onSyncReady, pullUserData } from './lib/sync';
 import { isStripeCheckoutEnabled } from './lib/stripeCheckout';
 import { addExamHistoryEntry, type ExamStepGrade } from './lib/examHistory';
@@ -1815,7 +1815,8 @@ export default function App() {
           onAuth={() => openAuth('login')}
           onRefresh={refresh}
           onContinueLast={() => {
-            const last = getHistory()[0];
+            const peek = peekLastHomeDeck();
+            const last = getHistory()[0] ?? (peek ? getHistoryEntry(peek.id) : undefined);
             if (last) openHistoryDeck(last);
           }}
           onOpenDeck={openHistoryDeck}

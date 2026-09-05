@@ -19,7 +19,9 @@ export function usePwaInstall() {
   const [inAppBrowser] = useState(isInAppBrowser);
 
   useEffect(() => {
-    const syncInstalled = () => setIsInstalled(isStandaloneApp());
+    const syncInstalled = () => {
+      if (isStandaloneApp()) setIsInstalled(true);
+    };
 
     const onBeforeInstall = (e: Event) => {
       e.preventDefault();
@@ -30,11 +32,16 @@ export function usePwaInstall() {
       setIsInstalled(true);
       setDeferredPrompt(null);
       trackEvent('install_reussie');
+      void import('../lib/sync').then((m) => m.reportPwaInstalled()).catch(() => {});
     };
 
     window.addEventListener('beforeinstallprompt', onBeforeInstall);
     window.addEventListener('appinstalled', onInstalled);
     document.addEventListener('visibilitychange', syncInstalled);
+
+    if (isStandaloneApp()) {
+      void import('../lib/sync').then((m) => m.reportPwaInstalled()).catch(() => {});
+    }
 
     return () => {
       window.removeEventListener('beforeinstallprompt', onBeforeInstall);
@@ -50,14 +57,14 @@ export function usePwaInstall() {
     if (outcome === 'accepted') {
       setDeferredPrompt(null);
       setIsInstalled(true);
+      void import('../lib/sync').then((m) => m.reportPwaInstalled()).catch(() => {});
       return true;
     }
     return false;
   }, [deferredPrompt]);
 
   const canNativeInstall = Boolean(deferredPrompt) && !isInstalled;
-  const canShowInstall =
-    !isInstalled && (platform === 'ios' || platform === 'android') && !inAppBrowser;
+  const canShowInstall = !isInstalled && !inAppBrowser;
 
   return {
     canNativeInstall,

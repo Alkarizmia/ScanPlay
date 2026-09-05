@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { usePlan } from '../hooks/usePlan';
 import { BrandDecor } from './BrandDecor';
@@ -16,13 +16,28 @@ import { usePwaInstall } from '../hooks/usePwaInstall';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
-import { getHistory } from '../lib/history';
+import { getHistory, peekLastHomeDeck } from '../lib/history';
 import { trackEvent } from '../lib/analytics';
 import { getDateLocale, t } from '../lib/i18n';
 import { collectDroppedImageFiles } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining, PLAN_LIMITS } from '../lib/planLimits';
 import type { DeviceProfile } from '../lib/device';
 import type { HistoryEntry, Locale } from '../types';
+
+const INSTALL_SNOOZE_KEY = 'scanplay-install-snooze';
+const INSTALL_AUTO_KEY = 'scanplay-install-auto-at';
+const DAY_MS = 86_400_000;
+
+function isInstallSnoozed(): boolean {
+  const raw = localStorage.getItem(INSTALL_SNOOZE_KEY);
+  if (!raw) return false;
+  const at = Number(raw);
+  return Number.isFinite(at) && Date.now() - at < 5 * DAY_MS;
+}
+
+function markInstallSnooze() {
+  localStorage.setItem(INSTALL_SNOOZE_KEY, String(Date.now()));
+}
 
 interface HomeScreenProps {
   locale: Locale;
@@ -66,13 +81,15 @@ export function HomeScreen({
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
   const [installSheetOpen, setInstallSheetOpen] = useState(false);
+  const [installSnoozed, setInstallSnoozed] = useState(isInstallSnoozed);
   const { canNativeInstall, canShowInstall, isInstalled, install, platform, isInAppBrowser } =
     usePwaInstall();
   const loggedIn = isLoggedIn();
   const recentDecks = loggedIn ? getHistory().slice(0, 6) : [];
+  const lastDeck = recentDecks[0] ?? (loggedIn ? peekLastHomeDeck() : null);
   const recentUnlocks = loggedIn ? getRecentUnlocks(4) : [];
   const welcomeMessage =
-    recentDecks.length > 0 ? t('mascotWelcomeBackShort', locale) : t('mascotWelcomeReady', locale);
+    lastDeck ? t('mascotWelcomeBackShort', locale) : t('mascotWelcomeReady', locale);
 
   const handleFiles = (list: FileList | File[] | null) => {
     if (!list) return;
@@ -99,6 +116,9 @@ export function HomeScreen({
     handleFiles(images);
   };
 
+  const showInstallButton = canShowInstall || isInAppBrowser;
+  const showInstallNudge = loggedIn && showInstallButton && !isInstalled && !installSnoozed;
+
   const handleInstall = async () => {
     trackEvent('clic_installer');
     if (canNativeInstall) {
@@ -108,7 +128,23 @@ export function HomeScreen({
     setInstallSheetOpen(true);
   };
 
-  const showInstallButton = canShowInstall || isInAppBrowser;
+  const snoozeInstall = () => {
+    markInstallSnooze();
+    setInstallSnoozed(true);
+    setInstallSheetOpen(false);
+  };
+
+  useEffect(() => {
+    if (!showInstallNudge) return;
+    const lastAuto = Number(localStorage.getItem(INSTALL_AUTO_KEY) ?? '0');
+    if (Number.isFinite(lastAuto) && Date.now() - lastAuto < 7 * DAY_MS) return;
+    const timer = window.setTimeout(() => {
+      localStorage.setItem(INSTALL_AUTO_KEY, String(Date.now()));
+      setInstallSheetOpen(true);
+      trackEvent('install_prompt_auto');
+    }, 2800);
+    return () => window.clearTimeout(timer);
+  }, [showInstallNudge]);
 
   if (!loggedIn) {
     return (
@@ -155,10 +191,10 @@ export function HomeScreen({
           />
         )}
 
-        {loggedIn && recentDecks[0] && onContinueLast && (
+        {lastDeck && onContinueLast && (
           <section className="home-continue-block">
             <p className="home-continue-hint">
-              {t('homeContinueLastHint', locale).replace('{title}', recentDecks[0].title)}
+              {t('homeContinueLastHint', locale).replace('{title}', lastDeck.title)}
             </p>
             <button type="button" className="btn-primary btn-lg home-continue-cta" onClick={onContinueLast}>
               {t('homeContinueLast', locale)}
@@ -169,84 +205,49 @@ export function HomeScreen({
           </section>
         )}
 
-        {!(loggedIn && recentDecks[0]) && (
-        <section
-          className={`home-scan-hero premium-card${!loggedIn && canGuestScan() ? ' home-scan-hero--guest-trial' : ''}`}
-        >
-          <p className="tagline">{t('tagline', locale)}</p>
-          <p className="subtagline">{t('subtagline', locale)}</p>
-
-          {loggedIn && scansLeft !== Infinity && (
-              <p className="scans-left">
+        {!lastDeck && (
+          <section className="home-continue-block">
+            {loggedIn && scansLeft !== Infinity && (
+              <p className="home-continue-hint">
                 {scansLeft} / {PLAN_LIMITS[plan].scansPerDay} {t('scansToday', locale)}
               </p>
             )}
-
-          {isDesktop ? (
-            <div
-              className={`home-dropzone ${dragOver ? 'home-dropzone--active' : ''}`}
-              onDragOver={(e) => {
-                e.preventDefault();
-                setDragOver(true);
-              }}
-              onDragLeave={() => setDragOver(false)}
-              onDrop={onDrop}
-              onClick={() => fileRef.current?.click()}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click();
-              }}
-            >
-              {!loggedIn && canGuestScan() && (
-                <span className="home-dropzone-guest-badge">{t('guestScanTopPill', locale)}</span>
-              )}
-              <span className="home-dropzone-icon" aria-hidden="true">
-                📄
-              </span>
-              <span className="home-dropzone-title">{t('importDrop', locale)}</span>
-              <button
-                type="button"
-                className="btn-primary home-dropzone-btn"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  fileRef.current?.click();
+            <button type="button" className="btn-primary btn-lg home-continue-cta" onClick={() => onScanPlay()}>
+              {t('lpHeroCta', locale)}
+            </button>
+            {isDesktop && (
+              <div
+                className={`home-dropzone home-dropzone--compact ${dragOver ? 'home-dropzone--active' : ''}`}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOver(true);
+                }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={onDrop}
+                onClick={() => fileRef.current?.click()}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') fileRef.current?.click();
                 }}
               >
-                {t('scanPlayDesktop', locale)}
-              </button>
-            </div>
-          ) : (
-            <div className="camera-zone">
-              <button
-                type="button"
-                className="camera-btn"
-                onClick={() => onScanPlay()}
-                aria-label={t('scanPlay', locale)}
-              >
-                <span className="camera-ring" />
-                <span className="camera-inner">
-                  <svg width="44" height="44" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                    <path
-                      d="M4 8h2l1.5-2h9L18 8h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V10a2 2 0 0 1 2-2z"
-                      stroke="currentColor"
-                      strokeWidth="1.75"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                    <circle cx="12" cy="14" r="3.5" stroke="currentColor" strokeWidth="1.75" />
-                  </svg>
-                </span>
-              </button>
-              <span className="camera-label">{t('scanPlay', locale)}</span>
-              <p className="home-scan-hint">
-                {!loggedIn && canGuestScan()
-                  ? t('guestScanMobileHint', locale)
-                  : t('homeScanHint', locale)}
-              </p>
-            </div>
-          )}
-        </section>
+                <span className="home-dropzone-title">{t('importDrop', locale)}</span>
+              </div>
+            )}
+          </section>
+        )}
+
+        {showInstallNudge && (
+          <section className="home-install-card">
+            <p className="home-install-card-title">{t('installHomeTitle', locale)}</p>
+            <p className="home-install-card-body">{t('installHomeBody', locale)}</p>
+            <button type="button" className="btn-primary home-install-card-cta" onClick={() => void handleInstall()}>
+              {t('installApp', locale)}
+            </button>
+            <button type="button" className="text-link home-install-card-later" onClick={snoozeInstall}>
+              {t('installAppLater', locale)}
+            </button>
+          </section>
         )}
 
         {loggedIn && (
@@ -346,12 +347,6 @@ export function HomeScreen({
               })}
             </div>
           </section>
-        )}
-
-        {showInstallButton && (
-          <button type="button" className="btn-secondary home-install-btn" onClick={() => void handleInstall()}>
-            {t('installApp', locale)}
-          </button>
         )}
 
         {isInstalled && <p className="home-install-done">{t('installAppInstalled', locale)}</p>}

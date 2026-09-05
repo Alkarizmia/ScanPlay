@@ -27,11 +27,9 @@ export function InstallAppSheet({
   const steps =
     platform === 'ios'
       ? [t('installIosStep1', locale), t('installIosStep2', locale), t('installIosStep3', locale)]
-      : [
-          t('installAndroidStep1', locale),
-          t('installAndroidStep2', locale),
-          t('installAndroidStep3', locale),
-        ];
+      : platform === 'android'
+        ? [t('installAndroidStep1', locale), t('installAndroidStep2', locale), t('installAndroidStep3', locale)]
+        : [t('installDesktopStep1', locale), t('installDesktopStep2', locale), t('installDesktopStep3', locale)];
 
   const handleNative = async () => {
     const ok = await onNativeInstall();
@@ -55,7 +53,7 @@ export function InstallAppSheet({
           <p className="install-sheet-hint">{t('installInAppHint', locale)}</p>
         ) : (
           <>
-            {canNativeInstall && platform === 'android' && (
+            {canNativeInstall && (
               <button type="button" className="btn-primary btn-lg install-sheet-native" onClick={() => void handleNative()}>
                 {t('installAndroidNativeBtn', locale)}
               </button>

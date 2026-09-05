@@ -523,3 +523,15 @@ export async function syncMistakes(): Promise<void> {
 export async function syncStats(): Promise<void> {
   scheduleSync();
 }
+
+export async function reportPwaInstalled(): Promise<void> {
+  const supabase = getSupabase();
+  const userId = getUserId();
+  if (!supabase || !userId) return;
+  const { error } = await supabase
+    .from('scanplay_profiles')
+    .update({ pwa_installed_at: new Date().toISOString() })
+    .eq('user_id', userId)
+    .is('pwa_installed_at', null);
+  if (error) console.warn('pwa_installed_at', error.message);
+}

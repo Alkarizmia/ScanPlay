@@ -718,6 +718,7 @@ html[data-device='desktop']:has(.auth-screen) #root {
   [data-device='desktop'] .home-screen--desktop .home-continue-block,
   [data-device='desktop'] .home-screen--desktop .home-scan-hero,
   [data-device='desktop'] .home-screen--desktop .home-section,
+  [data-device='desktop'] .home-screen--desktop .home-install-card,
   [data-device='desktop'] .home-screen--desktop .home-install-btn,
   [data-device='desktop'] .home-screen--desktop .home-install-done,
   [data-device='desktop'] .home-screen--desktop .text-link,

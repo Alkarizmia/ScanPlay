@@ -4,7 +4,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { getUserFromRequest, tryGetSupabaseAdmin } from '../server/auth.js';
 import { getAppUrl } from '../server/stripe.js';
 
-type MailKind = 'streak' | 'friend_request' | 'friend_accepted';
+type MailKind = 'streak' | 'friend_request' | 'friend_accepted' | 'install';
 
 const FROM_EMAIL = 'ScanPlay <support@scanplay.org>';
 
@@ -76,8 +76,9 @@ function isFrench(locale?: string | null): boolean {
   return tag === 'fr' || tag.startsWith('fr-');
 }
 
-function wrapHtml(title: string, body: string, cta: string): string {
+function wrapHtml(title: string, body: string, cta: string, ctaUrl?: string): string {
   const url = (getAppUrl() || 'https://scanplay.org').replace(/\/$/, '');
+  const href = (ctaUrl || url).replace(/\/$/, '');
   const logo = `${url}/logo.png`;
   return `<!doctype html>
 <html><body style="margin:0;background:#f8fafc;font-family:Inter,system-ui,sans-serif;color:#0f172a;">
@@ -92,7 +93,7 @@ function wrapHtml(title: string, body: string, cta: string): string {
     </table>
     <h1 style="margin:0 0 12px;font-size:1.35rem;">${title}</h1>
     <p style="margin:0 0 20px;line-height:1.55;color:#334155;">${body}</p>
-    <p><a href="${url}" style="display:inline-block;padding:12px 18px;background:#58cc02;color:#14350c;font-weight:800;text-decoration:none;border-radius:12px;">${cta}</a></p>
+    <p><a href="${href}" style="display:inline-block;padding:12px 18px;background:#58cc02;color:#14350c;font-weight:800;text-decoration:none;border-radius:12px;">${cta}</a></p>
   </div>
 </body></html>`;
 }
@@ -127,6 +128,18 @@ function buildLifecycleMail(
       : `${name} wants to connect. Open ScanPlay to accept and study together.`;
     const cta = fr ? 'Voir la demande' : 'See the request';
     return { subject, text: `${body}\n\n${url}`, html: wrapHtml(title, body, cta) };
+  }
+
+  if (kind === 'install') {
+    const subject = fr
+      ? 'Un raccourci ScanPlay sur ton écran ?'
+      : 'Put ScanPlay on your home screen?';
+    const title = fr ? 'Installe ScanPlay, comme une vraie app' : 'Install ScanPlay like a real app';
+    const body = fr
+      ? `Ça fait deux semaines que tu as un compte. Un tap depuis l’écran d’accueil, et tes fiches s’ouvrent tout de suite — sans chercher l’onglet. Voici le lien : ${url}`
+      : `It’s been two weeks since you signed up. One tap from your home screen and your sheets open right away — no hunting for a tab. Here’s the link: ${url}`;
+    const cta = fr ? 'Ouvrir ScanPlay' : 'Open ScanPlay';
+    return { subject, text: `${body}\n\n${url}`, html: wrapHtml(title, body, cta, url) };
   }
 
   const subject = fr ? `${name} a accepté ta demande` : `${name} accepted your request`;
@@ -258,6 +271,7 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
   const yesterday = addCalendarDays(today, -1);
   let streakSent = 0;
   let socialSent = 0;
+  let installSent = 0;
 
   const { data: atRisk, error: streakErr } = await admin
     .from('scanplay_profiles')
@@ -301,7 +315,27 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
     if (ok) socialSent += 1;
   }
 
-  return res.status(200).json({ ok: true, today, streakSent, socialSent });
+  const minSignup = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString();
+  const maxSignup = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  const { data: notInstalled, error: installErr } = await admin
+    .from('scanplay_profiles')
+    .select('user_id, locale')
+    .is('pwa_installed_at', null)
+    .neq('email_alerts', false)
+    .limit(80);
+
+  if (installErr) console.warn('lifecycle install query', installErr.message);
+
+  for (const row of notInstalled ?? []) {
+    const userId = String(row.user_id);
+    const { data: userData } = await admin.auth.admin.getUserById(userId);
+    const created = userData.user?.created_at;
+    if (!created || created > maxSignup || created < minSignup) continue;
+    const ok = await sendClaimedMail(admin, userId, 'install', `install:${userId}`, {});
+    if (ok) installSent += 1;
+  }
+
+  return res.status(200).json({ ok: true, today, streakSent, socialSent, installSent });
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
