@@ -11,7 +11,7 @@ export async function notifyLifecycleEmail(payload: {
   if (!token) return;
 
   try {
-    await fetch('/api/notify-email', {
+    await fetch('/api/lifecycle-emails', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
