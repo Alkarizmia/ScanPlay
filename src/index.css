@@ -3429,6 +3429,18 @@ html[data-device="desktop"] .flashcard.flipped .back {
   padding: 14px 0;
   border-bottom: 1px solid rgba(100, 116, 139, 0.15);
 }
+.settings-row--stack {
+  align-items: flex-start;
+  gap: 12px;
+}
+.settings-hint {
+  margin: 4px 0 0;
+  max-width: 16rem;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  line-height: 1.35;
+  font-weight: 500;
+}
 .settings-select {
   font-family: inherit;
   padding: 8px 12px;

@@ -54,6 +54,9 @@ export function setPreference<K extends keyof UserPreferences>(
   prefs[key] = value;
   localStorage.setItem(KEY, JSON.stringify(prefs));
   notifyPreferenceChange();
+  if (key === 'notifications') {
+    void import('./sync').then((m) => m.scheduleSync());
+  }
 }
 
 export function isSoundEnabled(): boolean {

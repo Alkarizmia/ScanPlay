@@ -165,6 +165,11 @@ export async function sendFriendRequest(targetId: string): Promise<boolean> {
 
   await syncStatsToCloud();
   const { error } = await supabase.rpc('send_friend_request', { p_target: targetId });
+  if (!error) {
+    void import('./notifyEmail').then((m) =>
+      m.notifyLifecycleEmail({ kind: 'friend_request', otherUserId: targetId }),
+    );
+  }
   return !error;
 }
 
@@ -173,10 +178,21 @@ export async function respondFriendRequest(requestId: string, accept: boolean): 
   const supabase = getSupabase();
   if (!supabase) return false;
 
+  let fromUserId: string | null = null;
+  if (accept) {
+    const pending = await listPendingFriendRequests();
+    fromUserId = pending.find((item) => item.requestId === requestId)?.fromUserId ?? null;
+  }
+
   const { error } = await supabase.rpc('respond_friend_request', {
     p_request_id: requestId,
     p_accept: accept,
   });
+  if (!error && accept && fromUserId) {
+    void import('./notifyEmail').then((m) =>
+      m.notifyLifecycleEmail({ kind: 'friend_accepted', otherUserId: fromUserId }),
+    );
+  }
   return !error;
 }
 

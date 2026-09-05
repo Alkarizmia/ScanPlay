@@ -231,8 +231,11 @@ export function SettingsScreen({
           <button type="button" className="btn-secondary audio-settings-link" onClick={() => setAudioOpen(true)}>
             {t('openAudioSettings', locale)}
           </button>
-          <div className="settings-row">
-            <span>{prefs.notifications ? t('notificationsOn', locale) : t('notificationsOff', locale)}</span>
+          <div className="settings-row settings-row--stack">
+            <div>
+              <span>{prefs.notifications ? t('notificationsOn', locale) : t('notificationsOff', locale)}</span>
+              <p className="settings-hint">{t('notificationsEmailHint', locale)}</p>
+            </div>
             <button
               type="button"
               className={`toggle ${prefs.notifications ? 'on' : ''}`}

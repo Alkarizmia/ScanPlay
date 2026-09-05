@@ -9,6 +9,7 @@ import { getHistory, saveHistoryRaw } from './history';
 import { getLocale } from './i18n';
 import { clearLocalUserData } from './localData';
 import { getMistakes, saveMistakesRaw } from './mistakes';
+import { areNotificationsEnabled } from './preferences';
 import { getPlan, setBillingCycle, setPlan } from './planLimits';
 import { applySubscriptionMeta, clearSubscriptionMeta } from './subscription';
 import { isStripeCheckoutEnabled } from './stripeCheckout';
@@ -299,6 +300,7 @@ export async function pushUserData(): Promise<void> {
       streak_lost_at: wallet.lostStreakAt,
       streak_lost_ack_at: wallet.lostStreakAckAt,
       locale,
+      email_alerts: areNotificationsEnabled(),
       updated_at: new Date().toISOString(),
     };
     if (!isStripeCheckoutEnabled()) {
