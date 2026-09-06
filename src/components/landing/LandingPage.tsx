@@ -5,6 +5,7 @@ import {
   CameraIcon,
   FlameIcon,
   PathPhoneMock,
+  PathRanksMock,
   QuizPhoneMock,
   ProgressCardMock,
   SheetMock,
@@ -299,6 +300,32 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               </li>
             </ul>
           </div>
+        </Section>
+
+        <Section className="lp-section--ranks" labelledBy="lp-ranks-title">
+          <header className="lp-section-head">
+            <h2 id="lp-ranks-title">{lt('lpRanksTitle', locale)}</h2>
+            <p>{lt('lpRanksSub', locale)}</p>
+          </header>
+          <PathRanksMock locale={locale} />
+          <ul className="lp-ranks-copy">
+            <li>
+              <h3>{lt('lpRanksGlowTitle', locale)}</h3>
+              <p>{lt('lpRanksGlowBody', locale)}</p>
+            </li>
+            <li>
+              <h3>{lt('lpRanksBronzeTitle', locale)}</h3>
+              <p>{lt('lpRanksBronzeBody', locale)}</p>
+            </li>
+            <li>
+              <h3>{lt('lpRanksIronTitle', locale)}</h3>
+              <p>{lt('lpRanksIronBody', locale)}</p>
+            </li>
+            <li>
+              <h3>{lt('lpRanksGoldTitle', locale)}</h3>
+              <p>{lt('lpRanksGoldBody', locale)}</p>
+            </li>
+          </ul>
         </Section>
 
         {/* ---------- PROBLEM → SOLUTION ---------- */}

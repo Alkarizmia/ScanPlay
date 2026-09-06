@@ -12,7 +12,7 @@ if (!existsSync(master)) {
 }
 
 const source = readFileSync(master);
-const GREEN = { r: 88, g: 204, b: 2, alpha: 1 };
+const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 
 async function writePng(dest, size) {
   mkdirSync(dirname(dest), { recursive: true });
@@ -23,7 +23,7 @@ async function writePng(dest, size) {
     .toFile(dest);
 }
 
-/** Icônes launcher PWA : fond vert plein, glyphe plus grand et centré (safe zone maskable). */
+/** Icônes launcher / OG : fond blanc pour que le logo vert ressort. */
 async function writePwaIcon(dest, size, glyphRatio) {
   mkdirSync(dirname(dest), { recursive: true });
   const glyphSize = Math.round(size * glyphRatio);
@@ -41,7 +41,7 @@ async function writePwaIcon(dest, size, glyphRatio) {
       width: size,
       height: size,
       channels: 4,
-      background: GREEN,
+      background: WHITE,
     },
   })
     .composite([{ input: glyph, top: inset, left: inset }])

@@ -57,7 +57,14 @@ export function GameHeader({
         <button
           type="button"
           className="icon-btn game-header-exit"
-          onClick={onExit}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+          }}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onExit();
+          }}
           aria-label={t('back', locale)}
         >
           ✕

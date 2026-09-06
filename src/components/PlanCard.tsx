@@ -10,6 +10,7 @@ import { isStripeCheckoutEnabled, openStripePortal, stripeErrorMessage } from '.
 import { isLoggedIn } from '../lib/auth';
 import { canGuestScan } from '../lib/guestTrial';
 import { PlanBadge } from './PlanBadge';
+import { LockIcon } from './icons/LockIcon';
 import { t } from '../lib/i18n';
 import type { Locale, Plan } from '../types';
 
@@ -87,7 +88,7 @@ export function PlanCard({ locale, refreshKey = 0, onUpgrade, onToast }: PlanCar
       <ul className="plan-card-perks">
         {perks.map((p) => (
           <li key={p.text} className={p.ok ? 'ok' : 'locked'}>
-            <span aria-hidden="true">{p.ok ? '✓' : '🔒'}</span>
+            <span aria-hidden="true">{p.ok ? '✓' : <LockIcon size={14} />}</span>
             {p.text}
           </li>
         ))}

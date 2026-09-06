@@ -14,6 +14,7 @@
   padding-top: 8px;
   position: relative;
   z-index: 0;
+  pointer-events: auto;
 }
 .lesson-runner-body--transition {
   opacity: 0.35;
@@ -549,15 +550,58 @@
   flex: 1;
 }
 .translate-badge {
-  align-self: flex-start;
-  font-size: 0.68rem;
+  display: none;
+}
+.translate-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.translate-toolbar .game-instruction {
+  margin: 0;
+  flex: 1;
+}
+.translate-hint-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 40px;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 14px;
+  border-bottom: 4px solid var(--accent-deep);
+  background: var(--accent);
+  color: #14350c;
+  font: inherit;
+  font-size: 0.78rem;
   font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #a78bfa;
-  background: rgba(167, 139, 250, 0.16);
-  border-radius: 999px;
-  padding: 4px 10px;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+.translate-hint-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+.translate-hint-btn--empty {
+  background: #e2e8f0;
+  border-bottom-color: #94a3b8;
+  color: #475569;
+}
+.translate-hint-count {
+  min-width: 1.25rem;
+  padding: 1px 6px;
+  border-radius: 99px;
+  background: rgba(20, 53, 12, 0.12);
+  font-variant-numeric: tabular-nums;
+}
+.translate-hint-msg {
+  margin: -4px 0 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #c2410c;
 }
 .translate-prompt {
   display: flex;
@@ -592,14 +636,21 @@
 .translate-hear.hear-btn--icon {
   position: static;
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  min-width: 44px;
-  min-height: 44px;
-  margin-top: 4px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  box-shadow: none;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  margin-top: 2px;
+  border: none;
+  border-radius: 50%;
+  border-bottom: 4px solid var(--accent-deep);
+  background: linear-gradient(180deg, #79e00a 0%, var(--accent) 70%);
+  color: #14350c;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.translate-hear.hear-btn--icon:active:not(:disabled) {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
 }
 .translate-source {
   margin: 0;
@@ -609,10 +660,13 @@
   padding: 0;
 }
 .translate-focus {
-  color: #a78bfa;
-  text-decoration: underline;
-  text-decoration-style: dotted;
-  text-underline-offset: 3px;
+  color: #14350c;
+  background: color-mix(in srgb, var(--accent) 42%, transparent);
+  padding: 0 6px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 900;
+  box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent-deep) 35%, transparent);
 }
 .translate-answer {
   display: flex;
@@ -624,23 +678,16 @@
 }
 .translate-slot {
   min-width: 64px;
-  min-height: 40px;
-  padding: 8px 10px;
+  min-height: 48px;
+  padding: 8px 12px;
   border: none;
-  border-bottom: 2px solid var(--border);
+  border-bottom: 2px dashed var(--border);
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   font-weight: 800;
   font-size: 0.95rem;
   color: var(--text);
-}
-.translate-slot--filled {
-  border-bottom-color: transparent;
-  border: 2px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--border) 80%, #000);
 }
 .translate-bank {
   display: flex;
@@ -650,14 +697,34 @@
   margin-top: 8px;
 }
 .translate-tile {
-  padding: 10px 14px;
-  min-height: 44px;
-  border-radius: 12px;
-  border: 2px solid var(--border);
-  background: var(--surface);
-  box-shadow: 0 3px 0 color-mix(in srgb, var(--border) 80%, #000);
+  padding: 10px 16px;
+  min-height: 48px;
+  border: none;
+  border-radius: 14px;
+  border-bottom: 4px solid #94a3b8;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
   font-weight: 800;
   font-size: 0.95rem;
+  cursor: pointer;
+}
+.translate-tile:active:not(:disabled) {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
+}
+.translate-slot--filled {
+  border: none;
+  border-radius: 14px;
+  border-bottom: 4px solid var(--accent-deep);
+  background: color-mix(in srgb, var(--accent) 18%, #fff);
+  color: #14350c;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+}
+.translate-slot--filled:active:not(:disabled) {
+  transform: translateY(3px);
+  border-bottom-width: 1px;
 }
 .translate-tile--ghost {
   color: transparent;

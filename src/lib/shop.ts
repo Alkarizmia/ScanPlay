@@ -14,6 +14,7 @@ import {
   getSynthesisBonusCredits,
   grantStreakFreezeCharge,
   grantSynthesisBonusCredit,
+  grantTranslateHints,
   markDailyChestClaimed,
   purchaseExtraScan,
   recordAdReward,
@@ -40,6 +41,7 @@ export const SHOP_MEGA_POTION_MINUTES = 30;
 export const SHOP_SYNTHESIS_CREDIT_PRICE = 90;
 export const SHOP_STREAK_FREEZE_PRICE = 100;
 export const SHOP_STREAK_FREEZE_MAX = 3;
+export const SHOP_TRANSLATE_HINT_PRICE = 50;
 
 export type ShopPurchaseResult =
   | { ok: true }
@@ -131,6 +133,13 @@ export function buyStreakFreeze(): ShopPurchaseResult {
   return { ok: true };
 }
 
+export function buyTranslateHint(): ShopPurchaseResult {
+  const spent = spendCoins(SHOP_TRANSLATE_HINT_PRICE);
+  if (!spent.ok) return fromSpend(spent);
+  grantTranslateHints(1);
+  return { ok: true };
+}
+
 export function buyStreakRestore(): ShopPurchaseResult {
   const streak = getRestorableStreak();
   if (streak <= 0) return { ok: false, reason: 'unavailable' };
@@ -164,13 +173,7 @@ export function rollDailyChest(rarity: ChestRarity = 'common'): ChestReward {
   return base;
 }
 
-export function claimDailyChest(
-  rarity: ChestRarity = 'common',
-): { ok: true; reward: ChestReward; rarity: ChestRarity } | { ok: false; reason: 'already_claimed' } {
-  if (!canClaimDailyChest()) return { ok: false, reason: 'already_claimed' };
-  const reward = rollDailyChest(rarity);
-  markDailyChestClaimed();
-
+export function applyChestReward(reward: ChestReward, rarity: ChestRarity = 'common'): void {
   if (reward.type === 'coins') {
     addCoins(reward.amount);
   } else if (reward.type === 'gems') {
@@ -188,7 +191,15 @@ export function claimDailyChest(
       addBonusXp(scaleRewardAmount(40, rarity));
     }
   }
+}
 
+export function claimDailyChest(
+  rarity: ChestRarity = 'common',
+): { ok: true; reward: ChestReward; rarity: ChestRarity } | { ok: false; reason: 'already_claimed' } {
+  if (!canClaimDailyChest()) return { ok: false, reason: 'already_claimed' };
+  const reward = rollDailyChest(rarity);
+  markDailyChestClaimed();
+  applyChestReward(reward, rarity);
   return { ok: true, reward, rarity };
 }
 

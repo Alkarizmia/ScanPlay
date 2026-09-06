@@ -11,17 +11,24 @@
   align-items: stretch;
   gap: 0;
   padding: 4px 0 10px;
+  overflow: visible;
+  position: relative;
+  z-index: 8;
 }
 
 .game-header-top {
   display: flex;
   align-items: center;
   gap: 10px;
-  min-height: 36px;
+  min-height: 44px;
 }
 
 .game-header--hud .game-header-exit {
-  margin-left: -6px;
+  margin-left: 0;
+  position: relative;
+  z-index: 9;
+  flex-shrink: 0;
+  touch-action: manipulation;
 }
 
 .game-hud {
@@ -444,6 +451,60 @@
 
 .dictation-body {
   gap: 14px;
+}
+
+.dictation-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dictation-toolbar .game-instruction {
+  margin: 0;
+  flex: 1;
+}
+
+.dictation-target {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: var(--bg-card);
+  border: 2px solid var(--surface-border);
+  text-align: center;
+}
+
+.dictation-target-label {
+  margin: 0 0 4px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.dictation-target-word {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.dictation-target-write {
+  margin: 10px 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.dictation-target-write strong {
+  color: #14350c;
+  background: color-mix(in srgb, var(--accent) 38%, transparent);
+  padding: 2px 8px;
+  border-radius: 8px;
+  font-weight: 900;
 }
 
 .dictation-body .listen-audio-card {

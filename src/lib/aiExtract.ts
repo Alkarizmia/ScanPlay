@@ -22,12 +22,12 @@ export interface AiExtractResponse {
   warnings?: string[];
 }
 
-const LANGS = new Set<LangCode>(['nl', 'fr', 'en', 'unknown']);
+const LANGS = new Set<LangCode>(['nl', 'fr', 'en', 'es', 'unknown']);
 
 function normalizeLang(value: unknown): LangCode | undefined {
   if (typeof value !== 'string') return undefined;
   const v = value.toLowerCase();
-  if (v === 'es') return 'en';
+  if (v === 'es' || v === 'spa' || v === 'spanish') return 'es';
   return LANGS.has(v as LangCode) ? (v as LangCode) : 'unknown';
 }
 

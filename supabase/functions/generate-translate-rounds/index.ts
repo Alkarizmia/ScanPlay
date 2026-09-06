@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { resolveSynthesisModel } from '../_shared/openaiModels.ts';
+import { fetchUserPlan } from '../_shared/planQuotas.ts';
+import { isReasoningVisionModel, resolveExerciseModel } from '../_shared/openaiModels.ts';
 import { TRANSLATE_EXERCISE_SYSTEM_PROMPT } from '../_shared/translateExercisePrompt.ts';
 
 const corsHeaders = {
@@ -50,6 +51,10 @@ Deno.serve(async (req) => {
       });
     }
 
+    const plan = await fetchUserPlan(supabase, user.id);
+    const model = resolveExerciseModel(plan);
+    const reasoning = isReasoningVisionModel(model);
+
     const body = (await req.json()) as Body;
     const pairs = Array.isArray(body.pairs) ? body.pairs.slice(0, 8) : [];
     const count = Math.min(6, Math.max(1, Number(body.count) || 2));
@@ -63,30 +68,38 @@ Deno.serve(async (req) => {
       .map((p) => `- term="${p.term ?? ''}" (${p.termLang ?? '?'}) → definition="${p.definition ?? ''}" (${p.defLang ?? '?'})`)
       .join('\n');
 
+    const payload: Record<string, unknown> = {
+      model,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: TRANSLATE_EXERCISE_SYSTEM_PROMPT },
+        {
+          role: 'user',
+          content: `Crée ${count} round(s) maximum, un par paire, dans l'ordre.
+Phrases naturelles dans CHAQUE langue (fr / nl / en / es) — pas de calque "I see / Je vois / Ik zie".
+Articles corrects (een beetje, un peu, de/het, un/una). Jamais "Dit is de beetje".
+Adjectif → phrase d'état ; nom → article ; quantité → il y a / er is / there is / hay ; verbe → infinitif.
+
+Paires :
+${list}`,
+        },
+      ],
+    };
+    if (reasoning) {
+      payload.max_completion_tokens = 1200;
+      payload.reasoning_effort = 'low';
+    } else {
+      payload.temperature = 0.4;
+      payload.max_tokens = 900;
+    }
+
     const openaiRes = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${openaiKey}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: resolveSynthesisModel(),
-        response_format: { type: 'json_object' },
-        temperature: 0.4,
-        max_tokens: 900,
-        messages: [
-          { role: 'system', content: TRANSLATE_EXERCISE_SYSTEM_PROMPT },
-          {
-            role: 'user',
-            content: `Crée ${count} round(s) maximum, un par paire, dans l'ordre.
-Phrases naturelles dans CHAQUE langue (pas de calque "I see / Je vois / Ik zie").
-Adjectif → phrase d'état ; nom → article ; verbe → infinitif dans une vraie phrase.
-
-Paires :
-${list}`,
-          },
-        ],
-      }),
+      body: JSON.stringify(payload),
     });
 
     if (!openaiRes.ok) {

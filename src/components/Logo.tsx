@@ -2,7 +2,7 @@ import { useRef } from 'react';
 import { playSound } from '../lib/sounds';
 
 /** Logo officiel ScanPlay — généré depuis public/brand/scanplay-logo.png au build. */
-const LOGO_SRC = '/logo.png?v=7';
+const LOGO_SRC = '/logo.png?v=9';
 
 export function Logo({
   size = 48,

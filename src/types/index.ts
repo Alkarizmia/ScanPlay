@@ -30,7 +30,7 @@ export type HistorySubject =
 /** Written/reading vs listening/speaking focus for the learning path. */
 export type TrainingFocus = 'written' | 'oral';
 
-export type LangCode = 'nl' | 'fr' | 'en' | 'unknown';
+export type LangCode = 'nl' | 'fr' | 'en' | 'es' | 'unknown';
 
 export type PairDirection = 'forward' | 'reverse' | 'auto';
 

@@ -3,7 +3,7 @@ import type { WordPair } from '../types';
 import { buildListenPickRounds, hasEnoughListenPickPairs } from './listenPickRounds';
 import { buildReorderRounds, hasEnoughReorderPairs } from './reorderRounds';
 import { buildImagePickRounds, hasEnoughImagePickPairs } from './imagePickRounds';
-import { buildDictationRounds, getDictationPool, hasEnoughDictationPairs } from './dictationRounds';
+import { applyDictationHint, buildDictationRounds, getDictationPool, hasEnoughDictationPairs } from './dictationRounds';
 import { splitVocabAlternatives } from './vocabTokens';
 import { getModeDifficulty, sortByDifficulty } from './gameDifficulty';
 import { pickPathStepGames } from './pathGamePlan';
@@ -137,6 +137,7 @@ describe('dictation pool', () => {
     const rounds = buildDictationRounds(vocabPairs, { maxRounds: 2, seed: 'test', sheetType: 'vocab' });
     expect(rounds[0]?.spoken).toBe('beat');
     expect(rounds[0]?.accepted).toEqual(['battre']);
+    expect(rounds[0]?.meaning).toBe('battre');
     expect(rounds[0]?.lang).toBe('en');
     expect(rounds[1]?.spoken).toBe('haricot');
     expect(rounds[1]?.accepted).toEqual(['bean']);
@@ -153,6 +154,18 @@ describe('dictation pool', () => {
     );
     expect(rounds[0]?.spoken).toBe('challenge');
     expect(rounds[0]?.accepted).toEqual(['défi', 'difficultés']);
+  });
+});
+
+describe('dictation hints', () => {
+  it('adds the next letter when the field is empty', () => {
+    expect(applyDictationHint('', 'battre')).toBe('b');
+    expect(applyDictationHint('ba', 'battre')).toBe('bat');
+  });
+
+  it('removes the first wrong letter when something is already typed', () => {
+    expect(applyDictationHint('bxattre', 'battre')).toBe('battre');
+    expect(applyDictationHint('battrexx', 'battre')).toBe('battrex');
   });
 });
 

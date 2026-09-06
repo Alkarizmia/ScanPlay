@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { ACHIEVEMENTS, getAchievementProgress, getUnlockedCount, isAchievementUnlocked } from '../lib/achievements';
+import { LockIcon } from './icons/LockIcon';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -36,7 +37,11 @@ export function AchievementsScreen({ locale, refreshKey }: AchievementsScreenPro
               <div key={ach.id} className={`achievement-badge ${ok ? 'unlocked' : 'locked'}`}>
                 <span className="achievement-icon-wrap" aria-hidden="true">
                   <span className="achievement-icon">{ach.icon}</span>
-                  {!ok && <span className="achievement-lock">🔒</span>}
+                  {!ok && (
+                    <span className="achievement-lock">
+                      <LockIcon size={14} />
+                    </span>
+                  )}
                 </span>
                 <span className="achievement-name">{t(ach.nameKey, locale)}</span>
                 <span className="achievement-desc">{t(ach.descKey, locale)}</span>

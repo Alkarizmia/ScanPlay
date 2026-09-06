@@ -1,3 +1,4 @@
+import { LockIcon } from './icons/LockIcon';
 import { hasFeature, PLAN_LIMITS } from '../lib/planLimits';
 import { usePlan } from '../hooks/usePlan';
 import { t } from '../lib/i18n';
@@ -61,7 +62,7 @@ export function PlanPerksBar({ locale, onLockedClick }: PlanPerksBarProps) {
                 if (!unlocked && onLockedClick) onLockedClick(FEATURE_REASON[c.feature]);
               }}
             >
-              {!unlocked && '🔒 '}
+              {!unlocked && <LockIcon size={11} />}
               {c.label}
             </button>
           );

@@ -10,6 +10,8 @@ export interface DictationRound {
   lang: LangCode;
   expected: string;
   accepted: string[];
+  /** Other-language meaning shown on screen so the player knows what to type. */
+  meaning: string;
 }
 
 function isSpellable(text: string): boolean {
@@ -62,6 +64,7 @@ export function buildDictationRounds(
         lang: resolveSideLang(pair, 'def'),
         expected: accepted[0]!,
         accepted,
+        meaning: spoken,
       });
     }
     return rounds;
@@ -90,10 +93,40 @@ export function buildDictationRounds(
       lang: spokenLang,
       expected,
       accepted,
+      meaning: expected,
     });
   }
 
   return rounds;
+}
+
+function foldLetter(ch: string): string {
+  return ch.toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
+}
+
+/**
+ * Empty field → insert the next correct letter.
+ * Wrong letters already typed → delete the first one.
+ * Correct prefix → append the next expected letter.
+ */
+export function applyDictationHint(typed: string, expected: string): string {
+  const want = [...expected];
+  if (want.length === 0) return typed;
+  const got = [...typed];
+  if (got.length === 0) return want[0] ?? '';
+
+  let i = 0;
+  while (i < got.length && i < want.length && foldLetter(got[i]!) === foldLetter(want[i]!)) {
+    i += 1;
+  }
+  if (i < got.length) {
+    got.splice(i, 1);
+    return got.join('');
+  }
+  if (i < want.length) {
+    return typed + want[i];
+  }
+  return typed;
 }
 
 export function hasEnoughDictationPairs(pairs: WordPair[]): boolean {

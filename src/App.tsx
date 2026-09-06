@@ -84,7 +84,7 @@ import {
 } from './lib/pendingGuestDeck';
 import { bumpDailyPlays } from './lib/dailyMissions';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
-import { acknowledgeStreakLoss, shouldShowStreakLostModal } from './lib/wallet';
+import { acknowledgeStreakLoss, ensureWelcomeTranslateHints, shouldShowStreakLostModal } from './lib/wallet';
 import {
   processNewUnlocks,
   snapshotUnlockedIds,
@@ -277,6 +277,11 @@ export default function App() {
   useEffect(() => {
     void waitForAuth().then(() => setAuthReady(true));
   }, []);
+
+  useEffect(() => {
+    if (!authReady || !isLoggedIn()) return;
+    ensureWelcomeTranslateHints();
+  }, [authReady, refreshKey]);
 
   useEffect(() => {
     const logged = isLoggedIn();
@@ -2000,6 +2005,7 @@ export default function App() {
           }}
           historyReplay={historyReplayMode}
           deckThumbnail={deckThumbnail}
+          deckId={historyId}
           sheetType={sheetType}
           onAuth={() => {
             if (promptGuestPlayReady()) return;

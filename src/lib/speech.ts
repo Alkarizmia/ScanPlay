@@ -8,6 +8,8 @@ function speechLangTag(lang?: LangCode): string {
       return 'fr-FR';
     case 'en':
       return 'en-GB';
+    case 'es':
+      return 'es-ES';
     default:
       return 'fr-FR';
   }
@@ -17,7 +19,7 @@ const VOICE_HINTS: Record<string, string[]> = {
   'nl-NL': ['Google Nederlands', 'nl-NL', 'Dutch', 'Xander'],
   'fr-FR': ['Google français', 'fr-FR', 'Thomas', 'Amélie', 'French'],
   'en-GB': ['Google UK English', 'en-GB', 'Daniel', 'Google US English', 'en-US', 'Samantha', 'Microsoft Zira'],
-  'en-US': ['Google US English', 'en-US', 'Samantha', 'Microsoft Zira', 'Karen'],
+  'es-ES': ['Google español', 'es-ES', 'Spanish', 'Jorge', 'Monica'],
 };
 
 let voicesReady: Promise<SpeechSynthesisVoice[]> | null = null;

@@ -1005,6 +1005,118 @@ html[data-landing='true'] .screen.sp-landing {
    ============================================================ */
 
 .lp-section--product {
+  background: var(--lp-bg-2, transparent);
+}
+
+.lp-section--ranks .lp-ranks-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  list-style: none;
+  margin: 28px 0 32px;
+  padding: 0;
+}
+
+.lp-rank-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.lp-rank-node {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.35),
+    0 5px 0 rgba(0, 0, 0, 0.25);
+}
+
+.lp-rank-node--glow {
+  background: linear-gradient(165deg, #7ee312, #58cc02);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    0 5px 0 #46a302,
+    0 0 18px rgba(88, 204, 2, 0.55);
+}
+
+.lp-rank-node--bronze {
+  background: linear-gradient(165deg, #fdba74, #c2410c);
+}
+
+.lp-rank-node--iron {
+  background: linear-gradient(165deg, #e2e8f0, #475569);
+}
+
+.lp-rank-node--gold {
+  background: linear-gradient(165deg, #fde68a, #d97706);
+}
+
+.lp-rank-flames {
+  position: absolute;
+  left: 50%;
+  top: -16px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+}
+
+.lp-rank-node--iron .streak-flame--on .streak-flame-outer {
+  fill: #94a3b8;
+  stroke: #334155;
+}
+.lp-rank-node--iron .streak-flame--on .streak-flame-core {
+  fill: #f1f5f9;
+}
+.lp-rank-node--gold .streak-flame--on .streak-flame-outer {
+  fill: #facc15;
+  stroke: #d97706;
+}
+.lp-rank-node--gold .streak-flame--on .streak-flame-core {
+  fill: #fefce8;
+}
+
+.lp-rank-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--lp-muted);
+}
+
+.lp-ranks-copy {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lp-ranks-copy h3 {
+  margin: 0;
+  font-size: 1.02rem;
+}
+
+.lp-ranks-copy p {
+  margin: 6px 0 0;
+  color: var(--lp-muted);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+@media (min-width: 800px) {
+  .lp-ranks-copy {
+    grid-template-columns: 1fr 1fr;
+    gap: 22px 28px;
+  }
+}
+
+@media (max-width: 599px) {
+  .lp-section--ranks .lp-ranks-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
   background: linear-gradient(180deg, transparent, rgba(34, 197, 94, 0.05), transparent);
 }
 

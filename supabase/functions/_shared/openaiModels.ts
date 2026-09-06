@@ -17,6 +17,14 @@ export function resolveScanModel(plan: ScanPlan = 'free'): string {
   return Deno.env.get('OPENAI_SCAN_MODEL_FREE') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
 }
 
+/** Text games (translate / speak sentences). Free = GPT-4.1 ; Plus/Pro = GPT-5.5. */
+export function resolveExerciseModel(plan: ScanPlan = 'free'): string {
+  if (plan === 'plus' || plan === 'pro') {
+    return Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ?? SCANPLAY_DEFAULT_PAID_SCAN_MODEL;
+  }
+  return Deno.env.get('OPENAI_EXERCISE_MODEL_FREE') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
+}
+
 /** Text synthesis (generate-synthesis) — keep mini for cost. */
 export function resolveSynthesisModel(): string {
   return Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini';

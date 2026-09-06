@@ -1,5 +1,7 @@
+import { useEffect } from 'react';
 import { speakText, canSpeak } from '../lib/speech';
 import { t } from '../lib/i18n';
+import { SpeakerIcon } from './icons/SpeakerIcon';
 import type { LangCode, Locale } from '../types';
 
 interface HearButtonProps {
@@ -8,10 +10,24 @@ interface HearButtonProps {
   locale: Locale;
   className?: string;
   iconOnly?: boolean;
+  /** Joue l’audio à l’arrivée (rejouer = nouvel appui). */
+  autoPlay?: boolean;
 }
 
-export function HearButton({ text, lang, locale, className = '', iconOnly = false }: HearButtonProps) {
+export function HearButton({
+  text,
+  lang,
+  locale,
+  className = '',
+  iconOnly = false,
+  autoPlay = false,
+}: HearButtonProps) {
   const speakable = canSpeak();
+
+  useEffect(() => {
+    if (!autoPlay || !speakable || !text.trim()) return;
+    void speakText(text, lang);
+  }, [autoPlay, speakable, text, lang]);
 
   return (
     <button
@@ -25,7 +41,8 @@ export function HearButton({ text, lang, locale, className = '', iconOnly = fals
         void speakText(text, lang);
       }}
     >
-      {iconOnly ? '🔊' : `🔊 ${t('hear', locale)}`}
+      <SpeakerIcon size={iconOnly ? 22 : 18} />
+      {iconOnly ? null : <span>{t('hear', locale)}</span>}
     </button>
   );
 }

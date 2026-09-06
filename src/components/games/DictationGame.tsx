@@ -3,8 +3,11 @@ import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { speakText } from '../../lib/speech';
-import { buildDictationRounds } from '../../lib/dictationRounds';
+import { applyDictationHint, buildDictationRounds } from '../../lib/dictationRounds';
 import { coercePlayablePairs, gradeTypedAnswer, type AnswerGrade } from '../../lib/vocabulary';
+import { consumeTranslateHint, getTranslateHints } from '../../lib/wallet';
+import { HintIcon } from '../icons/HintIcon';
+import { playSound } from '../../lib/sounds';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -14,6 +17,7 @@ import { AnswerFeedback } from './AnswerFeedback';
 interface DictationGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
   locale: Locale;
+  examMode?: boolean;
   deckId?: string | null;
   stepIndex?: number | null;
   onComplete: (score: number, total: number) => void;
@@ -23,6 +27,7 @@ interface DictationGameProps extends EmbeddedGameProps {
 export function DictationGame({
   pairs,
   locale,
+  examMode,
   deckId,
   stepIndex,
   onComplete,
@@ -46,11 +51,14 @@ export function DictationGame({
   const [grade, setGrade] = useState<AnswerGrade | null>(null);
   const [lastXp, setLastXp] = useState(0);
   const [score, setScore] = useState(0);
+  const [hintTick, setHintTick] = useState(0);
+  const [hintMsg, setHintMsg] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const round = deck[index];
   const current = round ? pool[round.pairIndex] : undefined;
   const total = Math.max(1, deck.length);
+  const writeKeyword = Boolean(round && round.meaning === round.spoken && round.expected !== round.spoken);
 
   const play = useCallback(
     (slow = false) => {
@@ -98,11 +106,30 @@ export function DictationGame({
     setInput('');
     setGrade(null);
     setLastXp(0);
+    setHintMsg(null);
     if (index + 1 >= deck.length) onComplete(finalScore, total);
     else setIndex((i) => i + 1);
   };
 
+  const useHint = () => {
+    if (!round || examMode || grade) return;
+    const nextValue = applyDictationHint(input, round.expected);
+    if (nextValue === input) return;
+    if (!consumeTranslateHint()) {
+      setHintMsg(t('translateNoHints', locale));
+      return;
+    }
+    playSound('tap');
+    setHintMsg(null);
+    setInput(nextValue);
+    setHintTick((n) => n + 1);
+    window.setTimeout(() => inputRef.current?.focus(), 0);
+  };
+
   if (!round || !current) return null;
+
+  const hintsLeft = getTranslateHints();
+  void hintTick;
 
   return (
     <LessonGameShell
@@ -110,6 +137,7 @@ export function DictationGame({
       locale={locale}
       onExit={onExit}
       progress={gameProgressPct(index, total)}
+      examMode={examMode}
       className="dictation-game"
       feedback={
         grade ? (
@@ -126,7 +154,39 @@ export function DictationGame({
       }
     >
       <div className="game-body dictation-body">
-        <p className="game-instruction">{t('dictationInstruction', locale)}</p>
+        <div className="dictation-toolbar">
+          <p className="game-instruction">{t('dictationInstruction', locale)}</p>
+          {!examMode && (
+            <button
+              type="button"
+              className={`translate-hint-btn${hintsLeft <= 0 ? ' translate-hint-btn--empty' : ''}`}
+              onClick={useHint}
+              disabled={grade != null}
+              aria-label={t('translateHint', locale)}
+            >
+              <HintIcon size={20} />
+              <span>{t('translateHint', locale)}</span>
+              <span className="translate-hint-count">{hintsLeft}</span>
+            </button>
+          )}
+        </div>
+        {hintMsg && <p className="translate-hint-msg">{hintMsg}</p>}
+
+        <div className="dictation-target">
+          <p className="dictation-target-label">{t('dictationHeardLabel', locale)}</p>
+          <p className="dictation-target-word">{round.spoken}</p>
+          <p className="dictation-target-write">
+            {writeKeyword ? (
+              t('dictationWriteKeyword', locale)
+            ) : (
+              <>
+                {t('dictationWriteTranslation', locale)}
+                {': '}
+                <strong>{round.meaning}</strong>
+              </>
+            )}
+          </p>
+        </div>
 
         <div className="listen-audio-card" key={index}>
           <span className="listen-audio-icon" aria-hidden="true">

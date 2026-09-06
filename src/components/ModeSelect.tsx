@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { BrandDecor } from './BrandDecor';
 import { SynthesisActions } from './SynthesisActions';
 import { GamePath } from './GamePath';
@@ -5,6 +6,7 @@ import { GamificationHUD } from './GamificationHUD';
 import { LogoWordmark } from './Logo';
 import { NotificationCenter } from './NotificationCenter';
 import { PlanBadge } from './PlanBadge';
+import { LockIcon } from './icons/LockIcon';
 import { usePlan } from '../hooks/usePlan';
 import { getDueReviewCount } from '../lib/spacedRepetition';
 import { hasFeature, PLAN_LIMITS } from '../lib/planLimits';
@@ -40,6 +42,7 @@ interface ModeSelectProps {
   onHome: () => void;
   historyReplay?: boolean;
   deckThumbnail?: string;
+  deckId?: string | null;
 }
 
 export function ModeSelect({
@@ -69,8 +72,10 @@ export function ModeSelect({
   onHome,
   historyReplay = false,
   deckThumbnail,
+  deckId = null,
 }: ModeSelectProps) {
   const plan = usePlan(refreshKey);
+  const [rewardTick, setRewardTick] = useState(0);
   const examUnlocked = hasFeature('exam', plan);
   const canMulti = hasFeature('multiplayer', plan);
   const dueCount = getDueReviewCount();
@@ -104,7 +109,7 @@ export function ModeSelect({
         </div>
       </header>
 
-      <GamificationHUD locale={locale} refreshKey={refreshKey} streakPulseKey={streakPulseKey} />
+      <GamificationHUD locale={locale} refreshKey={refreshKey + rewardTick} streakPulseKey={streakPulseKey} />
 
       <main className="mode-main mode-main-path">
         <button type="button" className="pair-direction-toggle" onClick={cycleDirection}>
@@ -143,7 +148,7 @@ export function ModeSelect({
         >
           <div className="exam-mode-card-head">
             <span className="exam-mode-card-icon" aria-hidden="true">
-              {examUnlocked && !examModeLocked ? '🎓' : '🔒'}
+              {examUnlocked && !examModeLocked ? '🎓' : <LockIcon size={22} />}
             </span>
             <div>
               <strong>{t('examMode', locale)}</strong>
@@ -223,6 +228,8 @@ export function ModeSelect({
           historyReplay={historyReplay}
           examMode={examMode}
           sheetThumbnail={deckThumbnail}
+          deckId={deckId}
+          onReward={() => setRewardTick((n) => n + 1)}
         />
 
         <button type="button" className="btn-ghost scanplay-rescan" onClick={onRescan}>

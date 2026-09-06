@@ -4,6 +4,7 @@ import {
   buildSpeakSentence,
   markFocusInSentence,
   parsePhraseDisplay,
+  withAiSpeakSentence,
 } from './speakPhrases';
 import { tokenizePhrase } from './translateRounds';
 import type { WordPair } from '../types';
@@ -42,5 +43,25 @@ describe('speak phrases', () => {
     expect(markFocusInSentence('This is a childbirth.', 'childbirth')).toBe(
       'This is a [childbirth].',
     );
+  });
+
+  it('does not say Dit is de beetje when speaking a Dutch quantity', () => {
+    const sentence = buildSpeakSentence('beetje – een beetje', 'nl');
+    expect(sentence.toLowerCase()).toContain('beetje');
+    expect(sentence).not.toMatch(/\bde beetje\b/i);
+    expect(sentence.toLowerCase()).toMatch(/een beetje/);
+  });
+
+  it('uses an AI sentence when it still contains the target word', () => {
+    const pair: WordPair = {
+      term: 'beetje',
+      definition: 'un peu',
+      termLang: 'nl',
+      defLang: 'fr',
+    };
+    const base = buildSpeakChallenge(pair);
+    const next = withAiSpeakSentence(base, 'Er is een beetje water.');
+    expect(next.phraseSpeech).toBe('Er is een beetje water.');
+    expect(next.phraseDisplay).toMatch(/\[beetje\]/i);
   });
 });

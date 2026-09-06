@@ -33,7 +33,8 @@ function resolveLang(text: string, hint?: LangCode): LangCode {
 }
 
 const ARTICLES = new Set([
-  'de', 'het', 'een', 'le', 'la', 'les', 'un', 'une', 'the', 'a', 'an', 'el', 'los', 'las',
+  'de', 'het', 'een', 'le', 'la', 'les', 'un', 'une', 'the', 'a', 'an',
+  'el', 'los', 'las', 'una', 'lo',
 ]);
 
 const EN_ADJECTIVES = new Set([
@@ -54,7 +55,36 @@ const NL_ADJECTIVES = new Set([
   'goed', 'slecht', 'warm', 'koud', 'lang', 'kort', 'ziek', 'gezond', 'rijk', 'arm',
 ]);
 
-type VocabKind = 'verb' | 'noun' | 'adj';
+const ES_ADJECTIVES = new Set([
+  'viejo', 'vieja', 'joven', 'nuevo', 'nueva', 'grande', 'pequeño', 'pequeña', 'feliz', 'triste',
+  'bueno', 'buena', 'malo', 'mala', 'caliente', 'frío', 'fría', 'largo', 'corta', 'alto', 'bajo',
+]);
+
+const QUANTITY: Record<string, Set<string>> = {
+  nl: new Set(['beetje', 'weinig', 'veel', 'meer', 'minder', 'paar']),
+  fr: new Set(['peu', 'beaucoup']),
+  en: new Set(['bit', 'little', 'lot']),
+  es: new Set(['poco', 'poca', 'mucho', 'mucha']),
+};
+
+const NL_HET = new Set([
+  'huis', 'kind', 'water', 'meisje', 'raam', 'bed', 'probleem', 'woord', 'idee', 'nummer',
+  'voorbeeld', 'eten', 'brood', 'glas', 'been', 'hoofd', 'lichaam', 'oog', 'hart', 'weer',
+  'jaar', 'uur', 'land', 'dorp', 'strand', 'bos', 'park', 'station', 'museum', 'café',
+  'restaurant', 'kantoor', 'werk', 'leven', 'gevoel', 'gesprek', 'verhaal', 'nieuws',
+  'licht', 'geluid', 'geld', 'papier', 'schrift', 'examen', 'cijfer', 'vak', 'doel',
+  'boek', 'paard', 'dier', 'ei', 'mes', 'bord',
+]);
+
+const EN_UNCOUNTABLE = new Set([
+  'childbirth', 'homework', 'water', 'advice', 'information', 'weather', 'news', 'furniture',
+  'music', 'luck', 'health', 'progress', 'research', 'knowledge',
+]);
+
+const ARTICLE_PREFIX =
+  /^(a|an|the|le|la|les|un|une|de|het|een|el|los|las|una|lo|to|te)\s+/i;
+
+type VocabKind = 'verb' | 'noun' | 'adj' | 'quantity';
 
 function hashSlot(seed: string, n: number): number {
   let h = 2166136261;
@@ -75,33 +105,59 @@ function lemmaInSentence(word: string): string {
   return w.toLowerCase();
 }
 
-/** Keep "to be born" / "a baby" instead of collapsing to the longest token. */
+function stripArticlePrefix(word: string): string {
+  return word.replace(/^l['’]/i, '').replace(ARTICLE_PREFIX, '').trim();
+}
+
+function isNlDiminutive(word: string): boolean {
+  const low = word.toLowerCase();
+  return low.length >= 5 && /(tje|pje|kje|je)$/i.test(low);
+}
+
+/** Keep "to be born" / "een beetje" instead of collapsing to the longest token. */
 export function phraseForSentence(raw: string): string {
   const cleaned = raw.replace(/[–—]/g, '-').trim();
   if (!cleaned) return '';
-  const first = cleaned.split(/\s*[-/;,|]\s*/)[0]?.trim() ?? cleaned;
-  const clipped = first.replace(/[.,!?]+$/g, '').trim();
-  const words = clipped.split(/\s+/).filter(Boolean);
-  if (/^to\s+/i.test(clipped) && words.length <= 5) return clipped;
-  if (/^(a|an|the|le|la|les|un|une|de|het|een|l['’])\s+/i.test(clipped) && words.length <= 4) {
-    return clipped;
-  }
+  const chunks = cleaned
+    .split(/\s*[-/;,|]\s*/)
+    .map((s) => s.replace(/[.,!?]+$/g, '').trim())
+    .filter(Boolean);
+  const pool = chunks.length > 0 ? chunks : [cleaned];
+  const withArticle = pool.find(
+    (c) => (ARTICLE_PREFIX.test(c) || /^l['’]/i.test(c)) && c.split(/\s+/).length <= 5,
+  );
+  if (withArticle) return withArticle;
+  const first = pool[0] ?? cleaned;
+  const words = first.split(/\s+/).filter(Boolean);
+  if (/^to\s+/i.test(first) && words.length <= 5) return first;
   return extractPlayableLemma(raw);
 }
 
 function classifyVocab(word: string, lang: LangCode): VocabKind {
   const t = word.trim();
-  const low = t.toLowerCase();
+  const low = stripArticlePrefix(t).toLowerCase();
+  const qty = QUANTITY[lang];
+  if (qty?.has(low)) return 'quantity';
   if (/^to\s+/i.test(t)) return 'verb';
-  if (lang === 'fr' && /^(l['’]|le |la |les |un |une )/i.test(low) === false && wordsAreInfinitive(t)) {
+  if (lang === 'fr' && !ARTICLE_PREFIX.test(t) && wordsAreInfinitive(stripArticlePrefix(t))) {
     return 'verb';
   }
   if (lang === 'nl' && /^te\s+/i.test(t)) return 'verb';
-  if (EN_ADJECTIVES.has(low) || FR_ADJECTIVES.has(low) || NL_ADJECTIVES.has(low)) return 'adj';
-  if (lang === 'en' && /^(a|an|the)\s+/i.test(t) === false && /(ous|ful|ish|ive|able)$/i.test(low)) {
+  if (lang === 'es' && /(?:ar|er|ir)$/i.test(low) && low.length >= 4 && !ES_ADJECTIVES.has(low)) {
+    if (!ARTICLE_PREFIX.test(t) && !/\s/.test(t)) return 'verb';
+  }
+  if (
+    EN_ADJECTIVES.has(low) ||
+    FR_ADJECTIVES.has(low) ||
+    NL_ADJECTIVES.has(low) ||
+    ES_ADJECTIVES.has(low)
+  ) {
     return 'adj';
   }
-  if (/(ness|tion|sion|ment|esse|té|heid|age)$/i.test(low.replace(/^(le|la|les|un|une|the|a|an|de|het|een)\s+/i, ''))) {
+  if (lang === 'en' && !/^(a|an|the)\s+/i.test(t) && /(ous|ful|ish|ive|able)$/i.test(low)) {
+    return 'adj';
+  }
+  if (/(ness|tion|sion|ment|esse|té|heid|age)$/i.test(low)) {
     return 'noun';
   }
   return 'noun';
@@ -116,6 +172,7 @@ function wordsAreInfinitive(text: string): boolean {
 function frNounPhrase(word: string): string {
   if (/^(l['’]|le |la |les |un |une )/i.test(word)) return word;
   const low = word.toLowerCase();
+  if (low === 'eau') return "l'eau";
   const fem =
     /(tion|sion|ure|ade|ette|esse|té|nce|ie)$/i.test(low) ||
     (/e$/i.test(low) && !/(age|isme|iste|aire|ège|é)$/i.test(low));
@@ -124,13 +181,39 @@ function frNounPhrase(word: string): string {
 
 function enNounPhrase(word: string): string {
   if (/^(a|an|the)\s+/i.test(word)) return word;
+  if (EN_UNCOUNTABLE.has(word.toLowerCase())) return word;
   if (/^[aeiou]/i.test(word)) return `an ${word}`;
   return `a ${word}`;
 }
 
-function nlNounPhrase(word: string): string {
+function nlNounPhrase(word: string, kind: VocabKind): string {
   if (/^(de|het|een)\s+/i.test(word)) return word;
+  const low = word.toLowerCase();
+  if (kind === 'quantity') return `een ${word}`;
+  if (isNlDiminutive(low) || NL_HET.has(low)) return `het ${word}`;
   return `de ${word}`;
+}
+
+function esNounPhrase(word: string): string {
+  if (/^(el|la|los|las|un|una|lo)\s+/i.test(word)) return word;
+  const low = word.toLowerCase();
+  if (['mapa', 'día', 'dia', 'problema', 'tema', 'sistema', 'idioma', 'clima'].includes(low)) {
+    return `un ${word}`;
+  }
+  if (/(ción|sión|dad|tad|tud|umbre|ie)$/i.test(low) || (/a$/i.test(low) && !/ma$/i.test(low))) {
+    return `una ${word}`;
+  }
+  return `un ${word}`;
+}
+
+function quantityPhrase(word: string, lang: LangCode): string {
+  if (ARTICLE_PREFIX.test(word) || /^l['’]/i.test(word)) return word;
+  const w = word.toLowerCase();
+  if (lang === 'nl') return `een ${w}`;
+  if (lang === 'fr') return w === 'peu' ? 'un peu' : w;
+  if (lang === 'en') return w === 'little' ? 'a little' : `a ${w}`;
+  if (lang === 'es') return w.endsWith('a') ? `una ${w}` : `un ${w}`;
+  return word;
 }
 
 /** Prefer a short lemma over a glossary fragment like "beetje – een beetje". */
@@ -166,18 +249,26 @@ export function wrapVocabSentence(word: string, lang: LangCode, slot?: number): 
     if (kind === 'adj') {
       return pickAligned([`Il est ${w}.`, `Elle est ${w}.`, `C'est trop ${w}.`], slot, seed);
     }
+    if (kind === 'quantity') {
+      const qp = quantityPhrase(w, 'fr');
+      return pickAligned([`Il y a ${qp}.`, `J'ai ${qp}.`, `Voici ${qp}.`], slot, seed);
+    }
     const np = frNounPhrase(w);
     return pickAligned([`C'est ${np}.`, `Voici ${np}.`, `J'ai ${np}.`], slot, seed);
   }
 
   if (lang === 'nl') {
     if (kind === 'verb') {
-      return pickAligned([`Ik wil ${w}.`, `Wij gaan ${w}.`], slot, seed);
+      return pickAligned([`Ik wil ${w}.`, `Wij gaan ${w}.`, `Zij moet ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
       return pickAligned([`Hij is ${w}.`, `Het is ${w}.`, `Zij is ${w}.`], slot, seed);
     }
-    const np = nlNounPhrase(w);
+    if (kind === 'quantity') {
+      const qp = quantityPhrase(w, 'nl');
+      return pickAligned([`Er is ${qp}.`, `Ik heb ${qp}.`, `Hier is ${qp}.`], slot, seed);
+    }
+    const np = nlNounPhrase(w, kind);
     return pickAligned([`Dit is ${np}.`, `Hier is ${np}.`, `Ik heb ${np}.`], slot, seed);
   }
 
@@ -189,8 +280,27 @@ export function wrapVocabSentence(word: string, lang: LangCode, slot?: number): 
     if (kind === 'adj') {
       return pickAligned([`It is ${w}.`, `She is ${w}.`, `He looks ${w}.`], slot, seed);
     }
+    if (kind === 'quantity') {
+      const qp = quantityPhrase(w, 'en');
+      return pickAligned([`There is ${qp}.`, `I have ${qp}.`, `Here is ${qp}.`], slot, seed);
+    }
     const np = enNounPhrase(w);
     return pickAligned([`This is ${np}.`, `Here is ${np}.`, `I have ${np}.`], slot, seed);
+  }
+
+  if (lang === 'es') {
+    if (kind === 'verb') {
+      return pickAligned([`Quiero ${w}.`, `Hay que ${w}.`, `Vamos a ${w}.`], slot, seed);
+    }
+    if (kind === 'adj') {
+      return pickAligned([`Él es ${w}.`, `Ella es ${w}.`, `Es demasiado ${w}.`], slot, seed);
+    }
+    if (kind === 'quantity') {
+      const qp = quantityPhrase(w, 'es');
+      return pickAligned([`Hay ${qp}.`, `Tengo ${qp}.`, `Aquí está ${qp}.`], slot, seed);
+    }
+    const np = esNounPhrase(w);
+    return pickAligned([`Esto es ${np}.`, `Aquí está ${np}.`, `Tengo ${np}.`], slot, seed);
   }
 
   return '';
@@ -202,15 +312,22 @@ export function framesMatch(source: string, target: string): boolean {
   const s = source.trim();
   const t = target.trim();
   const frames: { src: RegExp; dst: RegExp }[] = [
-    { src: /^here is\b/i, dst: /^(voici|hier is)\b/i },
-    { src: /^voici\b/i, dst: /^(here is|hier is)\b/i },
+    { src: /^here is\b/i, dst: /^(voici|hier is|aquí está)\b/i },
+    { src: /^voici\b/i, dst: /^(here is|hier is|aquí está)\b/i },
+    { src: /^hier is\b/i, dst: /^(voici|here is|aquí está)\b/i },
+    { src: /^aquí está\b/i, dst: /^(voici|here is|hier is)\b/i },
     { src: /^this is\b/i, dst: /^(c['’]est|dit is|esto es)\b/i },
-    { src: /^c['’]est\b/i, dst: /^(this is|dit is)\b/i },
+    { src: /^c['’]est\b/i, dst: /^(this is|dit is|esto es)\b/i },
+    { src: /^dit is\b/i, dst: /^(c['’]est|this is|esto es)\b/i },
+    { src: /^esto es\b/i, dst: /^(c['’]est|this is|dit is)\b/i },
+    { src: /^there is\b/i, dst: /^(il y a|er is|hay)\b/i },
+    { src: /^il y a\b/i, dst: /^(there is|er is|hay)\b/i },
+    { src: /^er is\b/i, dst: /^(il y a|there is|hay)\b/i },
+    { src: /^hay (?!que\b)/i, dst: /^(il y a|there is|er is)\b/i },
     { src: /^i have\b/i, dst: /^(j['’]ai|ik heb|tengo)\b/i },
-    { src: /^j['’]ai\b/i, dst: /^(i have|ik heb)\b/i },
-    { src: /^hier is\b/i, dst: /^(voici|here is)\b/i },
-    { src: /^ik heb\b/i, dst: /^(j['’]ai|i have)\b/i },
-    { src: /^dit is\b/i, dst: /^(c['’]est|this is)\b/i },
+    { src: /^j['’]ai\b/i, dst: /^(i have|ik heb|tengo)\b/i },
+    { src: /^ik heb\b/i, dst: /^(j['’]ai|i have|tengo)\b/i },
+    { src: /^tengo\b/i, dst: /^(j['’]ai|i have|ik heb)\b/i },
   ];
   for (const { src, dst } of frames) {
     if (src.test(s)) return dst.test(t);
@@ -293,6 +410,30 @@ export function gradeTranslateAnswer(assembled: string[], expected: string[]): T
   const dist = tokenLevenshtein(got, want);
   if (dist <= 1) return 'small';
   return 'big';
+}
+
+/** Place le prochain mot attendu, ou corrige un mot déjà mal placé. Une action par indice. */
+export function applyTranslateHint(picked: string[], round: TranslateRound): string[] {
+  const slots: (string | null)[] = round.expected.map((_, i) => picked[i] ?? null);
+  const tileOf = (id: string | null) => (id ? round.bank.find((b) => b.id === id) : undefined);
+  const correctAt = (i: number) => tileOf(slots[i])?.text === round.expected[i];
+
+  const target = slots.findIndex((_, i) => !correctAt(i));
+  if (target < 0) return picked;
+
+  const want = round.expected[target];
+  if (!want) return picked;
+  const locked = new Set(slots.filter((id, i) => id && correctAt(i)) as string[]);
+  const source = round.bank.find((b) => b.text === want && !locked.has(b.id));
+  if (!source) return picked;
+
+  const from = slots.findIndex((id) => id === source.id);
+  const displaced = slots[target] ?? null;
+  slots[target] = source.id;
+  if (from >= 0 && from !== target) {
+    slots[from] = displaced;
+  }
+  return slots.filter((id): id is string => Boolean(id));
 }
 
 function shuffle<T>(items: T[]): T[] {

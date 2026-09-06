@@ -5,7 +5,8 @@ import { playSound } from '../../lib/sounds';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
-import { buildSpeakChallenge, parsePhraseDisplay } from '../../lib/speakPhrases';
+import { buildSpeakChallenge, parsePhraseDisplay, withAiSpeakSentence } from '../../lib/speakPhrases';
+import { fetchAiTranslateRoundsTimed } from '../../lib/aiTranslate';
 import {
   acquireMicStream,
   getActiveMicStream,
@@ -29,6 +30,7 @@ import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
 import { ReportErrorSheet } from '../ReportErrorSheet';
+import { MicIcon } from '../icons/MicIcon';
 
 type VoicePhase = 'idle' | 'listening' | 'speaking' | 'analyzing';
 
@@ -64,12 +66,30 @@ export function SpeakGame({
     [pairs],
   );
   const total = Math.min(pool.length, examMode ? 6 : (maxItems ?? 5));
-  const deck = pool.slice(0, total);
+  const deck = useMemo(() => pool.slice(0, total), [pool, total]);
   const [index, setIndex] = useState(0);
+  const [aiSourceByIndex, setAiSourceByIndex] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
+
+  useEffect(() => {
+    let cancelled = false;
+    setAiSourceByIndex({});
+    if (deck.length === 0) return;
+    void fetchAiTranslateRoundsTimed(deck, total).then((rounds) => {
+      if (cancelled || !rounds?.length) return;
+      const next: Record<number, string> = {};
+      for (const round of rounds) {
+        if (round.source) next[round.pairIndex] = round.source;
+      }
+      setAiSourceByIndex(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [deck, total]);
 
   const [score, setScore] = useState(0);
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
@@ -99,7 +119,9 @@ export function SpeakGame({
   const supported = useGroq || isSpeechRecognitionSupported();
 
   const current = deck[index];
-  const challenge = current ? buildSpeakChallenge(current) : null;
+  const challenge = current
+    ? withAiSpeakSentence(buildSpeakChallenge(current), aiSourceByIndex[index])
+    : null;
   const timerSeconds = examMode ? getExamTimerSeconds('speak', total) : 0;
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
 
@@ -575,8 +597,10 @@ export function SpeakGame({
                   className={`speak-game-mic${recording ? ' speak-game-mic--active' : ''}${heardVoice && recording ? ' speak-game-mic--heard' : ''}`}
                   onClick={handleMicClick}
                   disabled={voicePhase === 'analyzing'}
+                  aria-label={phaseLabel}
                 >
-                  🎤 {phaseLabel}
+                  <MicIcon size={26} />
+                  <span>{phaseLabel}</span>
                 </button>
               </div>
               {micBusy && liveHint && (
@@ -597,9 +621,6 @@ export function SpeakGame({
                     {t('speakSelfCheck', locale)}
                   </button>
                 </div>
-              )}
-              {!recording && voicePhase !== 'analyzing' && !micError && (
-                <p className="speak-game-hint">{t('speakMicHintGroq', locale)}</p>
               )}
             </>
           )}

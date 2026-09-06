@@ -17,13 +17,16 @@ INTERDIT (moule "voir") :
 - "see / vois / zie" seulement si le mot du cours EST ce verbe.
 
 TYPE DE MOT :
-- Adjectif (old, young, oud, jeune) → phrase d'état : "She is old." / "Elle est jeune." / "Hij is oud." Pas "I see old".
-- Nom (a baby, la grossesse, de auto) → phrase avec article correct : "This is a baby." / "C'est un bébé." / "Dit is de auto."
-- Verbe (to be born, naître) → "I want to be born." / "Je veux naître." Pas "I see born".
-- Si le term est un adjectif et la definition un nom (old → la vieillesse), NE FORCE PAS la même structure : chaque langue reste correcte (ex. "He is old." / "C'est la vieillesse.").
+- Adjectif (old, young, oud, jeune, viejo) → phrase d'état : "She is old." / "Elle est jeune." / "Hij is oud." / "Ella es joven." Pas "I see old".
+- Nom (a baby, la grossesse, de auto, la casa) → article CORRECT : "This is a baby." / "C'est un bébé." / "Dit is de auto." / "Esto es una casa."
+- Quantité (beetje, peu, bit, poco) → JAMAIS "Dit is de beetje". Utilise "een beetje" / "un peu" : "Er is een beetje water." / "Il y a un peu d'eau." / "There is a bit of water." / "Hay un poco de agua."
+- Verbe (to be born, naître, nacer) → "I want to be born." / "Je veux naître." / "Quiero nacer."
+- Néerlandais : de/het/een justes. Diminutifs et "huis/kind/water" → het. "beetje" → een beetje.
+- Espagnol : un/una/el/la justes. Infinitif -ar/-er/-ir dans une vraie phrase.
+- Si le term est un adjectif et la definition un nom (old → la vieillesse), NE FORCE PAS la même structure.
 
 VARIÉTÉ :
-- Varie sujet et verbe d'un round à l'autre (être, avoir, voici/dit is, vouloir…). Jamais 3 rounds d'affilée avec le même verbe.
+- Varie sujet et verbe d'un round à l'autre (être, avoir, voici/dit is/esto es, il y a/er is/hay, vouloir…). Jamais 3 rounds d'affilée avec le même verbe.
 
 CONSTRUCTION :
 1. Phrase complète et naturelle : sujet + verbe. Pas un glossaire recopié.
@@ -33,10 +36,11 @@ CONSTRUCTION :
 EXEMPLES :
 - Mauvais : "I see old." / "Je vois vieillesse."
 - Bon : "She is old." / "C'est la vieillesse."
-- Mauvais : "beetje – een beetje"
+- Mauvais : "Dit is de beetje." / "beetje – een beetje"
 - Bon : "Er is een beetje water." / "Il y a un peu d'eau."
 - Mauvais : "auto = voiture"
 - Bon : "De auto is rood." / "La voiture est rouge."
+- Bon ES : "Esto es un libro." / "Tengo una casa."
 
 Le champ "term" peut être un fragment ("beetje – een beetje") : extrais le lemme et construis autour.
 extraTiles : 2 à 4 leurres dans la langue CIBLE, absents de la phrase cible.

@@ -17,6 +17,7 @@ import {
   buyStreakFreeze,
   buyStreakRestore,
   buySynthesisCredit,
+  buyTranslateHint,
   buyXpPack,
   buyXpPotion,
   canBuyExtraScanInShop,
@@ -37,11 +38,13 @@ import {
   SHOP_SYNTHESIS_CREDIT_PRICE,
   SHOP_STREAK_FREEZE_PRICE,
   SHOP_STREAK_FREEZE_MAX,
+  SHOP_TRANSLATE_HINT_PRICE,
   EXTRA_SCAN_PRICE,
   type ChestReward,
   type ShopPurchaseResult,
 } from '../lib/shop';
 import {
+  getTranslateHints,
   getXpBoostMinutesLeft,
   isXpBoostActive,
   streakRestoreHoursLeft,
@@ -161,6 +164,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
   const chestReady = canClaimDailyChest();
   const adsLeft = getAdWatchesLeftToday();
   const freezeCharges = getStreakFreezeCharges();
+  const translateHints = getTranslateHints();
   const synthesisBonus = getSynthesisBonusCredits();
   const extraScanOk = canBuyExtraScanInShop();
 
@@ -366,6 +370,24 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
               synthesisBonus > 0 ? (
                 <p className="shop-item-active">
                   {t('shopSynthesisBonusOwned', locale).replace('{n}', String(synthesisBonus))}
+                </p>
+              ) : undefined
+            }
+          />
+
+          <ShopItemRow
+            locale={locale}
+            icon="💡"
+            nameKey="shopTranslateHint"
+            desc={t('shopTranslateHintDesc', locale)}
+            price={SHOP_TRANSLATE_HINT_PRICE}
+            buyId="hint"
+            busy={busy}
+            onBuy={() => void run('hint', () => buyTranslateHint(), 'shopTranslateHintOk')}
+            extra={
+              translateHints > 0 ? (
+                <p className="shop-item-active">
+                  {t('shopTranslateHintOwned', locale).replace('{n}', String(translateHints))}
                 </p>
               ) : undefined
             }

@@ -38,7 +38,7 @@ export async function fetchAiTranslateRounds(
 export async function fetchAiTranslateRoundsTimed(
   pairs: WordPair[],
   count: number,
-  ms = 3200,
+  ms = 6500,
 ): Promise<TranslateRound[] | null> {
   try {
     return await Promise.race([

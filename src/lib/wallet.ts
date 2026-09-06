@@ -26,6 +26,9 @@ export interface WalletState {
   synthesisBonusCredits: number;
   /** Protège la série une fois si un jour est manqué. */
   streakFreezeCharges: number;
+  /** Indices traduction (phrase à reconstruire). */
+  translateHints: number;
+  welcomeHintsGranted: boolean;
 }
 
 const DEFAULT: WalletState = {
@@ -42,6 +45,8 @@ const DEFAULT: WalletState = {
   extraScansBought: 0,
   synthesisBonusCredits: 0,
   streakFreezeCharges: 0,
+  translateHints: 0,
+  welcomeHintsGranted: false,
 };
 
 function todayKey(): string {
@@ -66,6 +71,8 @@ export function loadWalletRaw(): WalletState {
       extraScansBought: Number(data.extraScansBought ?? 0),
       synthesisBonusCredits: Number(data.synthesisBonusCredits ?? 0),
       streakFreezeCharges: Number(data.streakFreezeCharges ?? 0),
+      translateHints: Number(data.translateHints ?? 0),
+      welcomeHintsGranted: Boolean(data.welcomeHintsGranted),
     };
   } catch {
     return { ...DEFAULT };
@@ -279,6 +286,37 @@ export function consumeStreakFreezeCharge(): boolean {
   const w = loadWalletRaw();
   if (w.streakFreezeCharges <= 0) return false;
   w.streakFreezeCharges -= 1;
+  saveWalletRaw(w);
+  return true;
+}
+
+export const WELCOME_TRANSLATE_HINTS = 2;
+
+export function getTranslateHints(): number {
+  return loadWalletRaw().translateHints;
+}
+
+export function grantTranslateHints(amount: number): void {
+  if (amount <= 0) return;
+  const w = loadWalletRaw();
+  w.translateHints += amount;
+  saveWalletRaw(w);
+}
+
+/** 2 indices offerts une fois le compte créé (ou à la première connexion d’un compte existant). */
+export function ensureWelcomeTranslateHints(): void {
+  if (!isLoggedIn()) return;
+  const w = loadWalletRaw();
+  if (w.welcomeHintsGranted) return;
+  w.translateHints += WELCOME_TRANSLATE_HINTS;
+  w.welcomeHintsGranted = true;
+  saveWalletRaw(w);
+}
+
+export function consumeTranslateHint(): boolean {
+  const w = loadWalletRaw();
+  if (w.translateHints <= 0) return false;
+  w.translateHints -= 1;
   saveWalletRaw(w);
   return true;
 }

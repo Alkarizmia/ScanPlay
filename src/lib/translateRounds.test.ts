@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { coercePlayablePairs } from './vocabulary';
 import { TRANSLATE_EXERCISE_SYSTEM_PROMPT } from './translateExercisePrompt';
 import {
+  applyTranslateHint,
   buildLocalTranslateRound,
   buildLocalTranslateRounds,
   gradeTranslateAnswer,
@@ -9,7 +10,9 @@ import {
   parseAiTranslateRounds,
   tokenizePhrase,
   wrapVocabSentence,
+  phraseForSentence,
 } from './translateRounds';
+import type { TranslateRound } from './translateRounds';
 import type { WordPair } from '../types';
 
 const pair: WordPair = { term: 'auto', definition: 'voiture', termLang: 'nl', defLang: 'fr' };
@@ -53,6 +56,21 @@ describe('translateRounds', () => {
     expect(wrapVocabSentence('Signe', 'unknown')).not.toMatch(/Ik zie/i);
   });
 
+  it('does not build "Dit is de beetje" for a quantity glossary line', () => {
+    expect(phraseForSentence('beetje – een beetje').toLowerCase()).toContain('beetje');
+    expect(phraseForSentence('beetje – een beetje').toLowerCase()).toMatch(/een beetje/);
+    const nl = wrapVocabSentence('beetje – een beetje', 'nl');
+    expect(nl.toLowerCase()).toContain('beetje');
+    expect(nl).not.toMatch(/\bde beetje\b/i);
+    expect(nl.toLowerCase()).toMatch(/een beetje/);
+    const fr = wrapVocabSentence('un peu', 'fr');
+    expect(fr.toLowerCase()).toContain('peu');
+    expect(fr).not.toMatch(/c'est de /i);
+    const es = wrapVocabSentence('casa', 'es');
+    expect(es.toLowerCase()).toContain('casa');
+    expect(es.length).toBeGreaterThan(8);
+  });
+
   it('does not calque "I see / Je vois" onto adjectives and abstract nouns', () => {
     expect(wrapVocabSentence('old', 'en')).not.toMatch(/I see/i);
     expect(wrapVocabSentence('old', 'en').toLowerCase()).toMatch(/\bold\b/);
@@ -74,6 +92,7 @@ describe('translateRounds', () => {
     expect(round!.source).not.toMatch(/–|—/);
     expect(round!.source.toLowerCase()).toContain('beetje');
     expect(round!.source.split(/\s+/).length).toBeGreaterThanOrEqual(3);
+    expect(round!.source).not.toMatch(/\bde beetje\b/i);
     expect(looksLikeGlossaryFragment(round!.source, gloss.term)).toBe(false);
   });
 
@@ -215,5 +234,31 @@ describe('translateRounds', () => {
     const rounds = buildLocalTranslateRounds(pictured, 2);
     expect(rounds.length).toBeGreaterThan(0);
     expect(rounds[0]?.expected.join(' ').toLowerCase()).toMatch(/pomme|chat/);
+  });
+});
+
+describe('applyTranslateHint', () => {
+  const round: TranslateRound = {
+    pairIndex: 0,
+    source: 'Dit is de beetje.',
+    focusWord: 'beetje',
+    expected: ["C'est", 'un', 'peu'],
+    bank: [
+      { id: 'a', text: "C'est" },
+      { id: 'b', text: 'un' },
+      { id: 'c', text: 'peu' },
+      { id: 'd', text: 'toujours' },
+    ],
+    termLang: 'nl',
+  };
+
+  it('places the next expected word into an empty slot', () => {
+    expect(applyTranslateHint([], round)).toEqual(['a']);
+    expect(applyTranslateHint(['a'], round)).toEqual(['a', 'b']);
+  });
+
+  it('corrects a misplaced word by swapping or replacing', () => {
+    expect(applyTranslateHint(['c', 'b', 'a'], round)).toEqual(['a', 'b', 'c']);
+    expect(applyTranslateHint(['d'], round)).toEqual(['a']);
   });
 });

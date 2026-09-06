@@ -19,6 +19,10 @@ interface DailyChestOverlayProps {
   locale: Locale;
   onClose: () => void;
   onOpened: (reward: ChestReward, rarity: ChestRarity) => void;
+  /** Défaut : coffre quotidien. Autre source (parcours) : ne pas appeler claimDailyChest. */
+  claim?: (
+    rarity: ChestRarity,
+  ) => { ok: true; reward: ChestReward; rarity: ChestRarity } | { ok: false; reason: string };
 }
 
 const RARITY_CLASS: Record<ChestRarity, string> = {
@@ -28,7 +32,7 @@ const RARITY_CLASS: Record<ChestRarity, string> = {
   legendary: 'chest-rarity--legendary',
 };
 
-export function DailyChestOverlay({ open, locale, onClose, onOpened }: DailyChestOverlayProps) {
+export function DailyChestOverlay({ open, locale, onClose, onOpened, claim = claimDailyChest }: DailyChestOverlayProps) {
   const [rarity, setRarity] = useState<ChestRarity>('common');
   const [upgradeTaps, setUpgradeTaps] = useState(0);
   const [shaking, setShaking] = useState(false);
@@ -56,7 +60,7 @@ export function DailyChestOverlay({ open, locale, onClose, onOpened }: DailyChes
   const upgradesLeft = Math.max(0, UPGRADE_TAPS - upgradeTaps);
 
   const openChest = (finalRarity: ChestRarity) => {
-    const result = claimDailyChest(finalRarity);
+    const result = claim(finalRarity);
     if (!result.ok) {
       onClose();
       return;

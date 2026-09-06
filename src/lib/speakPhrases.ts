@@ -47,6 +47,7 @@ function ensureSentencePunctuation(text: string): string {
 function fallbackSentence(term: string, lang: LangCode): string {
   if (lang === 'fr') return `Aujourd'hui on étudie ${term}.`;
   if (lang === 'nl') return `Vandaag leren we ${term}.`;
+  if (lang === 'es') return `Hoy estudiamos ${term}.`;
   return `Today we are learning about ${term}.`;
 }
 
@@ -95,6 +96,25 @@ export function buildSpeakSentence(rawTerm: string, lang: LangCode): string {
 
   const lemma = phraseForSentence(cleaned) || cleaned.split(/\s+/)[0] || cleaned;
   return fallbackSentence(lemma, wrapLang);
+}
+
+export function withAiSpeakSentence(
+  challenge: SpeakChallenge,
+  sentence: string | null | undefined,
+): SpeakChallenge {
+  const raw = sentence?.trim();
+  if (!raw) return challenge;
+  const speech = ensureSentencePunctuation(raw);
+  const focus = phraseForSentence(challenge.target) || challenge.target;
+  const haystack = speech.toLowerCase();
+  if (!haystack.includes(focus.toLowerCase()) && !haystack.includes(challenge.target.toLowerCase())) {
+    return challenge;
+  }
+  return {
+    ...challenge,
+    phraseSpeech: speech,
+    phraseDisplay: markFocusInSentence(speech, focus),
+  };
 }
 
 export function buildSpeakChallenge(pair: WordPair): SpeakChallenge {

@@ -53,12 +53,26 @@ export function scoreFrench(text: string): number {
   return score;
 }
 
+export function scoreSpanish(text: string): number {
+  let score = 0;
+  if (/\b(el|la|los|las|un|una|del|al)\b/i.test(text)) score += 2;
+  if (/\b(que|con|por|para|está|esto|hay|también|muy)\b/i.test(text)) score += 2;
+  if (/[áéíóúñ¿¡]/i.test(text)) score += 2;
+  if (/\w+(ción|dad|mente)\b/i.test(text)) score += 1;
+  return score;
+}
+
 export function detectLang(text: string): LangCode {
   const nl = scoreDutch(text);
   const fr = scoreFrench(text);
-  if (nl > fr + 1) return 'nl';
-  if (fr > nl + 1) return 'fr';
-  if (/\b(the|and|with|your)\b/i.test(text)) return 'en';
+  const es = scoreSpanish(text);
+  const en = /\b(the|and|with|your)\b/i.test(text) ? 3 : 0;
+  const best = Math.max(nl, fr, es, en);
+  if (best === 0) return 'unknown';
+  if (es === best && es > fr + 1 && es > nl + 1) return 'es';
+  if (nl > fr + 1 && nl >= es) return 'nl';
+  if (fr > nl + 1 && fr >= es) return 'fr';
+  if (en === best) return 'en';
   return 'unknown';
 }
 

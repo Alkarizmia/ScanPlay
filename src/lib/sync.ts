@@ -145,6 +145,8 @@ function mergeWalletFromCloud(cloud: Record<string, unknown>): void {
     extraScansBought: Number(cloud.extraScansBought ?? local.extraScansBought),
     synthesisBonusCredits: Number(cloud.synthesisBonusCredits ?? local.synthesisBonusCredits),
     streakFreezeCharges: Math.max(local.streakFreezeCharges, Number(cloud.streakFreezeCharges ?? 0)),
+    translateHints: Math.max(local.translateHints, Number(cloud.translateHints ?? 0)),
+    welcomeHintsGranted: Boolean(local.welcomeHintsGranted || cloud.welcomeHintsGranted),
   };
   if (merged.lostStreakAt === 0) merged.lostStreakAt = null;
   if (merged.lostStreakAckAt === 0) merged.lostStreakAckAt = null;

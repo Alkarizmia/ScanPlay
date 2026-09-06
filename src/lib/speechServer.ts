@@ -5,6 +5,7 @@ const LANG_WHISPER: Record<LangCode, string> = {
   fr: 'fr',
   en: 'en',
   nl: 'nl',
+  es: 'es',
   unknown: 'fr',
 };
 

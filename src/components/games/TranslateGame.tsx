@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { ScanPlayMascot } from '../mascot/ScanPlayMascot';
+import { HintIcon } from '../icons/HintIcon';
 import { playSound } from '../../lib/sounds';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
@@ -8,12 +9,14 @@ import { t } from '../../lib/i18n';
 import { coercePlayablePairs } from '../../lib/vocabulary';
 import { fetchAiTranslateRoundsTimed } from '../../lib/aiTranslate';
 import {
+  applyTranslateHint,
   buildLocalTranslateRounds,
   gradeTranslateAnswer,
   highlightFocusParts,
   type TranslateGrade,
   type TranslateRound,
 } from '../../lib/translateRounds';
+import { consumeTranslateHint, getTranslateHints } from '../../lib/wallet';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -60,6 +63,8 @@ export function TranslateGame({
   const [picked, setPicked] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Feedback>('idle');
   const [lastXp, setLastXp] = useState(0);
+  const [hintTick, setHintTick] = useState(0);
+  const [hintMsg, setHintMsg] = useState<string | null>(null);
   const startedRef = useRef(false);
 
   useEffect(() => {
@@ -93,6 +98,7 @@ export function TranslateGame({
     setPicked([]);
     setFeedback('idle');
     setLastXp(0);
+    setHintMsg(null);
     if (index + 1 >= rounds.length) finish(nextScore);
     else setIndex((i) => i + 1);
   };
@@ -141,6 +147,23 @@ export function TranslateGame({
     if (poolPair) recordMistake(poolPair, 'translate', deckId ?? undefined, stepIndex ?? undefined);
   };
 
+  const useHint = () => {
+    if (!round || examMode || feedback === 'ok' || feedback === 'fail') return;
+    const next = applyTranslateHint(picked, round);
+    const unchanged = next.length === picked.length && next.every((id, i) => id === picked[i]);
+    if (unchanged) return;
+    if (!consumeTranslateHint()) {
+      setHintMsg(t('translateNoHints', locale));
+      return;
+    }
+    startedRef.current = true;
+    playSound('tap');
+    setHintMsg(null);
+    setPicked(next);
+    setFeedback('idle');
+    setHintTick((n) => n + 1);
+  };
+
   if (pool.length < 1) {
     onNotEnoughPairs?.();
     return null;
@@ -152,6 +175,8 @@ export function TranslateGame({
   }
 
   const sourceParts = round ? highlightFocusParts(round.source, round.focusWord) : [];
+  const hintsLeft = getTranslateHints();
+  void hintTick;
 
   return (
     <LessonGameShell
@@ -163,8 +188,23 @@ export function TranslateGame({
       className="translate-game"
     >
       <main className="game-main translate-main">
-        <span className="translate-badge">{t('translateNewWord', locale)}</span>
-        <p className="game-instruction">{t('translateInstruction', locale)}</p>
+        <div className="translate-toolbar">
+          <p className="game-instruction">{t('translateInstruction', locale)}</p>
+          {!examMode && (
+            <button
+              type="button"
+              className={`translate-hint-btn${hintsLeft <= 0 ? ' translate-hint-btn--empty' : ''}`}
+              onClick={useHint}
+              disabled={feedback === 'ok' || feedback === 'fail'}
+              aria-label={t('translateHint', locale)}
+            >
+              <HintIcon size={20} />
+              <span>{t('translateHint', locale)}</span>
+              <span className="translate-hint-count">{hintsLeft}</span>
+            </button>
+          )}
+        </div>
+        {hintMsg && <p className="translate-hint-msg">{hintMsg}</p>}
 
         <div className="translate-prompt">
           <ScanPlayMascot expression={mascotFor(feedback)} size={88} idle={feedback === 'idle'} />
@@ -175,6 +215,7 @@ export function TranslateGame({
                 lang={round.termLang}
                 locale={locale}
                 iconOnly
+                autoPlay
                 className="translate-hear"
               />
             ) : null}

@@ -165,6 +165,35 @@ export function ProgressCardMock({ locale }: { locale: Locale }) {
   );
 }
 
+/** Rank fire explained on the landing page — same flame mark as in-app. */
+export function PathRanksMock({ locale }: { locale: Locale }) {
+  const ranks = [
+    { id: 'glow', label: lt('lpRanksGlowTitle', locale), cls: 'lp-rank-node--glow' },
+    { id: 'bronze', label: lt('lpRanksBronzeTitle', locale), cls: 'lp-rank-node--bronze' },
+    { id: 'iron', label: lt('lpRanksIronTitle', locale), cls: 'lp-rank-node--iron' },
+    { id: 'gold', label: lt('lpRanksGoldTitle', locale), cls: 'lp-rank-node--gold' },
+  ] as const;
+
+  return (
+    <ul className="lp-ranks-row" aria-hidden="true">
+      {ranks.map((rank) => (
+        <li key={rank.id} className="lp-rank-item">
+          <span className={`lp-rank-node ${rank.cls}`}>
+            {rank.id !== 'glow' && (
+              <span className="lp-rank-flames">
+                <StreakFlame lit size={14} />
+                <StreakFlame lit size={18} />
+                <StreakFlame lit size={14} />
+              </span>
+            )}
+          </span>
+          <span className="lp-rank-label">{rank.label}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /* ---------- icons ---------- */
 
 export function FlameIcon({ size = 16 }: { size?: number }) {
