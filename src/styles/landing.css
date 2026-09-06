@@ -1008,6 +1008,10 @@ html[data-landing='true'] .screen.sp-landing {
   background: var(--lp-bg-2, transparent);
 }
 
+.lp-section--ranks {
+  background: linear-gradient(180deg, transparent, rgba(34, 197, 94, 0.05), transparent);
+}
+
 .lp-section--ranks .lp-ranks-row {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1116,8 +1120,6 @@ html[data-landing='true'] .screen.sp-landing {
   .lp-section--ranks .lp-ranks-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-}
-  background: linear-gradient(180deg, transparent, rgba(34, 197, 94, 0.05), transparent);
 }
 
 .lp-product-grid {
