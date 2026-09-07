@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { GameMode, Locale, SheetType, WordPair } from '../../types';
+import type { GameMode, Locale, PairDirection, SheetType, WordPair } from '../../types';
 import { getLessonTotalUnits, getLessonUnitOffsets, getGameUnitCount } from '../../lib/lessonUnits';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import { FlashcardsGame } from './FlashcardsGame';
@@ -25,6 +25,7 @@ interface LessonRunnerProps {
   sheetType?: SheetType;
   startGameIndex?: number;
   pairShift?: number;
+  pairDirection?: PairDirection;
   onExit: () => void;
   onPause?: (gameIndex: number, pendingMs: number) => void;
   onSubGameComplete: (mode: GameMode, score: number, total: number, continues: boolean) => void;
@@ -42,6 +43,7 @@ export function LessonRunner({
   sheetType,
   startGameIndex = 0,
   pairShift = 0,
+  pairDirection = 'auto',
   onExit,
   onPause,
   onSubGameComplete,
@@ -121,6 +123,7 @@ export function LessonRunner({
     examMode: false as const,
     deckId,
     stepIndex,
+    pairDirection,
     embedded: true,
     maxItems: itemCap,
     onStepProgress: handleStepProgress,

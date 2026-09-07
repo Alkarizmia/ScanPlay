@@ -2185,6 +2185,7 @@ export default function App() {
           locale={locale}
           deckId={historyId}
           stepIndex={activeStepIndex}
+          pairDirection={pairDirection}
           onComplete={endGame}
           onExit={appGoBack}
         />
@@ -2199,6 +2200,7 @@ export default function App() {
           sheetType={sheetType}
           startGameIndex={lessonStartIndex}
           pairShift={lessonPairShift}
+          pairDirection={pairDirection}
           onExit={appGoBack}
           onPause={(gameIndex, pendingMs) => {
             if (activeStepIndex === null) return;

@@ -178,9 +178,18 @@ describe('image pick rounds', () => {
       ],
       { maxRounds: 1, seed: 'pic' },
     );
-    expect(rounds[0]?.prompt.toLowerCase()).toMatch(/apple|pomme/);
+    expect(rounds[0]?.prompt.toLowerCase()).toBe('apple');
     expect(rounds[0]?.options).toHaveLength(4);
     expect(rounds[0]?.options.some((art) => art.id === 'pomme')).toBe(true);
+  });
+
+  it('keeps the scanned word, not the translation', () => {
+    const rounds = buildImagePickRounds(
+      [{ term: 'laptop', definition: 'portable', termLang: 'en', defLang: 'fr' }],
+      { maxRounds: 1, seed: 'scan' },
+    );
+    expect(rounds[0]?.prompt.toLowerCase()).toBe('laptop');
+    expect(rounds[0]?.targetId).toBe('ordinateur');
   });
 
   it('needs a known everyday word', () => {

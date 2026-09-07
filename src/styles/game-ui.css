@@ -226,6 +226,71 @@
   opacity: 0.45;
 }
 
+.imagepick-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.imagepick-prompt {
+  text-align: center;
+  margin: 4px 0 0;
+}
+
+.imagepick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  width: 100%;
+  max-width: min(100%, 420px);
+  margin: 12px auto 0;
+  flex: 1 1 auto;
+  min-height: 0;
+  aspect-ratio: 1;
+  max-height: min(52dvh, 420px);
+}
+
+.imagepick-card {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  height: 100%;
+  padding: 8px;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+}
+
+.imagepick-card .choice-card-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.imagepick-card .choice-card-mark {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+}
+
+.imagepick-art {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+}
+
 @keyframes sp-answer-pop {
   0% {
     transform: scale(1);
@@ -626,37 +691,11 @@
     font-size: 2.1rem;
   }
 
-.imagepick-prompt {
-  text-align: center;
-  margin: 4px 0 0;
-}
-
-.imagepick-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-.imagepick-card {
-  min-height: 132px;
-  padding: 12px;
-  justify-content: center;
-}
-
-.imagepick-card .choice-card-text {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-}
-
-.imagepick-art {
-  width: 100%;
-  max-height: 112px;
-  object-fit: contain;
-  pointer-events: none;
-}
+  .imagepick-grid {
+    gap: 12px;
+    max-width: min(100%, 480px);
+    max-height: min(56dvh, 480px);
+  }
 
   .answer-feedback {
     flex-direction: row;

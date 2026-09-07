@@ -3,8 +3,8 @@ import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { buildImagePickRounds } from '../../lib/imagePickRounds';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
-import { coercePlayablePairs } from '../../lib/vocabulary';
-import type { Locale, WordPair } from '../../types';
+import { coercePlayablePairs, flipPair, isReversedStep } from '../../lib/vocabulary';
+import type { Locale, PairDirection, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
@@ -16,6 +16,7 @@ interface ImagePickGameProps extends EmbeddedGameProps {
   locale: Locale;
   deckId?: string | null;
   stepIndex?: number | null;
+  pairDirection?: PairDirection;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
 }
@@ -25,21 +26,26 @@ export function ImagePickGame({
   locale,
   deckId,
   stepIndex,
+  pairDirection = 'auto',
   onComplete,
   onExit,
   embedded = false,
   onStepProgress,
   maxItems,
 }: ImagePickGameProps) {
+  const scannedPairs = useMemo(
+    () => (isReversedStep(stepIndex ?? null, pairDirection) ? pairs.map(flipPair) : pairs),
+    [pairs, stepIndex, pairDirection],
+  );
   const rounds = useMemo(
     () =>
-      buildImagePickRounds(pairs, {
+      buildImagePickRounds(scannedPairs, {
         maxRounds: Math.max(1, maxItems ?? 4),
         seed: deckId ?? 'imagepick',
       }),
-    [pairs, maxItems, deckId],
+    [scannedPairs, maxItems, deckId],
   );
-  const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
+  const pool = useMemo(() => coercePlayablePairs(scannedPairs), [scannedPairs]);
 
   const [index, setIndex] = useState(0);
   const [picked, setPicked] = useState<string | null>(null);

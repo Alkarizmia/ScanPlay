@@ -31,7 +31,8 @@ export function buildImagePickRounds(
     const picked = seededShuffle(distractors, `${seed}-${i}-d`).slice(0, 3);
     rounds.push({
       pairIndex: i,
-      prompt: (fromTerm ? pair.term : pair.definition).trim(),
+      // Always the scanned headword, never the reverse-direction / UI-language gloss.
+      prompt: pair.term.trim(),
       targetId: target.id,
       options: seededShuffle([target, ...picked], `${seed}-${i}`),
     });
