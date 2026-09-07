@@ -18,6 +18,7 @@ import {
   useAppNavigationHistory,
   type AppNavSnapshot,
 } from './hooks/useAppNavigationHistory';
+import { DailyMissionRewardScreen } from './components/DailyMissionRewardScreen';
 import { ExamOffConfirmModal } from './components/ExamOffConfirmModal';
 import { GoldReplayConfirmModal } from './components/GoldReplayConfirmModal';
 import { GuestPlayReadyModal } from './components/GuestPlayReadyModal';
@@ -82,7 +83,7 @@ import {
   savePendingGuestDeck,
   takeLastAdoptedGuestDeck,
 } from './lib/pendingGuestDeck';
-import { bumpDailyPlays } from './lib/dailyMissions';
+import { bumpDailyPlays, getUnclaimedCompletedMissions } from './lib/dailyMissions';
 import { claimDailyStreak, recordSession, getGamification, getLevel } from './lib/gamification';
 import { acknowledgeStreakLoss, ensureWelcomeTranslateHints, shouldShowStreakLostModal } from './lib/wallet';
 import {
@@ -472,6 +473,33 @@ export default function App() {
     resetTrainingFocus();
   };
 
+  const leavePathToHome = () => {
+    if (historyId) {
+      updateHistoryDeckProgress(historyId, {
+        stepProgress,
+        examStepProgress,
+        examModeLocked,
+      });
+    }
+    markNavReplace();
+    if (getUnclaimedCompletedMissions().length > 0) {
+      setMode(null);
+      setResult(null);
+      setLessonSession(null);
+      setShowConfetti(false);
+      setActiveStepIndex(null);
+      setFlow('missionReward');
+      return;
+    }
+    closeFlow();
+    setTab('home');
+    setMode(null);
+    setResult(null);
+    setLessonSession(null);
+    setShowConfetti(false);
+    setActiveStepIndex(null);
+  };
+
   const handleExamToggle = () => {
     setExamMode((prev) => {
       const next = !prev;
@@ -782,7 +810,7 @@ export default function App() {
   };
 
   const processImage = useCallback(
-    async (file: File | File[], focus: TrainingFocus[] = ['written', 'oral']) => {
+    async (file: File | File[], focus: TrainingFocus[] = ['written', 'oral'], examRequested = false) => {
       const guestScan = !isLoggedIn();
       if (guestScan) {
         if (!canGuestScan()) {
@@ -807,6 +835,15 @@ export default function App() {
       }
 
       setTrainingFocus(focus);
+      if (examRequested && hasFeature('exam')) {
+        setExamMode(true);
+        setExamRunStart(Date.now());
+        setExamStepGrades([]);
+      } else {
+        setExamMode(false);
+        setExamRunStart(null);
+        setExamStepGrades([]);
+      }
 
       if (!guestScan) {
         const remaining = getScansRemaining();
@@ -1827,6 +1864,7 @@ export default function App() {
           onOpenDeck={openHistoryDeck}
           onOpenAchievements={() => handleTabChange('achievements')}
           onOpenShop={() => handleTabChange('shop')}
+          onNewUnlocks={celebrateAchievements}
         />
       )}
       {flow === null && tab === 'history' && (
@@ -1854,7 +1892,14 @@ export default function App() {
         />
       )}
       {flow === null && tab === 'shop' && (
-        <ShopScreen locale={locale} refreshKey={refreshKey} onRefresh={refresh} />
+        <ShopScreen
+          locale={locale}
+          refreshKey={refreshKey}
+          onRefresh={refresh}
+          onNewUnlocks={celebrateAchievements}
+          onToast={showToast}
+          onSocialChange={handleSocialChange}
+        />
       )}
       {flow === null && tab === 'profile' && (
         <ProfileScreen
@@ -1939,6 +1984,7 @@ export default function App() {
           onBack={appGoBack}
           onSheetTypeChange={setSheetType}
           onFile={processImage}
+          onUpgrade={(reason) => setUpgradeReason(reason)}
           onToast={showToast}
           onAuth={() => setFlow('auth')}
         />
@@ -1965,6 +2011,17 @@ export default function App() {
           }}
         />
       )}
+      {flow === 'missionReward' && (
+        <DailyMissionRewardScreen
+          locale={locale}
+          onNewUnlocks={celebrateAchievements}
+          onDone={() => {
+            closeFlow();
+            setTab('home');
+            refresh();
+          }}
+        />
+      )}
       {flow === 'modes' && (
         <ModeSelect
           locale={locale}
@@ -1985,6 +2042,7 @@ export default function App() {
           onUpgrade={(reason) => setUpgradeReason(reason)}
           onToast={showToast}
           onSelect={(stepIdx, m) => startGame(m, stepIdx)}
+          onNewUnlocks={celebrateAchievements}
           pairDirection={pairDirection}
           onDirectionChange={setPairDirection}
           onRescan={() => {
@@ -1992,16 +2050,7 @@ export default function App() {
             startScanFlow();
           }}
           onHome={() => {
-            if (historyId) {
-              updateHistoryDeckProgress(historyId, {
-                stepProgress,
-                examStepProgress,
-                examModeLocked,
-              });
-            }
-            markNavReplace();
-            closeFlow();
-            setTab('home');
+            leavePathToHome();
           }}
           historyReplay={historyReplayMode}
           deckThumbnail={deckThumbnail}
@@ -2246,21 +2295,7 @@ export default function App() {
             goToPathMap();
           }}
           onHome={() => {
-            if (historyId) {
-              updateHistoryDeckProgress(historyId, {
-                stepProgress,
-                examStepProgress,
-                examModeLocked,
-              });
-            }
-            markNavReplace();
-            closeFlow();
-            setTab('home');
-            setMode(null);
-            setResult(null);
-            setLessonSession(null);
-            setShowConfetti(false);
-            setActiveStepIndex(null);
+            leavePathToHome();
           }}
         />
       )}
@@ -2312,20 +2347,7 @@ export default function App() {
           onReplay={() => mode && activeStepIndex !== null && startGame(mode, activeStepIndex)}
           examFailed={result.examMode === true && result.examPassed === false}
           onHome={() => {
-            if (historyId) {
-              updateHistoryDeckProgress(historyId, {
-                stepProgress,
-                examStepProgress,
-                examModeLocked,
-              });
-            }
-            markNavReplace();
-            closeFlow();
-            setTab('home');
-            setMode(null);
-            setResult(null);
-            setShowConfetti(false);
-            setActiveStepIndex(null);
+            leavePathToHome();
           }}
         />
       )}

@@ -43,7 +43,7 @@ const LINES: Record<Locale, Record<ScanTalkPhase, readonly string[]>> = {
       'Pix is hunting hidden words…',
       'One look, Pix gets to work…',
       'Pix is lining up the columns…',
-      'Getting ready — stay with Pix…',
+      'Getting ready. Stay with Pix…',
       'Pix is reading between the lines…',
     ],
     decode: [

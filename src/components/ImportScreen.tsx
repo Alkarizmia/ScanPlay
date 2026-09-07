@@ -4,6 +4,7 @@ import { GuestScanBanner } from './GuestScanBanner';
 import { BackIcon } from './icons/BackIcon';
 import { SheetTypePicker } from './SheetTypePicker';
 import { TrainingFocusPicker } from './TrainingFocusPicker';
+import { ExamSetupChip } from './ExamSetupChip';
 import { collectDroppedImageFiles, isLikelyImageFile } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport } from '../lib/planLimits';
 import { isLoggedIn } from '../lib/auth';
@@ -20,7 +21,8 @@ interface ImportScreenProps {
   initialFiles?: File[];
   onBack: () => void;
   onSheetTypeChange: (type: SheetType) => void;
-  onFile: (file: File | File[], trainingFocus: TrainingFocus[]) => void;
+  onFile: (file: File | File[], trainingFocus: TrainingFocus[], examRequested?: boolean) => void;
+  onUpgrade?: (reason: 'exam') => void;
   onToast?: (message: string) => void;
   onAuth?: () => void;
   showGuestBanner?: boolean;
@@ -48,6 +50,7 @@ export function ImportScreen({
   onBack,
   onSheetTypeChange,
   onFile,
+  onUpgrade,
   onToast,
   onAuth,
   showGuestBanner = false,
@@ -60,6 +63,7 @@ export function ImportScreen({
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
+  const [examWanted, setExamWanted] = useState(false);
   const maxPhotos = getMaxImagesPerImport();
   const guestMode = !isLoggedIn();
   const guestTrial = guestMode && canGuestScan();
@@ -163,7 +167,7 @@ export function ImportScreen({
   const startScan = () => {
     if (picked.length === 0) return;
     const focus = showTrainingFocus ? trainingFocus : DEFAULT_FOCUS;
-    onFile(picked.length === 1 ? picked[0] : picked, focus);
+    onFile(picked.length === 1 ? picked[0] : picked, focus, examWanted);
   };
 
   const handleBack = () => {
@@ -351,6 +355,13 @@ export function ImportScreen({
             {showTrainingFocus && (
               <TrainingFocusPicker locale={locale} value={trainingFocus} onChange={setTrainingFocus} />
             )}
+
+            <ExamSetupChip
+              locale={locale}
+              examMode={examWanted}
+              onToggle={() => setExamWanted((v) => !v)}
+              onUpgrade={() => onUpgrade?.('exam')}
+            />
 
             <p className="import-sheet-hint import-config-hint">{t(hintKeyForSheetType(sheetType), locale)}</p>
 

@@ -1,0 +1,20 @@
+/** Shared glyph ids for shop, wallet, HUD, and achievements. */
+export type EconomyGlyphId =
+  | 'coin'
+  | 'gem'
+  | 'xp'
+  | 'potion'
+  | 'megaPotion'
+  | 'scan'
+  | 'synthesis'
+  | 'streak'
+  | 'hint'
+  | 'freeze'
+  | 'medal-bronze'
+  | 'medal-silver'
+  | 'medal-gold'
+  | 'medal-iron'
+  | 'listen'
+  | 'write'
+  | 'quiz'
+  | 'path';

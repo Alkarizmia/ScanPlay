@@ -39,6 +39,7 @@ interface GamePathProps {
   sheetThumbnail?: string;
   deckId?: string | null;
   onReward?: () => void;
+  onNewUnlocks?: (unlocks: import('../lib/achievements').AchievementDef[]) => void;
 }
 
 const TIER_CLASS: Record<StepTier, string> = {
@@ -59,6 +60,7 @@ export function GamePath({
   sheetThumbnail,
   deckId = null,
   onReward,
+  onNewUnlocks,
 }: GamePathProps) {
   const pathSteps = useMemo(
     () => buildPathSteps(pathStepCount, pairs, { testChest: !examMode }),
@@ -174,7 +176,7 @@ export function GamePath({
                   aria-label={t('shopDailyChest', locale)}
                 >
                   <span className="scanplay-node-icon" aria-hidden="true">
-                    {locked ? <LockIcon size={30} /> : <ScanPlayChest open={chestOpened} size={44} />}
+                    {locked ? <LockIcon size={30} /> : <ScanPlayChest open={chestOpened} size={44} idle={active && !chestOpened} />}
                   </span>
                 </button>
               </div>
@@ -266,6 +268,7 @@ export function GamePath({
           window.setTimeout(() => setUnlockIdx(null), 750);
           onReward?.();
         }}
+        onNewUnlocks={onNewUnlocks}
       />
     </div>
   );

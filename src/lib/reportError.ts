@@ -94,7 +94,7 @@ export async function submitGameErrorReport(
     /* fallback mailto */
   }
 
-  const subject = encodeURIComponent(`[ScanPlay] Signalement — ${input.context.game}`);
+  const subject = encodeURIComponent(`[ScanPlay] Signalement : ${input.context.game}`);
   const body = encodeURIComponent(buildMailtoBody(input, reasonLabels));
   window.location.href = `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${body}`;
   return 'mailto';

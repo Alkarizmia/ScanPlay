@@ -34,7 +34,7 @@ export function SheetMock({ locale }: { locale: Locale }) {
         <ul className="lp-sheet-rows">
           {SHEET_ROWS.map((row) => (
             <li key={row.term}>
-              {row.marked ? <mark>{row.term}</mark> : row.term} — {row.definition}
+              {row.marked ? <mark>{row.term}</mark> : row.term} : {row.definition}
             </li>
           ))}
         </ul>

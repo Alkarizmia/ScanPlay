@@ -7,6 +7,8 @@ import { isUserOnline } from '../lib/social/presence';
 import type { FriendStatus, PendingFriendRequest, PublicPlayer } from '../lib/social/types';
 import { FriendProfileSheet } from './FriendProfileSheet';
 import { FriendsLeaderboard } from './FriendsLeaderboard';
+import { MedalIcon } from './icons/EconomyIcons';
+import { MascotCoach } from './mascot/MascotCoach';
 import { refreshFriendCount } from '../lib/social/friendCountCache';
 import { hasFeature } from '../lib/planLimits';
 import { t } from '../lib/i18n';
@@ -55,6 +57,7 @@ export function FriendsScreen({
   const [error, setError] = useState<string | null>(null);
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
+  const [previewPlayer, setPreviewPlayer] = useState<PublicPlayer | null>(null);
   const socialOk = isSocialAvailable();
   const canMulti = hasFeature('multiplayer');
 
@@ -106,6 +109,7 @@ export function FriendsScreen({
     const ok = await sendFriendRequest(player.userId);
     if (ok) {
       setError(null);
+      setPreviewPlayer((cur) => (cur ? { ...cur, friendStatus: 'pending_sent' } : cur));
       if (query.trim().length >= 2) await runSearch();
     } else {
       setError(t('friendsRequestError', locale));
@@ -168,18 +172,24 @@ export function FriendsScreen({
 
     return (
       <li key={player.userId} className="friend-row">
-        <FriendPresenceAvatar
-          avatarId={player.avatarId}
-          avatarUrl={player.avatarUrl}
-          isOnline={isUserOnline(player.lastSeenAt)}
-          locale={locale}
-        />
-        <div className="friend-info">
-          <span className="friend-name">{player.displayName}</span>
-          <span className="friend-meta">
-            {t('level', locale)} {player.level}
-          </span>
-        </div>
+        <button
+          type="button"
+          className="friend-row-main"
+          onClick={() => setPreviewPlayer(player)}
+        >
+          <FriendPresenceAvatar
+            avatarId={player.avatarId}
+            avatarUrl={player.avatarUrl}
+            isOnline={isUserOnline(player.lastSeenAt)}
+            locale={locale}
+          />
+          <div className="friend-info">
+            <span className="friend-name">{player.displayName}</span>
+            <span className="friend-meta">
+              {t('level', locale)} {player.level}
+            </span>
+          </div>
+        </button>
         {status === 'pending_received' && pending ? (
           <div className="friend-request-actions friend-request-actions--inline">
             <button
@@ -263,7 +273,10 @@ export function FriendsScreen({
           <span className="friend-meta">
             {t('level', locale)} {player.level}
             {(player.achievementCount ?? 0) > 0 && (
-              <> · {player.achievementCount} 🏆</>
+              <>
+                {' '}
+                · {player.achievementCount} <MedalIcon size={14} tier="gold" />
+              </>
             )}
           </span>
         </div>
@@ -281,7 +294,7 @@ export function FriendsScreen({
       </header>
 
       <main className="settings-main scroll-natural">
-        <section className="settings-section">
+        <section className="settings-section friends-block friends-block--multi">
           <h3 className="settings-label">{t('friendsMultiTitle', locale)}</h3>
           <p className="friends-intro">{t('friendsMultiHint', locale)}</p>
           <p className="friends-intro friends-intro--sub">{t('friendsMultiScanHint', locale)}</p>
@@ -302,8 +315,9 @@ export function FriendsScreen({
           </div>
         </section>
 
-        <section className="settings-section">
-          <h3 className="settings-label">{t('friendsSearchTitle', locale)}</h3>
+        <section className="settings-section friends-block friends-block--social">
+          <h3 className="settings-label">{t('friendsSocialTitle', locale)}</h3>
+          <p className="friends-intro">{t('friendsSearchTitle', locale)}</p>
           <div className="friends-search-row">
             <input
               className="profile-name-input"
@@ -330,7 +344,15 @@ export function FriendsScreen({
         <section className="settings-section">
           <h3 className="settings-label">{t('friendsListTitle', locale)}</h3>
           {friends.length === 0 ? (
-            <p className="friends-empty">{t('friendsListEmpty', locale)}</p>
+            <div className="friends-empty-state">
+              <MascotCoach
+                expression="welcome"
+                size={88}
+                placement="card"
+                idle
+                message={t('friendsListEmpty', locale)}
+              />
+            </div>
           ) : (
             <>
               <FriendsLeaderboard
@@ -351,6 +373,18 @@ export function FriendsScreen({
         onClose={() => setSelectedFriendId(null)}
         onRemoved={() => void loadFriends()}
         onWalletChange={() => onSocialChange?.()}
+      />
+      <FriendProfileSheet
+        open={previewPlayer !== null}
+        userId={previewPlayer?.userId ?? null}
+        locale={locale}
+        preview
+        friendStatus={previewPlayer?.friendStatus ?? 'none'}
+        seed={previewPlayer}
+        onClose={() => setPreviewPlayer(null)}
+        onAdd={() => {
+          if (previewPlayer) void handleAdd(previewPlayer);
+        }}
       />
     </div>
   );

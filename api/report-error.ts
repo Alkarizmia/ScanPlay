@@ -98,7 +98,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       context: body.context,
     });
 
-    const subject = `[ScanPlay] Signalement — ${body.context.game}`;
+    const subject = `[ScanPlay] Signalement : ${body.context.game}`;
     const sent = await sendViaResend(SUPPORT_EMAIL, subject, text, user?.email ?? null);
 
     if (!sent) {

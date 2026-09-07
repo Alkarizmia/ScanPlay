@@ -121,7 +121,8 @@ export type FlowScreen =
   | 'multiplayerResults'
   | 'auth'
   | 'pricing'
-  | 'reviewCards';
+  | 'reviewCards'
+  | 'missionReward';
 
 export interface LessonGameResult {
   mode: GameMode;

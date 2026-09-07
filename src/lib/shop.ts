@@ -20,6 +20,7 @@ import {
   recordAdReward,
   restoreLostStreak,
   spendCoins,
+  spendGems,
   streakRestorePrice,
   XP_BOOST_DURATION_MS,
   type SpendResult,
@@ -42,6 +43,7 @@ export const SHOP_SYNTHESIS_CREDIT_PRICE = 90;
 export const SHOP_STREAK_FREEZE_PRICE = 100;
 export const SHOP_STREAK_FREEZE_MAX = 3;
 export const SHOP_TRANSLATE_HINT_PRICE = 50;
+export const GEM_COIN_RATE = 200;
 
 export type ShopPurchaseResult =
   | { ok: true }
@@ -81,6 +83,14 @@ function rollAchievementChestReward(): ChestReward {
     return { type: 'achievement', achievement, labelKey: 'chestRewardAchievement' };
   }
   return { type: 'xp', amount: 45, labelKey: 'chestRewardXp' };
+}
+
+export function convertGemToCoins(count = 1): ShopPurchaseResult {
+  const n = Math.max(1, Math.floor(count));
+  const spent = spendGems(n);
+  if (!spent.ok) return fromSpend(spent);
+  addCoins(n * GEM_COIN_RATE);
+  return { ok: true };
 }
 
 export function buyXpPotion(): ShopPurchaseResult {

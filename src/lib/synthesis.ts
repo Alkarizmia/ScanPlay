@@ -175,7 +175,7 @@ ${sections}
 ${keyPoints}
 ${tips}
 <p style="margin-top:24px;font-size:0.85rem;color:#666">${escapeHtml(doc.relatedToScan)}</p>
-<p style="font-size:0.8rem;color:#999">ScanPlay — scanplay.org</p>
+<p style="font-size:0.8rem;color:#999">ScanPlay · scanplay.org</p>
 </body></html>`;
 }
 

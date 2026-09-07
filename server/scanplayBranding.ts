@@ -184,7 +184,7 @@ export async function ensureScanPlayPortalConfiguration(
     metadata: { app: 'scanplay' },
     default_return_url: `${appUrl}/?stripe=portal`,
     business_profile: {
-      headline: 'ScanPlay — gère ton abonnement',
+      headline: 'ScanPlay : gère ton abonnement',
       privacy_policy_url: `${appUrl.replace(/\/$/, '')}/privacy.html`,
     },
     features: {

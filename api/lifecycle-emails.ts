@@ -136,8 +136,8 @@ function buildLifecycleMail(
       : 'Put ScanPlay on your home screen?';
     const title = fr ? 'Installe ScanPlay, comme une vraie app' : 'Install ScanPlay like a real app';
     const body = fr
-      ? `Ça fait deux semaines que tu as un compte. Un tap depuis l’écran d’accueil, et tes fiches s’ouvrent tout de suite — sans chercher l’onglet. Voici le lien : ${url}`
-      : `It’s been two weeks since you signed up. One tap from your home screen and your sheets open right away — no hunting for a tab. Here’s the link: ${url}`;
+      ? `Ça fait deux semaines que tu as un compte. Un tap depuis l’écran d’accueil, et tes fiches s’ouvrent tout de suite, sans chercher l’onglet. Voici le lien : ${url}`
+      : `It’s been two weeks since you signed up. One tap from your home screen and your sheets open right away, no hunting for a tab. Here’s the link: ${url}`;
     const cta = fr ? 'Ouvrir ScanPlay' : 'Open ScanPlay';
     return { subject, text: `${body}\n\n${url}`, html: wrapHtml(title, body, cta, url) };
   }

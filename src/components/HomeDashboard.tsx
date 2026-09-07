@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { DailyChestOverlay } from './DailyChestOverlay';
 import { StreakFlame } from './icons/StreakFlame';
+import { EconomyGlyph, LootCoin, LootGem, LootMedal, LootQuiz, LootScan, LootXp } from './icons/EconomyIcons';
 import { MascotCoach } from './mascot/MascotCoach';
 import { ScanPlayChest } from './ScanPlayChest';
 import { getUnlockedCount } from '../lib/achievements';
@@ -11,6 +12,7 @@ import { getDateLocale, t } from '../lib/i18n';
 import { canClaimDailyChest, getCoins, getGems } from '../lib/wallet';
 import type { ChestReward } from '../lib/shop';
 import type { ChestRarity } from '../lib/chestRarity';
+import type { AchievementDef } from '../lib/achievements';
 import type { Locale } from '../types';
 
 interface HomeDashboardProps {
@@ -20,10 +22,79 @@ interface HomeDashboardProps {
   onRefresh?: () => void;
   onOpenShop?: () => void;
   onOpenAchievements?: () => void;
+  onNewUnlocks?: (unlocks: AchievementDef[]) => void;
 }
 
 function formatStat(value: number, locale: Locale): string {
   return value.toLocaleString(getDateLocale(locale));
+}
+
+function useLootGain(value: number): { popping: boolean; delta: number } {
+  const prev = useRef(value);
+  const [popping, setPopping] = useState(false);
+  const [delta, setDelta] = useState(0);
+
+  useEffect(() => {
+    const before = prev.current;
+    if (value > before) {
+      setDelta(value - before);
+      setPopping(true);
+      const id = window.setTimeout(() => setPopping(false), 980);
+      prev.current = value;
+      return () => window.clearTimeout(id);
+    }
+    prev.current = value;
+    return undefined;
+  }, [value]);
+
+  return { popping, delta };
+}
+
+function DashLootStat({
+  kind,
+  value,
+  label,
+  locale,
+  token,
+  onClick,
+}: {
+  kind: 'coin' | 'gem' | 'badge';
+  value: number;
+  label: string;
+  locale: Locale;
+  token: ReactNode;
+  onClick?: () => void;
+}) {
+  const { popping, delta } = useLootGain(value);
+  const className = `dash-stat dash-stat--loot dash-stat--${kind}${onClick ? ' dash-stat--btn' : ''}${popping ? ' dash-stat--gain' : ''}`;
+
+  const body = (
+    <>
+      <span className="dash-loot-well" aria-hidden="true">
+        <span className="dash-loot-spark dash-loot-spark--a" />
+        <span className="dash-loot-spark dash-loot-spark--b" />
+        <span className="dash-loot-spark dash-loot-spark--c" />
+        {token}
+      </span>
+      <span className="dash-stat-val">{formatStat(value, locale)}</span>
+      <span className="dash-stat-label">{label}</span>
+      {popping && delta > 0 && (
+        <span className="dash-loot-delta" aria-hidden="true">
+          +{delta}
+        </span>
+      )}
+    </>
+  );
+
+  if (onClick) {
+    return (
+      <button type="button" className={className} onClick={onClick}>
+        {body}
+      </button>
+    );
+  }
+
+  return <div className={className}>{body}</div>;
 }
 
 export function HomeDashboard({
@@ -33,6 +104,7 @@ export function HomeDashboard({
   onRefresh,
   onOpenShop,
   onOpenAchievements,
+  onNewUnlocks,
 }: HomeDashboardProps) {
   void refreshKey;
   const { streak, xp } = getGamification();
@@ -91,7 +163,7 @@ export function HomeDashboard({
           </span>
           <span className="dash-level-xp">
             <span className="icon-glyph icon-glyph--sm" aria-hidden="true">
-              ⚡
+              <EconomyGlyph id="xp" size={14} />
             </span>{' '}
             {formatStat(xp, locale)} XP
           </span>
@@ -107,31 +179,28 @@ export function HomeDashboard({
       </article>
 
       <div className="dash-stats-row" role="group" aria-label={t('statsTitle', locale)}>
-        <div className="dash-stat">
-          <span className="dash-stat-icon icon-glyph icon-glyph--md" aria-hidden="true">
-            🪙
-          </span>
-          <span className="dash-stat-val">{formatStat(coins, locale)}</span>
-          <span className="dash-stat-label">{t('dashCoins', locale)}</span>
-        </div>
-        <div className="dash-stat">
-          <span className="dash-stat-icon icon-glyph icon-glyph--md" aria-hidden="true">
-            💎
-          </span>
-          <span className="dash-stat-val">{formatStat(gems, locale)}</span>
-          <span className="dash-stat-label">{t('dashGems', locale)}</span>
-        </div>
-        <button
-          type="button"
-          className="dash-stat dash-stat--btn"
+        <DashLootStat
+          kind="coin"
+          value={coins}
+          label={t('dashCoins', locale)}
+          locale={locale}
+          token={<LootCoin size={34} />}
+        />
+        <DashLootStat
+          kind="gem"
+          value={gems}
+          label={t('dashGems', locale)}
+          locale={locale}
+          token={<LootGem size={34} />}
+        />
+        <DashLootStat
+          kind="badge"
+          value={badges}
+          label={t('dashBadges', locale)}
+          locale={locale}
+          token={<LootMedal size={34} />}
           onClick={() => onOpenAchievements?.()}
-        >
-          <span className="dash-stat-icon icon-glyph icon-glyph--md" aria-hidden="true">
-            🏅
-          </span>
-          <span className="dash-stat-val">{formatStat(badges, locale)}</span>
-          <span className="dash-stat-label">{t('dashBadges', locale)}</span>
-        </button>
+        />
       </div>
 
       <article className={`dash-card dash-card--chest${chestReady ? ' dash-card--chest-ready' : ''}`}>
@@ -142,7 +211,7 @@ export function HomeDashboard({
           aria-label={t('shop', locale)}
         >
           <div className="dash-chest-visual" aria-hidden="true">
-            <ScanPlayChest open={!chestReady} size={56} />
+            <ScanPlayChest open={!chestReady} size={56} idle={chestReady} />
           </div>
           <div className="dash-chest-copy">
             <h3 className="dash-chest-title">{t('shopDailyChest', locale)}</h3>
@@ -187,34 +256,39 @@ export function HomeDashboard({
               return (
                 <li
                   key={mission.id}
-                  className={`dash-mission${done ? ' dash-mission--done' : ''}`}
+                  className={`dash-mission dash-mission--${mission.id}${done ? ' dash-mission--done' : ''}`}
                 >
                   <div className="dash-mission-icon" aria-hidden="true">
                     {mission.id === 'chest' ? (
-                      <ScanPlayChest open={!chestReady} size={32} />
+                      <ScanPlayChest open={!chestReady} size={30} idle={chestReady} />
+                    ) : mission.id === 'scan' ? (
+                      <LootScan size={28} />
                     ) : (
-                      <span className="icon-glyph icon-glyph--md">{mission.icon}</span>
+                      <LootQuiz size={28} />
                     )}
                   </div>
                   <div className="dash-mission-body">
                     <span className="dash-mission-name">{name}</span>
                     <div className="dash-mission-progress" aria-hidden="true">
-                      <div className="dash-mission-progress-fill" style={{ width: `${pct}%` }} />
+                      <div
+                        className={`dash-mission-progress-fill${done ? ' dash-mission-progress-fill--done' : ''}`}
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
                   </div>
-                  <div className="dash-mission-reward">
+                  <div className={`dash-mission-reward${mission.reward.type === 'coins' ? ' dash-mission-reward--coins' : ' dash-mission-reward--xp'}`}>
                     {mission.reward.type === 'coins' ? (
                       <>
                         <span className="dash-mission-reward-xp">+{mission.reward.amount}</span>
                         <span className="dash-mission-reward-xp-icon" aria-hidden="true">
-                          🪙
+                          <LootCoin size={16} />
                         </span>
                       </>
                     ) : (
                       <>
-                        <span className="dash-mission-reward-xp">+{mission.reward.amount} XP</span>
+                        <span className="dash-mission-reward-xp">+{mission.reward.amount}</span>
                         <span className="dash-mission-reward-xp-icon" aria-hidden="true">
-                          ⚡
+                          <LootXp size={16} />
                         </span>
                       </>
                     )}
@@ -231,6 +305,7 @@ export function HomeDashboard({
         locale={locale}
         onClose={() => setChestOverlayOpen(false)}
         onOpened={handleChestOpened}
+        onNewUnlocks={onNewUnlocks}
       />
     </div>
   );

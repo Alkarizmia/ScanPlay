@@ -28,6 +28,10 @@ export function pathChestStorageKey(deckId: string | null | undefined): string {
   return deckId && deckId.length > 0 ? deckId : 'current';
 }
 
+export function hasOpenedAnyPathChest(): boolean {
+  return Object.keys(readMap()).length > 0;
+}
+
 export function isPathTestChestOpened(deckId: string | null | undefined): boolean {
   const map = readMap();
   return Boolean(map[pathChestStorageKey(deckId)]?.opened);

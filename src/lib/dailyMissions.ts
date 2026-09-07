@@ -1,7 +1,10 @@
+import type { EconomyGlyphId } from './economyGlyph';
 import type { TranslationKey } from './i18n';
 import { addBonusXp, todayKey } from './gamification';
 import { getHistory } from './history';
 import { addCoins, canClaimDailyChest } from './wallet';
+import type { ChestRarity } from './chestRarity';
+import type { ChestReward } from './shop';
 
 const PLAYS_KEY = 'scanplay-plays-day';
 const CLAIMS_KEY = 'scanplay-mission-claims';
@@ -12,7 +15,7 @@ export type MissionReward = { type: 'xp' | 'coins'; amount: number };
 
 export interface DailyMission {
   id: 'scan' | 'play' | 'chest';
-  icon: string;
+  icon: EconomyGlyphId;
   nameKey: TranslationKey;
   count?: number;
   current: number;
@@ -87,7 +90,7 @@ export function getDailyMissions(): DailyMission[] {
   const missions: DailyMission[] = [
     {
       id: 'scan',
-      icon: '📄',
+      icon: 'scan',
       nameKey: 'dashMissionScan',
       count: 2,
       current: getScansToday(),
@@ -96,7 +99,7 @@ export function getDailyMissions(): DailyMission[] {
     },
     {
       id: 'play',
-      icon: '🎯',
+      icon: 'quiz',
       nameKey: 'dashMissionPlay',
       count: 2,
       current: readDayCount(PLAYS_KEY),
@@ -105,7 +108,7 @@ export function getDailyMissions(): DailyMission[] {
     },
     {
       id: 'chest',
-      icon: '📦',
+      icon: 'path',
       nameKey: 'dashMissionChest',
       current: canClaimDailyChest() ? 0 : 1,
       goal: 1,
@@ -128,4 +131,31 @@ export function settleDailyMissionRewards(): boolean {
   }
   if (granted) saveClaims({ date: todayKey(), claimed: [...claimed] });
   return granted;
+}
+
+export function getUnclaimedCompletedMissions(): DailyMission[] {
+  const claimed = new Set(loadClaims().claimed);
+  return getDailyMissions().filter((m) => m.current >= m.goal && !claimed.has(m.id));
+}
+
+export function claimPendingMissionChest():
+  | { ok: true; reward: ChestReward; rarity: ChestRarity }
+  | { ok: false; reason: string } {
+  const pending = getUnclaimedCompletedMissions();
+  if (pending.length === 0) return { ok: false, reason: 'already_claimed' };
+  const coins = pending
+    .filter((p) => p.reward.type === 'coins')
+    .reduce((sum, p) => sum + p.reward.amount, 0);
+  const xp = pending
+    .filter((p) => p.reward.type === 'xp')
+    .reduce((sum, p) => sum + p.reward.amount, 0);
+  settleDailyMissionRewards();
+  if (coins > 0 && coins >= xp) {
+    return { ok: true, reward: { type: 'coins', amount: coins, labelKey: 'chestRewardCoins' }, rarity: 'common' };
+  }
+  return {
+    ok: true,
+    reward: { type: 'xp', amount: xp || pending[0]!.reward.amount, labelKey: 'chestRewardXp' },
+    rarity: 'common',
+  };
 }

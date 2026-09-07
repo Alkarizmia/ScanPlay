@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { getCoins, isXpBoostActive } from '../lib/wallet';
+import { useGameHud } from '../hooks/useGameHud';
+import { LootCoin } from './icons/EconomyIcons';
 import { StreakFlame } from './icons/StreakFlame';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -84,7 +86,7 @@ export function HudCoinsStat({ locale, refreshKey = 0, className = '' }: HudStat
   return (
     <div className={`hud-duo-stat hud-duo-coins ${className}`.trim()} title={t('coins', locale)}>
       <span className="hud-duo-icon" aria-hidden="true">
-        🪙
+        <LootCoin size={18} />
       </span>
       <span className="hud-duo-val">{coins}</span>
       {boost && <span className="hud-boost-badge">x2</span>}
@@ -110,12 +112,22 @@ export function HudXpBar({ locale, refreshKey = 0 }: HudStatProps) {
   );
 }
 
+function PathSessionHud({ locale }: { locale: Locale }) {
+  const { xp } = useGameHud();
+  if (xp <= 0) return null;
+  return (
+    <div className="gamification-hud-wrap gamification-hud-wrap--path" aria-label={t('xp', locale)}>
+      <span className="game-hud-chip game-hud-chip--xp">+{xp} XP</span>
+    </div>
+  );
+}
+
 interface GamificationHUDProps {
   locale: Locale;
   refreshKey?: number;
   streakPulseKey?: number;
   showXpBar?: boolean;
-  layout?: 'row' | 'home';
+  layout?: 'row' | 'home' | 'path';
 }
 
 export function GamificationHUD({
@@ -125,6 +137,10 @@ export function GamificationHUD({
   showXpBar = false,
   layout = 'row',
 }: GamificationHUDProps) {
+  if (layout === 'path') {
+    return <PathSessionHud locale={locale} />;
+  }
+
   if (layout === 'home') {
     return (
       <div className="gamification-hud-wrap gamification-hud-wrap--home">

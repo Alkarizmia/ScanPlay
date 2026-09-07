@@ -6,7 +6,7 @@ import { areNotificationsEnabled } from './preferences';
 const KEY = 'scanplay-notifications';
 const MAX = 40;
 
-export type NotificationType = 'achievement' | 'streak' | 'gold' | 'weekly' | 'reminder';
+export type NotificationType = 'achievement' | 'streak' | 'gold' | 'weekly' | 'reminder' | 'shop';
 
 export interface AppNotification {
   id: string;
@@ -16,6 +16,7 @@ export interface AppNotification {
   bodyKey?: string;
   achievementId?: AchievementId;
   streakDays?: number;
+  detail?: string;
   read: boolean;
   createdAt: string;
 }
@@ -55,6 +56,7 @@ export function markAllRead(): void {
 
 export function addNotification(
   partial: Omit<AppNotification, 'id' | 'read' | 'createdAt'>,
+  opts?: { silent?: boolean },
 ): void {
   if (!isLoggedIn() || !areNotificationsEnabled()) return;
   const item: AppNotification = {
@@ -63,7 +65,9 @@ export function addNotification(
     read: false,
     createdAt: new Date().toISOString(),
   };
-  void import('./sounds').then((m) => m.playSound('notification'));
+  if (!opts?.silent) {
+    void import('./sounds').then((m) => m.playSound('notification'));
+  }
   hapticNotification();
   persist([item, ...getNotifications()]);
 }
@@ -81,7 +85,7 @@ export function notifyAchievementUnlock(achievementId: AchievementId, icon: stri
 export function notifyStreakMilestone(days: number): void {
   addNotification({
     type: 'streak',
-    icon: '🔥',
+    icon: 'streak',
     titleKey: 'notifStreakTitle',
     bodyKey: 'notifStreakBody',
     streakDays: days,
@@ -91,8 +95,21 @@ export function notifyStreakMilestone(days: number): void {
 export function notifyGoldStep(): void {
   addNotification({
     type: 'gold',
-    icon: '🥇',
+    icon: 'medal-gold',
     titleKey: 'notifGoldTitle',
     bodyKey: 'notifGoldBody',
   });
+}
+
+export function notifyShopPurchase(icon: string, detail: string): void {
+  addNotification(
+    {
+      type: 'shop',
+      icon,
+      titleKey: 'notifShopTitle',
+      bodyKey: 'notifShopBody',
+      detail,
+    },
+    { silent: true },
+  );
 }

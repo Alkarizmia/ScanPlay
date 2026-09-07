@@ -1,6 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { sendCoinsToFriend } from '../lib/social/coinTransfer';
 import { getCoins } from '../lib/wallet';
+import { LootCoin } from './icons/EconomyIcons';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -80,7 +81,7 @@ export function SendCoinsSheet({
       </h3>
       <p className="send-coins-sub">{t('sendCoinsTo', locale).replace('{name}', friendName)}</p>
       <p className="send-coins-balance">
-        {t('coins', locale)}: 🪙 {maxCoins}
+        {t('coins', locale)}: <LootCoin size={16} /> {maxCoins}
       </p>
 
       <label className="field-label" htmlFor="send-coins-amount">

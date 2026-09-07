@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AdSenseSlot } from './AdSenseSlot';
+import { BrandDecor } from './BrandDecor';
 import { DailyChestOverlay } from './DailyChestOverlay';
 import { ScanPlayChest } from './ScanPlayChest';
+import { AchievementGlyph } from './icons/AchievementGlyph';
+import { EconomyGlyph, LootCoin, LootGem, LootScan, LootXp } from './icons/EconomyIcons';
 import { RewardedAdSheet } from './RewardedAdSheet';
 import { grantAdConsent } from '../lib/ads/consent';
 import {
@@ -21,8 +24,11 @@ import {
   buyXpPack,
   buyXpPotion,
   canBuyExtraScanInShop,
+  convertGemToCoins,
+  GEM_COIN_RATE,
   getAdWatchesLeftToday,
   getCoins,
+  getGems,
   getRestorableStreak,
   getStreakFreezeCharges,
   getStreakRestoreShopPrice,
@@ -51,26 +57,35 @@ import {
   streakRestorePrice,
 } from '../lib/wallet';
 import { playSound } from '../lib/sounds';
+import { notifyShopPurchase } from '../lib/notifications';
 import { t, type TranslationKey } from '../lib/i18n';
 import type { Locale } from '../types';
+import { NotificationCenter } from './NotificationCenter';
 
 interface ShopScreenProps {
   locale: Locale;
   refreshKey: number;
   onRefresh: () => void;
+  onNewUnlocks?: (unlocks: import('../lib/achievements').AchievementDef[]) => void;
+  onToast?: (message: string) => void;
+  onSocialChange?: () => void;
 }
 
 interface ShopItemRowProps {
   locale: Locale;
-  icon: string;
+  icon: ReactNode;
   nameKey: TranslationKey;
   desc: string;
   price: number;
   buyId: string;
   busy: string | null;
+  popping?: boolean;
   disabled?: boolean;
   highlight?: boolean;
   extra?: ReactNode;
+  tone?: string;
+  priceKind?: 'coins' | 'gems';
+  buyLabel?: string;
   onBuy: () => void;
 }
 
@@ -79,18 +94,26 @@ function ShopBuyButton({
   price,
   disabled,
   loading,
+  priceKind = 'coins',
+  buyLabel,
   onClick,
 }: {
   locale: Locale;
   price: number;
   disabled?: boolean;
   loading?: boolean;
+  priceKind?: 'coins' | 'gems';
+  buyLabel?: string;
   onClick: () => void;
 }) {
   return (
     <button type="button" className="btn-primary shop-buy-btn" disabled={disabled || loading} onClick={onClick}>
-      {loading ? '…' : t('shopBuy', locale)}
-      {!loading && <span className="shop-buy-price">🪙 {price}</span>}
+      {loading ? '…' : (buyLabel ?? t('shopBuy', locale))}
+      {!loading && (
+        <span className="shop-buy-price">
+          {priceKind === 'gems' ? <LootGem size={14} /> : <LootCoin size={14} />} {price}
+        </span>
+      )}
     </button>
   );
 }
@@ -103,29 +126,39 @@ function ShopItemRow({
   price,
   buyId,
   busy,
+  popping,
   disabled,
   highlight,
   extra,
+  tone,
+  priceKind = 'coins',
+  buyLabel,
   onBuy,
 }: ShopItemRowProps) {
+  const cannotAfford = priceKind === 'gems' ? getGems() < price : coinsBelow(price);
   return (
-    <div className={`shop-item${highlight ? ' shop-item--highlight' : ''}`}>
-      <div className="shop-item-info">
-        <span className="shop-item-icon">{icon}</span>
-        <div>
-          <p className="shop-item-name">{t(nameKey, locale)}</p>
-          <p className="shop-item-desc">{desc}</p>
-          {extra}
-        </div>
-      </div>
+    <article
+      className={`shop-item shop-item--shelf${highlight ? ' shop-item--highlight' : ''}${tone ? ` shop-item--${tone}` : ''}${popping ? ' shop-item--pop' : ''}`}
+    >
+      <span className="shop-item-icon shop-item-icon--lg" aria-hidden="true">
+        <span className="shop-item-spark shop-item-spark--a" />
+        <span className="shop-item-spark shop-item-spark--b" />
+        <span className="shop-item-spark shop-item-spark--c" />
+        {icon}
+      </span>
+      <p className="shop-item-name">{t(nameKey, locale)}</p>
+      <p className="shop-item-desc">{desc}</p>
+      {extra}
       <ShopBuyButton
         locale={locale}
         price={price}
-        disabled={disabled || coinsBelow(price)}
+        disabled={disabled || cannotAfford}
         loading={busy === buyId}
+        priceKind={priceKind}
+        buyLabel={buyLabel}
         onClick={onBuy}
       />
-    </div>
+    </article>
   );
 }
 
@@ -133,7 +166,20 @@ function coinsBelow(price: number): boolean {
   return getCoins() < price;
 }
 
-export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
+const SHOP_NOTIF_ICON: Record<string, string> = {
+  potion: 'potion',
+  mega: 'megaPotion',
+  gems: 'gem',
+  xppack: 'xp',
+  streak: 'streak',
+  scan: 'scan',
+  synthesis: 'synthesis',
+  hint: 'hint',
+  freeze: 'freeze',
+  ad: 'coin',
+};
+
+export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToast, onSocialChange }: ShopScreenProps) {
   void refreshKey;
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -142,12 +188,15 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
   const [adLoading, setAdLoading] = useState(false);
   const [rewardedOpen, setRewardedOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [popId, setPopId] = useState<string | null>(null);
   const mountedRef = useRef(true);
+  const popTimer = useRef<number | null>(null);
 
   useEffect(() => {
     mountedRef.current = true;
     return () => {
       mountedRef.current = false;
+      if (popTimer.current != null) window.clearTimeout(popTimer.current);
     };
   }, []);
 
@@ -155,6 +204,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
   const adsLive = isAdSenseEnabled() && shopAdSlot != null;
 
   const coins = getCoins();
+  const gems = getGems();
   const plan = getPlan();
   const restorable = getRestorableStreak();
   const restorePrice = getStreakRestoreShopPrice();
@@ -175,12 +225,23 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
     try {
       const result = await fn();
       if (!result.ok) {
-        setError(t(mapReason(result.reason), locale));
+        setError(t(id === 'gems' && result.reason === 'insufficient' ? 'shopNotEnoughGems' : mapReason(result.reason), locale));
+        playSound('wrong');
         return;
       }
-      if (successKey) setInfo(t(successKey, locale));
-      else setInfo(t('shopPurchaseOk', locale));
-      playSound('xpGain');
+      const message = successKey
+        ? t(successKey, locale).replace('{coins}', String(GEM_COIN_RATE))
+        : t('shopPurchaseOk', locale);
+      setInfo(message);
+      onToast?.(message);
+      notifyShopPurchase(SHOP_NOTIF_ICON[id] ?? 'coin', message);
+      playSound('powerUp');
+      window.setTimeout(() => playSound('coinPop'), 90);
+      setPopId(id);
+      if (popTimer.current != null) window.clearTimeout(popTimer.current);
+      popTimer.current = window.setTimeout(() => {
+        if (mountedRef.current) setPopId(null);
+      }, 920);
       onRefresh();
     } finally {
       if (mountedRef.current) setBusy(null);
@@ -197,7 +258,10 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
 
   const handleChestOpened = (reward: ChestReward, _rarity?: import('../lib/chestRarity').ChestRarity) => {
     setChestReward(reward);
-    setInfo(t('chestOpened', locale));
+    const msg = t('chestOpened', locale);
+    setInfo(msg);
+    onToast?.(msg);
+    notifyShopPurchase('path', msg);
     onRefresh();
   };
 
@@ -228,11 +292,18 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
 
   return (
     <div className="screen tab-screen shop-screen">
+      <BrandDecor />
       <header className="top-bar">
         <h2 className="screen-title">{t('shopTitle', locale)}</h2>
-        <span className="shop-balance" aria-label={t('coins', locale)}>
-          🪙 {coins}
-        </span>
+        <div className="shop-balances">
+          <span className="shop-balance shop-balance--coins" aria-label={t('coins', locale)}>
+            <LootCoin size={18} /> {coins}
+          </span>
+          <span className="shop-balance shop-balance--gems" aria-label={t('dashGems', locale)}>
+            <LootGem size={18} /> {gems}
+          </span>
+          <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
+        </div>
       </header>
 
       <main className="shop-main scroll-natural">
@@ -242,22 +313,31 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
         <section className="shop-section">
           <h2 className="shop-section-title">{t('shopDailyChest', locale)}</h2>
           <div className="shop-chest-card">
-            <ScanPlayChest open={!chestReady} size={96} className="shop-chest-art" />
+            <ScanPlayChest open={!chestReady} size={96} className="shop-chest-art" idle={chestReady} />
             <p className="shop-chest-desc">{t('shopDailyChestHint', locale)}</p>
             {chestReward && (
               <p className="shop-chest-reward">
                 {chestReward.type === 'coins' ? (
-                  <>🪙 +{chestReward.amount}</>
+                  <>
+                    <EconomyGlyph id="coin" size={16} /> +{chestReward.amount}
+                  </>
                 ) : chestReward.type === 'xp' ? (
-                  <>⚡ +{chestReward.amount} XP</>
+                  <>
+                    <EconomyGlyph id="xp" size={16} /> +{chestReward.amount} XP
+                  </>
                 ) : chestReward.type === 'gems' ? (
-                  <>💎 +{chestReward.amount}</>
+                  <>
+                    <EconomyGlyph id="gem" size={16} /> +{chestReward.amount}
+                  </>
                 ) : chestReward.type === 'achievement' ? (
                   <>
-                    {chestReward.achievement.icon} {t(chestReward.achievement.nameKey, locale)}
+                    <AchievementGlyph achievement={chestReward.achievement} size={16} />{' '}
+                    {t(chestReward.achievement.nameKey, locale)}
                   </>
                 ) : (
-                  t(chestReward.labelKey, locale)
+                  <>
+                    <EconomyGlyph id="potion" size={16} /> {t(chestReward.labelKey, locale)}
+                  </>
                 )}
               </p>
             )}
@@ -273,16 +353,39 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
         </section>
 
         <section className="shop-section">
+          <h2 className="shop-section-title">{t('shopExchange', locale)}</h2>
+          <div className="shop-shelf">
+            <ShopItemRow
+              locale={locale}
+              icon={<LootGem size={44} />}
+              nameKey="shopGemConvert"
+              desc={t('shopGemConvertDesc', locale).replace('{coins}', String(GEM_COIN_RATE))}
+              price={1}
+              priceKind="gems"
+              buyLabel={t('shopConvert', locale)}
+              buyId="gems"
+              busy={busy}
+              popping={popId === 'gems'}
+              tone="gem"
+              onBuy={() => void run('gems', () => convertGemToCoins(1), 'shopGemConvertOk')}
+            />
+          </div>
+        </section>
+
+        <section className="shop-section">
           <h2 className="shop-section-title">{t('shopBoosts', locale)}</h2>
+          <div className="shop-shelf">
 
           <ShopItemRow
             locale={locale}
-            icon="⚗️"
+            icon={<EconomyGlyph id="potion" size={44} />}
             nameKey="shopXpPotion"
             desc={t('shopXpPotionDesc', locale)}
             price={SHOP_XP_POTION_PRICE}
             buyId="potion"
             busy={busy}
+            popping={popId === 'potion'}
+            tone="potion"
             onBuy={() => void run('potion', () => buyXpPotion())}
             extra={
               boostActive ? (
@@ -293,30 +396,34 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
 
           <ShopItemRow
             locale={locale}
-            icon="🧪"
+            icon={<EconomyGlyph id="megaPotion" size={44} />}
             nameKey="shopMegaPotion"
             desc={t('shopMegaPotionDesc', locale).replace('{min}', String(SHOP_MEGA_POTION_MINUTES))}
             price={SHOP_MEGA_POTION_PRICE}
             buyId="mega"
             busy={busy}
+            popping={popId === 'mega'}
+            tone="mega"
             onBuy={() => void run('mega', () => buyMegaXpPotion())}
           />
 
           <ShopItemRow
             locale={locale}
-            icon="⚡"
+            icon={<LootXp size={44} />}
             nameKey="shopXpPack"
             desc={t('shopXpPackDesc', locale).replace('{xp}', String(SHOP_XP_PACK_AMOUNT))}
             price={SHOP_XP_PACK_PRICE}
             buyId="xppack"
             busy={busy}
+            popping={popId === 'xppack'}
+            tone="xp"
             onBuy={() => void run('xppack', () => buyXpPack(), 'shopXpPackOk')}
           />
 
           {restorable > 0 && (
             <ShopItemRow
               locale={locale}
-              icon="🔥"
+              icon={<EconomyGlyph id="streak" size={44} />}
               nameKey="shopStreakRestore"
               desc={t('shopStreakRestoreDesc', locale)
                 .replace('{days}', String(restorable))
@@ -324,6 +431,8 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
               price={restorePrice}
               buyId="streak"
               busy={busy}
+              popping={popId === 'streak'}
+              tone="streak"
               highlight
               disabled={coins < restorePrice}
               onBuy={() => void run('streak', () => buyStreakRestore(), 'shopStreakRestoreOk')}
@@ -334,15 +443,17 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
               }
             />
           )}
+          </div>
         </section>
 
         <section className="shop-section">
           <h2 className="shop-section-title">{t('shopUtilities', locale)}</h2>
+          <div className="shop-shelf">
 
           {plan === 'free' && (
             <ShopItemRow
               locale={locale}
-              icon="📷"
+              icon={<LootScan size={44} />}
               nameKey="shopExtraScan"
               desc={
                 extraScanOk
@@ -352,6 +463,8 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
               price={EXTRA_SCAN_PRICE}
               buyId="scan"
               busy={busy}
+              popping={popId === 'scan'}
+              tone="scan"
               disabled={!extraScanOk}
               onBuy={() => void run('scan', () => buyExtraScan(), 'shopExtraScanOk')}
             />
@@ -359,12 +472,14 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
 
           <ShopItemRow
             locale={locale}
-            icon="✨"
+            icon={<EconomyGlyph id="synthesis" size={44} />}
             nameKey="shopSynthesisCredit"
             desc={t('shopSynthesisCreditDesc', locale)}
             price={SHOP_SYNTHESIS_CREDIT_PRICE}
             buyId="synthesis"
             busy={busy}
+            popping={popId === 'synthesis'}
+            tone="synth"
             onBuy={() => void run('synthesis', () => buySynthesisCredit(), 'shopSynthesisCreditOk')}
             extra={
               synthesisBonus > 0 ? (
@@ -377,12 +492,14 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
 
           <ShopItemRow
             locale={locale}
-            icon="💡"
+            icon={<EconomyGlyph id="hint" size={44} />}
             nameKey="shopTranslateHint"
             desc={t('shopTranslateHintDesc', locale)}
             price={SHOP_TRANSLATE_HINT_PRICE}
             buyId="hint"
             busy={busy}
+            popping={popId === 'hint'}
+            tone="hint"
             onBuy={() => void run('hint', () => buyTranslateHint(), 'shopTranslateHintOk')}
             extra={
               translateHints > 0 ? (
@@ -395,12 +512,14 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
 
           <ShopItemRow
             locale={locale}
-            icon="🛡️"
+            icon={<EconomyGlyph id="freeze" size={44} />}
             nameKey="shopStreakFreeze"
             desc={t('shopStreakFreezeDesc', locale)}
             price={SHOP_STREAK_FREEZE_PRICE}
             buyId="freeze"
             busy={busy}
+            popping={popId === 'freeze'}
+            tone="freeze"
             disabled={freezeCharges >= SHOP_STREAK_FREEZE_MAX}
             onBuy={() => void run('freeze', () => buyStreakFreeze(), 'shopStreakFreezeOk')}
             extra={
@@ -411,6 +530,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
               ) : undefined
             }
           />
+          </div>
         </section>
 
         {!ADSENSE_UI_PAUSED && (
@@ -418,9 +538,11 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
           <h2 className="shop-section-title">{t('shopFreeCoins', locale)}</h2>
           {adsLive && <p className="shop-ad-support-hint">{t('shopAdSupportHint', locale)}</p>}
           {isAdSimulationMode() && <p className="shop-ad-dev-hint">{t('shopAdDevHint', locale)}</p>}
-          <div className="shop-item">
+          <div className={`shop-item shop-item--ad${popId === 'ad' ? ' shop-item--pop' : ''}`}>
             <div className="shop-item-info">
-              <span className="shop-item-icon">📺</span>
+              <span className="shop-item-icon">
+                <EconomyGlyph id="coin" size={28} />
+              </span>
               <div>
                 <p className="shop-item-name">{t('shopWatchAd', locale)}</p>
                 <p className="shop-item-desc">
@@ -461,6 +583,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh }: ShopScreenProps) {
         locale={locale}
         onClose={closeChestOverlay}
         onOpened={handleChestOpened}
+        onNewUnlocks={onNewUnlocks}
       />
     </div>
   );

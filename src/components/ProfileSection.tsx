@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   DEFAULT_AVATARS,
   completePseudoOnboarding,
@@ -10,7 +10,7 @@ import {
   trySetDisplayName,
   type AvatarId,
 } from '../lib/profile';
-import { xpForNextLevel } from '../lib/gamification';
+import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { countFriends } from '../lib/social/friends';
 import { isDisplayNameAvailable, isSocialAvailable } from '../lib/social/publicProfile';
 import { hasFeature } from '../lib/planLimits';
@@ -19,10 +19,11 @@ import { createProfileAvatar } from '../lib/thumbnail';
 import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
 import type { Locale, TabId } from '../types';
-import { StreakFlame } from './icons/StreakFlame';
 import { NavIcon } from './icons/NavIcon';
 import { SubscriptionSection } from './SubscriptionSection';
 import { ProfilePseudoTuto } from './ProfilePseudoTuto';
+import { ProfileCard } from './ProfileCard';
+import { usePlan } from '../hooks/usePlan';
 
 interface ProfileSectionProps {
   locale: Locale;
@@ -49,6 +50,7 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
   const [pseudoCoach, setPseudoCoach] = useState(() => shouldShowPseudoOnboarding());
   const [tutoZoom, setTutoZoom] = useState(false);
   const closingTutoRef = useRef(false);
+  const plan = usePlan(refreshKey);
 
   useEffect(() => {
     const p = getProfile();
@@ -91,15 +93,19 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
 
   const stats = getAppStats();
   const unlocked = hasFeature('stats');
-  const { progress } = xpForNextLevel(stats.xp);
   const avatarEmoji = getAvatarEmoji(profile);
   const showCustom = profile.avatar === 'custom' && profile.customAvatarData;
+  const featuredAchievements = getRecentUnlocks(4)
+    .map((rec) => getAchievementDef(rec.id))
+    .filter((d): d is NonNullable<typeof d> => Boolean(d));
 
-  const statItems = [
+  const publicStats = [
     { label: t('xp', locale), value: String(stats.xp) },
     { label: t('streak', locale), value: String(stats.streak) },
-    { label: t('totalScore', locale), value: String(stats.totalScore) },
     { label: t('statsDecks', locale), value: String(stats.deckCount) },
+  ];
+  const extraStatItems = [
+    { label: t('totalScore', locale), value: String(stats.totalScore) },
     { label: t('statsScans', locale), value: String(stats.totalScans) },
     { label: t('statsSteps', locale), value: String(stats.stepsCompleted) },
   ];
@@ -179,69 +185,37 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
     <section className={`settings-section profile-section${variant === 'page' ? ' profile-section--page' : ''}`}>
       {variant !== 'page' && <h3 className="settings-label">{t('profileSection', locale)}</h3>}
 
-      <div className="profile-card">
-        <div className="profile-header">
-          <div className="profile-header-left">
-            <div className="profile-avatar-preview" aria-hidden="true">
-              {showCustom ? (
-                <img src={profile.customAvatarData} alt="" className="profile-avatar-img" />
-              ) : (
-                <span className="profile-avatar-emoji">{avatarEmoji || '🎮'}</span>
-              )}
-            </div>
-            <div className="profile-header-info">
-              <p className="profile-header-name">{profile.displayName}</p>
-              <p className="profile-header-meta">
-                {stats.xp} {t('xp', locale)}
-                {stats.streak > 0 && (
-                  <>
-                    {' · '}
-                    <span className="profile-header-streak">
-                      <StreakFlame lit size={14} /> {stats.streak}
-                    </span>
-                  </>
-                )}
-              </p>
-              {isSocialAvailable() && (
-                <p className="profile-friend-count">
-                  👥 {friendCount} {t('friendsCountLabel', locale)}
-                </p>
-              )}
-            </div>
-          </div>
+      <p className="profile-block-kicker">{t('profilePublicCard', locale)}</p>
+      <ProfileCard
+        locale={locale}
+        displayName={profile.displayName}
+        level={stats.level}
+        xp={stats.xp}
+        streak={stats.streak}
+        friendCount={isSocialAvailable() ? friendCount : undefined}
+        plan={plan}
+        featuredAchievements={featuredAchievements}
+        stats={publicStats}
+        avatar={
+          showCustom ? (
+            <img src={profile.customAvatarData} alt="" className="profile-avatar-img" />
+          ) : (
+            <span className="profile-avatar-emoji">{avatarEmoji || '🎮'}</span>
+          )
+        }
+      />
 
-          <div className="profile-level-badge" title={t('level', locale)}>
-            <div
-              className="hud-level-ring profile-level-ring"
-              style={{ '--pct': progress } as CSSProperties}
-            >
-              <span className="hud-level-num">{stats.level}</span>
-            </div>
-            <span className="profile-level-label">{t('level', locale)}</span>
-          </div>
-        </div>
-
-        <div className="hud-xp-bar-wrap profile-xp-bar" aria-label={t('xp', locale)}>
-          <div className="hud-xp-bar-track">
-            <div className="hud-xp-bar-fill" style={{ width: `${progress}%` }} />
-          </div>
-          <span className="hud-xp-bar-label">
-            Lv.{stats.level} · {Math.round(progress)}%
-          </span>
-        </div>
-
+      <p className="profile-block-kicker">{t('profileSettingsLabel', locale)}</p>
+      <div className="profile-card profile-card--settings">
         <div className={`profile-stats-block ${unlocked ? '' : 'profile-stats-block--locked'}`}>
           <p className="profile-stats-heading">{t('statsTitle', locale)}</p>
           <div className="stats-grid profile-stats-grid">
-            {statItems.map((item, i) => {
-              const blurred = !unlocked && i >= 2;
-              return (
-                <div key={item.label} className={`stat-tile ${blurred ? 'stat-tile--blurred' : ''}`}>
-                  <span className="stat-tile-val">{item.value}</span>
-                  <span className="stat-tile-label">{item.label}</span>
-                </div>
-              );
-            })}
+            {extraStatItems.map((item) => (
+              <div key={item.label} className={`stat-tile ${unlocked ? '' : 'stat-tile--blurred'}`}>
+                <span className="stat-tile-val">{item.value}</span>
+                <span className="stat-tile-label">{item.label}</span>
+              </div>
+            ))}
           </div>
           {!unlocked && (
             <>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Confetti } from './Confetti';
+import { AchievementGlyph } from './icons/AchievementGlyph';
 import { t } from '../lib/i18n';
 import type { AchievementDef } from '../lib/achievements';
 import type { Locale } from '../types';
@@ -40,7 +41,7 @@ export function AchievementUnlockModal({ achievement, locale, onDismiss }: Achie
       <div className="achievement-unlock-card" onClick={(e) => e.stopPropagation()}>
         <p className="achievement-unlock-kicker">{t('achievementUnlocked', locale)}</p>
         <span className="achievement-unlock-icon bounce" aria-hidden="true">
-          {achievement.icon}
+          <AchievementGlyph achievement={achievement} size={56} />
         </span>
         <h3 id="unlock-title" className="achievement-unlock-name">
           {t(achievement.nameKey, locale)}

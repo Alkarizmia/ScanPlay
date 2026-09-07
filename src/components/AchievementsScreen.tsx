@@ -1,6 +1,12 @@
 import type { CSSProperties } from 'react';
-import { ACHIEVEMENTS, getAchievementProgress, getUnlockedCount, isAchievementUnlocked } from '../lib/achievements';
-import { LockIcon } from './icons/LockIcon';
+import {
+  ACHIEVEMENTS,
+  getAchievementProgress,
+  getAchievementSkin,
+  getUnlockedCount,
+  isAchievementUnlocked,
+} from '../lib/achievements';
+import { AchievementGlyph } from './icons/AchievementGlyph';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -33,23 +39,27 @@ export function AchievementsScreen({ locale, refreshKey }: AchievementsScreenPro
           {ACHIEVEMENTS.map((ach) => {
             const ok = isAchievementUnlocked(ach.id);
             const progress = getAchievementProgress(ach.id);
+            const skin = getAchievementSkin(ach.id);
+            const pct = progress ? Math.min(100, Math.round((progress.current / progress.target) * 100)) : 0;
             return (
-              <div key={ach.id} className={`achievement-badge ${ok ? 'unlocked' : 'locked'}`}>
+              <div key={ach.id} className={`achievement-badge achievement-badge--${skin} ${ok ? 'unlocked' : 'locked'}`}>
                 <span className="achievement-icon-wrap" aria-hidden="true">
-                  <span className="achievement-icon">{ach.icon}</span>
-                  {!ok && (
-                    <span className="achievement-lock">
-                      <LockIcon size={14} />
-                    </span>
-                  )}
+                  <span className="achievement-icon">
+                    <AchievementGlyph achievement={ach} size={52} locked={!ok} />
+                  </span>
                 </span>
                 <span className="achievement-name">{t(ach.nameKey, locale)}</span>
                 <span className="achievement-desc">{t(ach.descKey, locale)}</span>
                 {ok ? (
                   <span className="achievement-unlocked-tag">{t('achUnlocked', locale)}</span>
                 ) : progress ? (
-                  <span className="achievement-progress">
-                    {progress.current}/{progress.target}
+                  <span className="achievement-track">
+                    <span className="achievement-track-bar" aria-hidden="true">
+                      <span className="achievement-track-fill" style={{ width: `${pct}%` }} />
+                    </span>
+                    <span className="achievement-progress">
+                      {progress.current}/{progress.target}
+                    </span>
                   </span>
                 ) : (
                   <span className="achievement-locked-tag">{t('achLocked', locale)}</span>

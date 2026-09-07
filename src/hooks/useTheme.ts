@@ -14,10 +14,11 @@ export function getInitialTheme(): Theme {
 export function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(STORAGE_KEY, theme);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute(
-    'content',
-    theme === 'dark' ? '#0F172A' : '#f0fdf4',
-  );
+  const bg = theme === 'dark' ? '#0b1220' : '#f8fafc';
+  document.documentElement.style.backgroundColor = bg;
+  document.documentElement.style.colorScheme = theme;
+  document.body.style.backgroundColor = bg;
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', bg);
 }
 
 export function initTheme(): void {

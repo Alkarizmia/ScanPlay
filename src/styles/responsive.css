@@ -577,9 +577,9 @@ html[data-device='desktop']:has(.auth-screen) #root {
   width: min(440px, calc(100% - 48px));
   margin: 32px auto;
   padding: 8px 28px 28px;
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 24px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--surface-border);
   box-shadow: 0 18px 48px rgba(15, 23, 42, 0.08);
   min-height: 0;
 }
@@ -768,5 +768,9 @@ html[data-device='desktop']:has(.auth-screen) #root {
 [data-device='desktop'] .shop-main,
 [data-device='desktop'] .mistakes-main,
 [data-device='desktop'] .import-main {
-  max-width: 1080px;
+  max-width: 560px;
+}
+
+[data-device='desktop'] .import-main {
+  max-width: var(--content-max);
 }

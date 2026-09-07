@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties } from 'react';
 
 import { Mascot } from './Mascot';
 import { NotificationCenter } from './NotificationCenter';
+import { AchievementGlyph } from './icons/AchievementGlyph';
 import type { AchievementDef } from '../lib/achievements';
 import { getGamification, getLevel, xpForNextLevel } from '../lib/gamification';
 import { t, type TranslationKey } from '../lib/i18n';
@@ -201,7 +202,9 @@ export function ResultsScreen({
           <ul className="results-new-achievements">
             {newUnlocks.map((ach) => (
               <li key={ach.id} className="results-ach-chip">
-                <span aria-hidden="true">{ach.icon}</span>
+                <span aria-hidden="true">
+                  <AchievementGlyph achievement={ach} size={18} />
+                </span>
                 {t(ach.nameKey, locale)}
               </li>
             ))}

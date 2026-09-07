@@ -7,6 +7,7 @@ import {
   type AppNotification,
 } from '../lib/notifications';
 import { getAchievementDef } from '../lib/achievementUnlocks';
+import { EconomyGlyph } from './icons/EconomyIcons';
 import { usePreferences } from '../hooks/usePreferences';
 import {
   countUnreadSocialNotifications,
@@ -38,6 +39,7 @@ function formatNotifBody(n: AppNotification, locale: Locale): string {
   if (n.type === 'streak' && n.streakDays) {
     return t('notifStreakBody', locale).replace('{days}', String(n.streakDays));
   }
+  if (n.detail) return n.detail;
   if (n.bodyKey) return t(n.bodyKey as Parameters<typeof t>[0], locale);
   return '';
 }
@@ -185,7 +187,9 @@ export function NotificationCenter({
                     const n = item.data;
                     return (
                       <li key={`local-${n.id}`} className={`notification-item ${n.read ? 'read' : 'unread'}`}>
-                        <span className="notification-item-icon">{n.icon}</span>
+                        <span className="notification-item-icon">
+                          <EconomyGlyph id={n.icon} size={20} />
+                        </span>
                         <div className="notification-item-body">
                           <span className="notification-item-title">
                             {t(n.titleKey as Parameters<typeof t>[0], locale)}

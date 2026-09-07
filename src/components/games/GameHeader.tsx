@@ -1,9 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useGameHud } from '../../hooks/useGameHud';
-import { getGamification } from '../../lib/gamification';
 import { t } from '../../lib/i18n';
 import type { Locale } from '../../types';
-import { StreakFlame } from '../icons/StreakFlame';
 import { GameProgressBar, gameProgressPct } from './GameProgressBar';
 
 export { gameProgressPct };
@@ -46,8 +44,6 @@ export function GameHeader({
 }: GameHeaderProps) {
   const { xp, combo } = useGameHud();
   const xpPulse = useXpPulse(xp);
-  const { streak } = getGamification();
-  const showStreak = hud && streak > 0;
   const showXp = hud && xp > 0;
   const showCombo = hud && combo >= 3;
 
@@ -74,11 +70,6 @@ export function GameHeader({
           {showCombo && (
             <span className="game-hud-chip game-hud-chip--combo" key={`combo-${combo}`}>
               ×{combo}
-            </span>
-          )}
-          {showStreak && (
-            <span className="game-hud-chip game-hud-chip--streak" title={t('streak', locale)}>
-              <StreakFlame lit={streak > 0} size={14} /> {streak}
             </span>
           )}
           {showXp && (

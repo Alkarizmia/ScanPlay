@@ -14,6 +14,7 @@ import { InstallAppSheet } from './InstallAppSheet';
 import { GuestScanBanner } from './GuestScanBanner';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
+import { AchievementGlyph } from './icons/AchievementGlyph';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
 import { getHistory, peekLastHomeDeck } from '../lib/history';
@@ -55,6 +56,7 @@ interface HomeScreenProps {
   onOpenDeck?: (entry: HistoryEntry) => void;
   onOpenAchievements?: () => void;
   onOpenShop?: () => void;
+  onNewUnlocks?: (unlocks: import('../lib/achievements').AchievementDef[]) => void;
 }
 
 export function HomeScreen({
@@ -73,6 +75,7 @@ export function HomeScreen({
   onOpenDeck,
   onOpenAchievements,
   onOpenShop,
+  onNewUnlocks,
 }: HomeScreenProps) {
   void streakPulseKey;
   const plan = usePlan(refreshKey);
@@ -258,6 +261,7 @@ export function HomeScreen({
             onRefresh={onRefresh}
             onOpenShop={onOpenShop}
             onOpenAchievements={onOpenAchievements}
+            onNewUnlocks={onNewUnlocks}
           />
         )}
 
@@ -333,7 +337,7 @@ export function HomeScreen({
                     onClick={onOpenAchievements}
                   >
                     <span className="home-ach-card-icon" aria-hidden="true">
-                      {def.icon}
+                      <AchievementGlyph achievement={def} size={36} />
                     </span>
                     <span className="home-ach-card-name">{t(def.nameKey, locale)}</span>
                     <time className="home-ach-card-date" dateTime={rec.unlockedAt}>

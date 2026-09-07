@@ -6,7 +6,7 @@ import { GamificationHUD } from './GamificationHUD';
 import { LogoWordmark } from './Logo';
 import { NotificationCenter } from './NotificationCenter';
 import { PlanBadge } from './PlanBadge';
-import { LockIcon } from './icons/LockIcon';
+import { ExamSetupChip } from './ExamSetupChip';
 import { usePlan } from '../hooks/usePlan';
 import { getDueReviewCount } from '../lib/spacedRepetition';
 import { hasFeature, PLAN_LIMITS } from '../lib/planLimits';
@@ -38,6 +38,7 @@ interface ModeSelectProps {
   onAuth?: () => void;
   sheetType?: SheetType;
   onSelect: (stepIndex: number, mode: GameMode) => void;
+  onNewUnlocks?: (unlocks: import('../lib/achievements').AchievementDef[]) => void;
   onRescan: () => void;
   onHome: () => void;
   historyReplay?: boolean;
@@ -68,6 +69,7 @@ export function ModeSelect({
   onAuth,
   sheetType = 'vocab',
   onSelect,
+  onNewUnlocks,
   onRescan,
   onHome,
   historyReplay = false,
@@ -76,6 +78,7 @@ export function ModeSelect({
 }: ModeSelectProps) {
   const plan = usePlan(refreshKey);
   const [rewardTick, setRewardTick] = useState(0);
+  void streakPulseKey;
   const examUnlocked = hasFeature('exam', plan);
   const canMulti = hasFeature('multiplayer', plan);
   const dueCount = getDueReviewCount();
@@ -109,7 +112,7 @@ export function ModeSelect({
         </div>
       </header>
 
-      <GamificationHUD locale={locale} refreshKey={refreshKey + rewardTick} streakPulseKey={streakPulseKey} />
+      <GamificationHUD locale={locale} refreshKey={refreshKey + rewardTick} layout="path" />
 
       <main className="mode-main mode-main-path">
         <button type="button" className="pair-direction-toggle" onClick={cycleDirection}>
@@ -130,6 +133,16 @@ export function ModeSelect({
           </p>
         )}
 
+        {historyReplay && (
+          <ExamSetupChip
+            locale={locale}
+            examMode={examMode}
+            lockedByProgress={examModeLocked}
+            onToggle={onExamToggle}
+            onUpgrade={() => onUpgrade('exam')}
+          />
+        )}
+
         {examMode && examUnlocked && (
           <div className="exam-path-chrono" role="timer" aria-live="polite">
             <span className="exam-path-chrono-icon" aria-hidden="true">
@@ -142,44 +155,6 @@ export function ModeSelect({
             </span>
           </div>
         )}
-
-        <div
-          className={`exam-mode-card ${examUnlocked && !examModeLocked ? '' : 'exam-mode-card--locked'}`}
-        >
-          <div className="exam-mode-card-head">
-            <span className="exam-mode-card-icon" aria-hidden="true">
-              {examUnlocked && !examModeLocked ? '🎓' : <LockIcon size={22} />}
-            </span>
-            <div>
-              <strong>{t('examMode', locale)}</strong>
-              <p className="exam-mode-card-desc">
-                {!examUnlocked
-                  ? t('upgradeExam', locale)
-                  : examModeLocked
-                    ? t('examLockedHint', locale)
-                    : t('examModeHint', locale)}
-              </p>
-            </div>
-          </div>
-          {examUnlocked && !examModeLocked ? (
-            <button
-              type="button"
-              className={`btn-secondary exam-mode-toggle ${examMode ? 'on' : ''}`}
-              onClick={onExamToggle}
-              aria-pressed={examMode}
-            >
-              {examMode ? t('examModeOn', locale) : t('examModeOff', locale)}
-            </button>
-          ) : examUnlocked && examModeLocked ? (
-            <button type="button" className="btn-secondary" disabled aria-disabled="true">
-              {t('examModeUnavailable', locale)}
-            </button>
-          ) : (
-            <button type="button" className="btn-secondary" onClick={() => onUpgrade('exam')}>
-              {t('upgradePro', locale)}
-            </button>
-          )}
-        </div>
 
         {sharedPathRoom && canMulti && (
           <section className="path-invite-card">
@@ -230,6 +205,7 @@ export function ModeSelect({
           sheetThumbnail={deckThumbnail}
           deckId={deckId}
           onReward={() => setRewardTick((n) => n + 1)}
+          onNewUnlocks={onNewUnlocks}
         />
 
         <button type="button" className="btn-ghost scanplay-rescan" onClick={onRescan}>

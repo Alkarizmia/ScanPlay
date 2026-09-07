@@ -1,6 +1,7 @@
 import type { Locale } from '../types';
 import type { SynthesisDocument } from '../lib/synthesis';
 import { t } from '../lib/i18n';
+import { ScanBonusIcon, SynthesisIcon } from './icons/EconomyIcons';
 
 interface SynthesisStudyViewProps {
   locale: Locale;
@@ -17,7 +18,9 @@ export function SynthesisStudyView({ locale, doc, thumbnail, onClose }: Synthesi
           <button type="button" className="icon-btn" onClick={onClose} aria-label={t('back', locale)}>
             ✕
           </button>
-          <span className="synthesis-study-badge">✨ {t('synthesisStudyBadge', locale)}</span>
+          <span className="synthesis-study-badge">
+            <SynthesisIcon size={16} /> {t('synthesisStudyBadge', locale)}
+          </span>
         </header>
 
         <div className="synthesis-study-hero">
@@ -102,7 +105,9 @@ export function SynthesisStudyView({ locale, doc, thumbnail, onClose }: Synthesi
         )}
 
         {doc.relatedToScan && (
-          <p className="synthesis-related">📷 {doc.relatedToScan}</p>
+          <p className="synthesis-related">
+            <ScanBonusIcon size={14} /> {doc.relatedToScan}
+          </p>
         )}
       </div>
     </div>

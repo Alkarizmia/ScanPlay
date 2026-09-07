@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 
 interface ConfettiProps {
   active: boolean;
+  /** Sit inside a parent instead of covering the whole viewport. */
+  contained?: boolean;
 }
 
-export function Confetti({ active }: ConfettiProps) {
+export function Confetti({ active, contained = false }: ConfettiProps) {
   const [pieces, setPieces] = useState<{ id: number; left: number; delay: number; color: string }[]>([]);
 
   useEffect(() => {
@@ -28,7 +30,7 @@ export function Confetti({ active }: ConfettiProps) {
   if (!pieces.length) return null;
 
   return (
-    <div className="confetti" aria-hidden="true">
+    <div className={`confetti${contained ? ' confetti--contained' : ''}`} aria-hidden="true">
       {pieces.map((p) => (
         <span
           key={p.id}

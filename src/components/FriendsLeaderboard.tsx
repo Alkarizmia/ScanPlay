@@ -10,6 +10,7 @@ import type { PublicPlayer } from '../lib/social/types';
 
 import { FriendPresenceAvatar } from './FriendPresenceAvatar';
 import { StreakFlame } from './icons/StreakFlame';
+import { MedalIcon } from './icons/EconomyIcons';
 
 import { t } from '../lib/i18n';
 
@@ -199,7 +200,9 @@ export function FriendsLeaderboard({ friends, locale, onOpenFriend }: FriendsLea
                   {row.streak} <StreakFlame lit={row.streak > 0} size={12} />
                 </span>
 
-                <span>{row.achievementCount} 🏆</span>
+                <span className="friends-leaderboard-achs">
+                  {row.achievementCount} <MedalIcon size={14} tier="gold" />
+                </span>
 
               </span>
 

@@ -51,6 +51,7 @@ const FLOW_SCREENS: Record<FlowScreen, AnalyticsScreen> = {
   auth: { id: 'connexion', name: 'Connexion' },
   pricing: { id: 'offres', name: 'Offres Plus / Pro' },
   reviewCards: { id: 'revision-cartes', name: 'Révision des cartes' },
+  missionReward: { id: 'recompense-missions', name: 'Récompense missions' },
 };
 
 const TAB_SCREENS: Record<Exclude<TabId, 'more'>, AnalyticsScreen> = {

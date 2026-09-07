@@ -219,6 +219,14 @@ export function spendCoins(amount: number): SpendResult {
   return { ok: true };
 }
 
+export function spendGems(amount: number): SpendResult {
+  const w = loadWalletRaw();
+  if (w.gems < amount) return { ok: false, reason: 'insufficient' };
+  w.gems -= amount;
+  saveWalletRaw(w);
+  return { ok: true };
+}
+
 export const MAX_EXTRA_SCANS_PER_DAY = 2;
 export const EXTRA_SCAN_PRICE = 70;
 
@@ -352,6 +360,10 @@ export function clearStreakRestoreOffer(): void {
   w.lostStreak = 0;
   w.lostStreakAt = null;
   saveWalletRaw(w);
+}
+
+export function hasClaimedDailyChestEver(): boolean {
+  return loadWalletRaw().lastDailyChest != null;
 }
 
 export function canClaimDailyChest(): boolean {
