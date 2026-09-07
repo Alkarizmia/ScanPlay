@@ -1,6 +1,5 @@
 import { useId, type ReactNode } from 'react';
 import type { EconomyGlyphId } from '../../lib/economyGlyph';
-import { HintIcon } from './HintIcon';
 import { ListenIcon, QuizIcon, WriteIcon } from './PathGameIcons';
 import { StreakFlame } from './StreakFlame';
 
