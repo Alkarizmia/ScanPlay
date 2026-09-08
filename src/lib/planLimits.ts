@@ -44,9 +44,9 @@ export const PLAN_PRICES = {
 } as const;
 
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 2, maxWords: 25, historyMax: 7, historyReplay: 2, pathSteps: 10, synthesesPerMonth: 2 },
-  plus: { scansPerDay: 10, maxWords: 100, historyMax: Infinity, historyReplay: 4, pathSteps: 20, synthesesPerMonth: 15 },
-  pro: { scansPerDay: 15, maxWords: 250, historyMax: Infinity, historyReplay: 7, pathSteps: 30, synthesesPerMonth: 40 },
+  free: { scansPerDay: 2, maxWords: 25, historyMax: 7, historyReplay: 2, pathSteps: 10, synthesesPerMonth: 2, chatPerDay: 3, chatMaxChars: 150, chatHistoryWindow: 2 },
+  plus: { scansPerDay: 10, maxWords: 100, historyMax: Infinity, historyReplay: 4, pathSteps: 20, synthesesPerMonth: 15, chatPerDay: 15, chatMaxChars: 200, chatHistoryWindow: 4 },
+  pro: { scansPerDay: 15, maxWords: 250, historyMax: Infinity, historyReplay: 7, pathSteps: 30, synthesesPerMonth: 40, chatPerDay: 40, chatMaxChars: 250, chatHistoryWindow: 7 },
 } as const;
 
 export const DEFAULT_PATH_STEP_COUNT = PLAN_LIMITS.free.pathSteps;
@@ -118,6 +118,18 @@ function incrementScansToday(): void {
 
 export function getDailyScanLimit(plan?: Plan): number {
   return PLAN_LIMITS[plan ?? getPlan()].scansPerDay;
+}
+
+export function getDailyChatLimit(plan?: Plan): number {
+  return PLAN_LIMITS[plan ?? getPlan()].chatPerDay;
+}
+
+export function getChatMaxChars(plan?: Plan): number {
+  return PLAN_LIMITS[plan ?? getPlan()].chatMaxChars;
+}
+
+export function getChatHistoryWindow(plan?: Plan): number {
+  return PLAN_LIMITS[plan ?? getPlan()].chatHistoryWindow;
 }
 
 export function getScansRemaining(): number | typeof Infinity {

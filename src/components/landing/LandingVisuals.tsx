@@ -1,6 +1,8 @@
 import { StreakFlame } from '../icons/StreakFlame';
+import { MicIcon } from '../icons/MicIcon';
 import { lt, type LandingLang } from '../../lib/landingI18n';
 import { t } from '../../lib/i18n';
+import { buildPathD } from '../../lib/pathSteps';
 import type { Locale } from '../../types';
 
 /**
@@ -24,6 +26,15 @@ const QUIZ_OPTIONS: { label: string; correct?: boolean }[] = [
   { label: 'bird' },
   { label: 'house' },
 ];
+
+const SPEAK_WORDS = ['The', 'dog', 'is', 'home'] as const;
+const REORDER_BANK = [
+  { id: 'dog', leave: 1 },
+  { id: 'home', leave: 4 },
+  { id: 'The', leave: 2 },
+  { id: 'is', leave: 3 },
+] as const;
+const REORDER_WRONG = ['dog', 'The', 'is', 'home'] as const;
 
 export function SheetMock({ locale }: { locale: Locale }) {
   return (
@@ -62,13 +73,13 @@ export function HeroGameCapture({ lang }: { lang: LandingLang }) {
   );
 }
 
-/** Phone showing a quiz round — what the sheet above turns into. */
+/** Phone cycling through real ScanPlay mini-games — what the sheet above turns into. */
 export function QuizPhoneMock({ locale }: { locale: Locale }) {
   return (
     <div className="lp-phone lp-phone--hero" aria-hidden="true">
       <div className="lp-phone-frame">
         <span className="lp-phone-island" />
-        <div className="lp-phone-screen">
+        <div className="lp-phone-screen lp-demo-screen">
           <div className="lp-mock-hud">
             <span className="lp-mock-progress">
               <span className="lp-mock-progress-fill" />
@@ -78,22 +89,76 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
             </span>
           </div>
 
-          <p className="lp-mock-prompt">{t('lpMockPrompt', locale)}</p>
-          <p className="lp-mock-word">chien</p>
+          <div className="lp-demo-scenes">
+            <div className="lp-demo-scene lp-demo-scene--quiz">
+              <p className="lp-mock-prompt">{t('lpMockPrompt', locale)}</p>
+              <p className="lp-mock-word">chien</p>
+              <ul className="lp-mock-options">
+                {QUIZ_OPTIONS.map((option) => (
+                  <li
+                    key={option.label}
+                    className={`lp-mock-option${option.correct ? ' lp-mock-option--answer' : ''}`}
+                  >
+                    {option.label}
+                    {option.correct && <CheckIcon />}
+                  </li>
+                ))}
+              </ul>
+              <p className="lp-mock-xp">+10 XP</p>
+            </div>
 
-          <ul className="lp-mock-options">
-            {QUIZ_OPTIONS.map((option) => (
-              <li
-                key={option.label}
-                className={`lp-mock-option${option.correct ? ' is-correct' : ''}`}
-              >
-                {option.label}
-                {option.correct && <CheckIcon />}
-              </li>
-            ))}
-          </ul>
+            <div className="lp-demo-scene lp-demo-scene--speak">
+              <p className="lp-mock-prompt">{lt('lpMockSpeakPrompt', locale)}</p>
+              <p className="lp-demo-speak-phrase">
+                {SPEAK_WORDS.map((word) => (
+                  <span key={word} className="lp-demo-speak-word">
+                    {word}
+                  </span>
+                ))}
+              </p>
+              <div className="lp-demo-mic-wrap">
+                <span className="lp-demo-mic-ring" />
+                <span className="lp-demo-mic-ring lp-demo-mic-ring--late" />
+                <span className="lp-demo-mic">
+                  <MicIcon size={18} />
+                </span>
+              </div>
+              <p className="lp-demo-speak-status">{t('speakStatusListen', locale)}</p>
+            </div>
 
-          <p className="lp-mock-xp">+10 XP</p>
+            <div className="lp-demo-scene lp-demo-scene--reorder">
+              <p className="lp-mock-prompt">{t('reorderInstruction', locale)}</p>
+              <p className="lp-demo-reorder-clue">{lt('lpMockReorderClue', locale)}</p>
+              <div className="lp-demo-reorder-answer">
+                {REORDER_WRONG.map((word, index) => (
+                  <span key={`${word}-${index}`} className="lp-demo-reorder-placed">
+                    {word}
+                  </span>
+                ))}
+              </div>
+              <div className="lp-demo-reorder-bank">
+                {REORDER_BANK.map((tile) => (
+                  <span key={tile.id} className={`lp-demo-reorder-tile lp-demo-leave--${tile.leave}`}>
+                    {tile.id}
+                  </span>
+                ))}
+              </div>
+              <div className="lp-demo-error">
+                <span className="lp-demo-error-mark">✕</span>
+                <span className="lp-demo-error-copy">
+                  <strong>{t('feedbackWrong', locale)}</strong>
+                  <span>
+                    {t('feedbackAnswerLabel', locale)} : {lt('lpMockReorderAnswer', locale)}
+                  </span>
+                  <span>{lt('lpMockReorderNote', locale)}</span>
+                </span>
+              </div>
+            </div>
+
+            <div className="lp-demo-scene lp-demo-scene--tease">
+              <p className="lp-demo-tease">{lt('lpMockTease', locale)}</p>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -101,15 +166,18 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
 }
 
 /** Phone showing the per-sheet path of steps. */
-export function PathPhoneMock({ locale }: { locale: Locale }) {
-  const nodes = [
-    { state: 'gold' as const },
-    { state: 'gold' as const },
-    { state: 'active' as const },
-    { state: 'locked' as const },
-    { state: 'locked' as const },
-  ];
+const PATH_MOCK_NODES = [
+  { state: 'bronze' as const, x: 28, y: 12 },
+  { state: 'iron' as const, x: 72, y: 28 },
+  { state: 'gold' as const, x: 28, y: 44 },
+  { state: 'active' as const, x: 72, y: 60 },
+  { state: 'locked' as const, x: 28, y: 76 },
+  { state: 'locked' as const, x: 72, y: 90 },
+];
 
+const PATH_MOCK_D = buildPathD(PATH_MOCK_NODES);
+
+export function PathPhoneMock({ locale }: { locale: Locale }) {
   return (
     <div className="lp-phone lp-phone--path" aria-hidden="true">
       <div className="lp-phone-frame">
@@ -123,16 +191,51 @@ export function PathPhoneMock({ locale }: { locale: Locale }) {
             </span>
           </div>
 
-          <ol className="lp-path-nodes">
-            {nodes.map((node, index) => (
-              <li key={index} className={`lp-path-node lp-path-node--${node.state}`}>
-                <span className="lp-path-node-dot">
-                  {node.state === 'gold' && <span className="lp-path-node-star">★</span>}
-                  {node.state === 'locked' ? <LockIcon /> : <PlayIcon />}
-                </span>
-              </li>
-            ))}
-          </ol>
+          <div className="lp-path-track">
+            <svg
+              className="lp-path-line"
+              viewBox="0 0 100 100"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              <path
+                d={PATH_MOCK_D}
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.6"
+                strokeLinecap="round"
+                strokeDasharray="3 7"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            <ol className="lp-path-nodes">
+              {PATH_MOCK_NODES.map((node, index) => {
+                const done = node.state === 'bronze' || node.state === 'iron' || node.state === 'gold';
+                return (
+                  <li
+                    key={index}
+                    className={`lp-path-node lp-path-node--${node.state}`}
+                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                  >
+                    <span className="lp-path-node-dot">
+                      {done && (
+                        <span className="lp-path-node-flames">
+                          <StreakFlame lit size={10} />
+                          <StreakFlame lit size={13} />
+                          <StreakFlame lit size={10} />
+                        </span>
+                      )}
+                      {node.state === 'locked' ? (
+                        <LockIcon />
+                      ) : node.state === 'active' ? (
+                        <PlayIcon />
+                      ) : null}
+                    </span>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
         </div>
       </div>
     </div>

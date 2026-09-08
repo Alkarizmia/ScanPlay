@@ -63,7 +63,8 @@ export type TabId =
   | 'more'
   | 'mistakes'
   | 'achievements'
-  | 'settings';
+  | 'settings'
+  | 'chat';
 
 export type Locale = 'fr' | 'en' | 'nl' | 'es';
 
@@ -191,4 +192,5 @@ export type UpgradeReason =
   | 'synthesis'
   | 'exam'
   | 'stats'
-  | 'multiplayer';
+  | 'multiplayer'
+  | 'coach';

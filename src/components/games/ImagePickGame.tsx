@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { buildImagePickRounds } from '../../lib/imagePickRounds';
+import { preloadImages } from '../../lib/preloadImages';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { coercePlayablePairs, flipPair, isReversedStep } from '../../lib/vocabulary';
 import type { Locale, PairDirection, WordPair } from '../../types';
@@ -51,6 +52,7 @@ export function ImagePickGame({
   const [picked, setPicked] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   const [lastXp, setLastXp] = useState(0);
+  const [artsReady, setArtsReady] = useState(false);
 
   const round = rounds[index];
   const total = Math.max(1, rounds.length);
@@ -58,6 +60,30 @@ export function ImagePickGame({
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
+
+  useEffect(() => {
+    const srcs = [...new Set(rounds.flatMap((item) => item.options.map((art) => art.src)))];
+    void preloadImages(srcs);
+  }, [rounds]);
+
+  useEffect(() => {
+    if (!round) return;
+    let cancelled = false;
+    setArtsReady(false);
+    const current = round.options.map((art) => art.src);
+    const next = rounds[index + 1]?.options.map((art) => art.src) ?? [];
+    void preloadImages(current).then(() => {
+      if (!cancelled) setArtsReady(true);
+    });
+    if (next.length) void preloadImages(next);
+    const fallback = window.setTimeout(() => {
+      if (!cancelled) setArtsReady(true);
+    }, 900);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(fallback);
+    };
+  }, [round, index, rounds]);
 
   const goNext = useCallback(
     (finalScore: number) => {
@@ -119,20 +145,29 @@ export function ImagePickGame({
       <div className="game-body imagepick-body">
         <p className="game-instruction">{t('imagePickInstruction', locale)}</p>
         <h2 className="game-question imagepick-prompt">{round.prompt}</h2>
-        <div className="imagepick-grid">
-          {round.options.map((art, i) => (
-            <ChoiceCard
-              key={art.id}
-              index={i}
-              className="imagepick-card"
-              state={optionState(art.id)}
-              disabled={picked != null}
-              onSelect={() => pick(art.id)}
-              ariaLabel={art.id}
-            >
-              <img className="imagepick-art" src={art.src} alt="" draggable={false} />
-            </ChoiceCard>
-          ))}
+        <div className={`imagepick-grid${artsReady ? ' is-ready' : ''}`} aria-busy={!artsReady}>
+          {artsReady
+            ? round.options.map((art) => (
+                <ChoiceCard
+                  key={art.id}
+                  index={0}
+                  className="imagepick-card"
+                  state={optionState(art.id)}
+                  disabled={picked != null}
+                  onSelect={() => pick(art.id)}
+                  ariaLabel={art.id}
+                >
+                  <img
+                    className="imagepick-art"
+                    src={art.src}
+                    alt=""
+                    draggable={false}
+                    decoding="async"
+                    fetchPriority="high"
+                  />
+                </ChoiceCard>
+              ))
+            : [0, 1, 2, 3].map((slot) => <span key={slot} className="imagepick-slot" />)}
         </div>
       </div>
     </LessonGameShell>

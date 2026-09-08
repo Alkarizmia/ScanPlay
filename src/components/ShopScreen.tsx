@@ -294,7 +294,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
     <div className="screen tab-screen shop-screen">
       <BrandDecor />
       <header className="top-bar">
-        <h2 className="screen-title">{t('shopTitle', locale)}</h2>
+        <h2 className="screen-title sr-only">{t('shopTitle', locale)}</h2>
         <div className="shop-balances">
           <span className="shop-balance shop-balance--coins" aria-label={t('coins', locale)}>
             <LootCoin size={18} /> {coins}

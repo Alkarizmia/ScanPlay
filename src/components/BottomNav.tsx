@@ -17,6 +17,7 @@ interface BottomNavProps {
 const MAIN_TABS: { id: TabId; labelKey: TranslationKey }[] = [
   { id: 'home', labelKey: 'home' },
   { id: 'history', labelKey: 'history' },
+  { id: 'chat', labelKey: 'chatTitle' },
   { id: 'friends', labelKey: 'friends' },
   { id: 'profile', labelKey: 'profileTitle' },
 ];
@@ -37,7 +38,7 @@ export function BottomNav({ active, onChange, locale, device }: BottomNavProps) 
         </div>
       )}
 
-      <div className="bottom-nav-items bottom-nav-items--four">
+      <div className="bottom-nav-items bottom-nav-items--five">
         {MAIN_TABS.map((tab) => {
           const isActive = highlight === tab.id;
           return (

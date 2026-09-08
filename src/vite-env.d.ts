@@ -12,6 +12,7 @@ interface ImportMetaEnv {
   readonly VITE_GOOGLE_CLIENT_ID?: string;
   readonly VITE_SPEECH_SERVER?: string;
   readonly VITE_STRIPE_CHECKOUT?: string;
+  readonly VITE_COACH_CHAT?: string;
 }
 
 interface ImportMeta {

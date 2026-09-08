@@ -32,6 +32,8 @@ import { ResultsScreen } from './components/ResultsScreen';
 import { ScanningScreen } from './components/ScanningScreen';
 import { ReviewCardsScreen } from './components/ReviewCardsScreen';
 import { ProfileScreen } from './components/ProfileScreen';
+import { ChatScreen } from './components/ChatScreen';
+import { isCoachChatEnabled } from './lib/coachFlag';
 import { LessonRunner } from './components/games/LessonRunner';
 import {
   checkpointMatches,
@@ -1689,11 +1691,16 @@ export default function App() {
     if (
       (next === 'history' ||
         next === 'friends' ||
+        next === 'chat' ||
         next === 'profile' ||
         next === 'mistakes' ||
         next === 'achievements') &&
       !isLoggedIn()
     ) {
+      if (next === 'chat' && !isCoachChatEnabled()) {
+        setTab('chat');
+        return;
+      }
       setTab(next);
       setAuthInitialMode('login');
       setFlow('auth');
@@ -1877,6 +1884,15 @@ export default function App() {
           onToast={showToast}
           onAuth={() => setFlow('auth')}
           isLoggedIn={isLoggedIn()}
+        />
+      )}
+      {flow === null && tab === 'chat' && (
+        <ChatScreen
+          locale={locale}
+          refreshKey={refreshKey}
+          isLoggedIn={isLoggedIn()}
+          onAuth={() => setFlow('auth')}
+          onUpgrade={() => setUpgradeReason('coach')}
         />
       )}
       {flow === null && tab === 'friends' && (

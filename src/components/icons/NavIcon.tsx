@@ -31,6 +31,11 @@ const paths: Record<TabId, IconPath> = {
       <path d="M16 10a4 4 0 0 1-8 0" />
     </>
   ),
+  chat: (
+    <>
+      <path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+    </>
+  ),
   mistakes: (
     <>
       <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />

@@ -12,6 +12,7 @@ import {
   SparkIcon,
   TrophyIcon,
 } from './LandingVisuals';
+import { StepsSwipeDeck } from './StepsSwipeDeck';
 import { usePassed, useReveal } from './useReveal';
 import { trackEvent } from '../../lib/analytics';
 import { t } from '../../lib/i18n';
@@ -197,8 +198,6 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             </div>
 
             <div className="lp-hero-rest">
-              <p className="lp-hero-sub">{lt('lpHeroSub', locale)}</p>
-
               <div className="lp-hero-actions" ref={heroCtaRef}>
                 <button
                   type="button"
@@ -210,6 +209,8 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                 </button>
                 {ctaNote}
               </div>
+
+              <p className="lp-hero-sub">{lt('lpHeroSub', locale)}</p>
 
               <ul className="lp-hero-chips">
                 <li>{lt('lpHeroChip1', locale)}</li>
@@ -227,23 +228,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <p>{lt('lpStepsSub', locale)}</p>
           </header>
 
-          <ol className="lp-steps">
-            {STEPS.map((step) => {
-              const Icon = step.icon;
-              return (
-                <li key={step.num} className="lp-step">
-                  <span className="lp-step-mark" aria-hidden="true">
-                    <span className="lp-step-icon">
-                      <Icon />
-                    </span>
-                    <span className="lp-step-num">{step.num}</span>
-                  </span>
-                  <h3>{lt(step.title, locale)}</h3>
-                  <p>{lt(step.body, locale)}</p>
-                </li>
-              );
-            })}
-          </ol>
+          <StepsSwipeDeck steps={STEPS} locale={locale} />
 
           <div className="lp-section-cta">
             <button

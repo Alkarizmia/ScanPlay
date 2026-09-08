@@ -21,6 +21,11 @@ export function canUseServerTranscribe(): boolean {
   const flag = import.meta.env.VITE_SPEECH_SERVER;
   if (flag === '0' || flag === 'false') return false;
   if (flag !== '1' && flag !== 'true') return false;
+  return canRecordCoachVoice();
+}
+
+/** Mic capture for the mini-coach (Groq Whisper via /api/transcribe). */
+export function canRecordCoachVoice(): boolean {
   return typeof MediaRecorder !== 'undefined' && pickMimeType().length > 0;
 }
 

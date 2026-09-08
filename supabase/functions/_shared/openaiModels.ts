@@ -30,6 +30,14 @@ export function resolveSynthesisModel(): string {
   return Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini';
 }
 
+/** Mini-coach chat. Free stays on mini. Plus/Pro can use 4.1. */
+export function resolveCoachModel(plan: ScanPlan = 'free'): string {
+  if (plan === 'plus' || plan === 'pro') {
+    return Deno.env.get('OPENAI_COACH_MODEL_PAID') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
+  }
+  return Deno.env.get('OPENAI_COACH_MODEL_FREE') ?? 'gpt-4o-mini';
+}
+
 /** GPT-5+ / GPT-6: reasoning tokens, max_completion_tokens, image detail original. */
 export function isReasoningVisionModel(model: string): boolean {
   return /^(gpt-5|gpt-6|o[1-9])/i.test(model.trim());

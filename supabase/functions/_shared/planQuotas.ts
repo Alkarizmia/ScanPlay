@@ -1,9 +1,9 @@
 export type Plan = 'free' | 'plus' | 'pro';
 
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 2, synthesesPerMonth: 2, maxWords: 25 },
-  plus: { scansPerDay: 10, synthesesPerMonth: 15, maxWords: 100 },
-  pro: { scansPerDay: 15, synthesesPerMonth: 40, maxWords: 250 },
+  free: { scansPerDay: 2, synthesesPerMonth: 2, maxWords: 25, chatPerDay: 3, chatMaxChars: 150, chatHistoryWindow: 2 },
+  plus: { scansPerDay: 10, synthesesPerMonth: 15, maxWords: 100, chatPerDay: 15, chatMaxChars: 200, chatHistoryWindow: 4 },
+  pro: { scansPerDay: 15, synthesesPerMonth: 40, maxWords: 250, chatPerDay: 40, chatMaxChars: 250, chatHistoryWindow: 7 },
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

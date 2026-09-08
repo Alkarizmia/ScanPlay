@@ -59,6 +59,7 @@ const TAB_SCREENS: Record<Exclude<TabId, 'more'>, AnalyticsScreen> = {
   history: { id: 'historique', name: 'Historique' },
   friends: { id: 'amis', name: 'Amis' },
   shop: { id: 'boutique', name: 'Boutique' },
+  chat: { id: 'coach', name: 'Coach' },
   profile: { id: 'profil', name: 'Profil' },
   mistakes: { id: 'erreurs', name: 'Mes erreurs' },
   achievements: { id: 'succes', name: 'Succès' },

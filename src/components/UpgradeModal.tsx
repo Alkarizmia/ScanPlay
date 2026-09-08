@@ -23,7 +23,8 @@ type UpgradeMessageKey =
   | 'upgradeSynthesis'
   | 'upgradeExam'
   | 'upgradeStats'
-  | 'upgradeMultiplayer';
+  | 'upgradeMultiplayer'
+  | 'upgradeCoach';
 
 const REASON_KEYS: Record<UpgradeReason, UpgradeMessageKey> = {
   scans: 'upgradeScans',
@@ -37,6 +38,7 @@ const REASON_KEYS: Record<UpgradeReason, UpgradeMessageKey> = {
   exam: 'upgradeExam',
   stats: 'upgradeStats',
   multiplayer: 'upgradeMultiplayer',
+  coach: 'upgradeCoach',
 };
 
 const PRO_REASONS = new Set<UpgradeReason>(['share', 'exam']);
@@ -48,7 +50,7 @@ export function UpgradeModal({ reason, locale, onClose, onUpgrade }: UpgradeModa
     messageKey = plan === 'plus' ? 'upgradeHistoryReplayPro' : 'upgradeHistoryReplayPlus';
   }
   const ctaKey =
-    reason === 'historyReplay'
+    reason === 'historyReplay' || reason === 'coach'
       ? plan === 'plus'
         ? 'upgradePro'
         : 'upgradePlus'

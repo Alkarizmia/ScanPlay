@@ -833,11 +833,13 @@
   align-items: center;
   justify-content: center;
 }
-.bottom-nav-items--four .bottom-nav-item {
+.bottom-nav-items--four .bottom-nav-item,
+.bottom-nav-items--five .bottom-nav-item {
   min-width: 0;
   flex: 1;
 }
-.bottom-nav-items--four .bottom-nav-label {
+.bottom-nav-items--four .bottom-nav-label,
+.bottom-nav-items--five .bottom-nav-label {
   font-size: 0.68rem;
 }
 .bottom-nav-item--more-open .bottom-nav-icon {
@@ -947,11 +949,13 @@
   color: #22c55e;
 }
 
-[data-device='desktop'] .bottom-nav-items--four .bottom-nav-item {
+[data-device='desktop'] .bottom-nav-items--four .bottom-nav-item,
+[data-device='desktop'] .bottom-nav-items--five .bottom-nav-item {
   flex: none;
   width: 100%;
 }
 
-[data-device='desktop'] .bottom-nav-items--four .bottom-nav-label {
+[data-device='desktop'] .bottom-nav-items--four .bottom-nav-label,
+[data-device='desktop'] .bottom-nav-items--five .bottom-nav-label {
   font-size: 0.85rem;
 }

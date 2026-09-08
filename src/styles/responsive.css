@@ -381,6 +381,7 @@
 [data-device='desktop'] .achievements-main,
 [data-device='desktop'] .friends-main,
 [data-device='desktop'] .shop-main,
+[data-device='desktop'] .chat-main,
 [data-device='desktop'] .mistakes-main,
 [data-device='desktop'] .import-main {
   max-width: var(--content-max);
@@ -766,6 +767,7 @@ html[data-device='desktop']:has(.auth-screen) #root {
 [data-device='desktop'] .achievements-main,
 [data-device='desktop'] .friends-main,
 [data-device='desktop'] .shop-main,
+[data-device='desktop'] .chat-main,
 [data-device='desktop'] .mistakes-main,
 [data-device='desktop'] .import-main {
   max-width: 560px;
