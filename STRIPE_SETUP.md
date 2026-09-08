@@ -38,10 +38,10 @@ Crée **2 produits** avec prix **récurrents** en **EUR** :
 **Descriptions à coller dans Stripe (Products → Description)** :
 
 **ScanPlay Plus**  
-Scans illimités, fiches jusqu'à 50 mots, historique illimité, révision espacée, export flashcards, stats détaillées, 15 synthèses IA par mois et parcours 15 étapes. Idéal pour réviser chaque jour sans limite.
+10 scans/jour, fiches jusqu'à 100 mots, historique illimité, révision espacée, export flashcards, stats détaillées, 15 synthèses IA par mois et parcours 20 étapes. Idéal pour réviser chaque jour.
 
 **ScanPlay Pro**  
-Tout ScanPlay Plus, plus : 100 mots par scan, parcours 20 étapes, 40 synthèses IA par mois, mode examen chronométré, partage de decks et rejouer les 2 dernières fiches. Pour viser la mention et les contrôles.
+Tout ScanPlay Plus, plus : 15 scans/jour, 250 mots par scan, parcours 30 étapes, 40 synthèses IA par mois, mode examen chronométré, partage de decks et rejouer les 7 dernières fiches. Pour viser la mention et les contrôles.
 
 Pour chaque prix, copie l'ID `price_xxxxxxxx` (pas le `prod_`).
 

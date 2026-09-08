@@ -16,10 +16,10 @@ npm run dev
 
 - **Navigation** : Accueil · Boutique · Amis · Historique · Profil · Plus
 - **Import** : caméra, fichier, multi-photos (selon plan)
-- **8 types de jeux** + parcours par étapes + mode **Examen** (Pro)
+- **13 types de jeux** + parcours par étapes + mode **Examen** (Pro)
 - **Plans** Free / Plus / Pro avec **Stripe** (checkout + portail abonnement)
 - **Sync cloud** Supabase (historique, stats, amis, multijoueur)
-- **1 scan invité** sans compte (OCR local) — connexion pour sauvegarder
+- **Scan invité** sans compte (génération du jeu) — compte gratuit pour lancer une étape ; la fiche est conservée (quota Free 2/jour intact)
 - **Synthèse IA** (OpenAI via Edge Functions)
 - PWA installable · i18n FR / EN / NL / ES
 
@@ -27,9 +27,9 @@ npm run dev
 
 | | Free | Plus | Pro |
 |---|:---:|:---:|:---:|
-| Scans/jour | 3 | ∞ | ∞ |
-| Mots/scan | 15 | 50 | 100 |
-| Historique rejouable | 1 | 2 | 3 |
+| Scans/jour | 2 | 10 | 15 |
+| Mots/scan | 25 | 100 | 250 |
+| Historique rejouable | 2 | 4 | 7 |
 | Synthèses/mois | 2 | 15 | 40 |
 | Mode Examen | — | — | ✓ |
 

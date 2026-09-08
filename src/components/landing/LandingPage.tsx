@@ -15,6 +15,7 @@ import {
 import { StepsSwipeDeck } from './StepsSwipeDeck';
 import { usePassed, useReveal } from './useReveal';
 import { trackEvent } from '../../lib/analytics';
+import { ACHIEVEMENTS } from '../../lib/achievements';
 import { t } from '../../lib/i18n';
 import { landingLangFromNavigator, lt, type LandingCopyKey } from '../../lib/landingI18n';
 import type { DeviceProfile } from '../../lib/device';
@@ -384,7 +385,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                   </span>
                   <div>
                     <h3>{lt('lpGameAchTitle', locale)}</h3>
-                    <p>{lt('lpGameAchBody', locale)}</p>
+                    <p>{lt('lpGameAchBody', locale).replace('{n}', String(ACHIEVEMENTS.length))}</p>
                   </div>
                 </li>
               </ul>

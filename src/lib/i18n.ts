@@ -49,7 +49,7 @@ const strings = {
     lpProduct1Title: 'Un parcours par fiche',
     lpProduct1Body:
       'Jusqu\'à dix étapes à débloquer une par une. Chaque étape est notée or, fer ou bronze selon ton score.',
-    lpProduct2Title: 'Douze façons de réviser',
+    lpProduct2Title: 'Treize façons de réviser',
     lpProduct2Body:
       'La même fiche revient sous des formes différentes, pour éviter d\'apprendre par cœur l\'ordre des réponses.',
     lpProduct3Title: 'Tes erreurs au même endroit',
@@ -78,7 +78,7 @@ const strings = {
       'Un jour joué, un jour de plus dans ta série. Les paliers tombent à 3, 7 et 30 jours.',
     lpGameAchTitle: 'Succès et coffres',
     lpGameAchBody:
-      'Quarante succès à débloquer, un coffre à ouvrir chaque jour et des pièces à dépenser en bonus.',
+      '{n} succès à débloquer, un coffre à ouvrir chaque jour et des pièces à dépenser en bonus.',
     lpProofTitle: 'Ils révisent avec ScanPlay',
     lpFaqTitle: 'Les questions que tu te poses',
     lpFaqSub: 'Si la réponse n\'y est pas, écris-nous.',
@@ -394,9 +394,9 @@ const strings = {
     guestScanBannerFoot: 'Gratuit · révise comme tu joues',
     guestScanBannerUsedTitle: 'Connecte-toi pour continuer',
     guestScanBannerUsedBody: 'Crée un compte gratuit pour sauvegarder tes fiches et reprendre où tu t\'es arrêté.',
-    guestScanMobileHint: 'Scanne ta fiche, joue tout de suite',
+    guestScanMobileHint: 'Scanne ta fiche, un compte gratuit pour lancer une étape',
     guestSignupTeaser: 'Créer un compte gratuit · 2 scans/jour + historique',
-    guestPlaySessionHint: 'Essai en cours : joue librement, rien n\'est sauvegardé sans compte.',
+    guestPlaySessionHint: 'Ton jeu est prêt. Un compte gratuit pour lancer une étape — il ira dans ton historique.',
     guestAhaTitle: '🎉 Ton jeu est prêt !',
     guestAhaBody: 'Crée ton compte gratuitement pour le récupérer et commencer à jouer.',
     guestAhaCta: 'Créer mon compte gratuit',
@@ -1224,7 +1224,7 @@ const strings = {
     lpProduct1Title: 'One path per sheet',
     lpProduct1Body:
       'Up to ten steps to unlock one by one. Each step is graded gold, iron or bronze based on your score.',
-    lpProduct2Title: 'Twelve ways to revise',
+    lpProduct2Title: 'Thirteen ways to revise',
     lpProduct2Body:
       'The same sheet comes back in different formats, so you do not just memorise the order of the answers.',
     lpProduct3Title: 'Your mistakes in one place',
@@ -1253,7 +1253,7 @@ const strings = {
       'One day played, one more day on your streak. Milestones land at 3, 7 and 30 days.',
     lpGameAchTitle: 'Achievements and chests',
     lpGameAchBody:
-      'Forty achievements to unlock, a chest to open every day and coins to spend on boosts.',
+      '{n} achievements to unlock, a chest to open every day and coins to spend on boosts.',
     lpProofTitle: 'They revise with ScanPlay',
     lpFaqTitle: 'The questions you are asking',
     lpFaqSub: 'If the answer is not here, write to us.',
@@ -1573,7 +1573,8 @@ const strings = {
     guestScanBannerFoot: 'Free · revise like you play',
     guestScanBannerUsedTitle: 'Sign in to continue',
     guestScanBannerUsedBody: 'Create a free account to save your sheets and pick up where you left off.',
-    guestScanMobileHint: 'Scan your sheet, play right away',
+    guestScanMobileHint: 'Scan your sheet, then a free account to start a step',
+    guestPlaySessionHint: 'Your game is ready. A free account lets you start a step — it will go into your history.',
     guestSignupTeaser: 'Create a free account · 2 scans/day + history',
     guestAhaTitle: '🎉 Your game is ready!',
     guestAhaBody: 'Create a free account to save it and start playing.',
@@ -2369,7 +2370,7 @@ const strings = {
     lpProduct1Title: 'Eén pad per blad',
     lpProduct1Body:
       'Tot tien stappen die je een voor een vrijspeelt. Elke stap krijgt goud, ijzer of brons naargelang je score.',
-    lpProduct2Title: 'Twaalf manieren om te herhalen',
+    lpProduct2Title: 'Dertien manieren om te herhalen',
     lpProduct2Body:
       'Hetzelfde blad komt in verschillende vormen terug, zodat je niet gewoon de volgorde van de antwoorden vanbuiten leert.',
     lpProduct3Title: 'Je fouten op één plek',
@@ -2398,7 +2399,7 @@ const strings = {
       'Een dag gespeeld, een dag extra in je reeks. De mijlpalen liggen op 3, 7 en 30 dagen.',
     lpGameAchTitle: 'Prestaties en kisten',
     lpGameAchBody:
-      'Veertig prestaties om vrij te spelen, elke dag een kist om te openen en munten voor bonussen.',
+      '{n} prestaties om vrij te spelen, elke dag een kist om te openen en munten voor bonussen.',
     lpProofTitle: 'Zij herhalen met ScanPlay',
     lpFaqTitle: 'De vragen die je je stelt',
     lpFaqSub: 'Staat het antwoord er niet bij? Schrijf ons.',
@@ -2703,7 +2704,8 @@ const strings = {
     guestScanBannerFoot: 'Gratis · studeer terwijl je speelt',
     guestScanBannerUsedTitle: 'Log in om verder te gaan',
     guestScanBannerUsedBody: 'Maak een gratis account om je fiches te bewaren en verder te gaan waar je was.',
-    guestScanMobileHint: 'Scan je fiche, speel meteen',
+    guestScanMobileHint: 'Scan je fiche, een gratis account om een stap te starten',
+    guestPlaySessionHint: 'Je spel is klaar. Een gratis account om een stap te starten — het komt in je historiek.',
     guestSignupTeaser: 'Gratis account · 2 scans/dag + historiek',
     guestAhaTitle: '🎉 Je spel is klaar!',
     guestAhaBody: 'Maak gratis een account om het te bewaren en te beginnen spelen.',
@@ -3482,7 +3484,7 @@ const strings = {
     lpProduct1Title: 'Un recorrido por ficha',
     lpProduct1Body:
       'Hasta diez etapas que desbloqueas una a una. Cada etapa se puntúa como oro, hierro o bronce según tu resultado.',
-    lpProduct2Title: 'Doce formas de repasar',
+    lpProduct2Title: 'Trece formas de repasar',
     lpProduct2Body:
       'La misma ficha vuelve en formatos distintos, para que no memorices solo el orden de las respuestas.',
     lpProduct3Title: 'Tus fallos en un solo sitio',
@@ -3511,7 +3513,7 @@ const strings = {
       'Un día jugado, un día más en tu racha. Los hitos llegan a los 3, 7 y 30 días.',
     lpGameAchTitle: 'Logros y cofres',
     lpGameAchBody:
-      'Cuarenta logros por desbloquear, un cofre que abrir cada día y monedas para gastar en mejoras.',
+      '{n} logros por desbloquear, un cofre que abrir cada día y monedas para gastar en mejoras.',
     lpProofTitle: 'Repasan con ScanPlay',
     lpFaqTitle: 'Las preguntas que te haces',
     lpFaqSub: 'Si la respuesta no está aquí, escríbenos.',
@@ -3816,7 +3818,8 @@ const strings = {
     guestScanBannerFoot: 'Gratis · repasa como si jugaras',
     guestScanBannerUsedTitle: 'Inicia sesión para continuar',
     guestScanBannerUsedBody: 'Crea una cuenta gratis para guardar tus fichas y retomar donde lo dejaste.',
-    guestScanMobileHint: 'Escanea tu ficha y juega al momento',
+    guestScanMobileHint: 'Escanea tu ficha; una cuenta gratis para lanzar un paso',
+    guestPlaySessionHint: 'Tu juego está listo. Una cuenta gratis para lanzar un paso: irá a tu historial.',
     guestSignupTeaser: 'Cuenta gratis · 2 escaneos/día + historial',
     guestAhaTitle: '🎉 ¡Tu juego está listo!',
     guestAhaBody: 'Crea tu cuenta gratis para recuperarlo y empezar a jugar.',
