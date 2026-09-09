@@ -511,6 +511,30 @@ html[data-device='desktop']:has(.app-shell--guest) body {
   height: 100%;
 }
 
+/* Guest import from the landing CTA: full viewport, no black phone gutters.
+   Logged-in Accueil import is unchanged (no app-shell--guest). */
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest):has(.import-screen),
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest):has(.import-screen) body,
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest):has(.import-screen) #root,
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest):has(.scanning-screen),
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest):has(.scanning-screen) body,
+html[data-device='desktop']:not([data-landing]):has(.app-shell--guest):has(.scanning-screen) #root {
+  background: var(--bg);
+}
+
+[data-device='desktop'] .app-shell.app-shell--guest:has(.import-screen),
+[data-device='desktop'] .app-shell.app-shell--guest:has(.scanning-screen) {
+  background: var(--bg);
+}
+
+[data-device='desktop'] .app-shell.app-shell--guest .app-main .screen.import-screen,
+[data-device='desktop'] .app-shell.app-shell--guest .app-main .screen.scanning-screen {
+  max-width: none;
+  margin-inline: 0;
+  width: 100%;
+  height: 100%;
+}
+
 @media (min-width: 900px) {
   .app-shell.app-shell--guest {
     max-width: none;

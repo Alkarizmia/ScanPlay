@@ -1793,6 +1793,22 @@ html[data-device="desktop"] .flashcard.flipped .back {
   width: min(100%, 420px);
   margin: 0 auto;
 }
+
+/* Guest import opened from the landing (mobile): sit the pick cards
+   under the header instead of floating in leftover viewport space. */
+[data-device='mobile'] .app-shell--guest .import-screen--pick .import-main--pick {
+  justify-content: flex-start;
+  gap: 12px;
+  padding-top: 8px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
+}
+[data-device='mobile'] .app-shell--guest .import-pick-actions {
+  width: 100%;
+  gap: 12px;
+}
+[data-device='mobile'] .app-shell--guest .import-card {
+  padding: 22px 18px;
+}
 .import-screen--pick,
 .import-screen--configure {
   position: relative;
