@@ -44,7 +44,7 @@ export function isReasoningVisionModel(model: string): boolean {
 }
 
 export function scanReasoningEffort(sheetType: string): 'medium' | 'high' {
-  if (sheetType === 'math' || sheetType === 'notes' || sheetType === 'definitions') {
+  if (sheetType === 'math') {
     return 'high';
   }
   return 'medium';

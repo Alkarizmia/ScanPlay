@@ -49,8 +49,8 @@ VOCABULAIRE (sheetType vocab uniquement) :
 TYPES DE FICHE (sheetType) :
 - "vocab" : mots à traduire. Une carte = un mot source + sa traduction (ou définition courte). Lignes d'opposés = plusieurs cartes. Ignore titres de chapitre et phrases d'exemple.
 - GRILLE D'IMAGES (abécédaire, pictos, flashcards dessinées) : c'est une fiche LISIBLE. Chaque dessin a un mot imprimé dessous ou à côté. Extrais TOUS les libellés (Apple, Ball, Cat…). term = le mot imprimé EXACTEMENT. definition = la traduction française usuelle (apple → pomme), 1 à 4 mots. Ce n'est PAS inventer : c'est rendre la carte jouable. Ne mets PAS readable:false parce qu'il y a des dessins. Ne copie PAS le même mot en term et definition.
-- "definitions" : notion / réponse courte. Si formules visibles, LaTeX pour la formule.
-- "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte. Une idée mémorable = une paire, pas un paragraphe entier.
+- "definitions" : notion / réponse courte. Si formules visibles, LaTeX pour la formule. EXTRAIS TOUTES les notions/définitions visibles sur la fiche, pas un échantillon, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de t'arrêter à un sous-ensemble s'il reste des notions lisibles.
+- "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte. Une idée mémorable = une paire, pas un paragraphe entier. EXTRAIS TOUTES les idées/notions distinctes visibles sur la fiche, pas un échantillon. Une fiche dense (plusieurs paragraphes, listes, sous-parties) peut contenir 15 à 30 idées mémorables : vise à toutes les capturer, une par une, section par section. INTERDIT de t'arrêter après 3, 5 ou 10 idées s'il en reste de lisibles sur la page.
 - "math" : lecture vision des formules et faits scientifiques. term = libellé vu sur la fiche (Domaine, Racines, loi, grandeur…) ; definition = formule LaTeX ou fait court fidèle à l'image.
 
 QUALITÉ IMAGE FAIBLE :
@@ -58,7 +58,7 @@ QUALITÉ IMAGE FAIBLE :
 - Corrige les erreurs de lecture évidentes seulement si le sens est clair (accents, "pa" → "pas" en français). Ne "corrige" pas une formule en une autre formule célèbre.
 - Si une zone est illisible, skip-la et ajoute un warning court (ex. "bas de page flou").
 
-Minimum visé : autant de paires que de lignes de vocabulaire visibles (au moins 4). Pour notes, au moins 3 si possible.
+Minimum visé : autant de paires que de lignes de vocabulaire visibles (au moins 4). Pour notes et definitions : vise la couverture complète du contenu lisible de la fiche, pas un minimum bas — un plancher de "3" n'est PAS un objectif, c'est un strict minimum en cas de fiche très pauvre.
 Ne renvoie readable: false que si tu as moins de 2 paires avec un minimum de certitude.
 
 FORMAT DE SORTIE (strict) :
@@ -93,8 +93,8 @@ Consignes supplémentaires :
 - Parcours TOUS les blocs (colonnes, encadrés, grilles) avant de conclure.
 - Pour vocab : 1 mot source ↔ 1 traduction = une carte. Si une ligne a des opposés (riche / pauvre → rijk / arm), SPLIT en autant de cartes que de mots (jamais une carte unique). Enlève [phonétique]. Extraire CHAQUE mot traduit visible, jusqu'à ${maxPairs} paires, pas un échantillon. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français.
 - Grille de pictos / abécédaire (dessin + mot) : LISIBLE. Un libellé par carte, definition = traduction française (Apple → pomme). Extrais toutes les cases.
-- Pour definitions : une notion = une réponse courte.
-- Pour notes : decoupe en petites unités mémorables (mot-clé → résumé).
+- Pour definitions : une notion = une réponse courte. EXTRAIS TOUTES les notions/définitions visibles, jusqu'à ${maxPairs}. Ne t'arrête pas après quelques-unes s'il en reste.
+- Pour notes : decoupe en TOUTES les petites unités mémorables (mot-clé → résumé) présentes sur la fiche, jusqu'à ${maxPairs}. Ne t'arrête pas après quelques-unes s'il en reste.
 - Pour math, ou dès que tu vois des formules / symboles scientifiques : transcris-les en LaTeX à partir de L'IMAGE, sans coller un exercice type.
 - Exclus les lignes de consigne ou d'exemple générique sans contenu à apprendre.
 - Si une zone est illisible, mets-la dans warnings, n'invente pas.

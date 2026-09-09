@@ -69,6 +69,7 @@ html[data-landing='true'] .screen.sp-landing {
 
 .sp-landing {
   --lp-bg: #0f172a;
+  --accent: #22c55e;
   --lp-bg-alt: #1e293b;
   --lp-surface: rgba(255, 255, 255, 0.045);
   --lp-surface-hi: rgba(255, 255, 255, 0.075);
@@ -85,6 +86,8 @@ html[data-landing='true'] .screen.sp-landing {
   --lp-max: 1120px;
   --lp-section-y: clamp(56px, 9vw, 104px);
   --lp-header-h: 60px;
+
+  font-family: Inter, system-ui, -apple-system, sans-serif;
 
   position: relative;
   isolation: isolate;
@@ -695,11 +698,34 @@ html[data-landing='true'] .screen.sp-landing {
   color: #ea580c;
   font-size: 0.72rem;
   font-weight: 800;
+  font-style: normal;
+  font-family: inherit;
 }
 
 .lp-mock-streak svg {
   width: 13px;
-  height: 13px;
+  height: auto;
+}
+
+.sp-landing .streak-flame {
+  display: block;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.sp-landing .streak-flame-core {
+  transform-origin: 16px 34px;
+  transform-box: fill-box;
+}
+
+.sp-landing .streak-flame--on .streak-flame-outer {
+  fill: #f97316;
+  stroke: #c2410c;
+  stroke-width: 0.85;
+}
+
+.sp-landing .streak-flame--on .streak-flame-core {
+  fill: #fde047;
 }
 
 .lp-mock-prompt {

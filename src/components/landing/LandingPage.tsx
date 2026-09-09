@@ -15,8 +15,6 @@ import {
 import { StepsSwipeDeck } from './StepsSwipeDeck';
 import { usePassed, useReveal } from './useReveal';
 import { trackEvent } from '../../lib/analytics';
-import { ACHIEVEMENTS } from '../../lib/achievements';
-import { t } from '../../lib/i18n';
 import { landingLangFromNavigator, lt, type LandingCopyKey } from '../../lib/landingI18n';
 import type { DeviceProfile } from '../../lib/device';
 import type { Locale } from '../../types';
@@ -71,6 +69,25 @@ const FAQ: { q: LandingCopyKey; a: LandingCopyKey }[] = [
   { q: 'lpFaq5Q', a: 'lpFaq5A' },
   { q: 'lpFaq6Q', a: 'lpFaq6A' },
 ];
+
+const GAME_TAGS: LandingCopyKey[] = [
+  'lpModeFlashcards',
+  'lpModeQuiz',
+  'lpModeMatch',
+  'lpModeType',
+  'lpModeSpeak',
+  'lpModeListen',
+  'lpModeTrueFalse',
+  'lpModeCloze',
+  'lpModeTranslate',
+  'lpModeDictation',
+  'lpModeListenPick',
+  'lpModeReorder',
+  'lpModeImagePick',
+];
+
+/** Keep in sync with ACHIEVEMENTS.length — landing must not import achievements.ts. */
+const LANDING_ACHIEVEMENT_COUNT = 44;
 
 function Section({
   id,
@@ -151,7 +168,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
 
           <div className="lp-header-actions">
             <button type="button" className="lp-btn lp-btn--ghost" onClick={login}>
-              {t('connect', locale)}
+              {lt('lpConnect', locale)}
             </button>
             {isDesktop && (
               <button
@@ -265,19 +282,9 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                 <h3>{lt('lpProduct2Title', locale)}</h3>
                 <p>{lt('lpProduct2Body', locale)}</p>
                 <ul className="lp-tags">
-                  <li>{t('flashcards', locale)}</li>
-                  <li>{t('quiz', locale)}</li>
-                  <li>{t('match', locale)}</li>
-                  <li>{t('modeType', locale)}</li>
-                  <li>{t('modeSpeak', locale)}</li>
-                  <li>{t('modeListen', locale)}</li>
-                  <li>{t('modeTrueFalse', locale)}</li>
-                  <li>{t('modeCloze', locale)}</li>
-                  <li>{t('modeTranslate', locale)}</li>
-                  <li>{t('modeDictation', locale)}</li>
-                  <li>{t('modeListenPick', locale)}</li>
-                  <li>{t('modeReorder', locale)}</li>
-                  <li>{t('modeImagePick', locale)}</li>
+                  {GAME_TAGS.map((key) => (
+                    <li key={key}>{lt(key, locale)}</li>
+                  ))}
                 </ul>
               </li>
               <li>
@@ -385,7 +392,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                   </span>
                   <div>
                     <h3>{lt('lpGameAchTitle', locale)}</h3>
-                    <p>{lt('lpGameAchBody', locale).replace('{n}', String(ACHIEVEMENTS.length))}</p>
+                    <p>{lt('lpGameAchBody', locale).replace('{n}', String(LANDING_ACHIEVEMENT_COUNT))}</p>
                   </div>
                 </li>
               </ul>
@@ -437,7 +444,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                   <p>{lt(item.a, locale)}</p>
                   {item.q === 'lpFaq6Q' && (
                     <a href="/privacy.html" className="lp-inline-link">
-                      {t('privacyOpen', locale)}
+                      {lt('lpPrivacy', locale)}
                     </a>
                   )}
                 </div>
@@ -463,7 +470,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <p className="lp-final-login">
               {lt('lpFinalHasAccount', locale)}{' '}
               <button type="button" className="lp-inline-link" onClick={login}>
-                {t('connect', locale)}
+                {lt('lpConnect', locale)}
               </button>
             </p>
           </div>
@@ -487,7 +494,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <div>
               <p className="lp-footer-nav-title">{lt('lpFooterHelp', locale)}</p>
               <a href="mailto:support@scanplay.org">support@scanplay.org</a>
-              <a href="/privacy.html">{t('privacyOpen', locale)}</a>
+              <a href="/privacy.html">{lt('lpPrivacy', locale)}</a>
             </div>
           </nav>
         </div>

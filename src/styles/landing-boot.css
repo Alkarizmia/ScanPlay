@@ -1,0 +1,79 @@
+/* Minimal chrome for the public landing before the SaaS CSS chunk loads. */
+
+:root {
+  --accent: #22c55e;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: #0f172a;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+.scanplay-logo {
+  display: block;
+  flex-shrink: 0;
+  object-fit: contain;
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.wordmark-text {
+  font-family: Inter, system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+  color: #f6faf8;
+}
+
+.wordmark-accent {
+  color: var(--accent);
+}
+
+.auth-session-boot {
+  min-height: 100dvh;
+  background: #0f172a;
+}
+
+.error-boundary-screen {
+  min-height: 100dvh;
+  display: grid;
+  place-content: center;
+  gap: 12px;
+  padding: 24px;
+  background: #0f172a;
+  color: #f6faf8;
+  font-family: Inter, system-ui, sans-serif;
+  text-align: center;
+}
+
+.error-boundary-screen button {
+  justify-self: center;
+  padding: 12px 20px;
+  border: 0;
+  border-radius: 12px;
+  background: #22c55e;
+  color: #052e16;
+  font-weight: 700;
+}

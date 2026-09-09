@@ -1,8 +1,6 @@
 import { StreakFlame } from '../icons/StreakFlame';
 import { MicIcon } from '../icons/MicIcon';
 import { lt, type LandingLang } from '../../lib/landingI18n';
-import { t } from '../../lib/i18n';
-import { buildPathD } from '../../lib/pathSteps';
 import type { Locale } from '../../types';
 
 /**
@@ -39,9 +37,9 @@ const REORDER_WRONG = ['dog', 'The', 'is', 'home'] as const;
 export function SheetMock({ locale }: { locale: Locale }) {
   return (
     <figure className="lp-sheet" aria-hidden="true">
-      <figcaption className="lp-sheet-label">{t('lpVisualSheet', locale)}</figcaption>
+      <figcaption className="lp-sheet-label">{lt('lpVisualSheet', locale)}</figcaption>
       <div className="lp-sheet-paper">
-        <p className="lp-sheet-title">{t('lpMockSheetTitle', locale)}</p>
+        <p className="lp-sheet-title">{lt('lpMockSheetTitle', locale)}</p>
         <ul className="lp-sheet-rows">
           {SHEET_ROWS.map((row) => (
             <li key={row.term}>
@@ -91,7 +89,7 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
 
           <div className="lp-demo-scenes">
             <div className="lp-demo-scene lp-demo-scene--quiz">
-              <p className="lp-mock-prompt">{t('lpMockPrompt', locale)}</p>
+              <p className="lp-mock-prompt">{lt('lpMockPrompt', locale)}</p>
               <p className="lp-mock-word">chien</p>
               <ul className="lp-mock-options">
                 {QUIZ_OPTIONS.map((option) => (
@@ -123,11 +121,11 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
                   <MicIcon size={18} />
                 </span>
               </div>
-              <p className="lp-demo-speak-status">{t('speakStatusListen', locale)}</p>
+              <p className="lp-demo-speak-status">{lt('lpSpeakListen', locale)}</p>
             </div>
 
             <div className="lp-demo-scene lp-demo-scene--reorder">
-              <p className="lp-mock-prompt">{t('reorderInstruction', locale)}</p>
+              <p className="lp-mock-prompt">{lt('lpReorderInstruction', locale)}</p>
               <p className="lp-demo-reorder-clue">{lt('lpMockReorderClue', locale)}</p>
               <div className="lp-demo-reorder-answer">
                 {REORDER_WRONG.map((word, index) => (
@@ -146,9 +144,9 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
               <div className="lp-demo-error">
                 <span className="lp-demo-error-mark">✕</span>
                 <span className="lp-demo-error-copy">
-                  <strong>{t('feedbackWrong', locale)}</strong>
+                  <strong>{lt('lpFeedbackWrong', locale)}</strong>
                   <span>
-                    {t('feedbackAnswerLabel', locale)} : {lt('lpMockReorderAnswer', locale)}
+                    {lt('lpFeedbackAnswer', locale)} : {lt('lpMockReorderAnswer', locale)}
                   </span>
                   <span>{lt('lpMockReorderNote', locale)}</span>
                 </span>
@@ -165,6 +163,19 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
   );
 }
 
+/** Same curve as `buildPathD` — inlined so the landing does not import path/game modules. */
+function buildLandingPathD(steps: { x: number; y: number }[]): string {
+  const points = steps.map((s) => ({ x: s.x, y: s.y }));
+  let d = `M ${points[0].x} ${points[0].y}`;
+  for (let i = 1; i < points.length; i += 1) {
+    const prev = points[i - 1];
+    const curr = points[i];
+    const midY = (prev.y + curr.y) / 2;
+    d += ` C ${prev.x} ${midY}, ${curr.x} ${midY}, ${curr.x} ${curr.y}`;
+  }
+  return d;
+}
+
 /** Phone showing the per-sheet path of steps. */
 const PATH_MOCK_NODES = [
   { state: 'bronze' as const, x: 28, y: 12 },
@@ -175,7 +186,7 @@ const PATH_MOCK_NODES = [
   { state: 'locked' as const, x: 72, y: 90 },
 ];
 
-const PATH_MOCK_D = buildPathD(PATH_MOCK_NODES);
+const PATH_MOCK_D = buildLandingPathD(PATH_MOCK_NODES);
 
 export function PathPhoneMock({ locale }: { locale: Locale }) {
   return (
@@ -186,8 +197,8 @@ export function PathPhoneMock({ locale }: { locale: Locale }) {
           <div className="lp-path-banner">
             <span className="lp-path-banner-thumb" />
             <span className="lp-path-banner-text">
-              <span className="lp-path-banner-tag">{t('lpMockSheetTitle', locale)}</span>
-              <span className="lp-path-banner-title">{t('lpMockPathSteps', locale)}</span>
+              <span className="lp-path-banner-tag">{lt('lpMockSheetTitle', locale)}</span>
+              <span className="lp-path-banner-title">{lt('lpMockPathSteps', locale)}</span>
             </span>
           </div>
 
@@ -252,12 +263,12 @@ export function ProgressCardMock({ locale }: { locale: Locale }) {
         </span>
         <span className="lp-progress-text">
           <strong>7</strong>
-          <span>{t('lpMockStreakLabel', locale)}</span>
+          <span>{lt('lpMockStreakLabel', locale)}</span>
         </span>
       </div>
       <div className="lp-progress-level">
         <span className="lp-progress-level-head">
-          <span>{t('lpMockLevelLabel', locale)} 4</span>
+          <span>{lt('lpMockLevelLabel', locale)} 4</span>
           <span>320 XP</span>
         </span>
         <span className="lp-progress-bar">

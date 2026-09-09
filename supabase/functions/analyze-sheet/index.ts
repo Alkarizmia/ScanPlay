@@ -31,9 +31,12 @@ interface AnalyzeBody {
 }
 
 function outputBudget(sheetType: string, maxPairs: number): number {
-  const scientific = sheetType === 'math' || sheetType === 'notes' || sheetType === 'definitions';
-  if (scientific) return 12000;
-  return Math.min(32000, 2000 + maxPairs * 90);
+  if (sheetType === 'math') return 12000;
+  const scaled = Math.min(32000, 2000 + maxPairs * 90);
+  if (sheetType === 'notes' || sheetType === 'definitions') {
+    return Math.max(12000, scaled);
+  }
+  return scaled;
 }
 
 function buildOpenAiBody(

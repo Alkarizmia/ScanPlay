@@ -1,4 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { initTheme } from './hooks/useTheme';
+import { restoreSavedAdConsent } from './lib/ads/consent';
+import { consumeBootIntent } from './lib/bootIntent';
+import './index.css';
+import './styles/design-system.css';
+import './styles/responsive.css';
+import './styles/lesson-profile.css';
+import './styles/game-ui.css';
+import './styles/mascot.css';
+import './styles/landing.css';
 import { AchievementUnlockModal } from './components/AchievementUnlockModal';
 import { AdConsentBanner } from './components/AdConsentBanner';
 import { AchievementsScreen } from './components/AchievementsScreen';
@@ -114,7 +124,6 @@ import { getExamPathBudgetSeconds } from './lib/examTimer';
 import { getPathStepCount } from './lib/planLimits';
 import { resolveAnalyticsScreen, trackEvent, trackScreen } from './lib/analytics';
 import { getLocale, setLocale, t } from './lib/i18n';
-import { warmupOcr } from './lib/ocr';
 import { extractPairsFromImage, isAiScanEnabled } from './lib/sheetAnalysis';
 import {
   canScan,
@@ -186,6 +195,9 @@ function loadBest(): Record<string, number> {
     return {};
   }
 }
+
+initTheme();
+restoreSavedAdConsent();
 
 function saveBest(mode: GameMode, score: number) {
   const all = loadBest();
@@ -382,11 +394,18 @@ export default function App() {
   }, [flow, tab]);
 
   useEffect(() => {
-    warmupOcr();
+    if (flow !== 'import' && flow !== 'scanning') return;
+    void import('./lib/ocr').then((m) => m.warmupOcr());
+  }, [flow]);
+
+  useEffect(() => {
     if (!sessionStorage.getItem('sp-audio-launched')) {
       sessionStorage.setItem('sp-audio-launched', '1');
       playSound('appLaunch');
     }
+    const bootIntent = consumeBootIntent();
+    if (bootIntent === 'scan') startScanFlow();
+    if (bootIntent === 'auth') openAuth('login');
     void initAuth(refresh);
     const unsubRecovery = onPasswordRecovery(() => {
       goToPasswordSettings();

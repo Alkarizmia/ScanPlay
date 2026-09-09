@@ -86,20 +86,22 @@ function splitAlignedVocabCells(text: string): string[] {
     .filter(Boolean);
 }
 
-export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
-  const source = options?.mathSheet ? pairs : expandAlignedVocabPairs(pairs);
+export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean; freeText?: boolean }): WordPair[] {
+  const freeText = options?.freeText === true;
+  const source = options?.mathSheet || freeText ? pairs : expandAlignedVocabPairs(pairs);
   const mapped = source
     .filter((p) => p.term?.trim() && p.definition?.trim())
     .map((p) => {
       const scientific = options?.mathSheet || isScientificPair(p);
-      const rawTerm = scientific ? p.term.trim() : stripVocabDecorations(p.term.trim());
-      let rawDef = scientific ? p.definition.trim() : stripVocabDecorations(p.definition.trim());
-      if (!scientific && rawTerm.toLowerCase() === rawDef.toLowerCase()) {
+      const keepRaw = scientific || freeText;
+      const rawTerm = keepRaw ? p.term.trim() : stripVocabDecorations(p.term.trim());
+      let rawDef = keepRaw ? p.definition.trim() : stripVocabDecorations(p.definition.trim());
+      if (!scientific && !freeText && rawTerm.toLowerCase() === rawDef.toLowerCase()) {
         const gloss = lookupVocabGloss(rawTerm);
         if (gloss) rawDef = gloss;
       }
-      const term = scientific ? rawTerm.slice(0, 120) : fixOcrLine(rawTerm).slice(0, 55);
-      const definition = scientific
+      const term = keepRaw ? rawTerm.slice(0, 120) : fixOcrLine(rawTerm).slice(0, 55);
+      const definition = keepRaw
         ? rawDef.slice(0, 280)
         : fixOcrLine(rawDef).slice(0, 120);
       return {
@@ -119,12 +121,12 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
         !isGarbageVocabTerm(p.definition) &&
         !isSectionTitle(p.term) &&
         !isSectionTitle(p.definition) &&
-        (!isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2) &&
-        (!isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2) &&
+        (options?.freeText || !isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2) &&
+        (options?.freeText || !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2) &&
         p.term.toLowerCase() !== p.definition.toLowerCase()
       );
     });
-  if (options?.mathSheet) return mapped;
+  if (options?.mathSheet || options?.freeText) return mapped;
   return dropSiblingOcrFragments(mapped);
 }
 
@@ -133,15 +135,16 @@ function pairKey(term: string, definition: string): string {
 }
 
 /** Pairs dropped as fragments or garbage — kept off the review list. */
-export function collectIgnoredAiPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean }): WordPair[] {
+export function collectIgnoredAiPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean; freeText?: boolean }): WordPair[] {
   const kept = new Set(mapAiPairsToWordPairs(pairs, options).map((p) => pairKey(p.term, p.definition)));
   return pairs
     .filter((p) => p.term?.trim() && p.definition?.trim())
     .map((p) => {
       const scientific = options?.mathSheet || isScientificPair(p);
+      const keepRaw = scientific || options?.freeText === true;
       return {
-        term: scientific ? p.term.trim().slice(0, 120) : fixOcrLine(p.term.trim()).slice(0, 55),
-        definition: scientific
+        term: keepRaw ? p.term.trim().slice(0, 120) : fixOcrLine(p.term.trim()).slice(0, 55),
+        definition: keepRaw
           ? p.definition.trim().slice(0, 280)
           : fixOcrLine(p.definition.trim()).slice(0, 120),
         termLang: normalizeLang(p.termLang),

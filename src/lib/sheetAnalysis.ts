@@ -28,26 +28,41 @@ export async function extractPairsFromImage(
   if (isAiScanEnabled()) {
     try {
       const ai = await analyzeSheetWithAi(file, sheetType);
+      // TEMP DEBUG
+      console.log('[SCAN DEBUG] brut IA:', ai?.pairs.length, 'sheetType:', sheetType);
       if (ai?.pairs.length) {
         const mathSheet = sheetType === 'math' || ai.sheetType === 'math';
-        const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet });
-        const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet });
-        const pairs = mathSheet
-          ? coercePlayablePairs(mapped, { mathSheet: true })
-          : coercePlayablePairs(
-              reconcileWordListPairs(
-                mapped,
-                ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n'),
-              ),
-            );
+        const resolvedType = ai.sheetType ?? sheetType;
+        const freeText = !mathSheet && (resolvedType === 'notes' || resolvedType === 'definitions');
+        const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet, freeText });
+        // TEMP DEBUG
+        console.log('[SCAN DEBUG] apres mapping:', mapped.length);
+        const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet, freeText });
+        let pairs: WordPair[];
+        if (mathSheet) {
+          pairs = coercePlayablePairs(mapped, { mathSheet: true });
+        } else if (freeText) {
+          pairs = coercePlayablePairs(mapped);
+        } else {
+          pairs = coercePlayablePairs(
+            reconcileWordListPairs(
+              mapped,
+              ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n'),
+            ),
+          );
+        }
+        // TEMP DEBUG
+        console.log('[SCAN DEBUG] final:', pairs.length);
         if (canOpenGamePath(pairs)) {
           return { pairs, source: 'ai', ignored };
         }
-        const fromLabels = collectGlossedLabelsFromText(
-          ai.pairs.map((p) => `${p.term} ${p.definition}`).join('\n'),
-        );
-        if (canOpenGamePath(fromLabels)) {
-          return { pairs: fromLabels, source: 'ai', ignored };
+        if (!freeText) {
+          const fromLabels = collectGlossedLabelsFromText(
+            ai.pairs.map((p) => `${p.term} ${p.definition}`).join('\n'),
+          );
+          if (canOpenGamePath(fromLabels)) {
+            return { pairs: fromLabels, source: 'ai', ignored };
+          }
         }
       }
     } catch {

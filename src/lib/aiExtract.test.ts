@@ -147,4 +147,94 @@ describe('aiExtract', () => {
     );
     expect(mapped).toHaveLength(3);
   });
+
+  it('keeps complete note sentences when freeText is true, and drops them in vocab mode', () => {
+    const pairs = [
+      {
+        term: 'Photosynthèse',
+        definition: 'La plante fabrique sa propre nourriture.',
+        termLang: 'fr' as const,
+        defLang: 'fr' as const,
+        confidence: 'high' as const,
+      },
+    ];
+
+    const asNotes = mapAiPairsToWordPairs(pairs, { freeText: true });
+    expect(asNotes.some((p) => p.term === 'Photosynthèse')).toBe(true);
+    expect(asNotes[0]?.definition).toBe('La plante fabrique sa propre nourriture.');
+
+    const asVocab = mapAiPairsToWordPairs(pairs, {});
+    expect(asVocab.some((p) => p.term === 'Photosynthèse')).toBe(false);
+  });
+
+  it('does not drop sibling OCR fragments when freeText is true', () => {
+    const pairs = [
+      {
+        term: 'photographie',
+        definition: 'prise de vue',
+        termLang: 'fr' as const,
+        defLang: 'fr' as const,
+        confidence: 'high' as const,
+      },
+      {
+        term: 'écriture',
+        definition: 'graphie',
+        termLang: 'fr' as const,
+        defLang: 'fr' as const,
+        confidence: 'high' as const,
+      },
+    ];
+
+    const asVocab = mapAiPairsToWordPairs(pairs, {});
+    expect(asVocab.some((p) => p.definition === 'graphie')).toBe(false);
+    expect(asVocab.some((p) => p.term === 'photographie')).toBe(true);
+
+    const asNotes = mapAiPairsToWordPairs(pairs, { freeText: true });
+    expect(asNotes).toHaveLength(2);
+    expect(asNotes.some((p) => p.term === 'photographie' && p.definition === 'prise de vue')).toBe(true);
+    expect(asNotes.some((p) => p.term === 'écriture' && p.definition === 'graphie')).toBe(true);
+  });
+
+  it('does not split slash-separated notes when freeText is true', () => {
+    const pairs = [
+      {
+        term: 'riche (adj) / pauvre (adj)',
+        definition: 'rijk / arm',
+        termLang: 'fr' as const,
+        defLang: 'nl' as const,
+        confidence: 'high' as const,
+      },
+    ];
+
+    const asVocab = mapAiPairsToWordPairs(pairs, {});
+    expect(asVocab).toHaveLength(2);
+
+    const asNotes = mapAiPairsToWordPairs(pairs, { freeText: true });
+    expect(asNotes).toHaveLength(1);
+    expect(asNotes[0]?.term).toBe('riche (adj) / pauvre (adj)');
+    expect(asNotes[0]?.definition).toBe('rijk / arm');
+  });
+
+  it('keeps note definitions longer than the vocab 120-char cap when freeText is true', () => {
+    const longDef =
+      "La photosynthèse convertit l'énergie lumineuse en énergie chimique stockée dans le glucose, ce qui permet aux plantes de produire leur propre matière organique.";
+    expect(longDef.length).toBeGreaterThan(120);
+
+    const pairs = [
+      {
+        term: 'Photosynthèse',
+        definition: longDef,
+        termLang: 'fr' as const,
+        defLang: 'fr' as const,
+        confidence: 'high' as const,
+      },
+    ];
+
+    const asVocab = mapAiPairsToWordPairs(pairs, {});
+    expect(asVocab.every((p) => p.definition.length <= 120)).toBe(true);
+
+    const asNotes = mapAiPairsToWordPairs(pairs, { freeText: true });
+    expect(asNotes[0]?.definition).toBe(longDef);
+    expect(asNotes[0]?.definition.length).toBeGreaterThan(120);
+  });
 });

@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import katex from 'katex';
+import 'katex/dist/katex.min.css';
 import { shouldRenderLatex, unwrapLatexDelimiters } from '../lib/mathText';
 
 interface FormulaTextProps {
