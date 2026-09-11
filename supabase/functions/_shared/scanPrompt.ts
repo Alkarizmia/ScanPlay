@@ -114,7 +114,8 @@ export const SCANPLAY_EXTRACT_JSON_SCHEMA = {
             defLang: { type: 'string', enum: ['nl', 'fr', 'en', 'es', 'unknown'] },
             confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
           },
-          required: ['term', 'definition', 'faces', 'termLang', 'defLang', 'confidence'],
+          /* faces optional: requiring it on every card bloated Free-model JSON and truncated dense sheets. */
+          required: ['term', 'definition', 'termLang', 'defLang', 'confidence'],
         },
       },
       warnings: { type: 'array', items: { type: 'string' } },
