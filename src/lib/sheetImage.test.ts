@@ -1,5 +1,13 @@
-import { describe, expect, it } from 'vitest';
-import { contentBoundingBox, scaleToMaxSide } from './sheetImage';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import * as scanPlatform from './scanPlatform';
+import {
+  contentBoundingBox,
+  isExplicitHeicOrHeif,
+  prepareSheetImageIos,
+  prepareSheetImageProven,
+  resolveSheetPrepareFn,
+  scaleToMaxSide,
+} from './sheetImage';
 
 function fillRect(
   pixels: Uint8ClampedArray,
@@ -60,5 +68,29 @@ describe('scaleToMaxSide', () => {
 
   it('caps the long side', () => {
     expect(scaleToMaxSide(4000, 3000, 2000)).toEqual({ w: 2000, h: 1500 });
+  });
+});
+
+describe('isExplicitHeicOrHeif', () => {
+  it('matches extension and MIME only', () => {
+    expect(isExplicitHeicOrHeif(new File([], 'photo.HEIC'))).toBe(true);
+    expect(isExplicitHeicOrHeif(new File([], 'photo.heif'))).toBe(true);
+    expect(isExplicitHeicOrHeif(new File([], 'x', { type: 'image/heic' }))).toBe(true);
+    expect(isExplicitHeicOrHeif(new File([], 'photo.jpg', { type: 'image/jpeg' }))).toBe(false);
+    expect(isExplicitHeicOrHeif(new File([], 'photo', { type: 'application/octet-stream' }))).toBe(false);
+  });
+});
+
+describe('prepareSheetImage router', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('selects iOS prepare on iOS and proven on Android/Windows', () => {
+    vi.spyOn(scanPlatform, 'isIosScanClient').mockReturnValue(true);
+    expect(resolveSheetPrepareFn()).toBe(prepareSheetImageIos);
+
+    vi.spyOn(scanPlatform, 'isIosScanClient').mockReturnValue(false);
+    expect(resolveSheetPrepareFn()).toBe(prepareSheetImageProven);
   });
 });

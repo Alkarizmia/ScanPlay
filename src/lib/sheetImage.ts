@@ -1,5 +1,7 @@
 /** Crop a phone photo down to the printed sheet before OCR / vision. */
 
+import { getScanPlatform, isIosScanClient } from './scanPlatform';
+
 export interface ContentBox {
   x: number;
   y: number;
@@ -91,11 +93,32 @@ export function scaleToMaxSide(width: number, height: number, maxSide: number): 
   };
 }
 
+/** Explicit HEIC/HEIF only — no brand sniff (that previously touched Android). */
+export function isExplicitHeicOrHeif(file: Blob & { name?: string; type?: string }): boolean {
+  const type = (file.type || '').toLowerCase();
+  if (type === 'image/heic' || type === 'image/heif') return true;
+  return /\.(heic|heif)$/i.test(file.name || '');
+}
+
+async function convertHeicToJpeg(file: File): Promise<File> {
+  const heic2any = (await import('heic2any')).default;
+  const converted = await heic2any({
+    blob: file,
+    toType: 'image/jpeg',
+    quality: 0.9,
+  });
+  const blob = Array.isArray(converted) ? converted[0] : converted;
+  if (!(blob instanceof Blob) || blob.size < 32) return file;
+  const base = (file.name || 'scan').replace(/\.(heic|heif)$/i, '') || 'scan';
+  return new File([blob], `${base}.jpg`, { type: 'image/jpeg', lastModified: file.lastModified });
+}
+
 interface DecodedSheet {
   source: CanvasImageSource;
   width: number;
   height: number;
   cleanup: () => void;
+  method: 'createImageBitmap' | 'image-element';
 }
 
 async function decodeSheetFile(file: File): Promise<DecodedSheet> {
@@ -107,6 +130,7 @@ async function decodeSheetFile(file: File): Promise<DecodedSheet> {
         width: bitmap.width,
         height: bitmap.height,
         cleanup: () => bitmap.close(),
+        method: 'createImageBitmap',
       };
     } catch {
       /* Image() fallback */
@@ -122,6 +146,7 @@ async function decodeSheetFile(file: File): Promise<DecodedSheet> {
         width: img.naturalWidth || img.width,
         height: img.naturalHeight || img.height,
         cleanup: () => URL.revokeObjectURL(url),
+        method: 'image-element',
       });
     };
     img.onerror = () => {
@@ -145,10 +170,11 @@ function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob>
   });
 }
 
-export async function prepareSheetImage(
+/** Exact 7aa0daa geometry (maxSide floor 1600 work canvas, desk-crop, EXIF from-image). */
+async function prepareSheetImageCore(
   file: File,
   options?: { maxSide?: number; quality?: number; contrast?: boolean },
-): Promise<PreparedSheetImage> {
+): Promise<PreparedSheetImage & { decodeMethod: DecodedSheet['method'] }> {
   const maxSide = options?.maxSide ?? 2000;
   const quality = options?.quality ?? 0.86;
   const decoded = await decodeSheetFile(file);
@@ -191,7 +217,7 @@ export async function prepareSheetImage(
     outCtx.drawImage(work, sx, sy, sw, sh, 0, 0, w, h);
     outCtx.filter = 'none';
     const blob = await canvasToJpeg(out, quality);
-    return { blob, width: w, height: h };
+    return { blob, width: w, height: h, decodeMethod: decoded.method };
   } finally {
     decoded.cleanup();
     work.width = 0;
@@ -199,6 +225,86 @@ export async function prepareSheetImage(
     out.width = 0;
     out.height = 0;
   }
+}
+
+/**
+ * Proven Android / Windows / other prepare path — behavior identical to 7aa0daa.
+ * Do not change workSide, EXIF options, or desk-crop here for iOS experiments.
+ */
+export async function prepareSheetImageProven(
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
+): Promise<PreparedSheetImage> {
+  const prepared = await prepareSheetImageCore(file, options);
+  console.info('[scan-prepare]', {
+    platform: getScanPlatform(),
+    path: 'proven',
+    decodeMethod: prepared.decodeMethod,
+    fileType: file.type || '',
+  });
+  return { blob: prepared.blob, width: prepared.width, height: prepared.height };
+}
+
+/**
+ * iOS-only fork: optional explicit HEIC→JPEG, then the same proven geometry.
+ * Smaller encode retries stay inside this function only.
+ */
+export async function prepareSheetImageIos(
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
+): Promise<PreparedSheetImage> {
+  let input = file;
+  let heicConverted = false;
+  if (isExplicitHeicOrHeif(file)) {
+    try {
+      input = await convertHeicToJpeg(file);
+      heicConverted = input !== file;
+    } catch {
+      /* Keep original; Safari may still decode some HEIC. */
+    }
+  }
+
+  const maxSide = options?.maxSide ?? 2000;
+  const quality = options?.quality ?? 0.86;
+  const contrast = options?.contrast;
+
+  const attempts: Array<{ maxSide: number; quality: number }> = [
+    { maxSide, quality },
+    { maxSide: Math.min(maxSide, 1400), quality: Math.min(quality, 0.82) },
+    { maxSide: Math.min(maxSide, 1100), quality: Math.min(quality, 0.78) },
+  ];
+
+  let lastError: unknown;
+  for (let i = 0; i < attempts.length; i += 1) {
+    const attempt = attempts[i]!;
+    try {
+      const prepared = await prepareSheetImageCore(input, { ...attempt, contrast });
+      console.info('[scan-prepare]', {
+        platform: 'ios',
+        path: 'ios',
+        decodeMethod: heicConverted ? `heic2any+${prepared.decodeMethod}` : prepared.decodeMethod,
+        fileType: file.type || '',
+        attempt: i + 1,
+      });
+      return { blob: prepared.blob, width: prepared.width, height: prepared.height };
+    } catch (error) {
+      lastError = error;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error('Image prepare failed');
+}
+
+/** Which prepare implementation the public router will call (for tests / diagnostics). */
+export function resolveSheetPrepareFn(): typeof prepareSheetImageProven {
+  return isIosScanClient() ? prepareSheetImageIos : prepareSheetImageProven;
+}
+
+/** Router: iOS → prepareSheetImageIos; Android / Windows / other → proven path unchanged. */
+export async function prepareSheetImage(
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
+): Promise<PreparedSheetImage> {
+  return resolveSheetPrepareFn()(file, options);
 }
 
 export async function blobToBase64(blob: Blob): Promise<string> {
