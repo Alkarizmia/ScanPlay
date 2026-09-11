@@ -1128,23 +1128,37 @@ html[data-device="desktop"] .flashcard.flipped .back {
 }
 .flashcard--die {
   perspective: none;
+  width: 100%;
 }
-.flashcard-face--single {
+.flashcard--die .flashcard-face--single {
   position: absolute;
   inset: 0;
   transform: none !important;
   backface-visibility: visible;
+  gap: 12px;
+  padding: 28px 24px 76px;
+  border: 1px solid var(--surface-border, rgba(15, 23, 42, 0.08));
+}
+.flashcard--die .card-text {
+  max-width: 100%;
+  width: 100%;
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 .flashcard-die-dots {
   display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
   gap: 6px;
-  margin-top: 16px;
+  margin-top: auto;
+  margin-bottom: 4px;
 }
 .flashcard-die-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   background: color-mix(in srgb, var(--text-muted) 35%, transparent);
+  flex-shrink: 0;
 }
 .flashcard-die-dot--on {
   background: var(--accent);
@@ -1152,6 +1166,17 @@ html[data-device="desktop"] .flashcard.flipped .back {
 }
 .flashcard--die-last .flashcard-face--single {
   border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
+}
+.flashcard--die .flashcard-hear {
+  bottom: 14px;
+  left: 14px;
+}
+.flashcard--die .card-hint {
+  left: 56px;
+  right: 16px;
+  bottom: 18px;
+  text-align: center;
+  line-height: 1.25;
 }
 .card-label {
   font-size: 0.75rem;

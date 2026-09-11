@@ -194,8 +194,11 @@ export function FlashcardsGame({
     <>
       <div className="game-body flashcards-body">
         <div
-          className={`flashcard-stage${leaving ? ` flashcard-stage--leave-${leaving}` : ''}`}
-          style={{ transform: `translateX(${dragX}px) rotate(${rot}deg)` }}
+          className={`flashcard-swipe-stage${leaving ? ` flashcard-swipe-stage--leave-${leaving}` : ''}`}
+          style={{
+            transform: `translateX(${dragX}px) rotate(${rot}deg)`,
+            transition: pointerStart.current ? 'none' : 'transform 0.2s ease',
+          }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
@@ -236,13 +239,6 @@ export function FlashcardsGame({
             <div className="flashcard-face flashcard-face--single">
               <span className="card-label">{faceLabel}</span>
               <FormulaText as="p" className="card-text" text={shown} />
-              <HearButton
-                text={shown}
-                lang={faceIndex === 0 ? resolveSpeakLang(current) : current.defLang}
-                locale={locale}
-                className="flashcard-hear"
-                iconOnly
-              />
               <div className="flashcard-die-dots" aria-hidden>
                 {sides.map((_, i) => (
                   <span
@@ -251,6 +247,19 @@ export function FlashcardsGame({
                   />
                 ))}
               </div>
+              <HearButton
+                text={shown}
+                lang={
+                  faceIndex === 0
+                    ? resolveSpeakLang(current)
+                    : faceIndex === sides.length - 1
+                      ? current.defLang
+                      : resolveSpeakLang(current)
+                }
+                locale={locale}
+                className="flashcard-hear"
+                iconOnly
+              />
               <span className="card-hint">
                 {lastFace ? t('cardTapToRestart', locale) : t('cardTapNextFace', locale)}
               </span>
