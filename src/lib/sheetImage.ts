@@ -70,8 +70,8 @@ export function contentBoundingBox(
 
   const rawW = maxX - minX;
   const rawH = maxY - minY;
-  const padX = Math.round(rawW * 0.06);
-  const padY = Math.round(rawH * 0.06);
+  const padX = Math.round(rawW * 0.08);
+  const padY = Math.round(rawH * 0.08);
   const x = Math.max(0, minX - padX);
   const y = Math.max(0, minY - padY);
   const w = Math.min(width - x, rawW + 2 * padX);
@@ -83,44 +83,76 @@ export function contentBoundingBox(
   return { x, y, w, h };
 }
 
+/**
+ * Count vertical ink bands (vocab columns / side-by-side lists).
+ * Multi-column sheets must not be desk-cropped aggressively or a whole list disappears.
+ */
+export function countInkColumnBands(
+  pixels: Uint8ClampedArray,
+  width: number,
+  height: number,
+): number {
+  if (width < 80 || height < 80) return 0;
+  const cols = Math.ceil(width / TEXT_CELL);
+  const scores = new Array<number>(cols).fill(0);
+
+  for (let cy = 0; cy < height; cy += TEXT_CELL) {
+    for (let cx = 0; cx < width; cx += TEXT_CELL) {
+      let minL = 255;
+      let maxL = 0;
+      let sum = 0;
+      let n = 0;
+      const yEnd = Math.min(height, cy + TEXT_CELL);
+      const xEnd = Math.min(width, cx + TEXT_CELL);
+      for (let y = cy; y < yEnd; y += 2) {
+        for (let x = cx; x < xEnd; x += 2) {
+          const i = (y * width + x) * 4;
+          const l = luminance(pixels[i], pixels[i + 1], pixels[i + 2]);
+          if (l < minL) minL = l;
+          if (l > maxL) maxL = l;
+          sum += l;
+          n += 1;
+        }
+      }
+      if (n === 0) continue;
+      const mean = sum / n;
+      const range = maxL - minL;
+      if (mean < 118 || range < 38) continue;
+      scores[Math.floor(cx / TEXT_CELL)] += 1;
+    }
+  }
+
+  const peak = Math.max(...scores, 0);
+  if (peak < 3) return 0;
+  const active = scores.map((s) => (s >= peak * 0.28 ? 1 : 0));
+  let bands = 0;
+  let inBand = false;
+  for (const a of active) {
+    if (a && !inBand) {
+      bands += 1;
+      inBand = true;
+    } else if (!a) {
+      inBand = false;
+    }
+  }
+  return bands;
+}
+
+/** Prefer full frame when several text columns are present (avoid cutting a list). */
+export function shouldSkipDeskCrop(
+  pixels: Uint8ClampedArray,
+  width: number,
+  height: number,
+): boolean {
+  return countInkColumnBands(pixels, width, height) >= 2;
+}
+
 export function scaleToMaxSide(width: number, height: number, maxSide: number): { w: number; h: number } {
   const scale = Math.min(1, maxSide / Math.max(width, height, 1));
   return {
     w: Math.max(1, Math.round(width * scale)),
     h: Math.max(1, Math.round(height * scale)),
   };
-}
-
-/** Explicit HEIC only — never sniff generic brands (that path regressed multi-column JPEGs). */
-export function looksLikeHeic(file: Blob & { name?: string; type?: string }): boolean {
-  const type = (file.type || '').toLowerCase();
-  if (
-    type === 'image/heic' ||
-    type === 'image/heif' ||
-    type === 'image/heic-sequence' ||
-    type === 'image/heif-sequence'
-  ) {
-    return true;
-  }
-  return /\.(heic|heif)$/i.test(file.name || '');
-}
-
-async function maybeConvertHeic(file: File): Promise<File> {
-  if (!looksLikeHeic(file)) return file;
-  try {
-    const heic2any = (await import('heic2any')).default;
-    const converted = await heic2any({
-      blob: file,
-      toType: 'image/jpeg',
-      quality: 0.9,
-    });
-    const blob = Array.isArray(converted) ? converted[0] : converted;
-    if (!(blob instanceof Blob) || blob.size < 32) return file;
-    const base = (file.name || 'scan').replace(/\.(heic|heif)$/i, '') || 'scan';
-    return new File([blob], `${base}.jpg`, { type: 'image/jpeg', lastModified: file.lastModified });
-  } catch {
-    return file;
-  }
 }
 
 interface DecodedSheet {
@@ -177,18 +209,13 @@ function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob>
   });
 }
 
-/**
- * Prepares the sheet image. JPEG/PNG path is the proven pre-regression pipeline.
- * HEIC (explicit mime/extension only) is converted first, then the same pipeline runs.
- */
 export async function prepareSheetImage(
   file: File,
   options?: { maxSide?: number; quality?: number; contrast?: boolean },
 ): Promise<PreparedSheetImage> {
   const maxSide = options?.maxSide ?? 2000;
   const quality = options?.quality ?? 0.86;
-  const input = await maybeConvertHeic(file);
-  const decoded = await decodeSheetFile(input);
+  const decoded = await decodeSheetFile(file);
   const work = document.createElement('canvas');
   const out = document.createElement('canvas');
 
@@ -206,12 +233,14 @@ export async function prepareSheetImage(
     let sh = dh;
     try {
       const sample = workCtx.getImageData(0, 0, dw, dh);
-      const box = contentBoundingBox(sample.data, dw, dh);
-      if (box) {
-        sx = box.x;
-        sy = box.y;
-        sw = box.w;
-        sh = box.h;
+      if (!shouldSkipDeskCrop(sample.data, dw, dh)) {
+        const box = contentBoundingBox(sample.data, dw, dh);
+        if (box) {
+          sx = box.x;
+          sy = box.y;
+          sw = box.w;
+          sh = box.h;
+        }
       }
     } catch {
       /* tainted canvas or getImageData unavailable */

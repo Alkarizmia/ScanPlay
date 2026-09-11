@@ -1,5 +1,5 @@
 /* ScanPlay — PWA shell. Network-first for HTML/JS so deploys never leave a blank screen. */
-const CACHE = 'scanplay-shell-v8';
+const CACHE = 'scanplay-shell-v9';
 const STATIC = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/logo.png'];
 
 self.addEventListener('install', (event) => {

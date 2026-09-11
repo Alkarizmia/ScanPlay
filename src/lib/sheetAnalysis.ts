@@ -27,9 +27,28 @@ async function extractViaOcr(
   return coercePlayablePairs(raw);
 }
 
-const MIN_AI_PAIRS_TO_SKIP_OCR = 8;
+const MIN_AI_PAIRS_TO_SKIP_OCR = 20;
+
+function pairIdentity(p: WordPair): string {
+  return `${p.term.trim().toLowerCase()}\t${p.definition.trim().toLowerCase()}`;
+}
+
+/** Union AI + OCR so a thin vision sample does not discard a fuller OCR pass. */
+function mergePairSets(a: WordPair[], b: WordPair[]): WordPair[] {
+  const seen = new Set<string>();
+  const out: WordPair[] = [];
+  for (const p of [...a, ...b]) {
+    const key = pairIdentity(p);
+    if (!p.term.trim() || !p.definition.trim() || seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
+  }
+  return out;
+}
 
 function betterPairSet(a: WordPair[], b: WordPair[]): WordPair[] {
+  const merged = mergePairSets(a, b);
+  if (merged.length >= Math.max(a.length, b.length)) return merged;
   if (a.length >= b.length) return a;
   return b;
 }
