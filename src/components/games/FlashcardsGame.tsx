@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { playSound } from '../../lib/sounds';
 import { getExamTimerSeconds } from '../../lib/examTimer';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
+import { getCardSides } from '../../lib/cardFaces';
 import { getLocale, t } from '../../lib/i18n';
 import { FormulaText } from '../FormulaText';
 import type { Locale, WordPair } from '../../types';
@@ -37,7 +38,7 @@ export function FlashcardsGame({
 }: FlashcardsGameProps) {
   const locale = getLocale() || localeProp;
   const [index, setIndex] = useState(0);
-  const [flipped, setFlipped] = useState(false);
+  const [faceIndex, setFaceIndex] = useState(0);
   const [known, setKnown] = useState(0);
   const [dragX, setDragX] = useState(0);
   const [leaving, setLeaving] = useState<'left' | 'right' | null>(null);
@@ -45,6 +46,8 @@ export function FlashcardsGame({
   const total = Math.min(pairs.length, examMode ? 10 : (maxItems ?? 8));
   const deck = pairs.slice(0, total);
   const current = deck[index];
+  const sides = useMemo(() => (current ? getCardSides(current) : []), [current]);
+  const lastFace = faceIndex >= sides.length - 1;
   const timerSeconds = examMode ? getExamTimerSeconds('flashcards', total) : 0;
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const knownRef = useRef(0);
@@ -57,6 +60,10 @@ export function FlashcardsGame({
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index + 1, total);
   }, [embedded, onStepProgress, index, total]);
+
+  useEffect(() => {
+    setFaceIndex(0);
+  }, [index]);
 
   useEffect(() => {
     if (!examMode || timerSeconds <= 0) return;
@@ -87,7 +94,6 @@ export function FlashcardsGame({
         registerAnswer('correct', { pathStep: stepIndex != null });
         markCorrected(current);
       } else {
-        // Self-assessment: "still learning" is a choice, not a mistake — no buzzer.
         registerAnswer('wrong', { silent: true });
         playSound('whoosh');
         recordMistake(current, 'flashcards', deckId ?? undefined, stepIndex ?? undefined);
@@ -100,7 +106,7 @@ export function FlashcardsGame({
       window.setTimeout(() => {
         setKnown(nextKnown);
         setIndex((i) => i + 1);
-        setFlipped(false);
+        setFaceIndex(0);
         setDragX(0);
         setLeaving(null);
         busyRef.current = false;
@@ -110,6 +116,11 @@ export function FlashcardsGame({
   );
 
   const commitSwipe = (gotIt: boolean) => {
+    if (!lastFace && sides.length > 2) {
+      setFaceIndex((i) => Math.min(i + 1, sides.length - 1));
+      playSound('reveal');
+      return;
+    }
     setLeaving(gotIt ? 'right' : 'left');
     setDragX(gotIt ? 280 : -280);
     answer(gotIt);
@@ -117,10 +128,13 @@ export function FlashcardsGame({
 
   const onCardActivate = () => {
     if (movedRef.current || busyRef.current) return;
-    setFlipped((f) => {
-      if (!f) playSound('reveal');
-      return !f;
-    });
+    if (lastFace) {
+      setFaceIndex(0);
+      playSound('whoosh');
+      return;
+    }
+    playSound('reveal');
+    setFaceIndex((i) => Math.min(i + 1, sides.length - 1));
   };
 
   const onPointerDown = (e: React.PointerEvent) => {
@@ -129,7 +143,6 @@ export function FlashcardsGame({
     lastPointerTypeRef.current = e.pointerType;
     pointerStart.current = { x: e.clientX, id: e.pointerId };
     movedRef.current = false;
-    // Mouse: do not capture — capture often swallows the click that flips the card.
     if (e.pointerType !== 'mouse') {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     }
@@ -162,40 +175,34 @@ export function FlashcardsGame({
     }
   };
 
-  if (!current) return null;
+  if (!current || sides.length < 2) return null;
 
-  const frontLabel =
-    current.termLang &&
-    current.defLang &&
-    current.termLang !== 'unknown' &&
-    current.defLang !== 'unknown'
-      ? `${current.termLang.toUpperCase()} → ${current.defLang.toUpperCase()}`
-      : t('cardTermLabel', locale);
-  const backLabel =
-    current.termLang &&
-    current.defLang &&
-    current.termLang !== 'unknown' &&
-    current.defLang !== 'unknown'
-      ? `${current.defLang.toUpperCase()}`
-      : t('cardMeaningLabel', locale);
-
-  const knownHint = Math.min(1, Math.max(0, dragX / SWIPE_COMMIT));
-  const reviewHint = Math.min(1, Math.max(0, -dragX / SWIPE_COMMIT));
-  const tilt = Math.max(-12, Math.min(12, dragX / 18));
+  const shown = sides[faceIndex] ?? current.term;
+  const faceLabel =
+    sides.length <= 2
+      ? faceIndex === 0
+        ? t('cardTermLabel', locale)
+        : t('cardMeaningLabel', locale)
+      : t('cardFaceStep', locale)
+          .replace('{i}', String(faceIndex + 1))
+          .replace('{n}', String(sides.length));
+  const rot = Math.max(-18, Math.min(18, dragX / 12));
+  const knownHint = Math.max(0, Math.min(1, dragX / SWIPE_COMMIT));
+  const reviewHint = Math.max(0, Math.min(1, -dragX / SWIPE_COMMIT));
 
   const body = (
     <>
       <div className="game-body flashcards-body">
         <div
-          className={`flashcard-swipe-stage${leaving ? ` flashcard-swipe-stage--leave-${leaving}` : ''}`}
-          style={{
-            transform: `translateX(${dragX}px) rotate(${tilt}deg)`,
-            transition: pointerStart.current ? 'none' : 'transform 0.2s ease',
-          }}
+          className={`flashcard-stage${leaving ? ` flashcard-stage--leave-${leaving}` : ''}`}
+          style={{ transform: `translateX(${dragX}px) rotate(${rot}deg)` }}
           onPointerDown={onPointerDown}
           onPointerMove={onPointerMove}
           onPointerUp={onPointerUp}
-          onPointerCancel={onPointerUp}
+          onPointerCancel={() => {
+            pointerStart.current = null;
+            setDragX(0);
+          }}
         >
           <span
             className="flashcard-swipe-stamp flashcard-swipe-stamp--known"
@@ -212,7 +219,7 @@ export function FlashcardsGame({
           <div
             role="button"
             tabIndex={0}
-            className={`flashcard ${flipped ? 'flipped' : ''}`}
+            className={`flashcard flashcard--die${lastFace ? ' flashcard--die-last' : ''}`}
             onClick={() => {
               if (lastPointerTypeRef.current === 'mouse') return;
               onCardActivate();
@@ -226,34 +233,33 @@ export function FlashcardsGame({
               if (e.key === 'ArrowLeft') commitSwipe(false);
             }}
           >
-            <div className="flashcard-face front">
-              <span className="card-label">{frontLabel}</span>
-              <FormulaText as="p" className="card-text" text={current.term} />
+            <div className="flashcard-face flashcard-face--single">
+              <span className="card-label">{faceLabel}</span>
+              <FormulaText as="p" className="card-text" text={shown} />
               <HearButton
-                text={current.term}
-                lang={resolveSpeakLang(current)}
+                text={shown}
+                lang={faceIndex === 0 ? resolveSpeakLang(current) : current.defLang}
                 locale={locale}
                 className="flashcard-hear"
                 iconOnly
               />
-              <span className="card-hint">{t('cardTapToFlip', locale)}</span>
-            </div>
-            <div className="flashcard-face back">
-              <span className="card-label">{backLabel}</span>
-              <FormulaText as="p" className="card-text" text={current.definition} />
-              <HearButton
-                text={current.definition}
-                lang={current.defLang}
-                locale={locale}
-                className="flashcard-hear"
-                iconOnly
-              />
+              <div className="flashcard-die-dots" aria-hidden>
+                {sides.map((_, i) => (
+                  <span
+                    key={`dot-${i}`}
+                    className={`flashcard-die-dot${i === faceIndex ? ' flashcard-die-dot--on' : ''}`}
+                  />
+                ))}
+              </div>
+              <span className="card-hint">
+                {lastFace ? t('cardTapToRestart', locale) : t('cardTapNextFace', locale)}
+              </span>
             </div>
           </div>
         </div>
       </div>
 
-      {flipped && (
+      {lastFace && (
         <div className="game-actions">
           <button type="button" className="btn-secondary" onClick={() => commitSwipe(false)}>
             {t('cardStillLearning', locale)}

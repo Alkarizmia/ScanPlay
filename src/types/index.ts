@@ -78,6 +78,11 @@ export const LOCALES: { code: Locale; label: string }[] = [
 export interface WordPair {
   term: string;
   definition: string;
+  /**
+   * Middle faces for multi-column sheets (conjugations, paradigms).
+   * Play order: term → faces[0] → … → definition (like a 3+ sided die).
+   */
+  faces?: string[];
   termLang?: LangCode;
   defLang?: LangCode;
   /** Emoji pictogram for concrete nouns (vocab games). */

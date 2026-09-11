@@ -120,6 +120,8 @@ body {
 .wordmark-text {
   font-family: 'Inter', system-ui, sans-serif;
   font-weight: 800;
+  /* Prefer main text color so "Scan" never washes out in light mode. */
+  color: var(--text, var(--logo-paper));
 }
 
 /* Premium press + hover */

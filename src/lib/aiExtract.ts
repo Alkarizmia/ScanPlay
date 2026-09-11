@@ -3,6 +3,7 @@ import { lookupVocabGloss } from './loanwordGlosses';
 import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
+import { normalizeFaces } from './cardFaces';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { getMaxWords } from './planLimits';
 import { blobToBase64, prepareSheetImage } from './sheetImage';
@@ -11,6 +12,7 @@ import type { LangCode, SheetType, WordPair } from '../types';
 export interface AiExtractPair {
   term: string;
   definition: string;
+  faces?: string[];
   termLang?: LangCode | 'unknown';
   defLang?: LangCode | 'unknown';
   confidence?: 'high' | 'medium' | 'low';
@@ -50,7 +52,7 @@ function normalizeVocabCell(text: string): string {
   if (s.split(/\s+/).length <= 3) {
     s = s.replace(/[.\s]+$/g, '');
   }
-  return s;
+  return repairOcrGlitches(s);
 }
 
 function vocabKey(text: string): string {
@@ -100,9 +102,57 @@ function splitAlignedVocabCells(text: string): string[] {
     .filter(Boolean);
 }
 
+function scoreNlToken(text: string): number {
+  let s = 0;
+  if (/\w+(lijk|heid|isch|achtig|eren|elen|atie)\b/i.test(text)) s += 2;
+  if (/\b(de|het|een|van|te|om|niet)\b/i.test(text)) s += 1;
+  if (/ij|oe|ui|aa|ee|oo/i.test(text)) s += 1;
+  return s;
+}
+
+function scoreFrToken(text: string): number {
+  let s = 0;
+  if (/[àâäéèêëïîôùûüç]/i.test(text)) s += 2;
+  if (/\b(le|la|les|un|une|des|du|et|à)\b/i.test(text)) s += 1;
+  if (/\w+(tion|ment|eux|euse)\b/i.test(text)) s += 1;
+  return s;
+}
+
+/** "emotioneel émotionnel" + "ontroerend émouvant" → two proper NL→FR cards. */
+export function splitFusedBilingualPair(pair: AiExtractPair): AiExtractPair[] {
+  const termParts = pair.term.trim().split(/\s+/).filter(Boolean);
+  const defParts = pair.definition.trim().split(/\s+/).filter(Boolean);
+  if (termParts.length !== 2 || defParts.length !== 2) return [pair];
+  if ((pair.faces?.length ?? 0) > 0) return [pair];
+
+  const [t0, t1] = termParts;
+  const [d0, d1] = defParts;
+  const termCross = scoreNlToken(t0) >= 1 && scoreFrToken(t1) >= 1;
+  const defCross = scoreNlToken(d0) >= 1 && scoreFrToken(d1) >= 1;
+  if (!termCross || !defCross) return [pair];
+
+  return [
+    { ...pair, term: t0, definition: t1, faces: [] },
+    { ...pair, term: d0, definition: d1, faces: [] },
+  ];
+}
+
+function repairOcrGlitches(text: string): string {
+  return text
+    .replace(/([a-zàâäéèêëïîôùûüç])!([a-zàâäéèêëïîôùûüç])/gi, '$1l$2')
+    .replace(/([a-zàâäéèêëïîôùûüç])!$/gi, '$1l')
+    .replace(/\bemotionee!/gi, 'emotioneel')
+    .replace(/\|+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean; freeText?: boolean }): WordPair[] {
   const freeText = options?.freeText === true;
-  const source = options?.mathSheet || freeText ? pairs : expandAlignedVocabPairs(pairs);
+  const expanded = options?.mathSheet || freeText ? pairs : expandAlignedVocabPairs(pairs);
+  const source = options?.mathSheet || freeText
+    ? expanded
+    : expanded.flatMap((p) => splitFusedBilingualPair(p));
   const mapped = source
     .filter((p) => p.term?.trim() && p.definition?.trim())
     .map((p) => {
@@ -118,9 +168,13 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
       const definition = keepRaw
         ? rawDef.slice(0, 280)
         : fixOcrLine(rawDef).slice(0, 120);
+      const faces = keepRaw
+        ? normalizeFaces(p.faces)
+        : normalizeFaces((p.faces ?? []).map((f) => normalizeVocabCell(f)));
       return {
         term,
         definition,
+        faces,
         termLang: normalizeLang(p.termLang),
         defLang: normalizeLang(p.defLang),
         quality: (p.confidence === 'low' ? 'uncertain' : 'trusted') as WordPair['quality'],
@@ -130,13 +184,24 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
       if (options?.mathSheet || isMathLikeText(p.term) || isMathLikeText(p.definition) || looksLikeLatex(p.term) || looksLikeLatex(p.definition)) {
         return p.term.toLowerCase() !== p.definition.toLowerCase();
       }
+      const termWords = p.term.split(/\s+/).length;
+      const defWords = p.definition.split(/\s+/).length;
+      const hasFaces = (p.faces?.length ?? 0) > 0;
+      /* Study phrases (I am coming / J'arrive) OK; long note definitions still dropped in vocab mode. */
+      const looksLikeNoteCard =
+        !options?.freeText &&
+        termWords <= 2 &&
+        defWords >= 5 &&
+        isExampleSentence(p.definition);
+      const allowPhrase = !looksLikeNoteCard && termWords <= 8 && defWords <= 8;
       return (
         !isGarbageVocabTerm(p.term) &&
         !isGarbageVocabTerm(p.definition) &&
         !isSectionTitle(p.term) &&
         !isSectionTitle(p.definition) &&
-        (options?.freeText || !isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2) &&
-        (options?.freeText || !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2) &&
+        (options?.freeText || hasFaces || allowPhrase || !isExampleSentence(p.term) || termWords <= 2) &&
+        (options?.freeText || hasFaces || allowPhrase || !isExampleSentence(p.definition) || defWords <= 2) &&
+        !looksLikeNoteCard &&
         p.term.toLowerCase() !== p.definition.toLowerCase() &&
         vocabKey(p.term) !== vocabKey(p.definition)
       );
@@ -192,13 +257,18 @@ export function parseAiExtractResponse(raw: unknown, fallbackSheetType?: SheetTy
     detectedLangs: Array.isArray(data.detectedLangs)
       ? data.detectedLangs.filter((l): l is string => typeof l === 'string')
       : [],
-    pairs: data.pairs.filter(
-      (p): p is AiExtractPair =>
-        typeof p === 'object' &&
-        p !== null &&
-        typeof (p as AiExtractPair).term === 'string' &&
-        typeof (p as AiExtractPair).definition === 'string',
-    ),
+    pairs: data.pairs
+      .filter(
+        (p): p is AiExtractPair =>
+          typeof p === 'object' &&
+          p !== null &&
+          typeof (p as AiExtractPair).term === 'string' &&
+          typeof (p as AiExtractPair).definition === 'string',
+      )
+      .map((p) => ({
+        ...p,
+        faces: normalizeFaces((p as AiExtractPair).faces) ?? [],
+      })),
     warnings: Array.isArray(data.warnings)
       ? data.warnings.filter((w): w is string => typeof w === 'string')
       : [],

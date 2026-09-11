@@ -131,6 +131,7 @@ body {
   letter-spacing: -0.03em;
   line-height: 1;
   white-space: nowrap;
+  color: var(--text, var(--logo-paper));
 }
 .wordmark--sidebar .wordmark-text {
   font-size: 1.15rem;
@@ -345,6 +346,9 @@ body {
 }
 .scanning-content-adventure {
   max-width: 380px;
+}
+.scanning-cancel {
+  margin-top: 28px;
 }
 .scanning-adventure-stage {
   display: flex;
@@ -1121,6 +1125,33 @@ html[data-device="desktop"] .flashcard.flipped .front {
 }
 html[data-device="desktop"] .flashcard.flipped .back {
   pointer-events: auto;
+}
+.flashcard--die {
+  perspective: none;
+}
+.flashcard-face--single {
+  position: absolute;
+  inset: 0;
+  transform: none !important;
+  backface-visibility: visible;
+}
+.flashcard-die-dots {
+  display: flex;
+  gap: 6px;
+  margin-top: 16px;
+}
+.flashcard-die-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-muted) 35%, transparent);
+}
+.flashcard-die-dot--on {
+  background: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-dim);
+}
+.flashcard--die-last .flashcard-face--single {
+  border: 2px solid color-mix(in srgb, var(--accent) 45%, transparent);
 }
 .card-label {
   font-size: 0.75rem;
@@ -3648,8 +3679,9 @@ html[data-device="desktop"] .flashcard.flipped .back {
   color: #fbbf24;
 }
 .plan-badge--free {
-  background: rgba(148, 163, 184, 0.2);
-  color: var(--text-muted);
+  background: color-mix(in srgb, var(--text) 8%, var(--bg-elevated));
+  color: var(--text);
+  border: 1px solid color-mix(in srgb, var(--text) 14%, transparent);
 }
 .plan-badge--plus {
   background: var(--accent-dim);
@@ -4440,6 +4472,22 @@ html[data-device="desktop"] .flashcard.flipped .back {
   font-size: 0.85rem;
   color: var(--text-muted);
   margin: 4px 0 8px;
+}
+.auth-age-confirm {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 4px 0 14px;
+  font-size: 0.88rem;
+  line-height: 1.4;
+  color: var(--text);
+  cursor: pointer;
+}
+.auth-age-confirm input {
+  margin-top: 3px;
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
 }
 .auth-resend {
   width: 100%;
@@ -9012,8 +9060,12 @@ html[data-device="desktop"] .flashcard.flipped .back {
   color: var(--text-muted);
   line-height: 1.45;
 }
+.ad-consent-actions {
+  display: flex;
+  gap: 8px;
+}
 .ad-consent-btn {
-  width: 100%;
+  flex: 1;
 }
 [data-device='desktop'] .ad-consent-banner {
   bottom: 16px;
@@ -9689,6 +9741,31 @@ html[data-device="desktop"] .flashcard.flipped .back {
   grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
   gap: 6px;
+}
+.review-card-pair--multi {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+}
+.review-card-side-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+.review-card-face {
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.review-card-faces-tag {
+  flex-basis: 100%;
+  margin-top: 2px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 .review-card-pair--edit {

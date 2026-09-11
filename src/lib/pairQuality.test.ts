@@ -10,6 +10,12 @@ import {
 import { fixOcrLine } from './vocabulary';
 
 describe('pairQuality', () => {
+  it('rejects bilingual section headers', () => {
+    expect(isSectionTitle('Maatschappij & conflict (société et conflit)')).toBe(true);
+    expect(isSectionTitle('Gevoelens & reacties (sentiments et réactions)')).toBe(true);
+    expect(isSectionTitle('de maatschappij')).toBe(false);
+  });
+
   it('rejects spelling hints and title fragments', () => {
     expect(isSpellingHintDefinition('…ritif')).toBe(true);
     expect(isSpellingHintDefinition('…nais')).toBe(true);

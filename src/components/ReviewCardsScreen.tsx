@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { t } from '../lib/i18n';
 import { canOpenGamePath } from '../lib/vocabulary';
+import { getCardSides, hasMultiFaceCard } from '../lib/cardFaces';
 import { FormulaText } from './FormulaText';
 import { BackIcon } from './icons/BackIcon';
 import type { Locale, WordPair } from '../types';
@@ -31,14 +32,29 @@ function clonePairs(pairs: WordPair[]): ReviewRow[] {
 }
 
 function toWordPair(row: ReviewRow): WordPair {
+  const faces = (row.faces ?? []).map((f) => f.trim()).filter(Boolean);
   return {
     term: row.term.trim(),
     definition: row.definition.trim(),
+    faces: faces.length > 0 ? faces : undefined,
     termLang: row.termLang,
     defLang: row.defLang,
     visual: row.visual,
     quality: row.quality,
   };
+}
+
+function facesDraft(row: ReviewRow): string {
+  return (row.faces ?? []).join(' · ');
+}
+
+function parseFacesDraft(raw: string): string[] | undefined {
+  const faces = raw
+    .split(/[·|,;/]+/)
+    .map((f) => f.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+  return faces.length > 0 ? faces : undefined;
 }
 
 export function ReviewCardsScreen({
@@ -208,11 +224,13 @@ export function ReviewCardsScreen({
             {rows.map((row) => {
               const unsure = row.quality === 'uncertain';
               const editing = editingId === row.id;
+              const sides = getCardSides(row);
+              const multi = hasMultiFaceCard(row);
               return (
                 <li
                   key={row.id}
                   id={`review-card-${row.id}`}
-                  className={`review-card-row${freshId === row.id ? ' review-card-row--fresh' : ''}${unsure ? ' review-card-row--unsure' : ''}`}
+                  className={`review-card-row${freshId === row.id ? ' review-card-row--fresh' : ''}${unsure ? ' review-card-row--unsure' : ''}${multi ? ' review-card-row--multi' : ''}`}
                 >
                   <div className="review-card-head">
                     {editing ? (
@@ -227,6 +245,15 @@ export function ReviewCardsScreen({
                         />
                         <input
                           className="review-card-input"
+                          value={facesDraft(row)}
+                          onChange={(e) => updateRow(row.id, { faces: parseFacesDraft(e.target.value) })}
+                          aria-label={t('cardFacesLabel', locale)}
+                          placeholder={t('cardFacesHint', locale)}
+                          autoCapitalize="none"
+                          autoComplete="off"
+                        />
+                        <input
+                          className="review-card-input"
                           value={row.definition}
                           onChange={(e) => updateRow(row.id, { definition: e.target.value })}
                           aria-label={t('cardMeaningLabel', locale)}
@@ -235,12 +262,23 @@ export function ReviewCardsScreen({
                         />
                       </div>
                     ) : (
-                      <div className="review-card-pair">
-                        <FormulaText className="review-card-term" text={row.term} />
-                        <span className="review-card-arrow" aria-hidden>
-                          →
-                        </span>
-                        <FormulaText className="review-card-def" text={row.definition} />
+                      <div className={`review-card-pair${multi ? ' review-card-pair--multi' : ''}`}>
+                        {sides.map((side, i) => (
+                          <span key={`${row.id}-side-${i}`} className="review-card-side-wrap">
+                            {i > 0 && (
+                              <span className="review-card-arrow" aria-hidden>
+                                →
+                              </span>
+                            )}
+                            <FormulaText
+                              className={i === 0 ? 'review-card-term' : i === sides.length - 1 ? 'review-card-def' : 'review-card-face'}
+                              text={side}
+                            />
+                          </span>
+                        ))}
+                        {multi && (
+                          <span className="review-card-faces-tag">{t('cardFacesBadge', locale).replace('{n}', String(sides.length))}</span>
+                        )}
                       </div>
                     )}
                     <span

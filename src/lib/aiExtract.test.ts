@@ -79,6 +79,67 @@ describe('aiExtract', () => {
     expect(mapped.find((p) => p.term.toUpperCase() === 'EVERY')?.definition.toUpperCase()).toBe('CHAQUE');
   });
 
+  it('splits fused NL+FR cells into two proper cards', () => {
+    const mapped = mapAiPairsToWordPairs([
+      {
+        term: 'emotioneel émotionnel',
+        definition: 'ontroerend émouvant',
+        termLang: 'nl',
+        defLang: 'fr',
+        confidence: 'medium',
+        faces: [],
+      },
+    ]);
+    expect(mapped.some((p) => p.term.toLowerCase() === 'emotioneel' && /motionnel/i.test(p.definition))).toBe(true);
+    expect(mapped.some((p) => p.term.toLowerCase() === 'ontroerend' && /mouvant/i.test(p.definition))).toBe(true);
+  });
+
+  it('keeps conjugation faces on mapped cards', () => {
+    const mapped = mapAiPairsToWordPairs([
+      {
+        term: 'kunnen',
+        definition: 'pouvoir',
+        faces: ['kon', 'konden', 'gekund'],
+        termLang: 'nl',
+        defLang: 'fr',
+        confidence: 'high',
+      },
+    ]);
+    expect(mapped[0]?.faces).toEqual(['kon', 'konden', 'gekund']);
+  });
+
+  it('keeps short English–French phrase pairs in vocab mode', () => {
+    const mapped = mapAiPairsToWordPairs([
+      {
+        term: 'I am coming.',
+        definition: "J'arrive.",
+        termLang: 'en',
+        defLang: 'fr',
+        confidence: 'high',
+        faces: [],
+      },
+      {
+        term: 'Who knows?',
+        definition: 'Qui sait?',
+        termLang: 'en',
+        defLang: 'fr',
+        confidence: 'high',
+        faces: [],
+      },
+      {
+        term: "It's funny.",
+        definition: "C'est marrant.",
+        termLang: 'en',
+        defLang: 'fr',
+        confidence: 'high',
+        faces: [],
+      },
+    ]);
+    expect(mapped.length).toBeGreaterThanOrEqual(2);
+    expect(mapped.some((p) => /coming/i.test(p.term))).toBe(true);
+    expect(mapped.some((p) => /funny/i.test(p.term))).toBe(true);
+  });
+
   it('glosses identical picture-label pairs from vision JSON', () => {
     const mapped = mapAiPairsToWordPairs([
       { term: 'Apple', definition: 'Apple', termLang: 'en', defLang: 'en', confidence: 'high' },

@@ -62,6 +62,13 @@ export function isSectionTitle(text: string): boolean {
   if (/^(le|la|les)\s+r[eè]gne\b/i.test(t)) return true;
   if (/^woordenschat\b/i.test(t)) return true;
   if (/^vocabulaire\b/i.test(t) && t.split(/\s+/).length <= 6) return true;
+  /* "Maatschappij & conflict (société et conflit)" style bilingual section headers */
+  if (/\([^)]{3,40}\)/.test(t) && /\b(et|and|en|&)\b/i.test(t) && t.split(/\s+/).length <= 10) {
+    return true;
+  }
+  if (/^[A-ZÀ-Ÿ][\wàâäéèêëïîôùûüç'-]*\s*&\s*[a-zàâäéèêëïîôùûüç'-]+/i.test(t) && t.length <= 48) {
+    return true;
+  }
   return false;
 }
 
@@ -96,7 +103,7 @@ export function isGarbageVocabTerm(text: string): boolean {
   if (
     /^[a-z]{1,2}\s+[a-zà-]/i.test(t) &&
     t.length <= 14 &&
-    !/^(de|het|een|le|la|les|un|une|du|des|au|en|te|om|op|il|je|tu|a|an|the|to|my)\s+/i.test(t)
+    !/^(de|het|een|le|la|les|un|une|du|des|au|en|te|om|op|il|je|tu|a|an|the|to|my|i|we|you|he|she|they|it|me|my|no)\s+/i.test(t)
   ) {
     return true;
   }
