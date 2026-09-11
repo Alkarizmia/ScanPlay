@@ -118,7 +118,7 @@ Deno.serve(async (req) => {
   try {
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiKey) {
-      return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
+      return new Response(JSON.stringify({ error: 'analysis_unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -167,7 +167,9 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json()) as AnalyzeBody;
-    const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab', maxPairs: requestedMax } = body;
+    const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab' } = body;
+
+    // Image stays in this request only. It is not written to Storage or the database.
 
     if (!imageBase64 || typeof imageBase64 !== 'string') {
       return new Response(JSON.stringify({ error: 'imageBase64 required' }), {
@@ -177,10 +179,7 @@ Deno.serve(async (req) => {
     }
 
     const planCap = PLAN_LIMITS[plan].maxWords;
-    const maxPairs = Math.min(
-      planCap,
-      Math.max(4, Number.isFinite(Number(requestedMax)) ? Number(requestedMax) : planCap),
-    );
+    const maxPairs = planCap;
 
     const model = resolveScanModel(plan);
     const firstDetail = scanImageDetail(model);
@@ -197,7 +196,8 @@ Deno.serve(async (req) => {
     }
 
     if (!openaiCall.ok) {
-      return new Response(JSON.stringify({ error: 'OpenAI request failed', detail: openaiCall.text }), {
+      console.error('analyze-sheet upstream failed', openaiCall.status);
+      return new Response(JSON.stringify({ error: 'analysis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -209,7 +209,7 @@ Deno.serve(async (req) => {
     try {
       openaiJson = JSON.parse(openaiCall.text) as typeof openaiJson;
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid OpenAI envelope' }), {
+      return new Response(JSON.stringify({ error: 'analysis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -218,7 +218,7 @@ Deno.serve(async (req) => {
     const content = openaiJson?.choices?.[0]?.message?.content;
 
     if (!content || typeof content !== 'string') {
-      return new Response(JSON.stringify({ error: 'Empty OpenAI response' }), {
+      return new Response(JSON.stringify({ error: 'analysis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -228,7 +228,7 @@ Deno.serve(async (req) => {
     try {
       parsed = JSON.parse(content);
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON from OpenAI', raw: content }), {
+      return new Response(JSON.stringify({ error: 'analysis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

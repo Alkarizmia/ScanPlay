@@ -13,7 +13,13 @@ const SEPARATORS = /[-–—:|=•·]/;
 const NUMBER_PREFIX = /^\d+[\.\)\]]\s*/;
 
 function cleanLine(line: string): string {
-  return fixOcrLine(line.replace(NUMBER_PREFIX, '').trim());
+  return fixOcrLine(
+    line
+      .replace(NUMBER_PREFIX, '')
+      .replace(/^[^\p{L}\p{N}(]+/u, '')
+      .replace(/[.\s]+$/g, '')
+      .trim(),
+  );
 }
 
 function isBasicPair(pair: WordPair): boolean {
@@ -31,7 +37,7 @@ function parseLinePair(line: string): WordPair | null {
 
   const parts = cleaned
     .split(SEPARATORS)
-    .map((p) => p.trim())
+    .map((p) => p.replace(/^[^\p{L}\p{N}(]+/u, '').replace(/[.\s]+$/g, '').trim())
     .filter(Boolean);
 
   if (parts.length >= 2) {

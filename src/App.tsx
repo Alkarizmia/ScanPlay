@@ -124,6 +124,7 @@ import { getExamPathBudgetSeconds } from './lib/examTimer';
 import { getPathStepCount } from './lib/planLimits';
 import { resolveAnalyticsScreen, trackEvent, trackScreen } from './lib/analytics';
 import { getLocale, setLocale, t } from './lib/i18n';
+import { isAbortError } from './lib/abort';
 import { extractPairsFromImage, isAiScanEnabled } from './lib/sheetAnalysis';
 import {
   canScan,
@@ -265,6 +266,8 @@ export default function App() {
   const [sharedPathRoom, setSharedPathRoom] = useState<MultiplayerRoom | null>(null);
   const [mpScore, setMpScore] = useState({ score: 0, total: 0 });
   const pendingMultiplayerScanRef = useRef(false);
+  const scanAbortRef = useRef<AbortController | null>(null);
+  const flowRef = useRef(flow);
   const unlockQueueRef = useRef<AchievementDef[]>([]);
   const [lessonSession, setLessonSession] = useState<LessonSession | null>(null);
   const [lessonStartIndex, setLessonStartIndex] = useState(0);
@@ -317,6 +320,10 @@ export default function App() {
       setTab('home');
     }
   }, [refreshKey, tab, flow]);
+
+  useEffect(() => {
+    flowRef.current = flow;
+  }, [flow]);
 
   useEffect(() => {
     if (!isLoggedIn() || !isSocialAvailable()) return;
@@ -474,6 +481,8 @@ export default function App() {
   }, [showToast]);
 
   const closeFlow = () => {
+    scanAbortRef.current?.abort();
+    scanAbortRef.current = null;
     if (!isLoggedIn()) {
       clearGuestPlaySession();
     }
@@ -598,6 +607,17 @@ export default function App() {
   /** Set only by the dev-only `window.scanplayDemo()` shortcut. */
   const devGuestBypass = useRef(false);
 
+  const cancelScan = useCallback(() => {
+    scanAbortRef.current?.abort();
+    scanAbortRef.current = null;
+    setPendingImportFiles(null);
+    setScanProgress(0);
+    setScanStatus('');
+    setImportError(null);
+    markNavReplace();
+    setFlow('import');
+  }, []);
+
   const requireAuth = useCallback((): boolean => {
     if (isLoggedIn()) return true;
     setAuthInitialMode('login');
@@ -649,6 +669,7 @@ export default function App() {
       markNavReplace();
       setScanProgress(0);
       setScanStatus('');
+      setPendingImportFiles(null);
       setImportError(message);
       setFlow('import');
       clearImportErrorSoon();
@@ -887,22 +908,18 @@ export default function App() {
           showToast(t('scanLastWarning', locale));
         }
         if (files.length > 1) recordMultiScan();
-        const batchSize = files.length;
-        for (let s = 0; s < batchSize; s += 1) {
-          if (!canScan()) {
-            setUpgradeReason('scans');
-            return;
-          }
-          recordScan();
-        }
       } else {
         if (dropped > 0 || files.length > 1) {
           showToast(t('guestScanSingleOnly', locale));
         }
-        recordGuestScan();
       }
 
       const scanFiles = guestScan ? files.slice(0, 1) : files;
+      setPendingImportFiles(null);
+
+      scanAbortRef.current?.abort();
+      const ac = new AbortController();
+      scanAbortRef.current = ac;
 
       setFlow('scanning');
       playSound('scanStart');
@@ -927,19 +944,23 @@ export default function App() {
       }, 250);
 
       const finishWithFallback = () => {
-        if (finished) return;
+        if (finished || ac.signal.aborted) return;
         finished = true;
-        clearInterval(tick);
-        clearTimeout(safetyTimer);
+        ac.abort();
         failImport(t('ocrEmpty', locale));
       };
 
-      const safetyTimer = window.setTimeout(finishWithFallback, 55_000 + scanFiles.length * 12_000);
+      const aiScan = isAiScanEnabled() && !guestScan;
+      const safetyMs = aiScan
+        ? 180_000 + Math.max(0, scanFiles.length - 1) * 40_000
+        : 80_000 + Math.max(0, scanFiles.length - 1) * 20_000;
+      const safetyTimer = window.setTimeout(finishWithFallback, safetyMs);
 
       try {
         const allPairs: WordPair[] = [];
         const allIgnored: WordPair[] = [];
         for (let i = 0; i < scanFiles.length; i += 1) {
+          if (ac.signal.aborted) return;
           setScanStatus(
             scanFiles.length > 1
               ? t('readingMultiProgress', locale)
@@ -949,22 +970,37 @@ export default function App() {
                 ? t('scanningAi', locale)
                 : t('reading', locale),
           );
-          const { pairs, source, ignored } = await extractPairsFromImage(scanFiles[i], sheetType);
+          const { pairs, source, ignored } = await extractPairsFromImage(
+            scanFiles[i],
+            sheetType,
+            ac.signal,
+          );
           if (source === 'ocr' && isAiScanEnabled() && i === 0) {
             setScanStatus(t('reading', locale));
           }
           allPairs.push(...pairs);
           if (ignored?.length) allIgnored.push(...ignored);
         }
-        if (finished) return;
+        if (finished || ac.signal.aborted) return;
+        const playable = coercePlayablePairs(allPairs);
+        if (canOpenGamePath(playable)) {
+          if (guestScan) recordGuestScan();
+          else {
+            for (let s = 0; s < scanFiles.length; s += 1) recordScan();
+          }
+        }
         finished = true;
-        clearInterval(tick);
-        clearTimeout(safetyTimer);
         setScanProgress(95);
         setScanStatus(t('building', locale));
-        finishExtracted(coercePlayablePairs(allPairs), thumbnail, false, allIgnored);
-      } catch {
+        finishExtracted(playable, thumbnail, false, allIgnored);
+      } catch (error) {
+        if (isAbortError(error) || ac.signal.aborted) return;
         finishWithFallback();
+      } finally {
+        clearInterval(tick);
+        clearTimeout(safetyTimer);
+        scanFiles.splice(0, scanFiles.length);
+        if (scanAbortRef.current === ac) scanAbortRef.current = null;
       }
     },
     [locale, finishExtracted, showToast, requireAuth, sheetType, failImport],
@@ -1734,6 +1770,11 @@ export default function App() {
   );
 
   const applyNavSnapshot = useCallback((s: AppNavSnapshot) => {
+    if (flowRef.current === 'scanning' && s.flow !== 'scanning') {
+      scanAbortRef.current?.abort();
+      scanAbortRef.current = null;
+      setPendingImportFiles(null);
+    }
     setTab(s.tab);
     setFlow(s.flow);
     setMode(s.mode);
@@ -2002,6 +2043,7 @@ export default function App() {
             setTab('home');
             refresh();
           }}
+          onAccountDeleted={() => showToast(t('deleteAccountDone', locale))}
           onPricing={() => setFlow('pricing')}
           onRefresh={refresh}
           highlightPasswordRecovery={passwordRecoveryHighlight}
@@ -2029,6 +2071,7 @@ export default function App() {
           locale={locale}
           progress={scanProgress}
           status={scanStatus || t('scanning', locale)}
+          onCancel={cancelScan}
         />
       )}
       {flow === 'reviewCards' && (

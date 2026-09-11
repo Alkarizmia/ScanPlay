@@ -1,3 +1,4 @@
+import { isAbortError, throwIfAborted } from './abort';
 import { analyzeSheetWithAi, collectIgnoredAiPairs, isAiScanEnabled, mapAiPairsToWordPairs } from './aiExtract';
 import { collectGlossedLabelsFromText, reconcileWordListPairs } from './columnParser';
 import { extractTextFromImage } from './ocr';
@@ -15,28 +16,41 @@ export interface ExtractPairsResult {
   ignored?: WordPair[];
 }
 
-async function extractViaOcr(file: File, sheetType: SheetType): Promise<WordPair[]> {
-  const text = await extractTextFromImage(file, sheetType);
+async function extractViaOcr(
+  file: File,
+  sheetType: SheetType,
+  signal?: AbortSignal,
+): Promise<WordPair[]> {
+  const text = await extractTextFromImage(file, sheetType, signal);
+  throwIfAborted(signal);
   const raw = parseContent(text, sheetType);
   return coercePlayablePairs(raw);
+}
+
+const MIN_AI_PAIRS_TO_SKIP_OCR = 8;
+
+function betterPairSet(a: WordPair[], b: WordPair[]): WordPair[] {
+  if (a.length >= b.length) return a;
+  return b;
 }
 
 export async function extractPairsFromImage(
   file: File,
   sheetType: SheetType,
+  signal?: AbortSignal,
 ): Promise<ExtractPairsResult> {
+  throwIfAborted(signal);
+  let aiResult: ExtractPairsResult | null = null;
+
   if (isAiScanEnabled()) {
     try {
-      const ai = await analyzeSheetWithAi(file, sheetType);
-      // TEMP DEBUG
-      console.log('[SCAN DEBUG] brut IA:', ai?.pairs.length, 'sheetType:', sheetType);
+      const ai = await analyzeSheetWithAi(file, sheetType, signal);
+      throwIfAborted(signal);
       if (ai?.pairs.length) {
         const mathSheet = sheetType === 'math' || ai.sheetType === 'math';
         const resolvedType = ai.sheetType ?? sheetType;
         const freeText = !mathSheet && (resolvedType === 'notes' || resolvedType === 'definitions');
         const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet, freeText });
-        // TEMP DEBUG
-        console.log('[SCAN DEBUG] apres mapping:', mapped.length);
         const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet, freeText });
         let pairs: WordPair[];
         if (mathSheet) {
@@ -51,25 +65,38 @@ export async function extractPairsFromImage(
             ),
           );
         }
-        // TEMP DEBUG
-        console.log('[SCAN DEBUG] final:', pairs.length);
         if (canOpenGamePath(pairs)) {
-          return { pairs, source: 'ai', ignored };
-        }
-        if (!freeText) {
+          if (mathSheet || pairs.length >= MIN_AI_PAIRS_TO_SKIP_OCR) {
+            return { pairs, source: 'ai', ignored };
+          }
+          aiResult = { pairs, source: 'ai', ignored };
+        } else if (!freeText) {
           const fromLabels = collectGlossedLabelsFromText(
             ai.pairs.map((p) => `${p.term} ${p.definition}`).join('\n'),
           );
           if (canOpenGamePath(fromLabels)) {
-            return { pairs: fromLabels, source: 'ai', ignored };
+            aiResult = { pairs: fromLabels, source: 'ai', ignored };
           }
         }
       }
-    } catch {
+    } catch (error) {
+      if (isAbortError(error)) throw error;
       /* fallback OCR */
     }
   }
 
-  const pairs = await extractViaOcr(file, sheetType);
-  return { pairs, source: 'ocr' };
+  throwIfAborted(signal);
+  try {
+    const ocrPairs = await extractViaOcr(file, sheetType, signal);
+    throwIfAborted(signal);
+    if (aiResult) {
+      const best = betterPairSet(aiResult.pairs, ocrPairs);
+      return best === aiResult.pairs ? aiResult : { pairs: ocrPairs, source: 'ocr', ignored: aiResult.ignored };
+    }
+    return { pairs: ocrPairs, source: 'ocr' };
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    if (aiResult) return aiResult;
+    throw error;
+  }
 }

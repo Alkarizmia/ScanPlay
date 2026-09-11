@@ -1,6 +1,8 @@
 import Tesseract, { PSM } from 'tesseract.js';
 import type { SheetType } from '../types';
 import { mergeDualColumnOcr } from './columnParser';
+import { throwIfAborted } from './abort';
+import { prepareSheetImage } from './sheetImage';
 
 const OCR_TIMEOUT_MS = 22_000;
 
@@ -99,37 +101,9 @@ function countShortWords(text: string): number {
     .filter((w) => w.length >= 3 && w.length <= 16).length;
 }
 
-function loadSizedImage(file: File, maxWidth = 1200): Promise<SizedImage> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      const scale = Math.min(1, maxWidth / img.width);
-      const w = Math.round(img.width * scale);
-      const h = Math.round(img.height * scale);
-      const canvas = document.createElement('canvas');
-      canvas.width = w;
-      canvas.height = h;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        URL.revokeObjectURL(url);
-        reject(new Error('Canvas unavailable'));
-        return;
-      }
-      ctx.drawImage(img, 0, 0, w, h);
-      URL.revokeObjectURL(url);
-      canvas.toBlob(
-        (blob) => (blob ? resolve({ blob, width: w, height: h }) : reject(new Error('Resize failed'))),
-        'image/jpeg',
-        0.82,
-      );
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Image load failed'));
-    };
-    img.src = url;
-  });
+async function loadSizedImage(file: File, maxWidth = 1600): Promise<SizedImage> {
+  const prepared = await prepareSheetImage(file, { maxSide: maxWidth, quality: 0.86, contrast: true });
+  return { blob: prepared.blob, width: prepared.width, height: prepared.height };
 }
 
 async function cropBlob(source: Blob, sx: number, sy: number, sw: number, sh: number): Promise<Blob> {
@@ -149,7 +123,12 @@ async function cropBlob(source: Blob, sx: number, sy: number, sw: number, sh: nu
       ctx.drawImage(img, sx, sy, sw, sh, 0, 0, sw, sh);
       URL.revokeObjectURL(url);
       canvas.toBlob(
-        (blob) => (blob ? resolve(blob) : reject(new Error('Crop failed'))),
+        (blob) => {
+          canvas.width = 0;
+          canvas.height = 0;
+          if (blob) resolve(blob);
+          else reject(new Error('Crop failed'));
+        },
         'image/jpeg',
         0.82,
       );
@@ -226,11 +205,16 @@ async function extractVocabColumns(file: File, langs: string): Promise<string> {
 export async function extractTextFromImage(
   file: File,
   sheetType: SheetType = 'vocab',
+  signal?: AbortSignal,
 ): Promise<string> {
+  throwIfAborted(signal);
   const langs = langsForSheetType(sheetType);
   if (sheetType === 'vocab') {
+    throwIfAborted(signal);
     return extractVocabColumns(file, langs);
   }
+  throwIfAborted(signal);
   const { blob } = await loadSizedImage(file);
+  throwIfAborted(signal);
   return recognizeBlob(blob, langs);
 }

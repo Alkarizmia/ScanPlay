@@ -14,7 +14,7 @@ import { getPlan, setBillingCycle, setPlan } from './planLimits';
 import { applySubscriptionMeta, clearSubscriptionMeta } from './subscription';
 import { isStripeCheckoutEnabled } from './stripeCheckout';
 import { getSupabase } from './supabase';
-import { applyIncomingCoins, getCoins, loadWalletRaw, mergeStreakLossFromCloud } from './wallet';
+import { applyIncomingCoins, getCoins, loadWalletRaw, mergeStreakLossFromCloud, STARTING_COINS } from './wallet';
 
 const STATS_KEY = 'scanplay-best';
 const MULTI_SCAN_KEY = 'scanplay-multi-scans';
@@ -130,9 +130,14 @@ function applyStatsBlob(data: Record<string, unknown>): void {
 
 function mergeWalletFromCloud(cloud: Record<string, unknown>): void {
   const local = loadWalletRaw();
+  const cloudCoins = Number(cloud.coins);
+  const keepLocalCoins =
+    Number.isFinite(cloudCoins) &&
+    local.coins > cloudCoins &&
+    cloudCoins <= STARTING_COINS;
   const merged = {
     ...local,
-    coins: Number(cloud.coins ?? local.coins),
+    coins: keepLocalCoins ? local.coins : Number.isFinite(cloudCoins) ? cloudCoins : local.coins,
     gems: Math.max(local.gems, Number(cloud.gems ?? 0)),
     xpBoostUntil: cloud.xpBoostUntil != null ? Number(cloud.xpBoostUntil) : local.xpBoostUntil,
     lastDailyChest: (cloud.lastDailyChest as string | null) ?? local.lastDailyChest,
@@ -358,24 +363,38 @@ export async function pushUserData(): Promise<void> {
   }
 }
 
+/** True when a Supabase select failed (network/RLS) rather than returning an empty row. */
+export function hasQueryError(results: Array<{ error?: unknown }>): boolean {
+  return results.some((r) => r.error);
+}
+
 export async function pullUserData(options?: {
   checkoutSessionId?: string | null;
   skipStripeSync?: boolean;
-}): Promise<void> {
+}): Promise<boolean> {
   const supabase = getSupabase();
   const userId = getUserId();
-  if (!supabase || !userId) return;
+  if (!supabase || !userId) return false;
 
   pullInProgress = true;
   try {
-    const [{ data: profile }, { data: deckRows }, { data: examRows }, { data: mistakeRows }, { data: statsRow }] =
-      await Promise.all([
-        supabase.from('scanplay_profiles').select('*').eq('user_id', userId).maybeSingle(),
-        supabase.from('scanplay_decks').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('scanplay_exam_history').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('scanplay_mistakes').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
-        supabase.from('scanplay_user_stats').select('*').eq('user_id', userId).maybeSingle(),
-      ]);
+    const [profileRes, deckRes, examRes, mistakeRes, statsRes] = await Promise.all([
+      supabase.from('scanplay_profiles').select('*').eq('user_id', userId).maybeSingle(),
+      supabase.from('scanplay_decks').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('scanplay_exam_history').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('scanplay_mistakes').select('*').eq('user_id', userId).order('created_at', { ascending: false }),
+      supabase.from('scanplay_user_stats').select('*').eq('user_id', userId).maybeSingle(),
+    ]);
+
+    if (hasQueryError([profileRes, deckRes, examRes, mistakeRes, statsRes])) {
+      return false;
+    }
+
+    const profile = profileRes.data;
+    const deckRows = deckRes.data;
+    const examRows = examRes.data;
+    const mistakeRows = mistakeRes.data;
+    const statsRow = statsRes.data;
 
     if (statsRow?.data && typeof statsRow.data === 'object') {
       const statsData = statsRow.data as Record<string, unknown>;
@@ -475,6 +494,9 @@ export async function pullUserData(options?: {
         }
       }
     }
+    return true;
+  } catch {
+    return false;
   } finally {
     pullInProgress = false;
   }
@@ -490,14 +512,22 @@ async function adoptPendingGuestDeckThenPush(): Promise<void> {
 /** After login/signup: discard guest data, restore cloud, push full snapshot. */
 export async function syncAfterLogin(): Promise<void> {
   clearLocalUserData();
-  await pullUserData();
+  const ok = await pullUserData();
+  if (!ok) {
+    notifySyncReady();
+    return;
+  }
   validateStreak();
   await adoptPendingGuestDeckThenPush();
 }
 
 /** On app reload while logged in: pull cloud then push full snapshot. */
 export async function syncOnSessionRestore(): Promise<void> {
-  await pullUserData();
+  const ok = await pullUserData();
+  if (!ok) {
+    notifySyncReady();
+    return;
+  }
   validateStreak();
   await adoptPendingGuestDeckThenPush();
 }

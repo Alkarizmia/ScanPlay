@@ -50,7 +50,13 @@ export function isInstructionText(text: string): boolean {
 
   const letters = cleaned.replace(/[^a-zA-ZÀ-ÿ]/g, '');
   const words = cleaned.split(/\s+/).filter(Boolean);
-  if (words.length >= 2 && letters.length >= 6 && letters === letters.toUpperCase()) {
+  const looksLikePairRow = /\t|=|→|->|\s{2,}/.test(cleaned);
+  if (
+    !looksLikePairRow &&
+    words.length >= 2 &&
+    letters.length >= 6 &&
+    letters === letters.toUpperCase()
+  ) {
     return true;
   }
 

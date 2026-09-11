@@ -68,6 +68,17 @@ describe('aiExtract', () => {
     expect(ignored.every((p) => p.quality === 'uncertain')).toBe(true);
   });
 
+  it('drops English term copied as its own definition after punctuation', () => {
+    const mapped = mapAiPairsToWordPairs([
+      { term: 'SOMEONE.', definition: '~ SOMEONE.', termLang: 'en', defLang: 'en', confidence: 'low' },
+      { term: 'SOMEBODY.', definition: 'SOMEBODY.', termLang: 'en', defLang: 'en', confidence: 'low' },
+      { term: 'EVERY.', definition: 'CHAQUE', termLang: 'en', defLang: 'fr', confidence: 'high' },
+    ]);
+    expect(mapped.some((p) => p.term.toUpperCase().includes('SOMEONE'))).toBe(false);
+    expect(mapped.some((p) => p.term.toUpperCase().includes('SOMEBODY'))).toBe(false);
+    expect(mapped.find((p) => p.term.toUpperCase() === 'EVERY')?.definition.toUpperCase()).toBe('CHAQUE');
+  });
+
   it('glosses identical picture-label pairs from vision JSON', () => {
     const mapped = mapAiPairsToWordPairs([
       { term: 'Apple', definition: 'Apple', termLang: 'en', defLang: 'en', confidence: 'high' },

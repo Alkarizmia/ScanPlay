@@ -97,6 +97,23 @@ describe('parser word list integration', () => {
     expect(pairs.length).toBeGreaterThanOrEqual(6);
   });
 
+  it('parses English–French rows joined with =', () => {
+    const text = `
+EVERY. = CHAQUE
+EVERYTHING. = TOUT
+EVERYONE = TOUT LE MONDE
+SOMEONE. = QUELQU'UN
+BEFORE. = AVANT
+WITH. = AVEC
+`.trim();
+    const pairs = parseContent(text, 'vocab');
+    const terms = pairs.map((p) => p.term.toUpperCase());
+    expect(terms).toContain('EVERY');
+    expect(terms).toContain('SOMEONE');
+    expect(pairs.find((p) => p.term.toUpperCase() === 'EVERY')?.definition.toUpperCase()).toContain('CHAQUE');
+    expect(pairs.length).toBeGreaterThanOrEqual(5);
+  });
+
   it('turns an illustrated A-Z grid into playable EN→FR cards', () => {
     const ocr = `
 Apple

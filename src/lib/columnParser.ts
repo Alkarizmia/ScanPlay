@@ -66,7 +66,7 @@ export function detectLang(text: string): LangCode {
   const nl = scoreDutch(text);
   const fr = scoreFrench(text);
   const es = scoreSpanish(text);
-  const en = /\b(the|and|with|your)\b/i.test(text) ? 3 : 0;
+  const en = /\b(the|and|with|your|every|everyone|everybody|everything|someone|somebody|something|before|after|without)\b/i.test(text) ? 3 : 0;
   const best = Math.max(nl, fr, es, en);
   if (best === 0) return 'unknown';
   if (es === best && es > fr + 1 && es > nl + 1) return 'es';
@@ -76,11 +76,18 @@ export function detectLang(text: string): LangCode {
   return 'unknown';
 }
 
+function stripCellPunct(text: string): string {
+  return text
+    .replace(/^[^\p{L}\p{N}(]+/u, '')
+    .replace(/[.\s]+$/g, '')
+    .trim();
+}
+
 export function splitLineIntoColumns(line: string): [string, string] | null {
   const cleaned = fixOcrLine(line);
   if (!cleaned) return null;
 
-  const tabParts = cleaned.split('\t').map((p) => p.trim()).filter(Boolean);
+  const tabParts = cleaned.split('\t').map((p) => stripCellPunct(p)).filter(Boolean);
   if (tabParts.length >= 2) {
     return [tabParts[0], tabParts.slice(1).join(' ')];
   }
@@ -93,6 +100,11 @@ export function splitLineIntoColumns(line: string): [string, string] | null {
   const arrow = cleaned.match(/^(.+?)\s*(?:->|→|=>)\s*(.+)$/);
   if (arrow) {
     return [arrow[1].trim(), arrow[2].trim()];
+  }
+
+  const equals = cleaned.match(/^(.+?)\s*=\s*(.+)$/);
+  if (equals) {
+    return [stripCellPunct(equals[1]), stripCellPunct(equals[2])];
   }
 
   const emDash = cleaned.match(/^(.+?)\s*[–—]\s*(.+)$/);
@@ -154,6 +166,14 @@ export function hasTranslationRowSignals(left: string, right: string): boolean {
   const leftLang = detectLang(left);
   const rightLang = detectLang(right);
   if (leftLang !== 'unknown' && rightLang !== 'unknown' && leftLang !== rightLang) return true;
+
+  const leftAsciiWord = /^[A-Za-z][A-Za-z'.-]*$/.test(left.trim());
+  const rightFrenchLex =
+    /[àâäéèêëïîôùûüç]/i.test(right) ||
+    /\b(chaque|tout|tous|toute|toutes|avant|après|apres|avec|sans|près|pres|loin|quelqu|quelque|monde)\b/i.test(
+      right,
+    );
+  if (leftAsciiWord && rightFrenchLex) return true;
 
   return false;
 }

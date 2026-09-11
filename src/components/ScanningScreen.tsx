@@ -12,6 +12,7 @@ interface ScanningScreenProps {
   locale: Locale;
   progress: number;
   status: string;
+  onCancel?: () => void;
 }
 
 function moodToExpression(mood: ScanPixMood): MascotExpression {
@@ -27,7 +28,7 @@ function moodToExpression(mood: ScanPixMood): MascotExpression {
   }
 }
 
-export function ScanningScreen({ locale, progress, status }: ScanningScreenProps) {
+export function ScanningScreen({ locale, progress, status, onCancel }: ScanningScreenProps) {
   const pct = Math.min(100, Math.max(0, progress));
   const adventure = getScanAdventureState(pct);
   const atEnd = pct >= 99;
@@ -112,6 +113,11 @@ export function ScanningScreen({ locale, progress, status }: ScanningScreenProps
             </div>
           </div>
         </div>
+        {onCancel && (
+          <button type="button" className="btn-ghost scanning-cancel" onClick={onCancel}>
+            {t('scanCancel', locale)}
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,9 +1,11 @@
+import { isAbortError, throwIfAborted } from './abort';
 import { lookupVocabGloss } from './loanwordGlosses';
 import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { getMaxWords } from './planLimits';
+import { blobToBase64, prepareSheetImage } from './sheetImage';
 import type { LangCode, SheetType, WordPair } from '../types';
 
 export interface AiExtractPair {
@@ -41,6 +43,18 @@ function stripVocabDecorations(text: string): string {
     .replace(/(^|\s)\*+/g, '$1')
     .replace(/\s{2,}/g, ' ')
     .trim();
+}
+
+function normalizeVocabCell(text: string): string {
+  let s = stripVocabDecorations(text).replace(/^[^\p{L}\p{N}(]+/u, '').trim();
+  if (s.split(/\s+/).length <= 3) {
+    s = s.replace(/[.\s]+$/g, '');
+  }
+  return s;
+}
+
+function vocabKey(text: string): string {
+  return normalizeVocabCell(text).toLowerCase();
 }
 
 function looksLikeVocabAtom(text: string): boolean {
@@ -94,9 +108,9 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
     .map((p) => {
       const scientific = options?.mathSheet || isScientificPair(p);
       const keepRaw = scientific || freeText;
-      const rawTerm = keepRaw ? p.term.trim() : stripVocabDecorations(p.term.trim());
-      let rawDef = keepRaw ? p.definition.trim() : stripVocabDecorations(p.definition.trim());
-      if (!scientific && !freeText && rawTerm.toLowerCase() === rawDef.toLowerCase()) {
+      const rawTerm = keepRaw ? p.term.trim() : normalizeVocabCell(p.term.trim());
+      let rawDef = keepRaw ? p.definition.trim() : normalizeVocabCell(p.definition.trim());
+      if (!scientific && !freeText && vocabKey(rawTerm) === vocabKey(rawDef)) {
         const gloss = lookupVocabGloss(rawTerm);
         if (gloss) rawDef = gloss;
       }
@@ -123,7 +137,8 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
         !isSectionTitle(p.definition) &&
         (options?.freeText || !isExampleSentence(p.term) || p.term.split(/\s+/).length <= 2) &&
         (options?.freeText || !isExampleSentence(p.definition) || p.definition.split(/\s+/).length <= 2) &&
-        p.term.toLowerCase() !== p.definition.toLowerCase()
+        p.term.toLowerCase() !== p.definition.toLowerCase() &&
+        vocabKey(p.term) !== vocabKey(p.definition)
       );
     });
   if (options?.mathSheet || options?.freeText) return mapped;
@@ -190,76 +205,18 @@ export function parseAiExtractResponse(raw: unknown, fallbackSheetType?: SheetTy
   };
 }
 
-const AI_SCAN_MAX_SIDE = 2800;
-const AI_SCAN_MAX_PIXELS = 8_000_000;
-const AI_SCAN_JPEG_QUALITY = 0.93;
-
-function scaleForAi(width: number, height: number): { w: number; h: number } {
-  const sideScale = Math.min(1, AI_SCAN_MAX_SIDE / Math.max(width, height, 1));
-  const pixelScale = Math.min(1, Math.sqrt(AI_SCAN_MAX_PIXELS / Math.max(1, width * height)));
-  const scale = Math.min(sideScale, pixelScale);
-  return {
-    w: Math.max(1, Math.round(width * scale)),
-    h: Math.max(1, Math.round(height * scale)),
-  };
-}
-
-async function decodeSheetImage(
-  file: File,
-): Promise<{ source: CanvasImageSource; width: number; height: number; cleanup: () => void }> {
-  if (typeof createImageBitmap === 'function') {
-    try {
-      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
-      return {
-        source: bitmap,
-        width: bitmap.width,
-        height: bitmap.height,
-        cleanup: () => bitmap.close(),
-      };
-    } catch {
-      /* Image() fallback for older browsers */
-    }
-  }
-
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = URL.createObjectURL(file);
-    img.onload = () => {
-      resolve({
-        source: img,
-        width: img.naturalWidth || img.width,
-        height: img.naturalHeight || img.height,
-        cleanup: () => URL.revokeObjectURL(url),
-      });
-    };
-    img.onerror = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Image load failed'));
-    };
-    img.src = url;
-  });
-}
+const AI_SCAN_MAX_SIDE = 2000;
+const AI_SCAN_JPEG_QUALITY = 0.86;
 
 async function loadImageForAi(file: File): Promise<{ base64: string; mimeType: string }> {
-  const decoded = await decodeSheetImage(file);
-  try {
-    const { w, h } = scaleForAi(decoded.width, decoded.height);
-    const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) throw new Error('Canvas unavailable');
-    ctx.filter = 'contrast(1.14) saturate(1.04) brightness(1.03)';
-    ctx.drawImage(decoded.source, 0, 0, w, h);
-    ctx.filter = 'none';
-    const mimeType = 'image/jpeg';
-    const dataUrl = canvas.toDataURL(mimeType, AI_SCAN_JPEG_QUALITY);
-    const base64 = dataUrl.split(',')[1] ?? '';
-    if (!base64) throw new Error('Encode failed');
-    return { base64, mimeType };
-  } finally {
-    decoded.cleanup();
-  }
+  const prepared = await prepareSheetImage(file, {
+    maxSide: AI_SCAN_MAX_SIDE,
+    quality: AI_SCAN_JPEG_QUALITY,
+    contrast: true,
+  });
+  const base64 = await blobToBase64(prepared.blob);
+  if (!base64) throw new Error('Encode failed');
+  return { base64, mimeType: 'image/jpeg' };
 }
 
 export function isAiScanEnabled(): boolean {
@@ -271,8 +228,10 @@ export function isAiScanEnabled(): boolean {
 export async function analyzeSheetWithAi(
   file: File,
   sheetType: SheetType,
+  signal?: AbortSignal,
 ): Promise<AiExtractResponse | null> {
   if (!isAiScanEnabled()) return null;
+  throwIfAborted(signal);
 
   const supabase = getSupabase();
   if (!supabase) return null;
@@ -282,19 +241,48 @@ export async function analyzeSheetWithAi(
   } = await supabase.auth.getSession();
   if (!session) return null;
 
-  const { base64, mimeType } = await loadImageForAi(file);
+  let base64: string | undefined;
+  let mimeType: string;
+  try {
+    const encoded = await loadImageForAi(file);
+    throwIfAborted(signal);
+    base64 = encoded.base64;
+    mimeType = encoded.mimeType;
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    return null;
+  }
 
   const maxPairs = getMaxWords();
+  const url = import.meta.env.VITE_SUPABASE_URL ?? '';
+  const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY ?? '';
+  if (!url || !anonKey || !base64) return null;
 
-  const { data, error } = await supabase.functions.invoke('analyze-sheet', {
-    body: {
-      imageBase64: base64,
-      mimeType,
-      sheetType,
-      maxPairs,
-    },
-  });
+  const payload = {
+    imageBase64: base64,
+    mimeType,
+    sheetType,
+    maxPairs,
+  };
 
-  if (error || !data) return null;
-  return parseAiExtractResponse(data, sheetType);
+  try {
+    const res = await fetch(`${url.replace(/\/$/, '')}/functions/v1/analyze-sheet`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        apikey: anonKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+      signal,
+    });
+    throwIfAborted(signal);
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    throwIfAborted(signal);
+    return parseAiExtractResponse(data, sheetType);
+  } catch (error) {
+    if (isAbortError(error)) throw error;
+    return null;
+  }
 }
