@@ -2043,7 +2043,6 @@ export default function App() {
             setTab('home');
             refresh();
           }}
-          onAccountDeleted={() => showToast(t('deleteAccountDone', locale))}
           onPricing={() => setFlow('pricing')}
           onRefresh={refresh}
           highlightPasswordRecovery={passwordRecoveryHighlight}
