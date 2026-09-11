@@ -109,8 +109,14 @@ export async function extractPairsFromImage(
     const ocrPairs = await extractViaOcr(file, sheetType, signal);
     throwIfAborted(signal);
     if (aiResult) {
+      // betterPairSet returns AI∪OCR (or the larger side if merge collapses). Never
+      // compare by reference to aiResult.pairs — merge always allocates a new array.
       const best = betterPairSet(aiResult.pairs, ocrPairs);
-      return best === aiResult.pairs ? aiResult : { pairs: ocrPairs, source: 'ocr', ignored: aiResult.ignored };
+      return {
+        pairs: best,
+        source: best === ocrPairs ? 'ocr' : 'ai',
+        ignored: aiResult.ignored,
+      };
     }
     return { pairs: ocrPairs, source: 'ocr' };
   } catch (error) {
