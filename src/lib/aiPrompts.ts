@@ -36,7 +36,6 @@ VISION MATHÉMATIQUE / SCIENTIFIQUE (si ces signes sont visibles) :
 VOCABULAIRE (sheetType vocab uniquement) :
 - Extrais TOUTES les paires jouables visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de cartes que de mots traduits lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de s'arrêter à 4, 5, 7 ou 10 paires s'il en reste sur la page.
 - Multi-colonnes : lis chaque bloc verticalement (gauche EN/NL avec sa traduction FR sur la même ligne), puis le bloc suivant. N'aligne pas horizontalement d'une colonne à l'autre.
-- LISTES CÔTE À CÔTE (plusieurs listes sur la page) : extrais CHAQUE liste / chaque paire de colonnes, pas seulement la première. Vise toutes les lignes lisibles jusqu'à la limite.
 - Longueur : term ≤ 55 caractères, definition ≤ 120 caractères.
 - ALIGNEMENT SIMPLE (1 mot ↔ 1 traduction sur la même ligne) : le mot source va UNIQUEMENT avec la traduction de la MÊME ligne. Vérifie la baseline.
 - OPPOSÉS / PLUSIEURS MOTS SUR LA MÊME LIGNE (ex. « Les contraires », riche / pauvre → rijk / arm, ou 3 colonnes FR | NL | [phonétique]) : une ligne visuelle = PLUSIEURS cartes, une par mot. Exemple : « riche (adj) / pauvre (adj) » avec « rijk / arm » → deux paires {riche (adj)→rijk} et {pauvre (adj)→arm}. INTERDIT de coller les deux mots dans une seule carte. Garde (adj)/(adv) s'ils sont imprimés. N'invente pas un mode « trouve le contraire ».

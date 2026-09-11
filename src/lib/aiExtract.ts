@@ -275,8 +275,8 @@ export function parseAiExtractResponse(raw: unknown, fallbackSheetType?: SheetTy
   };
 }
 
-const AI_SCAN_MAX_SIDE = 2200;
-const AI_SCAN_JPEG_QUALITY = 0.88;
+const AI_SCAN_MAX_SIDE = 2000;
+const AI_SCAN_JPEG_QUALITY = 0.86;
 
 async function loadImageForAi(file: File): Promise<{ base64: string; mimeType: string }> {
   const prepared = await prepareSheetImage(file, {

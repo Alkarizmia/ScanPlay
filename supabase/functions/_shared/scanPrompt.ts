@@ -35,7 +35,6 @@ VOCABULAIRE (sheetType vocab uniquement) :
 - Extrais TOUTES les paires jouables visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de cartes que de mots traduits lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de s'arrêter à 4, 5, 7 ou 10 paires s'il en reste sur la page.
 - LISTE 2 COLONNES (NL|FR, EN|FR, etc.) : chaque LIGNE visuelle = une carte. Colonne gauche = term, colonne droite = definition (la traduction EN FACE sur la MÊME baseline). INTERDIT d'aligner une ligne avec la ligne du dessus ou du dessous. INTERDIT de mettre NL+FR dans term et une autre ligne dans definition.
 - Multi-blocs : lis chaque bloc verticalement, puis le bloc suivant. N'aligne pas horizontalement d'un bloc à l'autre.
-- LISTES CÔTE À CÔTE (2 listes 2 colonnes sur la même page, ou 3–4 colonnes de vocab) : traite CHAQUE liste / chaque paire de colonnes comme un bloc séparé. Extrais TOUTES les lignes de TOUTES les listes, pas seulement la première ou les 2 colonnes de gauche.
 - Longueur : term ≤ 55 caractères, definition ≤ 120 caractères (sauf faces de conjugaison, voir ci-dessous).
 - ALIGNEMENT SIMPLE (1 mot ↔ 1 traduction sur la même ligne) : le mot source va UNIQUEMENT avec la traduction de la MÊME ligne. Vérifie la baseline.
 - OPPOSÉS / PLUSIEURS MOTS SUR LA MÊME LIGNE (ex. « Les contraires », riche / pauvre → rijk / arm, ou 3 colonnes FR | NL | [phonétique]) : une ligne visuelle = PLUSIEURS cartes, une par mot. Exemple : « riche (adj) / pauvre (adj) » avec « rijk / arm » → deux paires {riche (adj)→rijk} et {pauvre (adj)→arm}. INTERDIT de coller les deux mots dans une seule carte. Garde (adj)/(adv) s'ils sont imprimés. N'invente pas un mode « trouve le contraire ».
@@ -114,8 +113,7 @@ export const SCANPLAY_EXTRACT_JSON_SCHEMA = {
             defLang: { type: 'string', enum: ['nl', 'fr', 'en', 'es', 'unknown'] },
             confidence: { type: 'string', enum: ['high', 'medium', 'low'] },
           },
-          /* faces optional: requiring it on every card bloated Free-model JSON and truncated dense sheets. */
-          required: ['term', 'definition', 'termLang', 'defLang', 'confidence'],
+          required: ['term', 'definition', 'faces', 'termLang', 'defLang', 'confidence'],
         },
       },
       warnings: { type: 'array', items: { type: 'string' } },
@@ -136,7 +134,6 @@ Consignes supplémentaires :
 - Photo possiblement floue, penchée, sombre, manuscrite, surlignée ou décorée (drapeaux) : lis quand même au maximum, zone par zone. Ignore la déco.
 - Parcours TOUS les blocs (colonnes, encadrés, grilles, tableaux) avant de conclure.
 - Pour vocab liste 2 colonnes : 1 ligne = 1 carte, gauche→term, droite→definition. JAMAIS FR→FR ni décalage d'une ligne. JAMAIS NL+FR collés dans un seul champ.
-- Si plusieurs listes / colonnes côte à côte : extrais CHAQUE liste jusqu'à ${maxPairs}. Ne t'arrête pas après la première colonne ou après 5 cartes.
 - Pour vocab tableau conjugaison (3+ colonnes) : 1 ligne = 1 carte avec term + faces[] + definition (traduction). Extrais TOUTES les lignes, jusqu'à ${maxPairs}.
 - Si une ligne a des opposés (riche / pauvre → rijk / arm), SPLIT en autant de cartes que de mots. Enlève [phonétique].
 - Grille de pictos / abécédaire (dessin + mot) : LISIBLE. Un libellé par carte, definition = traduction française (Apple → pomme). Extrais toutes les cases.

@@ -27,28 +27,9 @@ async function extractViaOcr(
   return coercePlayablePairs(raw);
 }
 
-const MIN_AI_PAIRS_TO_SKIP_OCR = 20;
-
-function pairIdentity(p: WordPair): string {
-  return `${p.term.trim().toLowerCase()}\t${p.definition.trim().toLowerCase()}`;
-}
-
-/** Union AI + OCR so a thin vision sample does not discard a fuller OCR pass. */
-function mergePairSets(a: WordPair[], b: WordPair[]): WordPair[] {
-  const seen = new Set<string>();
-  const out: WordPair[] = [];
-  for (const p of [...a, ...b]) {
-    const key = pairIdentity(p);
-    if (!p.term.trim() || !p.definition.trim() || seen.has(key)) continue;
-    seen.add(key);
-    out.push(p);
-  }
-  return out;
-}
+const MIN_AI_PAIRS_TO_SKIP_OCR = 8;
 
 function betterPairSet(a: WordPair[], b: WordPair[]): WordPair[] {
-  const merged = mergePairSets(a, b);
-  if (merged.length >= Math.max(a.length, b.length)) return merged;
   if (a.length >= b.length) return a;
   return b;
 }
@@ -109,14 +90,8 @@ export async function extractPairsFromImage(
     const ocrPairs = await extractViaOcr(file, sheetType, signal);
     throwIfAborted(signal);
     if (aiResult) {
-      // betterPairSet returns AI∪OCR (or the larger side if merge collapses). Never
-      // compare by reference to aiResult.pairs — merge always allocates a new array.
       const best = betterPairSet(aiResult.pairs, ocrPairs);
-      return {
-        pairs: best,
-        source: best === ocrPairs ? 'ocr' : 'ai',
-        ignored: aiResult.ignored,
-      };
+      return best === aiResult.pairs ? aiResult : { pairs: ocrPairs, source: 'ocr', ignored: aiResult.ignored };
     }
     return { pairs: ocrPairs, source: 'ocr' };
   } catch (error) {

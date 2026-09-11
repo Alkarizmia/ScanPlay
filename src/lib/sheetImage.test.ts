@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { contentBoundingBox, countInkColumnBands, scaleToMaxSide, shouldSkipDeskCrop } from './sheetImage';
+import { contentBoundingBox, scaleToMaxSide } from './sheetImage';
 
 function fillRect(
   pixels: Uint8ClampedArray,
@@ -18,20 +18,6 @@ function fillRect(
       pixels[i + 2] = rgb[2];
       pixels[i + 3] = 255;
     }
-  }
-}
-
-function paintTextColumn(
-  pixels: Uint8ClampedArray,
-  width: number,
-  x0: number,
-  x1: number,
-  y0: number,
-  y1: number,
-) {
-  fillRect(pixels, width, x0, y0, x1, y1, [235, 235, 230]);
-  for (let y = y0 + 8; y < y1 - 8; y += 8) {
-    fillRect(pixels, width, x0 + 6, y, x1 - 6, y + 2, [15, 15, 15]);
   }
 }
 
@@ -64,29 +50,6 @@ describe('contentBoundingBox', () => {
       fillRect(pixels, width, 8, y, 88, y + 2, [10, 10, 10]);
     }
     expect(contentBoundingBox(pixels, width, height)).toBeNull();
-  });
-});
-
-describe('countInkColumnBands', () => {
-  it('detects two side-by-side vocab columns', () => {
-    const width = 320;
-    const height = 200;
-    const pixels = new Uint8ClampedArray(width * height * 4);
-    fillRect(pixels, width, 0, 0, width, height, [40, 40, 40]);
-    paintTextColumn(pixels, width, 20, 130, 20, 180);
-    paintTextColumn(pixels, width, 190, 300, 20, 180);
-    expect(countInkColumnBands(pixels, width, height)).toBeGreaterThanOrEqual(2);
-    expect(shouldSkipDeskCrop(pixels, width, height)).toBe(true);
-  });
-
-  it('keeps desk crop for a single sheet column', () => {
-    const width = 200;
-    const height = 200;
-    const pixels = new Uint8ClampedArray(width * height * 4);
-    fillRect(pixels, width, 0, 0, width, height, [40, 40, 40]);
-    paintTextColumn(pixels, width, 50, 150, 30, 170);
-    expect(countInkColumnBands(pixels, width, height)).toBeLessThan(2);
-    expect(shouldSkipDeskCrop(pixels, width, height)).toBe(false);
   });
 });
 
