@@ -91,7 +91,7 @@ export function scaleToMaxSide(width: number, height: number, maxSide: number): 
   };
 }
 
-/** iPhone Photos / Files often hand HEIC; many browsers cannot draw it until converted. */
+/** Explicit HEIC only — never sniff generic brands (that path regressed multi-column JPEGs). */
 export function looksLikeHeic(file: Blob & { name?: string; type?: string }): boolean {
   const type = (file.type || '').toLowerCase();
   if (
@@ -105,34 +105,8 @@ export function looksLikeHeic(file: Blob & { name?: string; type?: string }): bo
   return /\.(heic|heif)$/i.test(file.name || '');
 }
 
-/** ISO-BMFF brand at byte 8 (ftyp…) — catches empty MIME from some iOS picks. */
-export async function sniffHeicBrand(file: Blob): Promise<boolean> {
-  try {
-    const buf = await file.slice(0, 16).arrayBuffer();
-    const bytes = new Uint8Array(buf);
-    if (bytes.length < 12) return false;
-    const tag = String.fromCharCode(bytes[4], bytes[5], bytes[6], bytes[7]);
-    if (tag !== 'ftyp') return false;
-    const brand = String.fromCharCode(bytes[8], bytes[9], bytes[10], bytes[11]).toLowerCase();
-    return /^(heic|heix|hevc|hevx|heim|heis|hevm|hevs|mif1|msf1)$/.test(brand);
-  } catch {
-    return false;
-  }
-}
-
-async function needsHeicConversion(file: File): Promise<boolean> {
-  if (looksLikeHeic(file)) return true;
-  const type = (file.type || '').toLowerCase();
-  if (type.startsWith('image/') && type !== 'application/octet-stream') return false;
-  return sniffHeicBrand(file);
-}
-
-/**
- * Same pipeline for every device: convert HEIC→JPEG when needed.
- * JPEG/PNG/WebP pass through unchanged (Android path stays identical).
- */
-export async function normalizeSheetFile(file: File): Promise<File> {
-  if (!(await needsHeicConversion(file))) return file;
+async function maybeConvertHeic(file: File): Promise<File> {
+  if (!looksLikeHeic(file)) return file;
   try {
     const heic2any = (await import('heic2any')).default;
     const converted = await heic2any({
@@ -145,7 +119,6 @@ export async function normalizeSheetFile(file: File): Promise<File> {
     const base = (file.name || 'scan').replace(/\.(heic|heif)$/i, '') || 'scan';
     return new File([blob], `${base}.jpg`, { type: 'image/jpeg', lastModified: file.lastModified });
   } catch {
-    /* Keep original; decode may still work on some Safari builds. */
     return file;
   }
 }
@@ -157,61 +130,45 @@ interface DecodedSheet {
   cleanup: () => void;
 }
 
-async function decodeViaImageElement(file: Blob): Promise<DecodedSheet> {
+async function decodeSheetFile(file: File): Promise<DecodedSheet> {
+  if (typeof createImageBitmap === 'function') {
+    try {
+      const bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' });
+      return {
+        source: bitmap,
+        width: bitmap.width,
+        height: bitmap.height,
+        cleanup: () => bitmap.close(),
+      };
+    } catch {
+      /* Image() fallback */
+    }
+  }
+
   return new Promise((resolve, reject) => {
     const img = new Image();
     const url = URL.createObjectURL(file);
-    const fail = () => {
-      URL.revokeObjectURL(url);
-      reject(new Error('Image load failed'));
-    };
     img.onload = () => {
-      const width = img.naturalWidth || img.width;
-      const height = img.naturalHeight || img.height;
-      if (width < 8 || height < 8) {
-        fail();
-        return;
-      }
       resolve({
         source: img,
-        width,
-        height,
+        width: img.naturalWidth || img.width,
+        height: img.naturalHeight || img.height,
         cleanup: () => URL.revokeObjectURL(url),
       });
     };
-    img.onerror = fail;
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Image load failed'));
+    };
     img.src = url;
   });
-}
-
-async function decodeSheetFile(file: Blob): Promise<DecodedSheet> {
-  if (typeof createImageBitmap === 'function') {
-    const optionSets: ImageBitmapOptions[] = [{ imageOrientation: 'from-image' }, {}];
-    for (const options of optionSets) {
-      try {
-        const bitmap = await createImageBitmap(file, options);
-        if (bitmap.width >= 8 && bitmap.height >= 8) {
-          return {
-            source: bitmap,
-            width: bitmap.width,
-            height: bitmap.height,
-            cleanup: () => bitmap.close(),
-          };
-        }
-        bitmap.close();
-      } catch {
-        /* try next / Image() */
-      }
-    }
-  }
-  return decodeViaImageElement(file);
 }
 
 function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob> {
   return new Promise((resolve, reject) => {
     canvas.toBlob(
       (blob) => {
-        if (blob && blob.size > 0) resolve(blob);
+        if (blob) resolve(blob);
         else reject(new Error('Encode failed'));
       },
       'image/jpeg',
@@ -220,20 +177,26 @@ function canvasToJpeg(canvas: HTMLCanvasElement, quality: number): Promise<Blob>
   });
 }
 
-async function prepareSheetImageOnce(
-  file: Blob,
-  options: { maxSide: number; quality: number; contrast?: boolean },
+/**
+ * Prepares the sheet image. JPEG/PNG path is the proven pre-regression pipeline.
+ * HEIC (explicit mime/extension only) is converted first, then the same pipeline runs.
+ */
+export async function prepareSheetImage(
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
 ): Promise<PreparedSheetImage> {
-  const decoded = await decodeSheetFile(file);
+  const maxSide = options?.maxSide ?? 2000;
+  const quality = options?.quality ?? 0.86;
+  const input = await maybeConvertHeic(file);
+  const decoded = await decodeSheetFile(input);
   const work = document.createElement('canvas');
   const out = document.createElement('canvas');
 
   try {
-    const workSide = Math.min(2200, Math.max(options.maxSide, Math.round(options.maxSide * 0.85 + 400)));
-    const { w: dw, h: dh } = scaleToMaxSide(decoded.width, decoded.height, workSide);
+    const { w: dw, h: dh } = scaleToMaxSide(decoded.width, decoded.height, Math.max(maxSide, 1600));
     work.width = dw;
     work.height = dh;
-    const workCtx = work.getContext('2d', { willReadFrequently: true });
+    const workCtx = work.getContext('2d');
     if (!workCtx) throw new Error('Canvas unavailable');
     workCtx.drawImage(decoded.source, 0, 0, dw, dh);
 
@@ -251,20 +214,20 @@ async function prepareSheetImageOnce(
         sh = box.h;
       }
     } catch {
-      /* tainted canvas or getImageData unavailable — use full frame */
+      /* tainted canvas or getImageData unavailable */
     }
 
-    const { w, h } = scaleToMaxSide(sw, sh, options.maxSide);
+    const { w, h } = scaleToMaxSide(sw, sh, maxSide);
     out.width = w;
     out.height = h;
     const outCtx = out.getContext('2d');
     if (!outCtx) throw new Error('Canvas unavailable');
-    if (options.contrast) {
+    if (options?.contrast) {
       outCtx.filter = 'contrast(1.14) saturate(1.04) brightness(1.03)';
     }
     outCtx.drawImage(work, sx, sy, sw, sh, 0, 0, w, h);
     outCtx.filter = 'none';
-    const blob = await canvasToJpeg(out, options.quality);
+    const blob = await canvasToJpeg(out, quality);
     return { blob, width: w, height: h };
   } finally {
     decoded.cleanup();
@@ -273,37 +236,6 @@ async function prepareSheetImageOnce(
     out.width = 0;
     out.height = 0;
   }
-}
-
-/**
- * Normalize (HEIC→JPEG) then prepare. Retries with smaller canvas if memory/encode fails
- * (common on iOS Safari with large Photos). First successful attempt wins — Android JPEG
- * usually succeeds on the first try with unchanged settings.
- */
-export async function prepareSheetImage(
-  file: File,
-  options?: { maxSide?: number; quality?: number; contrast?: boolean },
-): Promise<PreparedSheetImage> {
-  const normalized = await normalizeSheetFile(file);
-  const maxSide = options?.maxSide ?? 2000;
-  const quality = options?.quality ?? 0.86;
-  const contrast = options?.contrast;
-
-  const attempts: Array<{ maxSide: number; quality: number }> = [
-    { maxSide, quality },
-    { maxSide: Math.min(maxSide, 1400), quality: Math.min(quality, 0.82) },
-    { maxSide: Math.min(maxSide, 1100), quality: Math.min(quality, 0.78) },
-  ];
-
-  let lastError: unknown;
-  for (const attempt of attempts) {
-    try {
-      return await prepareSheetImageOnce(normalized, { ...attempt, contrast });
-    } catch (error) {
-      lastError = error;
-    }
-  }
-  throw lastError instanceof Error ? lastError : new Error('Image prepare failed');
 }
 
 export async function blobToBase64(blob: Blob): Promise<string> {

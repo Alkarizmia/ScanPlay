@@ -22,27 +22,10 @@ function fillRect(
 }
 
 describe('looksLikeHeic', () => {
-  it('detects HEIC by mime and extension', () => {
+  it('detects HEIC by mime and extension only', () => {
     expect(looksLikeHeic(new File([], 'a.heic', { type: 'image/heic' }))).toBe(true);
     expect(looksLikeHeic(new File([], 'b.HEIF', { type: '' }))).toBe(true);
     expect(looksLikeHeic(new File([], 'c.jpg', { type: 'image/jpeg' }))).toBe(false);
-  });
-});
-
-describe('sniffHeicBrand', () => {
-  it('detects ftyp heic brand', async () => {
-    const { sniffHeicBrand } = await import('./sheetImage');
-    const bytes = new Uint8Array(16);
-    bytes[4] = 0x66; // f
-    bytes[5] = 0x74; // t
-    bytes[6] = 0x79; // y
-    bytes[7] = 0x70; // p
-    bytes[8] = 0x68; // h
-    bytes[9] = 0x65; // e
-    bytes[10] = 0x69; // i
-    bytes[11] = 0x63; // c
-    expect(await sniffHeicBrand(new Blob([bytes]))).toBe(true);
-    expect(await sniffHeicBrand(new Blob([new Uint8Array(16)]))).toBe(false);
   });
 });
 
