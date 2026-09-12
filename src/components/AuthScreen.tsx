@@ -45,6 +45,7 @@ export function AuthScreen({
   const [infoKey, setInfoKey] = useState<TranslationKey | null>(null);
   const [awaitingEmailConfirm, setAwaitingEmailConfirm] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
 
   const switchMode = (next: AuthMode) => {
     setMode(next);
@@ -53,6 +54,14 @@ export function AuthScreen({
     setInfoKey(null);
     setAwaitingEmailConfirm(false);
     setResetEmailSent(false);
+    if (next !== 'signup') setAgeConfirmed(false);
+  };
+
+  const requireSignupAgeConfirm = (): boolean => {
+    if (mode !== 'signup' || ageConfirmed) return true;
+    setErrorKey('authAgeRequired');
+    setErrorDetail(null);
+    return false;
   };
 
   const subtitleKey =
@@ -71,6 +80,7 @@ export function AuthScreen({
                 : 'authLoginSubtitle';
 
   const runAuth = async () => {
+    if (!requireSignupAgeConfirm()) return;
     if (!email.trim() || !password) {
       setErrorKey('authFillFields');
       setErrorDetail(null);
@@ -148,6 +158,7 @@ export function AuthScreen({
   };
 
   const handleGoogleSignIn = async () => {
+    if (!requireSignupAgeConfirm()) return;
     setLoading(true);
     setErrorKey(null);
     setErrorDetail(null);
@@ -338,13 +349,29 @@ export function AuthScreen({
           )
         )}
 
+        {mode === 'signup' && !awaitingEmailConfirm && !resetEmailSent && (
+          <label className="auth-age-confirm">
+            <input
+              type="checkbox"
+              checked={ageConfirmed}
+              onChange={(e) => {
+                setAgeConfirmed(e.target.checked);
+                if (e.target.checked && errorKey === 'authAgeRequired') setErrorKey(null);
+              }}
+              disabled={loading}
+              aria-required="true"
+            />
+            <span>{t('authAgeConfirm', locale)}</span>
+          </label>
+        )}
+
         {!awaitingEmailConfirm && !resetEmailSent && isSupabaseEnabled() && mode !== 'forgot' && (
           <>
             <button
               type="button"
               className="auth-google-btn"
               onClick={() => void handleGoogleSignIn()}
-              disabled={loading}
+              disabled={loading || (mode === 'signup' && !ageConfirmed)}
             >
               <svg className="auth-google-icon" viewBox="0 0 24 24" aria-hidden="true">
                 <path
@@ -413,7 +440,11 @@ export function AuthScreen({
             <p className="auth-hint">{t('authSignupHint', locale)}</p>
           )}
 
-          <button type="submit" className="btn-primary btn-lg" disabled={loading}>
+          <button
+            type="submit"
+            className="btn-primary btn-lg"
+            disabled={loading || (mode === 'signup' && !ageConfirmed)}
+          >
             {loading
               ? t('authLoading', locale)
               : mode === 'forgot'
