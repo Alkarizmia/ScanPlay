@@ -1,10 +1,29 @@
 import { describe, expect, it } from 'vitest';
 import {
+  canOpenGamePath,
+  coercePlayablePairs,
   gradeTypedAnswer,
   isLongExpectedAnswer,
+  isValidVocabPair,
   pickTypeGameOptions,
 } from './vocabulary';
 import type { WordPair } from '../types';
+
+describe('math formula pairs', () => {
+  it('keeps short derivative answers like 0, 1, k', () => {
+    const pairs: WordPair[] = [
+      { term: 'k (constante)', definition: '0' },
+      { term: 'x', definition: '1' },
+      { term: 'kx', definition: 'k' },
+      { term: '\\sin x', definition: '\\cos x' },
+    ];
+    expect(isValidVocabPair(pairs[0]!, { mathSheet: true })).toBe(true);
+    expect(isValidVocabPair(pairs[1]!, { mathSheet: true })).toBe(true);
+    const playable = coercePlayablePairs(pairs, { mathSheet: true });
+    expect(playable.length).toBe(4);
+    expect(canOpenGamePath(pairs, { mathSheet: true })).toBe(true);
+  });
+});
 
 describe('isLongExpectedAnswer', () => {
   it('detects long definitions', () => {

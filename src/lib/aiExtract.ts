@@ -343,21 +343,38 @@ export async function analyzeSheetWithAi(
   };
 
   try {
-    const res = await fetch(`${url.replace(/\/$/, '')}/functions/v1/analyze-sheet`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${session.access_token}`,
-        apikey: anonKey,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-      signal,
-    });
-    throwIfAborted(signal);
-    if (!res.ok) return null;
-    const data: unknown = await res.json();
-    throwIfAborted(signal);
-    return parseAiExtractResponse(data, sheetType);
+    const timeoutMs = sheetType === 'math' || sheetType === 'definitions' ? 75_000 : 0;
+    const timeoutCtrl = timeoutMs > 0 ? new AbortController() : null;
+    const timeoutId =
+      timeoutCtrl && timeoutMs > 0
+        ? window.setTimeout(() => timeoutCtrl.abort(), timeoutMs)
+        : null;
+    const onOuterAbort = () => timeoutCtrl?.abort();
+    if (signal && timeoutCtrl) {
+      if (signal.aborted) timeoutCtrl.abort();
+      else signal.addEventListener('abort', onOuterAbort, { once: true });
+    }
+    const fetchSignal = timeoutCtrl?.signal ?? signal;
+    try {
+      const res = await fetch(`${url.replace(/\/$/, '')}/functions/v1/analyze-sheet`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+          apikey: anonKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+        signal: fetchSignal,
+      });
+      throwIfAborted(signal);
+      if (!res.ok) return null;
+      const data: unknown = await res.json();
+      throwIfAborted(signal);
+      return parseAiExtractResponse(data, sheetType);
+    } finally {
+      if (timeoutId != null) window.clearTimeout(timeoutId);
+      if (signal && timeoutCtrl) signal.removeEventListener('abort', onOuterAbort);
+    }
   } catch (error) {
     if (isAbortError(error)) throw error;
     return null;

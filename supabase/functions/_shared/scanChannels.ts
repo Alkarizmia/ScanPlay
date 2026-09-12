@@ -44,7 +44,8 @@ export function needsFullRecount(
   maxPairs: number,
   finishReason?: string,
 ): boolean {
-  if (sheetType === 'math') return false;
+  /* Math / définitions-formules: one GPT pass only (Vision+OCR recount = hang). */
+  if (sheetType === 'math' || sheetType === 'definitions') return false;
   if (pairCount <= 0 || pairCount >= maxPairs) return false;
   if (finishReason === 'length') return true;
   /* Phrase sheets often land at 9–12 without a second pass — push toward full coverage. */

@@ -152,8 +152,12 @@ export async function extractPairsFromImage(
           }
           pairs = finalizeVocabPairs(pairs, getMaxWords());
         }
-        if (canOpenGamePath(pairs)) {
+        if (canOpenGamePath(pairs, mathSheet ? { mathSheet: true } : undefined)) {
           if (mathSheet) {
+            return { pairs, source: 'ai', ignored };
+          }
+          /* Définitions/formules: keep AI result — skip slow Tesseract on formula tables. */
+          if (sheetType === 'definitions') {
             return { pairs, source: 'ai', ignored };
           }
           if ((ai.warnings ?? []).some((w) => w.startsWith('vision_') || w.startsWith('final_'))) {
@@ -180,6 +184,13 @@ export async function extractPairsFromImage(
   }
 
   throwIfAborted(signal);
+
+  /* Formules / définitions-formules: never fall back to Tesseract (slow + junk on LaTeX). */
+  if (sheetType === 'math' || sheetType === 'definitions') {
+    if (aiResult) return aiResult;
+    return { pairs: [], source: 'ai' };
+  }
+
   try {
     const ocrPairs = await extractViaOcr(file, sheetType, signal);
     throwIfAborted(signal);

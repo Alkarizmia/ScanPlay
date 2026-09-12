@@ -369,16 +369,45 @@ Deno.serve(async (req) => {
       sheetType,
     });
 
-    const vision = await runGoogleVisionOcr(imageBase64);
+    const visionWanted = sheetType !== 'math' && sheetType !== 'definitions';
+    const vision = visionWanted ? await runGoogleVisionOcr(imageBase64) : null;
     const visionPairs = vision?.pairs ?? [];
     const visionWarnings = vision?.warnings ?? [];
     const visionStrong = visionOcrIsStrong(sheetType, visionPairs.length);
     let payload: ExtractPayload | null = null;
     let mode: 'gpt-primary' | 'vision-fallback' = 'gpt-primary';
 
-    /* Vocab: GPT vision reads the page; Vision OCR is alignment/coverage hint only.
-       Never ship raw Vision-only text (Tobe / title rows). */
-    if (sheetType === 'vocab') {
+    /* Math / définitions-formules: GPT only — Vision OCR is slow and destroys LaTeX tables. */
+    if (sheetType === 'math' || sheetType === 'definitions') {
+      const firstDetail = scanImageDetail(channel.model);
+      let openaiCall = await requestOpenAi(
+        openaiKey,
+        buildOpenAiBody(channel, sheetType, imageBase64, mimeType, firstDetail),
+      );
+      if (!openaiCall.ok && firstDetail === 'original' && shouldRetryWithoutOriginal(openaiCall.text)) {
+        openaiCall = await requestOpenAi(
+          openaiKey,
+          buildOpenAiBody(channel, sheetType, imageBase64, mimeType, 'high'),
+        );
+      }
+      if (openaiCall.ok) {
+        const parsed = await parseOpenAiPayload(openaiCall);
+        payload = parsed.payload;
+        if (payload) {
+          if (parsed.finishReason === 'length') {
+            payload.warnings = [...(payload.warnings ?? []), 'extraction_truncated'];
+          }
+          payload.warnings = [...(payload.warnings ?? []), 'gpt_primary', 'math_no_vision'];
+        }
+      }
+      if (!payload) {
+        console.error('analyze-sheet math/definitions failed', openaiCall.status, channel.label);
+        return new Response(JSON.stringify({ error: 'analysis_failed' }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else if (sheetType === 'vocab') {
       const visionHint =
         visionPairs.length >= 2 || (vision?.fullText?.length ?? 0) > 40
           ? buildVisionHint(visionPairs, vision?.fullText ?? '', channel.maxPairs)

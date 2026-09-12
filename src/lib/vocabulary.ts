@@ -134,12 +134,28 @@ export const MIN_MATCH_PAIRS = 2;
 
 export function isMathLikeText(text: string): boolean {
   if (looksLikeLatex(text)) return true;
-  return /[=+\-×÷*/^√∫∑]|\\frac|[0-9]\s*[+\-*/^]|[a-z]\s*=\s*[^=]/i.test(text);
+  const t = text.trim();
+  if (!t) return false;
+  /* Short math answers common on formula sheets (derivatives, constants). */
+  if (/^[\d]+$/.test(t)) return true;
+  if (/^[a-z]'+?$/i.test(t)) return true;
+  if (/^\d+[a-z]+$/i.test(t)) return true;
+  return /[=+\-×÷*/^√∫∑]|\\frac|[0-9]\s*[+\-*/^]|[a-z]\s*=\s*[^=]|'v\b|uv'/i.test(text);
 }
 
 export function isValidVocabPair(pair: WordPair, options?: { mathSheet?: boolean }): boolean {
-  if (pair.term.length < 2 || pair.definition.length < 2) return false;
-  if (options?.mathSheet || isMathLikeText(pair.term) || isMathLikeText(pair.definition)) {
+  if (options?.mathSheet) {
+    const term = pair.term.trim();
+    const definition = pair.definition.trim();
+    if (term.length < 1 || definition.length < 1) return false;
+    if (term.length > 120 || definition.length > 280) return false;
+    if (term.toLowerCase() === definition.toLowerCase()) return false;
+    return true;
+  }
+  const mathLike = isMathLikeText(pair.term) || isMathLikeText(pair.definition);
+  const minLen = mathLike ? 1 : 2;
+  if (pair.term.trim().length < minLen || pair.definition.trim().length < minLen) return false;
+  if (mathLike) {
     if (pair.term.length > 120 || pair.definition.length > 280) return false;
     if (pair.term.toLowerCase() === pair.definition.toLowerCase()) return false;
     return true;
@@ -464,8 +480,8 @@ export function pickQuizOptions(
 }
 
 /** Enough clean pairs to start a path (adaptive modes per step). */
-export function canOpenGamePath(pairs: WordPair[]): boolean {
-  const playable = coercePlayablePairs(pairs);
+export function canOpenGamePath(pairs: WordPair[], options?: { mathSheet?: boolean }): boolean {
+  const playable = coercePlayablePairs(pairs, options);
   return playable.length >= 2;
 }
 
@@ -476,12 +492,13 @@ export function coercePlayablePairs(raw: WordPair[], options?: { mathSheet?: boo
 
   const seen = new Set<string>();
   const filtered = repairPairs(raw).filter((p) => {
-    if (p.term.length < 2 || p.definition.length < 2) return false;
+    const minLen = options?.mathSheet ? 1 : 2;
+    if (p.term.trim().length < minLen || p.definition.trim().length < minLen) return false;
     if (isInstructionText(p.term) || isInstructionText(p.definition)) return false;
-    const mathLike = isMathLikeText(p.term) || isMathLikeText(p.definition);
+    const mathLike = options?.mathSheet || isMathLikeText(p.term) || isMathLikeText(p.definition);
     if (!mathLike && (isOcrGarbage(p.term) || isOcrGarbage(p.definition))) return false;
     if (p.term.toLowerCase() === p.definition.toLowerCase()) return false;
-    if (isGarbageVocabTerm(p.term) || isGarbageVocabTerm(p.definition)) return false;
+    if (!options?.mathSheet && (isGarbageVocabTerm(p.term) || isGarbageVocabTerm(p.definition))) return false;
     const key = `${p.term.toLowerCase()}|${p.definition.toLowerCase()}`;
     if (seen.has(key)) return false;
     seen.add(key);
