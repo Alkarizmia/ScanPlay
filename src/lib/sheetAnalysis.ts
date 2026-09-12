@@ -197,7 +197,7 @@ export async function extractPairsFromImage(
     if (aiResult) {
       return pickMergedResult(aiResult, ocrPairs, getMaxWords(), { freeText });
     }
-    const isVocabLike = !freeText && sheetType !== 'notes' && sheetType !== 'definitions' && sheetType !== 'math';
+    const isVocabLike = !freeText && sheetType !== 'notes';
     return {
       pairs: isVocabLike ? finalizeVocabPairs(ocrPairs, getMaxWords()) : ocrPairs,
       source: 'ocr',
