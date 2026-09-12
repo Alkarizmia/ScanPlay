@@ -26,3 +26,7 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# Local credentials (never commit)
+secrets/
+**/capable-bivouac*.json
