@@ -124,6 +124,13 @@ export async function extractPairsFromImage(
           if (mathSheet) {
             return { pairs, source: 'ai', ignored };
           }
+          if ((ai.warnings ?? []).some((w) => w.startsWith('vision_') || w.startsWith('final_'))) {
+            console.info('[scan-pipeline]', {
+              warnings: ai.warnings,
+              mapped: mapped.length,
+              final: pairs.length,
+            });
+          }
           aiResult = { pairs, source: 'ai', ignored };
         } else if (!freeText) {
           const fromLabels = collectGlossedLabelsFromText(

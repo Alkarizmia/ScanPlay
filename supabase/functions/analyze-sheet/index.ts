@@ -28,6 +28,7 @@ import {
   visionOcrIsStrong,
   type VisionOcrPair,
 } from '../_shared/googleVision.ts';
+import { looksEn, looksFr } from '../_shared/scanLang.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -227,18 +228,6 @@ function pickRicherPayload(a: ExtractPayload, b: ExtractPayload, maxPairs: numbe
   const bLen = b.pairs?.length ?? 0;
   if (merged.pairs && merged.pairs.length >= Math.max(aLen, bLen)) return merged;
   return bLen > aLen ? { ...b, pairs: (b.pairs ?? []).slice(0, maxPairs) } : a;
-}
-
-function looksFr(text: string): boolean {
-  return (
-    /[àâäéèêëïîôùûüç]/i.test(text) ||
-    /\b\w+['’]\w+/u.test(text) ||
-    /\b(je|tu|nous|vous|qui|c'est|ça|le|la|les|des|du)\b/i.test(text)
-  );
-}
-
-function looksEn(text: string): boolean {
-  return /\b(i|i'm|i am|it's|my|who|leave|well|don't|am|are|is|the|and|with|every)\b/i.test(text);
 }
 
 /** Drop clear same-language junk when bilingual rows already exist. */
@@ -521,17 +510,21 @@ Deno.serve(async (req) => {
     }
 
     const mode = visionStrong ? 'vision-first' : 'gpt-first';
+    const finalCount = payload.pairs?.length ?? 0;
     payload.warnings = [
       ...(payload.warnings ?? []),
       ...visionWarnings,
       mode,
       `vision_pairs_${visionPairs.length}`,
+      `vision_raw_${vision?.rawPairCount ?? visionPairs.length}`,
+      `final_${finalCount}`,
     ].filter((w, i, arr) => typeof w === 'string' && arr.indexOf(w) === i);
 
     console.info('[analyze-sheet-done]', {
       channel: channel.label,
+      visionRaw: vision?.rawPairCount ?? visionPairs.length,
       vision: visionPairs.length,
-      final: payload.pairs?.length ?? 0,
+      final: finalCount,
       mode,
       visionWarnings,
     });

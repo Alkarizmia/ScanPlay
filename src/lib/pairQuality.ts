@@ -1,34 +1,12 @@
 import { lookupVocabGloss } from './loanwordGlosses';
+import { detectScanLang } from './scanLang';
 import type { WordPair } from '../types';
 
 const TITLE_FRAGMENT = /^(vocabulaire|quelques mots|dans la (lan|langue)|liste de|un peu de)\b/i;
 
 function detectLangSimple(text: string): 'nl' | 'fr' | 'en' | 'unknown' {
-  const t = text.trim();
-  let fr = 0;
-  let en = 0;
-  let nl = 0;
-  if (/[àâäéèêëïîôùûüç]/i.test(t)) fr += 2;
-  if (/\b\w+['’]\w+/u.test(t)) fr += 2; /* j'arrive, s'agit, n'aime */
-  if (/\b(le|la|les|des|du|je|tu|nous|vous|qui|c'est|ça|pas|très|mal|tête|avance|retard)\b/i.test(t)) {
-    fr += 2;
-  }
-  if (/\w+(lijk|heid|isch)\b/i.test(t)) nl += 2;
-  if (/\b(de|het|een|van|niet)\b/i.test(t) && fr === 0) nl += 1;
-  if (
-    /\b(i|i'm|i am|it's|it is|my|who|what|leave|well|done|don't|doesn't|am|are|is|early|late|ready|funny|easy|difficult|care|hard|coming|leaving|aches|knows|patient|not at all)\b/i.test(
-      t,
-    )
-  ) {
-    en += 2;
-  }
-  if (/\b(the|and|with|every|someone|before|after|without)\b/i.test(t)) en += 2;
-  const best = Math.max(fr, en, nl);
-  if (best === 0) return 'unknown';
-  if (fr === best && fr > en) return 'fr';
-  if (en === best && en > fr) return 'en';
-  if (nl === best && nl > fr && nl > en) return 'nl';
-  return 'unknown';
+  const lang = detectScanLang(text);
+  return lang === 'es' ? 'unknown' : lang;
 }
 
 /** Mid-phrase cut across columns: "De qui s'agit" → "il ?" or "La isse" → "le ici". */
