@@ -29,7 +29,11 @@ import {
   type VisionOcrPair,
 } from '../_shared/googleVision.ts';
 import { looksEn, looksFr } from '../_shared/scanLang.ts';
-import { sanitizeVocabExtractPairs } from '../_shared/vocabOcrCleanup.ts';
+import {
+  isFusedRowPair,
+  sanitizeVocabExtractPairs,
+  vocabTermDedupeKey,
+} from '../_shared/vocabOcrCleanup.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -199,7 +203,7 @@ function mergeExtractPayloads(primary: ExtractPayload, extra: ExtractPayload, ma
   const byTerm = new Map<string, ExtractPair>();
   for (const p of [...(primary.pairs ?? []), ...(extra.pairs ?? [])]) {
     if (!p || typeof p.term !== 'string' || typeof p.definition !== 'string') continue;
-    const termKey = p.term.toLowerCase().trim();
+    const termKey = vocabTermDedupeKey(p.term) || p.term.toLowerCase().trim();
     if (!termKey) continue;
     const prev = byTerm.get(termKey);
     if (!prev || pairLangScore(p) > pairLangScore(prev)) {
@@ -399,13 +403,37 @@ Ignore titres/headers. Corrige orthographe depuis la photo.`;
           if (parsed.finishReason === 'length') {
             payload.warnings = [...(payload.warnings ?? []), 'extraction_truncated'];
           }
-          /* GPT text first; Vision only adds missing terms (coverage). */
+          /* GPT text first. Vision only fills true gaps — never mash-row pairs (bottom gutter fail). */
           if (visionPairs.length > 0) {
-            payload = mergeExtractPayloads(
-              payload,
-              visionToPayload(sheetType, visionPairs, channel.maxPairs, visionWarnings),
-              channel.maxPairs,
+            const gptCount = payload.pairs?.length ?? 0;
+            const cleanVision = sanitizeVocabExtractPairs(
+              visionPairs
+                .filter((vp) => !isFusedRowPair(vp.term, vp.definition))
+                .map((vp) => ({
+                  term: vp.term,
+                  definition: vp.definition,
+                  faces: [] as string[],
+                  termLang: 'en',
+                  defLang: 'fr',
+                  confidence: vp.confidence,
+                })),
             );
+            /* If GPT already covered the sheet well, skip Vision add (avoids 24→32 junk). */
+            if (gptCount < 16 && cleanVision.length > 0) {
+              payload = mergeExtractPayloads(
+                payload,
+                {
+                  readable: true,
+                  sheetType: 'vocab',
+                  detectedLangs: ['en', 'fr'],
+                  pairs: cleanVision,
+                  warnings: visionWarnings,
+                },
+                channel.maxPairs,
+              );
+            } else if (gptCount >= 16) {
+              payload.warnings = [...(payload.warnings ?? []), 'vision_merge_skipped_gpt_coverage'];
+            }
           }
           let pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
           if (needsFullRecount(sheetType, pairs.length, channel.maxPairs, parsed.finishReason)) {

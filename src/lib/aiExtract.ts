@@ -3,7 +3,7 @@ import { lookupVocabGloss } from './loanwordGlosses';
 import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, dropSameLanguageOutliers, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
-import { normalizeVocabOcrCell } from './vocabOcrCleanup';
+import { normalizeVocabOcrCell, sanitizeVocabExtractPairs } from './vocabOcrCleanup';
 import { normalizeFaces } from './cardFaces';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { getMaxWords } from './planLimits';
@@ -152,7 +152,9 @@ function repairOcrGlitches(text: string): string {
 
 export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSheet?: boolean; freeText?: boolean }): WordPair[] {
   const freeText = options?.freeText === true;
-  const expanded = options?.mathSheet || freeText ? pairs : expandAlignedVocabPairs(pairs);
+  const precleaned =
+    options?.mathSheet || freeText ? pairs : (sanitizeVocabExtractPairs(pairs) as AiExtractPair[]);
+  const expanded = options?.mathSheet || freeText ? precleaned : expandAlignedVocabPairs(precleaned);
   const source = options?.mathSheet || freeText
     ? expanded
     : expanded.flatMap((p) => splitFusedBilingualPair(p));
