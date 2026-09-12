@@ -4,10 +4,97 @@ import type { WordPair } from '../types';
 const TITLE_FRAGMENT = /^(vocabulaire|quelques mots|dans la (lan|langue)|liste de|un peu de)\b/i;
 
 function detectLangSimple(text: string): 'nl' | 'fr' | 'en' | 'unknown' {
-  if (/[àâäéèêëïîôùûüç]|(tion|ment|eau)\b/i.test(text)) return 'fr';
-  if (/\w+(lijk|heid|isch)\b/i.test(text)) return 'nl';
-  if (/\b(the|and|with)\b/i.test(text)) return 'en';
+  const t = text.trim();
+  let fr = 0;
+  let en = 0;
+  let nl = 0;
+  if (/[àâäéèêëïîôùûüç]/i.test(t)) fr += 2;
+  if (/\b\w+['’]\w+/u.test(t)) fr += 2; /* j'arrive, s'agit, n'aime */
+  if (/\b(le|la|les|des|du|je|tu|nous|vous|qui|c'est|ça|pas|très|mal|tête|avance|retard)\b/i.test(t)) {
+    fr += 2;
+  }
+  if (/\w+(lijk|heid|isch)\b/i.test(t)) nl += 2;
+  if (/\b(de|het|een|van|niet)\b/i.test(t) && fr === 0) nl += 1;
+  if (
+    /\b(i|i'm|i am|it's|it is|my|who|what|leave|well|done|don't|doesn't|am|are|is|early|late|ready|funny|easy|difficult|care|hard|coming|leaving|aches|knows|patient|not at all)\b/i.test(
+      t,
+    )
+  ) {
+    en += 2;
+  }
+  if (/\b(the|and|with|every|someone|before|after|without)\b/i.test(t)) en += 2;
+  const best = Math.max(fr, en, nl);
+  if (best === 0) return 'unknown';
+  if (fr === best && fr > en) return 'fr';
+  if (en === best && en > fr) return 'en';
+  if (nl === best && nl > fr && nl > en) return 'nl';
   return 'unknown';
+}
+
+/** Mid-phrase cut across columns: "De qui s'agit" → "il ?" or "La isse" → "le ici". */
+export function looksLikeColumnSplitFragment(term: string, definition: string): boolean {
+  const t = term.trim();
+  const d = definition.trim();
+  if (!t || !d) return true;
+  const defWords = d.split(/\s+/).filter(Boolean);
+
+  /* French phrase cut mid-way into a tiny right fragment */
+  if (
+    defWords.length <= 2 &&
+    /^(il|elle|ici|là|ça|y|en)\b|[?!.]$/i.test(d) &&
+    (/\b(de qui|s['’]agit|laisse|c['’]est|j['’]|n['’]aime|m['’]en)\b/i.test(t) ||
+      (/\b(qui|je|tu)\b/i.test(t) && /['’]/.test(t)))
+  ) {
+    return true;
+  }
+
+  /* OCR broke one French word: "La isse" — not "a baby" / "de zoon" */
+  if (
+    /^[A-ZÀ-Ÿ][a-zà-ÿ]{0,3}\s+[a-zà-ÿ]{2,6}$/u.test(t) &&
+    defWords.length <= 3 &&
+    /^(le|la|les|un|une|de|du|ici)\b/i.test(d) &&
+    !/\b(de|het|een|a|an|the|to)\s+\S/i.test(t)
+  ) {
+    return true;
+  }
+
+  return false;
+}
+
+export function isCrossLanguageVocabPair(pair: {
+  term: string;
+  definition: string;
+  termLang?: string;
+  defLang?: string;
+}): boolean {
+  const hintedT = pair.termLang && pair.termLang !== 'unknown' ? pair.termLang : null;
+  const hintedD = pair.defLang && pair.defLang !== 'unknown' ? pair.defLang : null;
+  const tl = hintedT ?? detectLangSimple(pair.term);
+  const dl = hintedD ?? detectLangSimple(pair.definition);
+  if (tl !== 'unknown' && dl !== 'unknown') return tl !== dl;
+  return true;
+}
+
+/**
+ * When ≥60% of cards are langue1→langue2, drop same-language / split-phrase outliers
+ * (e.g. FR→FR cuts while the sheet is EN→FR).
+ */
+export function dropSameLanguageOutliers<T extends {
+  term: string;
+  definition: string;
+  termLang?: string;
+  defLang?: string;
+  faces?: string[];
+}>(pairs: T[]): T[] {
+  const withoutSplits = pairs.filter((p) => !looksLikeColumnSplitFragment(p.term, p.definition));
+  if (withoutSplits.length < 4) return withoutSplits;
+
+  const crossCount = withoutSplits.filter((p) => isCrossLanguageVocabPair(p)).length;
+  if (crossCount < Math.ceil(withoutSplits.length * 0.6)) return withoutSplits;
+
+  return withoutSplits.filter(
+    (p) => isCrossLanguageVocabPair(p) || (p.faces?.length ?? 0) > 0,
+  );
 }
 
 export function isSpellingHintDefinition(definition: string): boolean {

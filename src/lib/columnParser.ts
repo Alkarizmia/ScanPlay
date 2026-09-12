@@ -46,10 +46,22 @@ export function scoreDutch(text: string): number {
 export function scoreFrench(text: string): number {
   let score = 0;
   if (/l[''']|l'|\bd['']|\b(la|le|les|des|du|au|aux)\b/i.test(text)) score += 3;
-  if (/\b(à|entier|croire|c'est|entretemps|connaitre|connaître|enfantin|honnêtement|chaque)\b/i.test(text)) {
+  if (/\b\w+['’]\w+/u.test(text)) score += 2;
+  if (/\b(à|entier|croire|c'est|entretemps|connaitre|connaître|enfantin|honnêtement|chaque|qui|s'agit|laisse|j'arrive|je suis)\b/i.test(text)) {
     score += 2;
   }
   if (/[àâäéèêëïîôùûü]/i.test(text)) score += 1;
+  return score;
+}
+
+export function scoreEnglish(text: string): number {
+  let score = 0;
+  if (/\b(the|and|with|your|every|everyone|everybody|everything|someone|somebody|something|before|after|without)\b/i.test(text)) {
+    score += 3;
+  }
+  if (/\b(i|i'm|i am|it's|it is|my|who|leave|well|don't|am|are|is|early|late|ready|funny|easy|difficult|care|hard|coming|leaving|knows|patient)\b/i.test(text)) {
+    score += 2;
+  }
   return score;
 }
 
@@ -66,13 +78,13 @@ export function detectLang(text: string): LangCode {
   const nl = scoreDutch(text);
   const fr = scoreFrench(text);
   const es = scoreSpanish(text);
-  const en = /\b(the|and|with|your|every|everyone|everybody|everything|someone|somebody|something|before|after|without)\b/i.test(text) ? 3 : 0;
+  const en = scoreEnglish(text);
   const best = Math.max(nl, fr, es, en);
   if (best === 0) return 'unknown';
   if (es === best && es > fr + 1 && es > nl + 1) return 'es';
-  if (nl > fr + 1 && nl >= es) return 'nl';
-  if (fr > nl + 1 && fr >= es) return 'fr';
-  if (en === best) return 'en';
+  if (nl > fr + 1 && nl >= es && nl >= en) return 'nl';
+  if (fr > nl + 1 && fr >= es && fr >= en) return 'fr';
+  if (en === best && en >= fr && en >= nl) return 'en';
   return 'unknown';
 }
 

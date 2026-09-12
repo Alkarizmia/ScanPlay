@@ -31,22 +31,13 @@ export function resolveScanChannel(plan: Plan, platform: ScanClientPlatform): Sc
   };
 }
 
-/** Prefixed onto the user prompt so the model never guesses Free vs Pro. */
+/** Short channel header — avoid burning tokens on prose. */
 export function buildScanChannelPrompt(channel: ScanChannel): string {
-  return `CANAL SCANPLAY (décidé côté serveur via le profil Supabase de l'utilisateur — ne suppose PAS le plan)
-- plan abonnement : ${channel.plan}
-- appareil client : ${channel.platform}
-- plafond paires pour CE scan : ${channel.maxPairs}
-- modèle vision : ${channel.model}
-
-Règles canal :
-- Extrais TOUTES les paires / idées visibles jusqu'à ${channel.maxPairs}.
-- Le plan "${channel.plan}" change UNIQUEMENT le plafond (${channel.maxPairs}), PAS la qualité de lecture ligne à ligne.
-- INTERDIT de renvoyer un échantillon (4, 5, 7, 8, 10, 12…) s'il reste des lignes lisibles.
-- Si la fiche a 13 ou 18 lignes, renvoie 13 ou 18 paires (sauf si > ${channel.maxPairs}, alors coupe à ${channel.maxPairs}).`;
+  return `Canal serveur: plan=${channel.plan} appareil=${channel.platform} plafond=${channel.maxPairs}
+Extrais TOUTES les lignes visibles jusqu'à ${channel.maxPairs}. Pas d'échantillon (8/10/12).`;
 }
 
-/** Thin first pass → full recount (not "missing only"). */
+/** Thin first pass → one full recount. */
 export function needsFullRecount(
   sheetType: string,
   pairCount: number,
@@ -54,12 +45,10 @@ export function needsFullRecount(
   finishReason?: string,
 ): boolean {
   if (sheetType === 'math') return false;
-  if (pairCount <= 0) return false;
-  if (pairCount >= maxPairs) return false;
+  if (pairCount <= 0 || pairCount >= maxPairs) return false;
   if (finishReason === 'length') return true;
-  /* Classic undersample is ~8 ; recount while clearly under quota. */
-  const sparseCeil = Math.min(24, Math.max(12, Math.floor(maxPairs * 0.5)));
-  return pairCount <= sparseCeil;
+  /* Undersample zone ~8–14 while quota allows more */
+  return pairCount < Math.min(20, maxPairs);
 }
 
 export function buildFullRecountHint(
@@ -68,16 +57,12 @@ export function buildFullRecountHint(
   maxPairs: number,
 ): string {
   const listed = pairs
-    .slice(0, 50)
-    .map((p) => `- ${String(p.term ?? '').trim()} → ${String(p.definition ?? '').trim()}`)
-    .filter((line) => line.length > 5)
-    .join('\n');
-  return `RELECTURE OBLIGATOIRE (couverture incomplète) :
-La 1re passe n'a renvoyé que ${pairs.length} paires (plafond ${maxPairs}). C'est trop peu si la fiche en contient plus.
-Relis TOUTE l'image (haut → bas, toutes colonnes), y compris texte devant drapeaux/déco.
-Renvoie un JSON COMPLET au format imposé avec TOUTES les paires visibles (réinclus celles déjà vues + les manquantes).
-INTERDIT de t'arrêter à 8. Type attendu : ${sheetType}. Plafond : ${maxPairs}.
-
-Paires déjà vues (à garder ou corriger, et COMPLÉTER) :
-${listed || '(aucune)'}`;
+    .slice(0, 30)
+    .map((p) => `${String(p.term ?? '').trim()}→${String(p.definition ?? '').trim()}`)
+    .filter((line) => line.length > 3)
+    .join(' | ');
+  return `Couverture insuffisante (${pairs.length}/${maxPairs}). Relis toute la fiche.
+Liste 2 colonnes: gauche=term (langue1), droite=definition (langue2). JAMAIS couper une phrase FR en deux (interdit: "De qui s'agit"→"il ?").
+JSON complet avec TOUTES les paires (y compris déjà vues). Type=${sheetType}.
+Déjà: ${listed || '—'}`;
 }

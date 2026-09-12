@@ -11,7 +11,7 @@ import {
   scanReasoningEffort,
 } from '../_shared/openaiModels.ts';
 import {
-  SCANPLAY_AI_SYSTEM_PROMPT,
+  selectScanSystemPrompt,
   SCANPLAY_EXTRACT_JSON_SCHEMA,
   buildScanUserPrompt,
 } from '../_shared/scanPrompt.ts';
@@ -56,16 +56,17 @@ interface ExtractPayload {
   warnings?: string[];
 }
 
-/** Headroom for reasoning tokens + dense JSON (≈25–250 cards). */
+/** Headroom for JSON pairs — keep modest to limit cost; recount covers thin extracts. */
 function outputBudget(sheetType: string, maxPairs: number, reasoning: boolean): number {
-  if (sheetType === 'math') return reasoning ? 20000 : 12000;
-  const perPair = reasoning ? 180 : 120;
-  const base = reasoning ? 8000 : 4000;
-  const scaled = Math.min(48000, base + maxPairs * perPair);
+  if (sheetType === 'math') return reasoning ? 14000 : 10000;
+  const capped = Math.min(maxPairs, 80);
+  const perPair = reasoning ? 100 : 80;
+  const base = reasoning ? 4000 : 2500;
+  const scaled = Math.min(24000, base + capped * perPair);
   if (sheetType === 'notes' || sheetType === 'definitions') {
-    return Math.max(reasoning ? 18000 : 12000, scaled);
+    return Math.max(reasoning ? 10000 : 8000, scaled);
   }
-  return Math.max(reasoning ? 16000 : 8000, scaled);
+  return Math.max(reasoning ? 8000 : 5000, scaled);
 }
 
 function buildOpenAiBody(
@@ -92,7 +93,7 @@ function buildOpenAiBody(
       json_schema: SCANPLAY_EXTRACT_JSON_SCHEMA,
     },
     messages: [
-      { role: 'system', content: SCANPLAY_AI_SYSTEM_PROMPT },
+      { role: 'system', content: selectScanSystemPrompt(sheetType) },
       {
         role: 'user',
         content: [
@@ -342,7 +343,7 @@ Deno.serve(async (req) => {
 
     let pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
     let pass = 0;
-    const maxRecountPasses = 2;
+    const maxRecountPasses = 1;
     while (
       pass < maxRecountPasses &&
       needsFullRecount(sheetType, pairs.length, channel.maxPairs, pass === 0 ? finishReason : undefined)

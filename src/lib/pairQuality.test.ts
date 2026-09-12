@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   enrichTeachablePairs,
+  dropSameLanguageOutliers,
+  looksLikeColumnSplitFragment,
+  isCrossLanguageVocabPair,
   isGarbageVocabTerm,
   isPlayableDefinition,
   isSectionTitle,
@@ -21,6 +24,29 @@ describe('pairQuality', () => {
     expect(isSpellingHintDefinition('…nais')).toBe(true);
     expect(isGarbageVocabTerm('dans la lan')).toBe(true);
     expect(isPlayableDefinition('…itif', 'Apéritif')).toBe(false);
+  });
+
+  it('drops FR→FR column-split fragments when majority is EN→FR', () => {
+    expect(looksLikeColumnSplitFragment("De qui s'agit", 'il ?')).toBe(true);
+    expect(looksLikeColumnSplitFragment('La isse', 'le ici')).toBe(true);
+    expect(looksLikeColumnSplitFragment('Who is it?', "De qui s'agit-il ?")).toBe(false);
+
+    const cleaned = dropSameLanguageOutliers([
+      { term: 'I am leaving', definition: "Je m'en vais", termLang: 'en', defLang: 'fr' },
+      { term: 'I work hard', definition: 'Je travaille dur', termLang: 'en', defLang: 'fr' },
+      { term: 'I am ready', definition: 'Je suis prêt(e)', termLang: 'en', defLang: 'fr' },
+      { term: "It's funny", definition: "C'est marrant", termLang: 'en', defLang: 'fr' },
+      { term: "It's very easy", definition: "C'est très facile", termLang: 'en', defLang: 'fr' },
+      { term: "It's very difficult", definition: "C'est très difficile", termLang: 'en', defLang: 'fr' },
+      { term: 'Who knows?', definition: 'Qui sait?', termLang: 'en', defLang: 'fr' },
+      { term: "De qui s'agit", definition: 'il ?', termLang: 'fr', defLang: 'fr' },
+      { term: 'La isse', definition: 'le ici', termLang: 'fr', defLang: 'fr' },
+      { term: 'Be patient', definition: 'Sois patient', termLang: 'en', defLang: 'fr' },
+    ]);
+    expect(cleaned.some((p) => /s'agit/i.test(p.term))).toBe(false);
+    expect(cleaned.some((p) => /isse/i.test(p.term))).toBe(false);
+    expect(cleaned.length).toBeGreaterThanOrEqual(7);
+    expect(isCrossLanguageVocabPair({ term: 'I am coming', definition: "J'arrive", termLang: 'en', defLang: 'fr' })).toBe(true);
   });
 
   it('rejects OCR fragments and keeps real translations', () => {

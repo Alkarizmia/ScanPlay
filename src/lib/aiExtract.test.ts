@@ -26,7 +26,8 @@ describe('aiExtract', () => {
     const mapped = mapAiPairsToWordPairs([
       { term: longTerm, definition: 'ok', termLang: 'fr', defLang: 'fr' },
     ]);
-    expect(mapped[0].term).toHaveLength(55);
+    expect(mapped[0].term.length).toBeLessThanOrEqual(70);
+    expect(mapped[0].term.length).toBe(60);
   });
 
   it('keeps English article and infinitive vocab instead of treating them as OCR junk', () => {

@@ -144,8 +144,8 @@ export function isValidVocabPair(pair: WordPair, options?: { mathSheet?: boolean
     if (pair.term.toLowerCase() === pair.definition.toLowerCase()) return false;
     return true;
   }
-  if (pair.term.length > 55 || pair.definition.length > 120) return false;
-  if (pair.term.split(/\s+/).length > 6 || pair.definition.split(/\s+/).length > 10) return false;
+  if (pair.term.length > 70 || pair.definition.length > 140) return false;
+  if (pair.term.split(/\s+/).length > 8 || pair.definition.split(/\s+/).length > 10) return false;
   return isCoherentPair(pair);
 }
 

@@ -2,7 +2,7 @@ import { isAbortError, throwIfAborted } from './abort';
 import { lookupVocabGloss } from './loanwordGlosses';
 import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
-import { dropSiblingOcrFragments, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
+import { dropSiblingOcrFragments, dropSameLanguageOutliers, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
 import { normalizeFaces } from './cardFaces';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { getMaxWords } from './planLimits';
@@ -165,10 +165,10 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
         const gloss = lookupVocabGloss(rawTerm);
         if (gloss) rawDef = gloss;
       }
-      const term = keepRaw ? rawTerm.slice(0, 120) : fixOcrLine(rawTerm).slice(0, 55);
+      const term = keepRaw ? rawTerm.slice(0, 120) : fixOcrLine(rawTerm).slice(0, 70);
       const definition = keepRaw
         ? rawDef.slice(0, 280)
-        : fixOcrLine(rawDef).slice(0, 120);
+        : fixOcrLine(rawDef).slice(0, 140);
       const faces = keepRaw
         ? normalizeFaces(p.faces)
         : normalizeFaces((p.faces ?? []).map((f) => normalizeVocabCell(f)));
@@ -208,7 +208,7 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
       );
     });
   if (options?.mathSheet || options?.freeText) return mapped;
-  return dropSiblingOcrFragments(mapped);
+  return dropSameLanguageOutliers(dropSiblingOcrFragments(mapped));
 }
 
 function pairKey(term: string, definition: string): string {
