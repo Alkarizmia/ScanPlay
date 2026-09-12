@@ -37,6 +37,7 @@ Autres fiches : term = libellé vu (Domaine, loi, grandeur…) ; definition = fo
 LaTeX : \\\\frac, ^{}, _{}, \\\\sqrt, \\\\sin, \\\\cos, \\\\tan, \\\\mathbb{R}…
 Ignore titres, chapitres, noms de prof, numéros de page. Pas d'exercice type mémorisé.
 Extrais TOUTES les lignes jusqu'à maxPairs.
+readable=true dès ≥2 paires (une table de formules courte compte).
 
 Sortie: readable, sheetType, detectedLangs, pairs[{term,definition,faces,termLang,defLang,confidence}], warnings.`;
 

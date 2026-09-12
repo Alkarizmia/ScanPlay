@@ -644,7 +644,8 @@ Ignore titres/headers. Corrige orthographe depuis la photo.`;
       visionWarnings,
     });
 
-    if (supabaseAdmin) {
+    /* Don't burn a daily scan when extraction produced nothing usable. */
+    if (supabaseAdmin && finalCount >= 2) {
       await incrementScanCount(supabaseAdmin, user.id);
     }
 

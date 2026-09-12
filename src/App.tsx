@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
-import { consumeBootIntent } from './lib/bootIntent';
+import { consumeBootIntent, consumePendingScanAfterAuth, setPendingScanAfterAuth } from './lib/bootIntent';
 import './index.css';
 import './styles/design-system.css';
 import './styles/responsive.css';
@@ -411,8 +411,15 @@ export default function App() {
       playSound('appLaunch');
     }
     const bootIntent = consumeBootIntent();
-    if (bootIntent === 'scan') startScanFlow();
     if (bootIntent === 'auth') openAuth('login');
+    if (bootIntent === 'scan') {
+      if (isLoggedIn()) {
+        startScanFlow();
+      } else {
+        setPendingScanAfterAuth();
+        openAuth('login');
+      }
+    }
     void initAuth(refresh);
     const unsubRecovery = onPasswordRecovery(() => {
       goToPasswordSettings();
@@ -421,6 +428,9 @@ export default function App() {
       if (!isLoggedIn()) return;
       openAdoptedGuestDeckRef.current();
       if (shouldShowStreakLostModal()) setShowStreakLost(true);
+      if (consumePendingScanAfterAuth()) {
+        window.setTimeout(() => startScanFlow(), 0);
+      }
       setRefreshKey((k) => k + 1);
     });
     const unsubLifecycle = setupSyncLifecycle();
@@ -428,6 +438,9 @@ export default function App() {
       await waitForAuth();
       if (consumePasswordRecoveryPending()) {
         goToPasswordSettings();
+      }
+      if (isLoggedIn() && consumePendingScanAfterAuth()) {
+        startScanFlow();
       }
       if (!isLoggedIn() || !isStripeCheckoutEnabled()) return;
       try {
@@ -705,7 +718,7 @@ export default function App() {
             return;
           }
         }
-        if (!isDemo && !canOpenGamePath(parsed)) {
+        if (!isDemo && !canOpenGamePath(parsed, sheetType === 'math' ? { mathSheet: true } : undefined)) {
           failImport(t('sheetUnreadable', locale));
           return;
         }
@@ -755,7 +768,7 @@ export default function App() {
         return;
       }
 
-      if (!usedSample && !canOpenGamePath(parsed)) {
+      if (!usedSample && !canOpenGamePath(parsed, sheetType === 'math' ? { mathSheet: true } : undefined)) {
         failImport(t('sheetUnreadable', locale));
         return;
       }
@@ -787,13 +800,14 @@ export default function App() {
       markNavReplace();
       setFlow('reviewCards');
     },
-    [goModes, locale, failImport],
+    [goModes, locale, failImport, sheetType],
   );
 
   const processText = useCallback(
     (text: string, thumbnail?: string, usedSample = false) => {
       const raw = parseContent(text, sheetType);
-      finishExtracted(coercePlayablePairs(raw), thumbnail, usedSample);
+      const mathOpts = sheetType === 'math' ? { mathSheet: true } : undefined;
+      finishExtracted(coercePlayablePairs(raw, mathOpts), thumbnail, usedSample);
     },
     [finishExtracted, sheetType],
   );
@@ -982,8 +996,9 @@ export default function App() {
           if (ignored?.length) allIgnored.push(...ignored);
         }
         if (finished || ac.signal.aborted) return;
-        const playable = coercePlayablePairs(allPairs);
-        if (canOpenGamePath(playable)) {
+        const mathOpts = sheetType === 'math' ? { mathSheet: true } : undefined;
+        const playable = coercePlayablePairs(allPairs, mathOpts);
+        if (canOpenGamePath(playable, mathOpts)) {
           if (guestScan) recordGuestScan();
           else {
             for (let s = 0; s < scanFiles.length; s += 1) recordScan();
@@ -1940,6 +1955,7 @@ export default function App() {
           refreshKey={refreshKey}
           onRefresh={refresh}
           onOpenDeck={openHistoryDeck}
+          onRescan={() => startScanFlow()}
           onUpgrade={(reason) => setUpgradeReason(reason)}
           onToast={showToast}
           onAuth={() => setFlow('auth')}
