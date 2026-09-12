@@ -344,8 +344,16 @@ export function pairFromColumnCells(left: string, right: string): WordPair[] {
 
   if (isGarbageVocabTerm(termPrimary) || isGarbageVocabTerm(defPrimary)) return [];
   if (isSectionTitle(termPrimary) || isSectionTitle(defPrimary)) return [];
-  if (isExampleSentence(termPrimary) && termPrimary.split(/\s+/).length >= 4) return [];
-  if (isExampleSentence(defPrimary) && defPrimary.split(/\s+/).length >= 4) return [];
+  const bilingualPhrase =
+    assigned.termLang !== 'unknown' &&
+    assigned.defLang !== 'unknown' &&
+    assigned.termLang !== assigned.defLang;
+  if (isExampleSentence(termPrimary) && termPrimary.split(/\s+/).length >= 4 && !bilingualPhrase) {
+    return [];
+  }
+  if (isExampleSentence(defPrimary) && defPrimary.split(/\s+/).length >= 4 && !bilingualPhrase) {
+    return [];
+  }
 
   if (termPrimary.length >= 2 && defPrimary.length >= 2) {
     pairs.push({

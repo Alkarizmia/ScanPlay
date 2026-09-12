@@ -37,7 +37,7 @@ export function buildScanChannelPrompt(channel: ScanChannel): string {
 Extrais TOUTES les lignes visibles jusqu'à ${channel.maxPairs}. Pas d'échantillon.`;
 }
 
-/** Thin first pass → one recount only when clearly undersampled (saves OpenAI $). */
+/** Thin first pass → recount when clearly short of a full sheet (not only classic ~8). */
 export function needsFullRecount(
   sheetType: string,
   pairCount: number,
@@ -47,8 +47,8 @@ export function needsFullRecount(
   if (sheetType === 'math') return false;
   if (pairCount <= 0 || pairCount >= maxPairs) return false;
   if (finishReason === 'length') return true;
-  /* Only retry the classic ~8-card undersample — not every 12–15 pass. */
-  return pairCount <= 8;
+  /* Phrase sheets often land at 9–12 without a second pass — push toward full coverage. */
+  return pairCount < Math.min(maxPairs, 16);
 }
 
 export function buildFullRecountHint(

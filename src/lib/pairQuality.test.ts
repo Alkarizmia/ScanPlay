@@ -49,6 +49,17 @@ describe('pairQuality', () => {
     expect(isCrossLanguageVocabPair({ term: 'I am coming', definition: "J'arrive", termLang: 'en', defLang: 'fr' })).toBe(true);
   });
 
+  it('keeps bilingual translation phrases that look like example sentences', () => {
+    const kept = enrichTeachablePairs([
+      { term: 'Who is it?', definition: "De qui s'agit-il ?", termLang: 'en', defLang: 'fr' },
+      { term: 'I am coming', definition: "J'arrive", termLang: 'en', defLang: 'fr' },
+      { term: "It's very difficult", definition: "C'est très difficile", termLang: 'en', defLang: 'fr' },
+      { term: "I don't care", definition: "Ça m'est égal", termLang: 'en', defLang: 'fr' },
+    ]);
+    expect(kept).toHaveLength(4);
+    expect(kept.some((p) => /Who is it/i.test(p.term))).toBe(true);
+  });
+
   it('drops FR→FR misaligned rows even when they outnumber good EN→FR cards', () => {
     const cleaned = dropSameLanguageOutliers([
       { term: 'I work hard', definition: 'Je travaille dur', termLang: 'en', defLang: 'fr' },

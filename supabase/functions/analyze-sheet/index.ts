@@ -181,17 +181,30 @@ function visionToPayload(
   };
 }
 
+function pairLangScore(p: ExtractPair): number {
+  const term = String(p.term ?? '');
+  const def = String(p.definition ?? '');
+  const enT = looksEn(term);
+  const frT = looksFr(term);
+  const enD = looksEn(def);
+  const frD = looksFr(def);
+  if ((enT && frD) || (frT && enD)) return 3;
+  if ((frT && frD && !enT) || (enT && enD && !frD)) return 0;
+  return 1;
+}
+
 function mergeExtractPayloads(primary: ExtractPayload, extra: ExtractPayload, maxPairs: number): ExtractPayload {
-  const outPairs: ExtractPair[] = [];
-  const seen = new Set<string>();
+  const byTerm = new Map<string, ExtractPair>();
   for (const p of [...(primary.pairs ?? []), ...(extra.pairs ?? [])]) {
     if (!p || typeof p.term !== 'string' || typeof p.definition !== 'string') continue;
     const termKey = p.term.toLowerCase().trim();
-    if (!termKey || seen.has(termKey)) continue;
-    seen.add(termKey);
-    outPairs.push(p);
-    if (outPairs.length >= maxPairs) break;
+    if (!termKey) continue;
+    const prev = byTerm.get(termKey);
+    if (!prev || pairLangScore(p) > pairLangScore(prev)) {
+      byTerm.set(termKey, p);
+    }
   }
+  const outPairs = [...byTerm.values()].slice(0, maxPairs);
   const warnings = [
     ...(Array.isArray(primary.warnings) ? primary.warnings.filter((w) => typeof w === 'string') : []),
     ...(Array.isArray(extra.warnings) ? extra.warnings.filter((w) => typeof w === 'string') : []),
@@ -367,8 +380,50 @@ Deno.serve(async (req) => {
 
     if (visionStrong) {
       payload = visionToPayload(sheetType, visionPairs, channel.maxPairs, visionWarnings);
-      /* ≥10 solid column pairs → trust Vision; don't let a light GPT call invent FR→FR. */
-      payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
+      const coverageTarget = Math.min(channel.maxPairs, 18);
+      /* ≥18 solid bilingual rows → Vision alone. Otherwise light GPT completes missing lines. */
+      if (visionPairs.length >= coverageTarget) {
+        payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
+      } else {
+        const lightCall = await requestOpenAi(
+          openaiKey,
+          buildOpenAiBody(
+            channel,
+            sheetType,
+            imageBase64,
+            mimeType,
+            'low',
+            buildVisionHint(visionPairs, vision?.fullText ?? '', channel.maxPairs),
+            true,
+          ),
+        );
+        const { payload: gptPayload } = await parseOpenAiPayload(lightCall);
+        if (gptPayload) {
+          payload = mergeExtractPayloads(payload, gptPayload, channel.maxPairs);
+          payload.warnings = [...(payload.warnings ?? []), 'vision_plus_light_gpt'];
+        } else {
+          payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
+        }
+        const afterLight = payload.pairs?.length ?? 0;
+        if (needsFullRecount(sheetType, afterLight, channel.maxPairs)) {
+          const contCall = await requestOpenAi(
+            openaiKey,
+            buildOpenAiBody(
+              channel,
+              sheetType,
+              imageBase64,
+              mimeType,
+              'high',
+              buildFullRecountHint(sheetType, payload.pairs ?? [], channel.maxPairs),
+            ),
+          );
+          const contParsed = await parseOpenAiPayload(contCall);
+          if (contParsed.payload) {
+            payload = pickRicherPayload(payload, contParsed.payload, channel.maxPairs);
+            payload.warnings = [...(payload.warnings ?? []), 'vision_gpt_recount'];
+          }
+        }
+      }
     } else {
       const visionHint =
         visionPairs.length >= 4

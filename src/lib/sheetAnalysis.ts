@@ -100,12 +100,24 @@ export async function extractPairsFromImage(
         } else if (freeText) {
           pairs = coercePlayablePairs(mapped);
         } else {
-          pairs = coercePlayablePairs(
-            reconcileWordListPairs(
-              mapped,
-              ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n'),
-            ),
+          const fromVision = (ai.warnings ?? []).some(
+            (w) =>
+              w.includes('vision_ocr') ||
+              w.includes('vision_only') ||
+              w.includes('vision-first') ||
+              w.includes('vision_plus_light_gpt'),
           );
+          if (fromVision) {
+            /* Vision phrase sheets: skip enrichTeachablePairs which drops isExampleSentence terms. */
+            pairs = coercePlayablePairs(mapped);
+          } else {
+            pairs = coercePlayablePairs(
+              reconcileWordListPairs(
+                mapped,
+                ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n'),
+              ),
+            );
+          }
           pairs = dropSameLanguageOutliers(pairs);
         }
         if (canOpenGamePath(pairs)) {

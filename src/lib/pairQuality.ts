@@ -329,8 +329,24 @@ export function looksLikeStandaloneVocabWord(text: string): boolean {
 export function enrichPairWithGloss(pair: WordPair): WordPair | null {
   if (isGarbageVocabTerm(pair.term)) return null;
   if (isSectionTitle(pair.term) || isSectionTitle(pair.definition)) return null;
-  if (isExampleSentence(pair.term)) return null;
-  if (isExampleSentence(pair.definition) && pair.definition.split(/\s+/).length >= 4) return null;
+
+  const termWords = pair.term.trim().split(/\s+/).filter(Boolean).length;
+  const defWords = pair.definition.trim().split(/\s+/).filter(Boolean).length;
+  const shortPhrase = termWords <= 8 && defWords <= 8;
+  const tl = pair.termLang && pair.termLang !== 'unknown' ? pair.termLang : null;
+  const dl = pair.defLang && pair.defLang !== 'unknown' ? pair.defLang : null;
+  const clearCross =
+    Boolean(tl && dl && tl !== dl) ||
+    (isCrossLanguageVocabPair(pair) &&
+      !isSpellingHintDefinition(pair.definition) &&
+      detectLangSimple(pair.term) !== 'unknown' &&
+      detectLangSimple(pair.definition) !== 'unknown' &&
+      detectLangSimple(pair.term) !== detectLangSimple(pair.definition));
+  const bilingualPhrase = shortPhrase && clearCross && !isSpellingHintDefinition(pair.definition);
+
+  /* Translation-list phrases ("Who is it?" → "De qui s'agit-il ?") are not note sentences. */
+  if (isExampleSentence(pair.term) && !bilingualPhrase) return null;
+  if (isExampleSentence(pair.definition) && defWords >= 4 && !bilingualPhrase) return null;
 
   const gloss = lookupVocabGloss(pair.term);
   const wrongColumnPair =
@@ -343,6 +359,10 @@ export function enrichPairWithGloss(pair: WordPair): WordPair | null {
   }
 
   if (isPlayableDefinition(pair.definition, pair.term)) return pair;
+  /* Short bilingual cards ("I am coming" → "J'arrive") are playable even if def is 1 token. */
+  if (bilingualPhrase && pair.term.trim().length >= 2 && pair.definition.trim().length >= 2) {
+    return pair;
+  }
   if (!gloss) return null;
 
   return { ...pair, definition: gloss, defLang: 'fr' };
