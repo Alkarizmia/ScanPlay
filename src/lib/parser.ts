@@ -57,6 +57,14 @@ function parseAdjacentLines(lines: string[]): WordPair[] {
 
     const pair = { term: a, definition: b };
     if (!isBasicPair(pair)) continue;
+    /* Never invent FR→FR / EN→EN by stacking consecutive same-language lines. */
+    const aFr = /[àâäéèêëïîôùûüç]/i.test(a) || /\b\w+['’]\w+/u.test(a) || /\b(je|tu|c'est|ça)\b/i.test(a);
+    const bFr = /[àâäéèêëïîôùûüç]/i.test(b) || /\b\w+['’]\w+/u.test(b) || /\b(je|tu|c'est|ça)\b/i.test(b);
+    const aEn = /\b(i|i'm|i am|it's|my|who|leave|well|don't|am|are|is)\b/i.test(a);
+    const bEn = /\b(i|i'm|i am|it's|my|who|leave|well|don't|am|are|is)\b/i.test(b);
+    if ((aFr && bFr && !aEn && !bEn) || (aEn && bEn && !aFr && !bFr)) {
+      continue;
+    }
     pairs.push(pair);
     i += 1;
   }

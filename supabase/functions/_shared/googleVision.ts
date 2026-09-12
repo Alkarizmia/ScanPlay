@@ -36,6 +36,11 @@ interface VisionWord {
   maxY: number;
 }
 
+interface ColumnLine {
+  text: string;
+  cy: number;
+}
+
 function b64url(data: string | ArrayBuffer): string {
   const bytes =
     typeof data === 'string'
@@ -174,6 +179,18 @@ function joinWords(words: VisionWord[]): string {
     .map((w) => w.text)
     .join(' ')
     .replace(/\s+/g, ' ')
+    .replace(/\s+([?!.,;:])/g, '$1')
+    .replace(/\(\s+/g, '(')
+    .replace(/\s+\)/g, ')')
+    .replace(/\s+-\s+/g, '-')
+    .trim();
+}
+
+function cleanCell(text: string): string {
+  return text
+    .replace(/[.\s]+$/g, '')
+    .replace(/^[.\s]+/g, '')
+    .replace(/\s+/g, ' ')
     .trim();
 }
 
@@ -181,35 +198,118 @@ function looksLikeNoise(text: string): boolean {
   const t = text.trim();
   if (t.length < 2) return true;
   if (/^follow me/i.test(t)) return true;
+  if (/^for more/i.test(t)) return true;
   if (/^page\s*\d+/i.test(t)) return true;
   return false;
 }
 
-/** Split dual-column sheet lines into term/definition using x geometry. */
+function looksFr(text: string): boolean {
+  return (
+    /[àâäéèêëïîôùûüç]/i.test(text) ||
+    /\b\w+['’]\w+/u.test(text) ||
+    /\b(je|tu|nous|vous|qui|c'est|ça|le|la|les|des|du|suis|mal|tête|avance|retard)\b/i.test(text)
+  );
+}
+
+function looksEn(text: string): boolean {
+  return /\b(i|i'm|i am|it's|it is|my|who|leave|well|don't|doesn't|am|are|is|the|and|with|every|early|late|ready|funny|easy|difficult|care|hard|coming|leaving|aches|knows|patient)\b/i.test(
+    text,
+  );
+}
+
+/** Prefer bilingual EN↔FR (or clearly different scripts/langs). */
+export function isVisionBilingualPair(term: string, definition: string): boolean {
+  const enT = looksEn(term);
+  const frT = looksFr(term);
+  const enD = looksEn(definition);
+  const frD = looksFr(definition);
+  if ((enT && frD) || (frT && enD)) return true;
+  if ((frT && frD && !enT && !enD) || (enT && enD && !frT && !frD)) return false;
+  /* Unknown but different shapes — keep for GPT to refine. */
+  return term.trim().toLowerCase() !== definition.trim().toLowerCase();
+}
+
+/** Largest central gap in X → split left/right columns (better than median midX). */
+export function findColumnSplitX(words: VisionWord[]): number {
+  const xs = words.map((w) => w.cx).sort((a, b) => a - b);
+  if (xs.length < 4) return xs[Math.floor(xs.length / 2)] ?? 0;
+  const pageMid = (xs[0]! + xs[xs.length - 1]!) / 2;
+  let bestScore = -1;
+  let bestAt = xs[Math.floor(xs.length / 2)]!;
+  for (let i = 1; i < xs.length; i += 1) {
+    const gap = xs[i]! - xs[i - 1]!;
+    const at = (xs[i]! + xs[i - 1]!) / 2;
+    const centered = 1 - Math.abs(at - pageMid) / (Math.abs(pageMid) || 1);
+    const score = gap * (0.45 + 0.55 * Math.max(0, centered));
+    if (score > bestScore) {
+      bestScore = score;
+      bestAt = at;
+    }
+  }
+  return bestAt;
+}
+
+function toColumnLines(words: VisionWord[]): ColumnLine[] {
+  return clusterLines(words)
+    .map((line) => ({
+      text: cleanCell(joinWords(line)),
+      cy: line.reduce((s, w) => s + w.cy, 0) / line.length,
+    }))
+    .filter((l) => l.text.length >= 2 && !looksLikeNoise(l.text));
+}
+
+/**
+ * Split dual-column sheet into term/definition by:
+ * 1) finding the gutter between columns
+ * 2) clustering each column into lines
+ * 3) matching lines by vertical alignment
+ */
 export function pairsFromVisionWords(words: VisionWord[]): VisionOcrPair[] {
   if (words.length < 4) return [];
-  const xs = words.map((w) => w.cx).sort((a, b) => a - b);
-  const midX = xs[Math.floor(xs.length / 2)] ?? 0;
-  const lines = clusterLines(words);
+  const midX = findColumnSplitX(words);
+  const leftLines = toColumnLines(words.filter((w) => w.cx < midX));
+  const rightLines = toColumnLines(words.filter((w) => w.cx >= midX));
+  if (leftLines.length < 2 || rightLines.length < 2) return [];
+
+  const rowGap =
+    leftLines.length >= 2
+      ? Math.abs(leftLines[1]!.cy - leftLines[0]!.cy)
+      : 40;
+  const maxDy = Math.max(22, rowGap * 0.65);
+
+  const usedRight = new Set<number>();
   const pairs: VisionOcrPair[] = [];
 
-  for (const line of lines) {
-    const left = line.filter((w) => w.cx < midX);
-    const right = line.filter((w) => w.cx >= midX);
-    const term = joinWords(left);
-    const definition = joinWords(right);
-    if (!term || !definition) continue;
-    if (looksLikeNoise(term) || looksLikeNoise(definition)) continue;
-    if (term.toLowerCase() === definition.toLowerCase()) continue;
-    /* Skip single-column leftovers (whole line fell on one side). */
-    if (left.length === 0 || right.length === 0) continue;
+  for (const left of leftLines) {
+    let bestIdx = -1;
+    let bestDy = Number.POSITIVE_INFINITY;
+    for (let i = 0; i < rightLines.length; i += 1) {
+      if (usedRight.has(i)) continue;
+      const dy = Math.abs(left.cy - rightLines[i]!.cy);
+      if (dy < bestDy) {
+        bestDy = dy;
+        bestIdx = i;
+      }
+    }
+    if (bestIdx < 0 || bestDy > maxDy) continue;
+    const right = rightLines[bestIdx]!;
+    usedRight.add(bestIdx);
+    if (left.text.toLowerCase() === right.text.toLowerCase()) continue;
+    if (looksLikeNoise(left.text) || looksLikeNoise(right.text)) continue;
     pairs.push({
-      term: term.replace(/[.\s]+$/g, '').trim(),
-      definition: definition.replace(/[.\s]+$/g, '').trim(),
-      confidence: 'high',
+      term: left.text,
+      definition: right.text,
+      confidence: bestDy <= maxDy * 0.45 ? 'high' : 'medium',
     });
   }
 
+  return pairs;
+}
+
+/** Keep translation-looking rows; drop FR→FR / EN→EN gutter mistakes. */
+export function filterBilingualVisionPairs(pairs: VisionOcrPair[]): VisionOcrPair[] {
+  const bilingual = pairs.filter((p) => isVisionBilingualPair(p.term, p.definition));
+  if (bilingual.length >= 3) return bilingual;
   return pairs;
 }
 
@@ -225,11 +325,14 @@ function parseServiceAccount(raw: string): ServiceAccount | null {
 
 export async function runGoogleVisionOcr(imageBase64: string): Promise<VisionOcrResult | null> {
   const raw = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_JSON');
-  if (!raw) return null;
+  if (!raw) {
+    console.error('[google-vision] missing GOOGLE_SERVICE_ACCOUNT_JSON');
+    return { pairs: [], fullText: '', warnings: ['vision_secret_missing'] };
+  }
   const sa = parseServiceAccount(raw);
   if (!sa) {
     console.error('[google-vision] invalid GOOGLE_SERVICE_ACCOUNT_JSON');
-    return null;
+    return { pairs: [], fullText: '', warnings: ['vision_secret_invalid'] };
   }
 
   try {
@@ -254,7 +357,11 @@ export async function runGoogleVisionOcr(imageBase64: string): Promise<VisionOcr
     if (!visionRes.ok) {
       const errText = await visionRes.text();
       console.error('[google-vision] annotate failed', visionRes.status, errText.slice(0, 200));
-      return null;
+      return {
+        pairs: [],
+        fullText: '',
+        warnings: [`vision_http_${visionRes.status}`],
+      };
     }
 
     const visionJson = (await visionRes.json()) as {
@@ -267,7 +374,11 @@ export async function runGoogleVisionOcr(imageBase64: string): Promise<VisionOcr
     const response = visionJson.responses?.[0];
     if (response?.error?.message) {
       console.error('[google-vision]', response.error.message);
-      return null;
+      return {
+        pairs: [],
+        fullText: '',
+        warnings: ['vision_api_error'],
+      };
     }
 
     const fullTextAnnotation = response?.fullTextAnnotation;
@@ -277,20 +388,26 @@ export async function runGoogleVisionOcr(imageBase64: string): Promise<VisionOcr
       '';
 
     const words = fullTextAnnotation ? collectWords(fullTextAnnotation) : [];
-    const pairs = pairsFromVisionWords(words);
+    const rawPairs = pairsFromVisionWords(words);
+    const pairs = filterBilingualVisionPairs(rawPairs);
     const warnings: string[] = [];
     if (pairs.length === 0 && fullText) warnings.push('vision_no_column_pairs');
+    if (rawPairs.length > pairs.length) warnings.push('vision_dropped_same_lang');
     if (pairs.length > 0) warnings.push('vision_ocr');
 
-    console.info('[google-vision]', { words: words.length, pairs: pairs.length });
+    console.info('[google-vision]', {
+      words: words.length,
+      rawPairs: rawPairs.length,
+      pairs: pairs.length,
+    });
     return { pairs, fullText: fullText.trim(), warnings };
   } catch (error) {
     console.error('[google-vision] exception', error instanceof Error ? error.message : error);
-    return null;
+    return { pairs: [], fullText: '', warnings: ['vision_exception'] };
   }
 }
 
-/** Strong 2-column OCR → GPT can use low image detail / skip recount. */
+/** Strong 2-column OCR → skip GPT or use low detail only. */
 export function visionOcrIsStrong(sheetType: string, pairCount: number): boolean {
   if (sheetType !== 'vocab') return false;
   return pairCount >= 10;

@@ -91,14 +91,14 @@ export function dropSameLanguageOutliers<T extends {
   if (withoutSplits.length === 0) return withoutSplits;
 
   const cross = withoutSplits.filter((p) => isCrossLanguageVocabPair(p));
-  /* ≥3 clear bilingual cards = sheet is a translation list → drop same-lang junk */
-  if (cross.length >= 3) {
+  /* ≥2 clear bilingual cards = translation sheet → drop FR→FR / EN→EN junk */
+  if (cross.length >= 2) {
     return withoutSplits.filter(
       (p) => isCrossLanguageVocabPair(p) || (p.faces?.length ?? 0) > 0,
     );
   }
 
-  if (withoutSplits.length >= 4 && cross.length >= Math.ceil(withoutSplits.length * 0.6)) {
+  if (withoutSplits.length >= 4 && cross.length >= Math.ceil(withoutSplits.length * 0.5)) {
     return withoutSplits.filter(
       (p) => isCrossLanguageVocabPair(p) || (p.faces?.length ?? 0) > 0,
     );

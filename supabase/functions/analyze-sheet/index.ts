@@ -173,8 +173,8 @@ function visionToPayload(
       term: p.term,
       definition: p.definition,
       faces: [],
-      termLang: 'unknown',
-      defLang: 'unknown',
+      termLang: looksEn(p.term) ? 'en' : looksFr(p.term) ? 'fr' : 'unknown',
+      defLang: looksEn(p.definition) ? 'en' : looksFr(p.definition) ? 'fr' : 'unknown',
       confidence: p.confidence,
     })),
     warnings: [...extraWarnings, 'vision_ocr'],
@@ -237,12 +237,13 @@ function dropSameLangServer(pairs: ExtractPair[]): ExtractPair[] {
     const frT = looksFr(term);
     const enD = looksEn(def);
     const frD = looksFr(def);
-    const cross = (enT && frD) || (frT && enD) || (enT && !enD && frD) || (frD && !frT && enT);
-    const same = (frT && frD && !enT) || (enT && enD && !frD);
+    const cross = (enT && frD) || (frT && enD);
+    const same = (frT && frD && !enT && !enD) || (enT && enD && !frT && !frD);
     return { p, cross, same };
   });
   const crossCount = scored.filter((s) => s.cross).length;
-  if (crossCount < 3) return pairs;
+  /* ≥2 clear translations ⇒ sheet is bilingual — drop FR→FR / EN→EN. */
+  if (crossCount < 2) return pairs;
   return scored.filter((s) => s.cross || !s.same).map((s) => s.p);
 }
 
@@ -360,38 +361,19 @@ Deno.serve(async (req) => {
 
     const vision = await runGoogleVisionOcr(imageBase64);
     const visionPairs = vision?.pairs ?? [];
+    const visionWarnings = vision?.warnings ?? [];
     const visionStrong = visionOcrIsStrong(sheetType, visionPairs.length);
     let payload: ExtractPayload | null = null;
 
     if (visionStrong) {
-      payload = visionToPayload(sheetType, visionPairs, channel.maxPairs, vision?.warnings ?? []);
-      /* Enough rows from geometry → skip GPT (saves tokens). Fill only if clearly short of cap. */
-      const needsFill = visionPairs.length < Math.min(channel.maxPairs, 16);
-      if (needsFill) {
-        const lightCall = await requestOpenAi(
-          openaiKey,
-          buildOpenAiBody(
-            channel,
-            sheetType,
-            imageBase64,
-            mimeType,
-            'low',
-            buildVisionHint(visionPairs, vision?.fullText ?? '', channel.maxPairs),
-            true,
-          ),
-        );
-        const { payload: gptPayload } = await parseOpenAiPayload(lightCall);
-        if (gptPayload) {
-          payload = mergeExtractPayloads(payload, gptPayload, channel.maxPairs);
-          payload.warnings = [...(payload.warnings ?? []), 'vision_plus_light_gpt'];
-        }
-      } else {
-        payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
-      }
+      payload = visionToPayload(sheetType, visionPairs, channel.maxPairs, visionWarnings);
+      /* ≥10 solid column pairs → trust Vision; don't let a light GPT call invent FR→FR. */
+      payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
     } else {
-      const visionHint = vision
-        ? buildVisionHint(visionPairs, vision.fullText, channel.maxPairs)
-        : undefined;
+      const visionHint =
+        visionPairs.length >= 4
+          ? buildVisionHint(visionPairs, vision?.fullText ?? '', channel.maxPairs)
+          : undefined;
       const firstDetail = scanImageDetail(channel.model);
       let openaiCall = await requestOpenAi(
         openaiKey,
@@ -483,11 +465,20 @@ Deno.serve(async (req) => {
       payload.pairs = payload.pairs.slice(0, channel.maxPairs);
     }
 
+    const mode = visionStrong ? 'vision-first' : 'gpt-first';
+    payload.warnings = [
+      ...(payload.warnings ?? []),
+      ...visionWarnings,
+      mode,
+      `vision_pairs_${visionPairs.length}`,
+    ].filter((w, i, arr) => typeof w === 'string' && arr.indexOf(w) === i);
+
     console.info('[analyze-sheet-done]', {
       channel: channel.label,
       vision: visionPairs.length,
       final: payload.pairs?.length ?? 0,
-      mode: visionStrong ? 'vision-first' : 'gpt-first',
+      mode,
+      visionWarnings,
     });
 
     if (supabaseAdmin) {
