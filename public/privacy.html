@@ -1,18 +1,15 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Privacy policy for ScanPlay · scanplay.org. How we collect, use and protect your data."
+      content="Politique de confidentialité de ScanPlay · scanplay.org."
     />
-    <title>Privacy policy : ScanPlay</title>
+    <title>Politique de confidentialité : ScanPlay</title>
     <link rel="icon" type="image/png" href="/logo.png" />
     <style>
-      :root {
-        color-scheme: light;
-      }
       body {
         font-family: Inter, system-ui, -apple-system, sans-serif;
         line-height: 1.65;
@@ -23,16 +20,16 @@
         background: #f8fafc;
       }
       h1 {
-        font-size: 1.75rem;
+        font-size: 1.7rem;
         font-weight: 800;
         margin: 0 0 0.25rem;
         letter-spacing: -0.02em;
       }
       h2 {
-        font-size: 1.12rem;
+        font-size: 1.1rem;
         font-weight: 800;
-        margin-top: 1.75rem;
-        margin-bottom: 0.5rem;
+        margin-top: 1.6rem;
+        margin-bottom: 0.45rem;
       }
       p,
       li {
@@ -40,21 +37,20 @@
       }
       ul {
         padding-left: 1.2rem;
-        margin: 0.4rem 0 0.8rem;
       }
       li {
-        margin: 0.35rem 0;
+        margin: 0.3rem 0;
       }
       .meta {
         color: #64748b;
         font-size: 0.85rem;
-        margin: 0 0 1.25rem;
+        margin: 0 0 1.1rem;
       }
       a {
         color: #16a34a;
       }
       nav {
-        margin-bottom: 1.25rem;
+        margin-bottom: 1.1rem;
         font-size: 0.9rem;
       }
       .lang-tabs {
@@ -79,341 +75,499 @@
         cursor: pointer;
       }
       .lang-tab.active {
-        background: #ffffff;
+        background: #fff;
         color: #0f172a;
         box-shadow: 0 8px 28px rgba(15, 23, 42, 0.08);
       }
       .privacy-copy[hidden] {
         display: none;
       }
+      mark.todo {
+        background: #fef3c7;
+        color: #0f172a;
+        font-weight: 750;
+        padding: 0.05em 0.3em;
+        border-radius: 4px;
+      }
     </style>
   </head>
   <body>
-    <nav><a href="/" data-i18n-back>← Back to ScanPlay</a></nav>
+    <nav>
+      <a href="/" data-i18n-back>← Retour à ScanPlay</a>
+      ·
+      <a href="/terms.html" data-i18n-terms>Conditions d’utilisation</a>
+    </nav>
 
     <div class="lang-tabs" role="tablist" aria-label="Language">
-      <button type="button" class="lang-tab active" role="tab" aria-selected="true" data-lang="en">
-        EN
-      </button>
-      <button type="button" class="lang-tab" role="tab" aria-selected="false" data-lang="fr">
-        FR
-      </button>
+      <button type="button" class="lang-tab" role="tab" data-lang="en">EN</button>
+      <button type="button" class="lang-tab active" role="tab" data-lang="fr">FR</button>
     </div>
 
-    <article id="privacy-en" class="privacy-copy" lang="en">
-      <h1>Privacy policy</h1>
-      <p class="meta">ScanPlay · scanplay.org · Last updated: September 2026</p>
-
-      <h2>Who we are</h2>
-      <p>
-        ScanPlay is a progressive web app at <strong>scanplay.org</strong>, published by
-        <strong>Bilal El Fahmi</strong>. It turns your study sheets into short revision games. It is
-        an independent project and does not replace your course, teacher or school.
-      </p>
-      <p>
-        Contact:
-        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
-      </p>
-
-      <h2>What this policy covers</h2>
-      <p>
-        This page explains which data we collect when you use ScanPlay, why we collect it, who
-        processes it, how long we keep it, and what rights you have. It applies to the website, the
-        installable app (PWA) and related services (account, scans, games, subscriptions).
-      </p>
-
-      <h2>Data we collect</h2>
-      <p>Depending on how you use ScanPlay, we may process:</p>
-      <ul>
-        <li>
-          <strong>Account:</strong> email address, password (stored hashed by our auth provider, never
-          in plain text on our side), display name, avatar.
-        </li>
-        <li>
-          <strong>Progress:</strong> XP, level, day streak, scanned decks, cards, mistakes, achievements,
-          coins and similar in-app rewards.
-        </li>
-        <li>
-          <strong>Subscription:</strong> plan (Free, Plus, Pro), billing cycle, renewal or end dates
-          (payment card details are not stored by ScanPlay).
-        </li>
-        <li>
-          <strong>Preferences:</strong> language, theme, sound and vibration settings, stored in your
-          account and/or in your browser.
-        </li>
-        <li>
-          <strong>Guest use:</strong> you can try a first scan without an account. That session stays
-          on your device until you sign in to save it.
-        </li>
-      </ul>
-
-      <h2>Sheet scans and artificial intelligence</h2>
-      <p>
-        When you photograph or upload a sheet, we extract text to build study cards. The extracted
-        text and the deck stay in your history while your account exists (subject to plan limits).
-      </p>
-      <p>
-        If AI analysis is enabled for your scan, the image may be sent to <strong>OpenAI</strong>
-        solely to read the sheet and extract vocabulary or study items. We do not use your sheets to
-        train a public model for other people. Do not scan documents you are not allowed to digitise.
-      </p>
-
-      <h2>Cloud sync, friends and multiplayer</h2>
-      <p>
-        When you are signed in, data is synchronised with <strong>Supabase</strong> (hosting and
-        database) so you can resume on another device. Your notes are tied to your account and are
-        not published to everyone.
-      </p>
-      <p>
-        If you use friends features, your public profile shared with people you connect with may
-        include display name, avatar, stats and unlocked achievements.
-      </p>
-      <p>
-        Multiplayer sessions may store a room code, scores and lobby presence for the duration of
-        the game, then they are no longer kept for that purpose.
-      </p>
-
-      <h2>Payments (Stripe)</h2>
-      <p>
-        Plus and Pro subscriptions are billed by <strong>Stripe</strong>. Card numbers and payment
-        data are processed by Stripe under
-        <a href="https://stripe.com/privacy" rel="noopener noreferrer">Stripe’s privacy policy</a>.
-        ScanPlay receives subscription status, not your full card number.
-      </p>
-      <p>
-        Changing plan (for example Plus to Pro) is only available after the current paid period
-        ends, once automatic renewal is cancelled. End and renewal dates are shown in your profile.
-      </p>
-
-      <h2>Cookies, device storage and ads</h2>
-      <p>
-        We use storage in your browser for the session, language, theme and similar preferences
-        needed for the app to work. A signed-in session uses authentication cookies or tokens from
-        our providers.
-      </p>
-      <p>
-        If advertising is turned on, ScanPlay may use <strong>Google AdSense</strong>. Google may
-        set cookies to serve and measure ads. You can accept or refuse non-essential cookies via the
-        on-site banner when it is shown.
-      </p>
-
-      <h2>Why we process this data</h2>
-      <ul>
-        <li>to provide the service: scan, generate games, save progress, sync across devices;</li>
-        <li>to create and secure your account, and send confirmation or password-reset emails;</li>
-        <li>to manage subscriptions and customer support;</li>
-        <li>to operate optional social and multiplayer features you choose to use;</li>
-        <li>to keep the product working (security, abuse prevention, essential diagnostics).</li>
-      </ul>
-      <p>We do not sell your personal data.</p>
-
-      <h2>Retention</h2>
-      <p>
-        Account and history data are kept while your account is active. Guest data stays on the
-        device. Multiplayer presence is kept only for the session. Payment records follow Stripe’s
-        retention rules. If you ask us to delete your account, we delete or anonymise personal data
-        we control, except what we must keep for legal, tax or security reasons.
-      </p>
-
-      <h2>Your rights</h2>
-      <p>
-        Depending on where you live (including the EU/EEA and similar laws), you may request access
-        to your data, correction, deletion, restriction, portability, or to object to certain
-        processing. You may also lodge a complaint with your local data protection authority.
-      </p>
-      <p>
-        To access or delete your account data, email
-        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
-        from the address you use to sign in. We may need to verify that the request comes from you.
-      </p>
-
-      <h2>Children</h2>
-      <p>
-        ScanPlay is aimed at high-school and university students. It is not directed at children
-        under 13 (or the digital-consent age in your country). If you believe a child has created an
-        account, contact us and we will delete it.
-      </p>
-
-      <h2>Security and processors</h2>
-      <p>
-        We use HTTPS and restrict access to production systems. No method of transmission is 100%
-        secure. Main processors: Supabase (hosting, auth, database), OpenAI (optional scan
-        analysis), Stripe (payments), and Vercel (hosting the website). Each applies its own
-        security and privacy terms.
-      </p>
-
-      <h2>Changes</h2>
-      <p>
-        We may update this policy when the product changes. The date at the top will be revised. For
-        material changes we may also notify you in the app or by email if you have an account.
-      </p>
-
-      <h2>Contact</h2>
-      <p>
-        Questions about privacy:
-        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
-      </p>
-    </article>
-
-    <article id="privacy-fr" class="privacy-copy" lang="fr" hidden>
+    <article id="privacy-fr" class="privacy-copy" lang="fr">
       <h1>Politique de confidentialité</h1>
-      <p class="meta">ScanPlay · scanplay.org · Dernière mise à jour : septembre 2026</p>
-
-      <h2>Qui nous sommes</h2>
+      <p class="meta">ScanPlay · scanplay.org · 12 septembre 2026</p>
       <p>
-        ScanPlay est une application web progressive disponible sur
-        <strong>scanplay.org</strong>, éditée par <strong>Bilal El Fahmi</strong>. Elle transforme tes
-        fiches de cours en mini-jeux de révision. C’est un projet indépendant, qui ne remplace ni ton
-        cours, ni ton professeur, ni ton établissement.
-      </p>
-      <p>
-        Contact :
-        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+        Cette page explique, en langage simple, quelles données ScanPlay utilise quand tu révises.
+        Elle décrit le fonctionnement actuel de l’application. Elle n’affirme pas que ScanPlay est
+        « conforme au RGPD ».
       </p>
 
-      <h2>Ce que couvre cette page</h2>
+      <h2>Qui est responsable</h2>
       <p>
-        Ce document explique quelles données nous collectons quand tu utilises ScanPlay, pourquoi,
-        qui les traite, combien de temps nous les gardons, et quels sont tes droits. Il s’applique au
-        site, à l’application installable (PWA) et aux services liés (compte, scans, jeux,
-        abonnements).
+        ScanPlay est édité par <strong>El Fahmi, Ikram</strong>, personne physique, entreprise
+        enregistrée en <strong>Belgique</strong> (n° <strong>1037.806.166</strong>, active depuis le
+        9 mai 2026). Unité d’établissement <strong>Alkarizmia</strong> (n°
+        <strong>2.390.055.353</strong>). Elle est la responsable légale de l’activité enregistrée et
+        la responsable du traitement des données personnelles pour ScanPlay.
       </p>
-
-      <h2>Données collectées</h2>
-      <p>Selon l’usage, nous pouvons traiter :</p>
+      <p>
+        <strong>El Fahmi, Bilal</strong> est le concepteur, le développeur et le porteur
+        opérationnel de ScanPlay. Il n’est pas la personne au nom de laquelle l’entreprise est
+        enregistrée.
+      </p>
       <ul>
         <li>
-          <strong>Compte :</strong> adresse email, mot de passe (stocké de façon hachée par le
-          prestataire d’authentification, jamais en clair de notre côté), pseudo, avatar.
+          Adresse : Rue des Anciens Etangs 55, Boîte 1, 1190 Forest, Belgique
         </li>
-        <li>
-          <strong>Progression :</strong> XP, niveau, série de jours, fiches scannées, cartes, erreurs,
-          succès, pièces et récompenses similaires.
-        </li>
-        <li>
-          <strong>Abonnement :</strong> formule (Free, Plus, Pro), cycle de facturation, dates de fin
-          ou de renouvellement (ScanPlay ne stocke pas les numéros de carte).
-        </li>
-        <li>
-          <strong>Préférences :</strong> langue, thème, sons et vibration, dans le compte et/ou le
-          navigateur.
-        </li>
-        <li>
-          <strong>Invité :</strong> tu peux faire un premier scan sans compte. La session reste sur
-          l’appareil jusqu’à ce que tu te connectes pour la sauvegarder.
-        </li>
+        <li>Contact : <a href="mailto:support@scanplay.org">support@scanplay.org</a></li>
       </ul>
 
-      <h2>Scans de fiches et intelligence artificielle</h2>
+      <h2>Sans compte</h2>
       <p>
-        Quand tu photographies ou envoies une fiche, nous en extrayons le texte pour créer des cartes.
-        Le texte et le paquet restent dans ton historique tant que le compte existe (sous réserve des
-        limites de ton offre).
-      </p>
-      <p>
-        Si l’analyse IA est activée pour le scan, l’image peut être envoyée à
-        <strong>OpenAI</strong> uniquement pour lire la fiche et extraire le vocabulaire ou les
-        éléments à réviser. Nous n’utilisons pas tes fiches pour entraîner un modèle public destiné à
-        d’autres personnes. Ne scanne pas de documents que tu n’as pas le droit de numériser.
+        Tu peux faire un premier scan sans créer de compte. Dans ce cas, ScanPlay ne crée pas de
+        fiche chez nous. L’image est lue <strong>dans ton navigateur</strong>. L’analyse IA (OpenAI)
+        n’est pas utilisée, parce qu’elle exige d’être connecté. Les cartes extraites peuvent rester
+        temporairement sur ton appareil, jusqu’à ce que tu te connectes ou que tu les effaces.
       </p>
 
-      <h2>Synchronisation, amis et multijoueur</h2>
-      <p>
-        Une fois connecté, les données sont synchronisées avec <strong>Supabase</strong> (hébergement
-        et base de données) pour reprendre sur un autre appareil. Tes cours sont rattachés à ton
-        compte et ne sont pas publics.
-      </p>
-      <p>
-        Si tu utilises les amis, le profil visible par les personnes avec qui tu es lié peut
-        inclure le pseudo, l’avatar, des statistiques et les succès débloqués.
-      </p>
-      <p>
-        En multijoueur, un code de salon, des scores et la présence en salle peuvent être stockés le
-        temps de la partie, puis ne sont plus conservés à cette fin.
-      </p>
-
-      <h2>Paiements (Stripe)</h2>
-      <p>
-        Les abonnements Plus et Pro sont facturés par <strong>Stripe</strong>. Les données de
-        paiement sont traitées par Stripe selon
-        <a href="https://stripe.com/privacy" rel="noopener noreferrer">sa propre politique</a>.
-        ScanPlay reçoit le statut d’abonnement, pas le numéro complet de ta carte.
-      </p>
-      <p>
-        Un changement de formule (par exemple Plus vers Pro) n’est possible qu’à la fin de la période
-        déjà payée, après annulation du renouvellement automatique. Les dates sont visibles dans ton
-        profil.
-      </p>
-
-      <h2>Cookies, stockage local et publicités</h2>
-      <p>
-        Nous utilisons le stockage du navigateur pour la session, la langue, le thème et d’autres
-        préférences nécessaires au fonctionnement. Une session connectée s’appuie sur des cookies ou
-        jetons d’authentification de nos prestataires.
-      </p>
-      <p>
-        Si les publicités sont activées, ScanPlay peut utiliser <strong>Google AdSense</strong>.
-        Google peut déposer des cookies pour afficher et mesurer les annonces. Tu peux accepter ou
-        refuser les cookies non essentiels via le bandeau du site, lorsqu’il est affiché.
-      </p>
-
-      <h2>Pourquoi nous traitons ces données</h2>
+      <h2>Avec un compte</h2>
+      <p>Tu peux t’inscrire avec un email et un mot de passe, ou avec Google.</p>
+      <p>ScanPlay peut alors enregistrer :</p>
       <ul>
-        <li>fournir le service : scan, jeux, sauvegarde, synchronisation ;</li>
-        <li>créer et sécuriser le compte, envoyer les emails de confirmation ou de réinitialisation ;</li>
-        <li>gérer les abonnements et le support ;</li>
-        <li>faire fonctionner les options sociales et multijoueur que tu choisis d’utiliser ;</li>
-        <li>assurer le fonctionnement (sécurité, abus, diagnostics essentiels).</li>
+        <li>ton email, un pseudo et un avatar si tu en mets un ;</li>
+        <li>tes fiches : le <strong>texte des cartes</strong> et souvent une <strong>petite miniature</strong> ;</li>
+        <li>ta progression (jeux, erreurs, XP, série, succès, pièces) ;</li>
+        <li>tes préférences (langue, thème, sons) ;</li>
+        <li>si tu paies Plus ou Pro : le statut d’abonnement (pas le numéro de ta carte) ;</li>
+        <li>si tu utilises les amis, le multijoueur ou le coach : les infos nécessaires à ces fonctions.</li>
       </ul>
-      <p>Tes données ne sont pas vendues.</p>
-
-      <h2>Conservation</h2>
       <p>
-        Les données de compte et d’historique sont conservées tant que le compte est actif. Les
-        données invité restent sur l’appareil. La présence multijoueur est limitée à la session. Les
-        traces de paiement suivent les règles de Stripe. Si tu demandes la suppression du compte, nous
-        supprimons ou anonymisons les données personnelles que nous contrôlons, sauf obligation
-        légale, fiscale ou de sécurité.
+        Tes fiches ne sont pas publiées à tout le monde. Tes amis voient seulement ce qui est prévu
+        pour le profil (pseudo, avatar, stats, succès).
+      </p>
+
+      <h2>Que devient l’image d’un scan ?</h2>
+      <p>
+        L’image originale (photo ou fichier importé) sert uniquement le temps du traitement. ScanPlay
+        ne l’enregistre pas dans un stockage de fichiers. Après extraction des cartes, les références
+        à ce fichier dans l’app sont relâchées. Une photo peut contenir par accident un visage ou un
+        nom : c’est pour cela qu’elle n’est pas gardée comme original.
+      </p>
+      <p>Quand tu es connecté et que l’analyse IA est utilisée :</p>
+      <ol>
+        <li>l’image est lue dans le navigateur, puis envoyée à une fonction ScanPlay ;</li>
+        <li>
+          cette fonction l’envoie surtout à <strong>OpenAI</strong> pour lire la fiche et créer des
+          cartes (le temps de la requête) ; pour certains scans, une lecture OCR
+          <strong>Google Cloud Vision</strong> peut aussi servir d’aide d’alignement / de couverture
+          (pas pour remplacer le texte final) ;
+        </li>
+        <li>
+          ScanPlay conserve le <strong>texte des cartes</strong> et souvent une
+          <strong>miniature</strong> (petite image dérivée), pas le fichier original.
+        </li>
+      </ol>
+      <p>
+        Sans compte, l’image est lue dans le navigateur (OCR). Elle n’est pas envoyée à OpenAI ni à
+        Google Cloud Vision.
+      </p>
+      <p>
+        Selon la documentation OpenAI sur les contrôles de données de l’API (guides « Your data » /
+        plateforme développeurs) : par défaut, les données envoyées via l’API ne servent
+        <strong>pas</strong> à entraîner les modèles OpenAI ; des journaux de surveillance des abus
+        peuvent conserver du contenu client jusqu’à <strong>30 jours</strong> (plus longtemps si la
+        loi ou la sécurité l’exigent). Une rétention zéro (ZDR) n’est pas activée automatiquement :
+        elle dépend d’un réglage / d’une éligibilité côté compte OpenAI de ScanPlay. Politique
+        OpenAI :
+        <a href="https://openai.com/policies/privacy-policy" rel="noopener noreferrer">openai.com/policies/privacy-policy</a>
+        · données API :
+        <a href="https://developers.openai.com/api/docs/guides/your-data" rel="noopener noreferrer">developers.openai.com — Your data</a>.
+      </p>
+      <p>
+        Selon la FAQ Google Cloud Vision (Data Usage) : le contenu envoyé sert à fournir le service
+        Vision, n’est pas utilisé pour entraîner les modèles Vision, et pour les appels synchrones le
+        contenu image est traité en mémoire sans persistance disque habituelle (métadonnées de
+        requête peuvent être journalisées temporairement). Voir
+        <a href="https://cloud.google.com/vision/docs/data-usage" rel="noopener noreferrer">cloud.google.com/vision/docs/data-usage</a>.
+      </p>
+      <p>D’autres fonctions peuvent aussi envoyer du <strong>texte de tes cartes</strong> à OpenAI : traduction, synthèse de cours, messages au coach Pix.</p>
+      <p>
+        Pour la prononciation, un <strong>court enregistrement</strong> peut partir vers
+        <strong>Groq</strong> (transcription). ScanPlay ne le stocke pas dans une table identifiée
+        dans le code.
+      </p>
+
+      <h2>Qui aide à faire tourner ScanPlay</h2>
+      <ul>
+        <li><strong>Vercel</strong> — site et certaines API.</li>
+        <li>
+          <strong>Supabase</strong> — compte, base de données, sync. Projet indiqué : West EU
+          (Ireland), eu-west-1. Cela ne s’applique pas automatiquement aux autres prestataires.
+        </li>
+        <li><strong>OpenAI</strong> — lecture de fiches et textes générés.</li>
+        <li>
+          <strong>Google Cloud Vision</strong> — OCR / géométrie d’aide pour certains scans
+          connectés (en complément d’OpenAI).
+        </li>
+        <li><strong>Groq</strong> — transcription audio, si tu utilises cette voie.</li>
+        <li><strong>Stripe</strong> — paiement Plus / Pro.</li>
+        <li><strong>Google</strong> — connexion optionnelle, et mesure d’audience (Analytics).</li>
+        <li><strong>Resend</strong> — emails (confirmation, mot de passe, quelques messages de service).</li>
+      </ul>
+      <p>
+        <strong>Supabase et le RGPD.</strong> Supabase propose un
+        <a href="https://supabase.com/legal/customer-resources/data-processing-addendum" rel="noopener noreferrer">DPA</a>
+        (responsable de traitement = ScanPlay ; sous-traitant = Supabase). Héberger en UE (ici
+        eu-west-1) et signer un DPA ne rendent pas ScanPlay « conforme au RGPD » à eux seuls : la
+        conformité dépend aussi des traitements, des sous-traitants hors Supabase, et des droits
+        mis en œuvre dans l’app. Le délai d’environ 30 jours prévu au DPA après fin du contrat
+        ScanPlay↔Supabase concerne l’export/suppression des données du projet chez Supabase ; ce
+        n’est <strong>pas</strong> un délai supplémentaire imposé à l’utilisateur final après
+        « Supprimer mon compte ».
+      </p>
+
+      <h2 id="fr-cookies">Cookies et mesure d’audience</h2>
+      <p>ScanPlay utilise aussi le stockage de ton navigateur pour fonctionner (session, langue, thème, essai sans compte).</p>
+      <p>
+        <strong>Google Analytics</strong> (identifiant G-5H74BMT3B3) mesure les pages et quelques
+        actions (par exemple un scan réussi). Dans l’Union européenne, le Royaume-Uni et la Suisse,
+        un bandeau peut demander ton accord. Tu peux accepter ou refuser.
+      </p>
+      <p>
+        <strong>Vercel Analytics</strong> est chargé avec l’application, sans passer par ce bandeau.
+      </p>
+      <p>
+        Les publicités Google AdSense sont prévues dans le code, mais leur affichage est
+        <strong>actuellement en pause</strong>.
+      </p>
+
+      <h2>Combien de temps</h2>
+      <p>
+        Dans le code actuel, tes données de compte, tes cartes et tes miniatures sont gardées
+        <strong>tant que le compte existe</strong>. Il n’y a pas de suppression automatique après
+        une période d’inactivité.
+      </p>
+      <p>
+        Après une suppression de compte réussie via l’app : ScanPlay
+        <strong>ne conserve pas</strong> volontairement un dossier utilisateur supplémentaire
+        pendant X jours. La suppression vise les tables ScanPlay et le compte d’auth liés à ta
+        session (voir ci-dessous). Il n’y a pas, dans le code, de file d’attente du type « garder
+        30/90 jours puis effacer ». Des copies résiduelles peuvent toutefois rester un temps chez
+        des prestataires (journaux, sauvegardes, facturation) selon leurs propres politiques — pas
+        comme archive ScanPlay de ton compte.
       </p>
 
       <h2>Tes droits</h2>
       <p>
-        Selon ton pays (notamment UE/EEE), tu peux demander l’accès, la rectification, l’effacement,
-        la limitation, la portabilité, ou t’opposer à certains traitements. Tu peux aussi saisir
-        l’autorité de protection des données de ton pays.
+        Tu peux demander l’accès, la correction ou la suppression de tes données, et poser toute
+        question, à <a href="mailto:support@scanplay.org">support@scanplay.org</a> (depuis l’email
+        du compte).
       </p>
       <p>
-        Pour accéder à tes données ou supprimer le compte, écris à
-        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
-        depuis l’email de connexion. Nous pouvons vérifier que la demande vient bien de toi.
+        Tu peux aussi t’adresser à l’
+        <a href="https://www.autoriteprotectiondonnees.be" rel="noopener noreferrer">Autorité de protection des données (Belgique)</a>.
+      </p>
+
+      <h2>Supprimer ton compte</h2>
+      <p>
+        Dans l’application, ouvre Réglages puis <strong>Supprimer mon compte</strong>. Il faut
+        confirmer. ScanPlay identifie le compte à partir de ta session (pas d’identifiant fourni à
+        la main).
+      </p>
+      <p>
+        L’app supprime alors les données ScanPlay liées à ce compte (profil, fiches et miniatures,
+        erreurs, stats, portefeuille, coach, relations sociales, salons dont tu es hôte, transferts
+        de pièces) et le compte de connexion, puis vide les copies locales ScanPlay de ce navigateur
+        (sauf thème, préférences d’affichage et choix du bandeau cookies).
+      </p>
+      <p>
+        Un abonnement Stripe en cours est <strong>annulé</strong> s’il est connu du profil, pour
+        arrêter les prélèvements. Les factures et le client Stripe peuvent rester chez Stripe
+        (conservation comptable). Ce n’est pas une suppression de l’historique de paiement.
+      </p>
+      <p>
+        Les traces chez OpenAI, Google Cloud Vision, Groq, Google Analytics, Vercel ou Resend ne
+        sont pas effacées par ScanPlay (ex. journaux OpenAI jusqu’à ~30 jours selon leur doc API).
+        Tu peux aussi écrire à
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>.
       </p>
 
       <h2>Mineurs</h2>
       <p>
-        ScanPlay s’adresse aux lycéens et étudiants. Il n’est pas destiné aux enfants de moins de 13
-        ans (ou de l’âge de consentement numérique de ton pays). Si un enfant a créé un compte,
-        contacte-nous : nous le supprimerons.
+        ScanPlay est un service de révision destiné aux étudiants. Il est conçu pour être utilisé par
+        des personnes âgées d’<strong>au moins 13 ans</strong>.
+      </p>
+      <p>
+        L’utilisation de ScanPlay et la création d’un compte nécessitant le traitement de données
+        personnelles sont réservées aux personnes âgées d’au moins 13 ans.
+      </p>
+      <p>
+        À l’inscription (email ou Google depuis l’écran « S’inscrire »), l’utilisateur est invité à
+        <strong>déclarer</strong> qu’il a au moins 13 ans, en cochant une case. ScanPlay
+        <strong>ne vérifie pas techniquement l’âge</strong> : aucune date de naissance, aucune pièce
+        d’identité et aucun consentement parental ne sont collectés aujourd’hui.
+      </p>
+      <p>
+        Les personnes de moins de 13 ans ne doivent pas créer de compte ni utiliser les fonctions qui
+        traitent leurs données personnelles. Si ScanPlay apprend qu’un compte appartient à une
+        personne de moins de 13 ans, il pourra désactiver le compte et supprimer les données qui ne
+        doivent plus être conservées, sous réserve d’éventuelles obligations légales — via
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>. Il n’existe pas de détection
+        automatique de l’âge dans l’application.
+      </p>
+      <p>
+        ScanPlay n’ajoute pas de données d’âge ou d’identité uniquement pour cette politique.
+        <strong>Aujourd’hui</strong>, le contrôle repose uniquement sur la déclaration (case à
+        cocher). Une vérification plus poussée ne serait envisagée qu’après analyse de nécessité
+        et de proportionnalité, et <strong>sans collecter de pièce d’identité par défaut</strong>.
+      </p>
+      <p>
+        Les images originales de scan sont destinées à être relâchées dès qu’elles ne sont plus
+        nécessaires au traitement, conformément au fonctionnement technique décrit plus haut.
+      </p>
+      <p>
+        Le scan sans compte (lecture dans le navigateur) n’affiche pas cette case. La création d’un
+        compte reste réservée aux 13 ans et plus.
       </p>
 
-      <h2>Sécurité et sous-traitants</h2>
+      <h2>Sécurité</h2>
       <p>
-        Les échanges passent en HTTPS. Aucune transmission n’est sûre à 100 %. Principaux
-        prestataires : Supabase (hébergement, auth, base), OpenAI (analyse optionnelle des scans),
-        Stripe (paiements) et Vercel (hébergement du site). Chacun applique ses propres conditions.
+        Les échanges passent en HTTPS. Le mot de passe n’est pas stocké en clair par ScanPlay. Aucun
+        système n’est sûr à 100 %.
       </p>
 
       <h2>Modifications</h2>
+      <p>Si cette page change, la date en haut est mise à jour.</p>
+    </article>
+
+    <article id="privacy-en" class="privacy-copy" lang="en" hidden>
+      <h1>Privacy policy</h1>
+      <p class="meta">ScanPlay · scanplay.org · 12 September 2026</p>
       <p>
-        Cette politique peut évoluer avec le produit. La date en haut sera mise à jour. En cas de
-        changement important, nous pourrons aussi t’en informer dans l’app ou par email si tu as un
-        compte.
+        This page explains, in plain language, what data ScanPlay uses. It describes how the app
+        currently works. It does not claim that ScanPlay is “GDPR compliant”.
       </p>
 
-      <h2>Contact</h2>
+      <h2>Who is responsible</h2>
       <p>
-        Questions confidentialité :
-        <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+        ScanPlay is published by <strong>El Fahmi, Ikram</strong>, a natural person, registered
+        business in <strong>Belgium</strong> (no. <strong>1037.806.166</strong>, active since 9 May
+        2026). Establishment <strong>Alkarizmia</strong> (no. <strong>2.390.055.353</strong>). She is
+        the legal person responsible for the registered activity and the controller of personal data
+        for ScanPlay.
       </p>
+      <p>
+        <strong>El Fahmi, Bilal</strong> is the designer, developer and operational lead of
+        ScanPlay. He is not the person in whose name the business is registered.
+      </p>
+      <ul>
+        <li>Address: Rue des Anciens Etangs 55, Box 1, 1190 Forest, Belgium</li>
+        <li>Contact: <a href="mailto:support@scanplay.org">support@scanplay.org</a></li>
+      </ul>
+
+      <h2>Without an account</h2>
+      <p>
+        You can run a first scan without signing up. ScanPlay does not create a server account. The
+        image is read <strong>in your browser</strong>. AI analysis (OpenAI) is not used, because it
+        requires a signed-in session. Extracted cards may stay temporarily on your device until you
+        sign in or clear them.
+      </p>
+
+      <h2>With an account</h2>
+      <p>You can sign up with email and password, or with Google.</p>
+      <p>ScanPlay may then store:</p>
+      <ul>
+        <li>your email, a display name and avatar if you set them;</li>
+        <li>your decks: <strong>card text</strong> and often a <strong>small thumbnail</strong>;</li>
+        <li>progress (games, mistakes, XP, streak, achievements, coins);</li>
+        <li>preferences (language, theme, sounds);</li>
+        <li>if you pay for Plus or Pro: subscription status (not your card number);</li>
+        <li>if you use friends, multiplayer or the coach: the data those features need.</li>
+      </ul>
+      <p>Your sheets are not public. Friends only see the profile fields (name, avatar, stats, achievements).</p>
+
+      <h2>What happens to a scan image?</h2>
+      <p>
+        The original image (photo or imported file) is used only while the scan runs. ScanPlay does
+        not save it to file storage. After the cards are extracted, the app drops its references to
+        that file. A photo might accidentally show a face or a name: that is why the original is not
+        kept.
+      </p>
+      <p>When you are signed in and AI analysis is used:</p>
+      <ol>
+        <li>the image is read in the browser, then sent to a ScanPlay function;</li>
+        <li>
+          that function mainly sends it to <strong>OpenAI</strong> to read the sheet and build cards
+          (for the duration of the request); for some scans, <strong>Google Cloud Vision</strong>
+          OCR may also run as an alignment / coverage hint (not as the final text source);
+        </li>
+        <li>
+          ScanPlay keeps the <strong>card text</strong> and often a <strong>thumbnail</strong> (a
+          small derived image), not the original file.
+        </li>
+      </ol>
+      <p>
+        Without an account, the image is read in the browser (OCR). It is not sent to OpenAI or
+        Google Cloud Vision.
+      </p>
+      <p>
+        Per OpenAI’s API data-control docs (“Your data”): by default, API customer content is
+        <strong>not</strong> used to train OpenAI models; abuse-monitoring logs may retain customer
+        content for up to <strong>30 days</strong> (longer if required by law or to protect the
+        service). Zero Data Retention (ZDR) is not automatic — it depends on eligibility / project
+        settings on ScanPlay’s OpenAI account. OpenAI privacy:
+        <a href="https://openai.com/policies/privacy-policy" rel="noopener noreferrer">openai.com/policies/privacy-policy</a>
+        · API data:
+        <a href="https://developers.openai.com/api/docs/guides/your-data" rel="noopener noreferrer">developers.openai.com — Your data</a>.
+      </p>
+      <p>
+        Per Google Cloud Vision’s Data Usage FAQ: content is used to provide the Vision service, is
+        not used to train Vision models, and for synchronous calls image data is processed in memory
+        without the usual disk persistence (request metadata may be logged temporarily). See
+        <a href="https://cloud.google.com/vision/docs/data-usage" rel="noopener noreferrer">cloud.google.com/vision/docs/data-usage</a>.
+      </p>
+      <p>Other features may send <strong>card text</strong> to OpenAI: translation, course summaries, coach messages.</p>
+      <p>
+        For speaking practice, a <strong>short recording</strong> may go to <strong>Groq</strong>
+        for transcription. ScanPlay does not store it in a table identified in the code.
+      </p>
+
+      <h2>Who helps run ScanPlay</h2>
+      <ul>
+        <li><strong>Vercel</strong> — website and some APIs.</li>
+        <li>
+          <strong>Supabase</strong> — account, database, sync. Project region stated: West EU
+          (Ireland), eu-west-1. That does not automatically apply to other providers.
+        </li>
+        <li><strong>OpenAI</strong> — reading sheets and generated text.</li>
+        <li>
+          <strong>Google Cloud Vision</strong> — OCR / geometry hints for some signed-in scans
+          (alongside OpenAI).
+        </li>
+        <li><strong>Groq</strong> — audio transcription, if that path is used.</li>
+        <li><strong>Stripe</strong> — Plus / Pro payments.</li>
+        <li><strong>Google</strong> — optional sign-in, and Analytics.</li>
+        <li><strong>Resend</strong> — emails (confirmation, password reset, some service messages).</li>
+      </ul>
+      <p>
+        <strong>Supabase and GDPR.</strong> Supabase offers a
+        <a href="https://supabase.com/legal/customer-resources/data-processing-addendum" rel="noopener noreferrer">DPA</a>
+        (controller = ScanPlay; processor = Supabase). EU hosting (here eu-west-1) plus a DPA do
+        not by themselves make ScanPlay “GDPR compliant”: compliance also depends on other
+        processors and on rights implemented in the app. The ~30-day window in the DPA after the
+        ScanPlay↔Supabase agreement ends is about exporting/deleting project data at Supabase — it
+        is <strong>not</strong> an extra delay applied to end users after “Delete my account”.
+      </p>
+
+      <h2 id="en-cookies">Cookies and analytics</h2>
+      <p>ScanPlay also uses browser storage to work (session, language, theme, guest trial).</p>
+      <p>
+        <strong>Google Analytics</strong> (G-5H74BMT3B3) measures pages and some actions (for
+        example a successful scan). In the EU, UK and Switzerland, a banner may ask for your
+        consent. You can accept or refuse.
+      </p>
+      <p><strong>Vercel Analytics</strong> is loaded with the app, without that banner.</p>
+      <p><strong>Google AdSense</strong> is in the code, but the ads UI is currently paused.</p>
+
+      <h2>How long</h2>
+      <p>
+        In the current code, account data, cards and thumbnails are kept
+        <strong>while the account exists</strong>. There is no automatic deletion after inactivity.
+      </p>
+      <p>
+        After a successful in-app account deletion: ScanPlay does
+        <strong>not</strong> purposely keep a separate user file for X more days. Deletion targets
+        ScanPlay tables and the auth account tied to your session (see below). There is no coded
+        “keep 30/90 days then erase” queue. Residual copies may still exist for a time at
+        processors (logs, backups, billing) under their own policies — not as a ScanPlay archive of
+        your account.
+      </p>
+
+      <h2>Your rights</h2>
+      <p>
+        You can ask for access, correction or deletion, or any question, at
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a> (from your account email).
+      </p>
+      <p>
+        You may also contact the
+        <a href="https://www.autoriteprotectiondonnees.be" rel="noopener noreferrer">Belgian Data Protection Authority</a>.
+      </p>
+
+      <h2>Deleting your account</h2>
+      <p>
+        In the app, open Settings then <strong>Delete my account</strong>. You must confirm.
+        ScanPlay identifies the account from your session (no user id typed by hand).
+      </p>
+      <p>
+        The app then deletes ScanPlay data for that account (profile, decks and thumbnails,
+        mistakes, stats, wallet, coach, social links, rooms you host, coin transfers) and the login
+        account, then clears related ScanPlay copies in this browser (except theme, display
+        preferences and the cookie-banner choice).
+      </p>
+      <p>
+        An active Stripe subscription is <strong>canceled</strong> if the profile has one, so
+        billing stops. Invoices and the Stripe customer may remain at Stripe (accounting). This is
+        not a wipe of payment history.
+      </p>
+      <p>
+        Traces at OpenAI, Google Cloud Vision, Groq, Google Analytics, Vercel or Resend are not
+        deleted by ScanPlay (e.g. OpenAI abuse logs up to ~30 days per their API docs). You can
+        also write to
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>.
+      </p>
+
+      <h2>Minors</h2>
+      <p>
+        ScanPlay is a revision service for students. It is intended for people aged
+        <strong>at least 13</strong>.
+      </p>
+      <p>
+        Using ScanPlay and creating an account that involves processing personal data is reserved
+        for people aged 13 or over.
+      </p>
+      <p>
+        At sign-up (email or Google from the “Sign up” screen), the user is asked to
+        <strong>declare</strong> that they are at least 13, by ticking a box. ScanPlay
+        <strong>does not technically verify age</strong>: it does not collect a date of birth, an
+        identity document, or parental consent today.
+      </p>
+      <p>
+        People under 13 must not create an account or use features that process their personal data.
+        If ScanPlay learns that an account belongs to someone under 13, it may disable the account
+        and delete data that must no longer be kept, subject to any legal retention duties — via
+        <a href="mailto:support@scanplay.org">support@scanplay.org</a>. The app has no automatic age
+        detection.
+      </p>
+      <p>
+        ScanPlay does not collect extra age or identity data only for this policy.
+        <strong>Today</strong>, the control is the declaration checkbox only. Stronger checks would
+        only be considered after a necessity and proportionality review, and
+        <strong>would not collect identity documents by default</strong>.
+      </p>
+      <p>
+        Original scan images are meant to be dropped as soon as they are no longer needed for
+        processing, as described above.
+      </p>
+      <p>
+        Scanning without an account (in-browser reading) does not show this checkbox. Creating an
+        account remains reserved for ages 13 and over.
+      </p>
+
+      <h2>Security</h2>
+      <p>Traffic uses HTTPS. ScanPlay does not store your password in plain text. No system is 100% secure.</p>
+
+      <h2>Changes</h2>
+      <p>If this page changes, the date at the top is updated.</p>
     </article>
 
     <script>
@@ -422,29 +576,23 @@
         var en = document.getElementById('privacy-en');
         var fr = document.getElementById('privacy-fr');
         var back = document.querySelector('[data-i18n-back]');
+        var terms = document.querySelector('[data-i18n-terms]');
         var tabs = document.querySelectorAll('.lang-tab');
         var titles = {
           en: 'Privacy policy : ScanPlay',
           fr: 'Politique de confidentialité : ScanPlay',
         };
-        var descriptions = {
-          en: 'Privacy policy for ScanPlay · scanplay.org. How we collect, use and protect your data.',
-          fr: 'Politique de confidentialité de ScanPlay · scanplay.org. Quelles données nous collectons et comment nous les protégeons.',
-        };
-        var backLabel = {
-          en: '← Back to ScanPlay',
-          fr: '← Retour à ScanPlay',
-        };
+        var backLabel = { en: '← Back to ScanPlay', fr: '← Retour à ScanPlay' };
+        var termsLabel = { en: 'Terms of use', fr: 'Conditions d’utilisation' };
 
         function setLang(lang) {
           var isFr = lang === 'fr';
           document.documentElement.lang = isFr ? 'fr' : 'en';
           document.title = isFr ? titles.fr : titles.en;
-          var meta = document.querySelector('meta[name="description"]');
-          if (meta) meta.setAttribute('content', isFr ? descriptions.fr : descriptions.en);
           en.hidden = isFr;
           fr.hidden = !isFr;
           if (back) back.textContent = isFr ? backLabel.fr : backLabel.en;
+          if (terms) terms.textContent = isFr ? termsLabel.fr : termsLabel.en;
           tabs.forEach(function (tab) {
             var on = tab.getAttribute('data-lang') === (isFr ? 'fr' : 'en');
             tab.classList.toggle('active', on);
@@ -465,7 +613,9 @@
         try {
           saved = sessionStorage.getItem(storageKey) || '';
         } catch (e) {}
-        setLang(saved === 'fr' ? 'fr' : 'en');
+        var navLang = (navigator.language || '').toLowerCase();
+        var initial = saved || (navLang.indexOf('fr') === 0 ? 'fr' : 'en');
+        setLang(initial === 'fr' ? 'fr' : 'en');
       })();
     </script>
   </body>
