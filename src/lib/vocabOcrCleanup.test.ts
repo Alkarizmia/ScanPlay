@@ -69,4 +69,23 @@ describe('vocabOcrCleanup', () => {
     expect(cleaned.map((p) => p.term)).toEqual(['To seem', 'To feel']);
     expect(cleaned).toHaveLength(2);
   });
+
+  it('repairs UI mash To have avoir → To do faire into two cards', () => {
+    const cleaned = sanitizeVocabExtractPairs([
+      { term: 'To have avoir', definition: 'To do faire' },
+      { term: 'Tosee voir', definition: 'To come venir' },
+      { term: 'To ask de mander', definition: 'To work travailler' },
+    ]);
+    expect(cleaned).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ term: 'To have', definition: 'avoir' }),
+        expect.objectContaining({ term: 'To do', definition: 'faire' }),
+        expect.objectContaining({ term: 'To see', definition: 'voir' }),
+        expect.objectContaining({ term: 'To come', definition: 'venir' }),
+        expect.objectContaining({ term: 'To ask', definition: 'demander' }),
+        expect.objectContaining({ term: 'To work', definition: 'travailler' }),
+      ]),
+    );
+    expect(cleaned).toHaveLength(6);
+  });
 });

@@ -5,6 +5,11 @@ import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
 import { getMaxWords } from './planLimits';
 import { dropSameLanguageOutliers } from './pairQuality';
+import {
+  isFusedRowPair,
+  sanitizeVocabExtractPairs,
+  vocabTermDedupeKey,
+} from './vocabOcrCleanup';
 import { canOpenGamePath, coercePlayablePairs } from './vocabulary';
 import type { SheetType, WordPair } from '../types';
 
@@ -30,7 +35,19 @@ async function extractViaOcr(
 }
 
 function pairTermKey(pair: WordPair): string {
-  return pair.term.toLowerCase().trim();
+  return vocabTermDedupeKey(pair.term) || pair.term.toLowerCase().trim();
+}
+
+function finalizeVocabPairs(pairs: WordPair[], maxPairs: number): WordPair[] {
+  const sanitized = sanitizeVocabExtractPairs(pairs).map((p) => ({
+    term: String(p.term ?? ''),
+    definition: String(p.definition ?? ''),
+    termLang: p.termLang as WordPair['termLang'],
+    defLang: p.defLang as WordPair['defLang'],
+    faces: p.faces,
+    quality: ((p as WordPair).quality ?? 'trusted') as WordPair['quality'],
+  }));
+  return dropSameLanguageOutliers(sanitized).slice(0, maxPairs);
 }
 
 /** Prefer AI order; append OCR-only rows so a thin AI sample (e.g. 8) can still grow to full sheet. */
@@ -40,6 +57,8 @@ export function mergeAiAndOcrPairs(aiPairs: WordPair[], ocrPairs: WordPair[], ma
   for (const pair of [...aiPairs, ...ocrPairs]) {
     const key = pairTermKey(pair);
     if (!key || seen.has(key)) continue;
+    /* Never keep consecutive full-row mash as a card. */
+    if (isFusedRowPair(pair.term, pair.definition)) continue;
     seen.add(key);
     out.push(pair);
     if (out.length >= maxPairs) break;
@@ -53,24 +72,36 @@ function pickMergedResult(
   maxPairs: number,
   options?: { freeText?: boolean },
 ): ExtractPairsResult {
-  const merged = mergeAiAndOcrPairs(aiResult.pairs, ocrPairs, maxPairs);
-  /* Vocab: strip FR→FR / EN→EN junk that OCR often invents on bilingual sheets. */
-  const cleaned = options?.freeText ? merged : dropSameLanguageOutliers(merged);
-  const pairs = cleaned.slice(0, maxPairs);
-  if (pairs.length <= aiResult.pairs.length) {
+  if (!options?.freeText) {
+    const aiClean = finalizeVocabPairs(aiResult.pairs, maxPairs);
+    /*
+     * Bottom-of-sheet OCR often emits full rows ("To have avoir") then pairs them with the
+     * next row. If AI already covered the sheet, merging OCR re-introduces that mash (24→32).
+     */
+    if (aiClean.length >= 12) {
+      return { ...aiResult, pairs: aiClean, source: 'ai' };
+    }
+    const ocrClean = finalizeVocabPairs(ocrPairs, maxPairs);
+    const merged = mergeAiAndOcrPairs(aiClean, ocrClean, maxPairs);
+    const pairs = finalizeVocabPairs(merged, maxPairs);
+    if (pairs.length <= aiClean.length) {
+      return { ...aiResult, pairs: aiClean, source: 'ai' };
+    }
     return {
-      ...aiResult,
-      pairs: (options?.freeText ? aiResult.pairs : dropSameLanguageOutliers(aiResult.pairs)).slice(
-        0,
-        maxPairs,
-      ),
+      pairs,
+      source: 'ocr',
+      ignored: aiResult.ignored,
     };
   }
-  const aiKeys = new Set(aiResult.pairs.map(pairTermKey));
-  const ocrOnly = pairs.filter((p) => !aiKeys.has(pairTermKey(p))).length;
+
+  const merged = mergeAiAndOcrPairs(aiResult.pairs, ocrPairs, maxPairs);
+  const pairs = merged.slice(0, maxPairs);
+  if (pairs.length <= aiResult.pairs.length) {
+    return { ...aiResult, pairs: aiResult.pairs.slice(0, maxPairs) };
+  }
   return {
     pairs,
-    source: ocrOnly > 0 && pairs.length > aiResult.pairs.length ? 'ocr' : 'ai',
+    source: 'ocr',
     ignored: aiResult.ignored,
   };
 }
@@ -110,7 +141,6 @@ export async function extractPairsFromImage(
               w.includes('gpt-primary'),
           );
           if (fromVision) {
-            /* Vision phrase sheets: skip enrichTeachablePairs which drops isExampleSentence terms. */
             pairs = coercePlayablePairs(mapped);
           } else {
             pairs = coercePlayablePairs(
@@ -120,7 +150,7 @@ export async function extractPairsFromImage(
               ),
             );
           }
-          pairs = dropSameLanguageOutliers(pairs);
+          pairs = finalizeVocabPairs(pairs, getMaxWords());
         }
         if (canOpenGamePath(pairs)) {
           if (mathSheet) {
@@ -158,7 +188,7 @@ export async function extractPairsFromImage(
     }
     const isVocabLike = !freeText && sheetType !== 'notes' && sheetType !== 'definitions' && sheetType !== 'math';
     return {
-      pairs: isVocabLike ? dropSameLanguageOutliers(ocrPairs) : ocrPairs,
+      pairs: isVocabLike ? finalizeVocabPairs(ocrPairs, getMaxWords()) : ocrPairs,
       source: 'ocr',
     };
   } catch (error) {
@@ -166,7 +196,7 @@ export async function extractPairsFromImage(
     if (aiResult) {
       return {
         ...aiResult,
-        pairs: (freeText ? aiResult.pairs : dropSameLanguageOutliers(aiResult.pairs)).slice(
+        pairs: (freeText ? aiResult.pairs : finalizeVocabPairs(aiResult.pairs, getMaxWords())).slice(
           0,
           getMaxWords(),
         ),
