@@ -49,6 +49,24 @@ describe('pairQuality', () => {
     expect(isCrossLanguageVocabPair({ term: 'I am coming', definition: "J'arrive", termLang: 'en', defLang: 'fr' })).toBe(true);
   });
 
+  it('drops FR→FR misaligned rows even when they outnumber good EN→FR cards', () => {
+    const cleaned = dropSameLanguageOutliers([
+      { term: 'I work hard', definition: 'Je travaille dur', termLang: 'en', defLang: 'fr' },
+      { term: 'I am ready', definition: 'Je suis prêt(e)', termLang: 'en', defLang: 'fr' },
+      { term: "It's funny", definition: "C'est marrant", termLang: 'en', defLang: 'fr' },
+      { term: "J'arrive", definition: "J'ai mal à la tête", termLang: 'fr', defLang: 'fr' },
+      { term: 'Je travaille dur', definition: 'La isse-le ici', termLang: 'fr', defLang: 'fr' },
+      { term: 'Je suis prêt(e)', definition: "C'est marrant", termLang: 'fr', defLang: 'fr' },
+      { term: "C'est très facile", definition: "C'est très difficile", termLang: 'fr', defLang: 'fr' },
+      { term: 'Qui sait?', definition: "Ça m'est égal", termLang: 'fr', defLang: 'fr' },
+      { term: "De qui s'agit", definition: 'il ?', termLang: 'fr', defLang: 'fr' },
+      { term: 'La isse', definition: 'le ici', termLang: 'fr', defLang: 'fr' },
+    ]);
+    expect(cleaned.every((p) => isCrossLanguageVocabPair(p))).toBe(true);
+    expect(cleaned).toHaveLength(3);
+    expect(cleaned.some((p) => p.term === "J'arrive")).toBe(false);
+  });
+
   it('rejects OCR fragments and keeps real translations', () => {
     expect(isGarbageVocabTerm('iologiste')).toBe(true);
     expect(isPlayableDefinition('iologiste', 'alles')).toBe(false);

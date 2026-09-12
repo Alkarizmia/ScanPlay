@@ -71,13 +71,14 @@ export function isCrossLanguageVocabPair(pair: {
   const hintedD = pair.defLang && pair.defLang !== 'unknown' ? pair.defLang : null;
   const tl = hintedT ?? detectLangSimple(pair.term);
   const dl = hintedD ?? detectLangSimple(pair.definition);
-  if (tl !== 'unknown' && dl !== 'unknown') return tl !== dl;
-  return true;
+  /* Keep short/ambiguous rows (EVERY→CHAQUE); only reject clear same-lang. */
+  if (tl === 'unknown' || dl === 'unknown') return true;
+  return tl !== dl;
 }
 
 /**
- * When ≥60% of cards are langue1→langue2, drop same-language / split-phrase outliers
- * (e.g. FR→FR cuts while the sheet is EN→FR).
+ * If the sheet already shows a clear bilingual majority (e.g. ≥3 EN→FR),
+ * drop langue1→langue1 noise — even when bad FR→FR rows outnumber the good ones.
  */
 export function dropSameLanguageOutliers<T extends {
   term: string;
@@ -87,14 +88,23 @@ export function dropSameLanguageOutliers<T extends {
   faces?: string[];
 }>(pairs: T[]): T[] {
   const withoutSplits = pairs.filter((p) => !looksLikeColumnSplitFragment(p.term, p.definition));
-  if (withoutSplits.length < 4) return withoutSplits;
+  if (withoutSplits.length === 0) return withoutSplits;
 
-  const crossCount = withoutSplits.filter((p) => isCrossLanguageVocabPair(p)).length;
-  if (crossCount < Math.ceil(withoutSplits.length * 0.6)) return withoutSplits;
+  const cross = withoutSplits.filter((p) => isCrossLanguageVocabPair(p));
+  /* ≥3 clear bilingual cards = sheet is a translation list → drop same-lang junk */
+  if (cross.length >= 3) {
+    return withoutSplits.filter(
+      (p) => isCrossLanguageVocabPair(p) || (p.faces?.length ?? 0) > 0,
+    );
+  }
 
-  return withoutSplits.filter(
-    (p) => isCrossLanguageVocabPair(p) || (p.faces?.length ?? 0) > 0,
-  );
+  if (withoutSplits.length >= 4 && cross.length >= Math.ceil(withoutSplits.length * 0.6)) {
+    return withoutSplits.filter(
+      (p) => isCrossLanguageVocabPair(p) || (p.faces?.length ?? 0) > 0,
+    );
+  }
+
+  return withoutSplits;
 }
 
 export function isSpellingHintDefinition(definition: string): boolean {

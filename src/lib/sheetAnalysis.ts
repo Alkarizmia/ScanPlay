@@ -4,6 +4,7 @@ import { collectGlossedLabelsFromText, reconcileWordListPairs } from './columnPa
 import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
 import { getMaxWords } from './planLimits';
+import { dropSameLanguageOutliers } from './pairQuality';
 import { canOpenGamePath, coercePlayablePairs } from './vocabulary';
 import type { SheetType, WordPair } from '../types';
 
@@ -50,19 +51,26 @@ function pickMergedResult(
   aiResult: ExtractPairsResult,
   ocrPairs: WordPair[],
   maxPairs: number,
+  options?: { freeText?: boolean },
 ): ExtractPairsResult {
   const merged = mergeAiAndOcrPairs(aiResult.pairs, ocrPairs, maxPairs);
-  if (merged.length <= aiResult.pairs.length) {
+  /* Vocab: strip FR→FR / EN→EN junk that OCR often invents on bilingual sheets. */
+  const cleaned = options?.freeText ? merged : dropSameLanguageOutliers(merged);
+  const pairs = cleaned.slice(0, maxPairs);
+  if (pairs.length <= aiResult.pairs.length) {
     return {
       ...aiResult,
-      pairs: aiResult.pairs.slice(0, maxPairs),
+      pairs: (options?.freeText ? aiResult.pairs : dropSameLanguageOutliers(aiResult.pairs)).slice(
+        0,
+        maxPairs,
+      ),
     };
   }
   const aiKeys = new Set(aiResult.pairs.map(pairTermKey));
-  const ocrOnly = merged.filter((p) => !aiKeys.has(pairTermKey(p))).length;
+  const ocrOnly = pairs.filter((p) => !aiKeys.has(pairTermKey(p))).length;
   return {
-    pairs: merged,
-    source: ocrOnly > 0 && merged.length > aiResult.pairs.length ? 'ocr' : 'ai',
+    pairs,
+    source: ocrOnly > 0 && pairs.length > aiResult.pairs.length ? 'ocr' : 'ai',
     ignored: aiResult.ignored,
   };
 }
@@ -74,6 +82,7 @@ export async function extractPairsFromImage(
 ): Promise<ExtractPairsResult> {
   throwIfAborted(signal);
   let aiResult: ExtractPairsResult | null = null;
+  let freeText = false;
 
   if (isAiScanEnabled()) {
     try {
@@ -82,7 +91,7 @@ export async function extractPairsFromImage(
       if (ai?.pairs.length) {
         const mathSheet = sheetType === 'math' || ai.sheetType === 'math';
         const resolvedType = ai.sheetType ?? sheetType;
-        const freeText = !mathSheet && (resolvedType === 'notes' || resolvedType === 'definitions');
+        freeText = !mathSheet && (resolvedType === 'notes' || resolvedType === 'definitions');
         const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet, freeText });
         const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet, freeText });
         let pairs: WordPair[];
@@ -97,12 +106,12 @@ export async function extractPairsFromImage(
               ai.pairs.map((p) => `${p.term}\t${p.definition}`).join('\n'),
             ),
           );
+          pairs = dropSameLanguageOutliers(pairs);
         }
         if (canOpenGamePath(pairs)) {
           if (mathSheet) {
             return { pairs, source: 'ai', ignored };
           }
-          /* Always keep AI for OCR merge — never skip OCR just because AI hit ~8 cards. */
           aiResult = { pairs, source: 'ai', ignored };
         } else if (!freeText) {
           const fromLabels = collectGlossedLabelsFromText(
@@ -124,12 +133,24 @@ export async function extractPairsFromImage(
     const ocrPairs = await extractViaOcr(file, sheetType, signal);
     throwIfAborted(signal);
     if (aiResult) {
-      return pickMergedResult(aiResult, ocrPairs, getMaxWords());
+      return pickMergedResult(aiResult, ocrPairs, getMaxWords(), { freeText });
     }
-    return { pairs: ocrPairs, source: 'ocr' };
+    const isVocabLike = !freeText && sheetType !== 'notes' && sheetType !== 'definitions' && sheetType !== 'math';
+    return {
+      pairs: isVocabLike ? dropSameLanguageOutliers(ocrPairs) : ocrPairs,
+      source: 'ocr',
+    };
   } catch (error) {
     if (isAbortError(error)) throw error;
-    if (aiResult) return { ...aiResult, pairs: aiResult.pairs.slice(0, getMaxWords()) };
+    if (aiResult) {
+      return {
+        ...aiResult,
+        pairs: (freeText ? aiResult.pairs : dropSameLanguageOutliers(aiResult.pairs)).slice(
+          0,
+          getMaxWords(),
+        ),
+      };
+    }
     throw error;
   }
 }

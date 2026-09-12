@@ -79,5 +79,5 @@ export function buildScanUserPrompt(sheetType: string, maxPairs = 100, plan = 'f
   return `Type=vocab plan=${plan} maxPairs=${maxPairs}.
 Liste 2 colonnes: chaque ligne = 1 carte langue1→langue2 (ex. EN→FR).
 Compte les lignes; renvoie autant de paires (plafond ${maxPairs}).
-JAMAIS FR→FR / coupure de phrase. Ignore déco.`;
+JAMAIS FR→FR / coupure de phrase / décalage de lignes (interdit: "J'arrive"→"J'ai mal à la tête"). Ignore déco.`;
 }
