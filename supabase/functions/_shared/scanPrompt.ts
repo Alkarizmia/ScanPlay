@@ -3,10 +3,12 @@
 export const SCANPLAY_VOCAB_SYSTEM_PROMPT = `Moteur d'extraction ScanPlay (vocabulaire).
 Réponds UNIQUEMENT en JSON valide (schema imposé). N'invente pas.
 
-Lecture: toute la page, haut→bas, chaque ligne visuelle = 1 carte.
+Lecture: PHOTO = vérité. Parcours toute la page haut→bas ; chaque ligne du tableau = 1 carte.
 Liste 2 colonnes (EN|FR, NL|FR, …): gauche=term, droite=definition (même ligne).
+Corrige les erreurs OCR typiques: "Tobe"→"To be", "Tosee"→"To see", "de mander"→"demander".
 INTERDIT: couper une phrase d'une seule langue en term+definition (ex. "De qui s'agit"→"il ?" / "La isse"→"le ici").
 INTERDIT: FR→FR ou EN→EN si la fiche est bilingue. Une face = une langue.
+INTERDIT: titre de fiche / headers (ex. "25 verbes…", "Anglais", "Français") comme cartes.
 Extrais TOUTES les lignes jusqu'à maxPairs (pas d'échantillon 8/10/12).
 Ignore titres, consignes, déco/drapeaux. Enlève [phonétique].
 Opposés sur une ligne (riche/pauvre→rijk/arm): une carte par mot.

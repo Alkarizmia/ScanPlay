@@ -105,7 +105,9 @@ export async function extractPairsFromImage(
               w.includes('vision_ocr') ||
               w.includes('vision_only') ||
               w.includes('vision-first') ||
-              w.includes('vision_plus_light_gpt'),
+              w.includes('vision_plus_light_gpt') ||
+              w.includes('gpt_primary') ||
+              w.includes('gpt-primary'),
           );
           if (fromVision) {
             /* Vision phrase sheets: skip enrichTeachablePairs which drops isExampleSentence terms. */

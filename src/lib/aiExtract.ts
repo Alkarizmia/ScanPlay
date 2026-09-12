@@ -3,6 +3,7 @@ import { lookupVocabGloss } from './loanwordGlosses';
 import { fixOcrLine, isMathLikeText } from './vocabulary';
 import { looksLikeLatex } from './mathText';
 import { dropSiblingOcrFragments, dropSameLanguageOutliers, isGarbageVocabTerm, isSectionTitle, isExampleSentence } from './pairQuality';
+import { normalizeVocabOcrCell } from './vocabOcrCleanup';
 import { normalizeFaces } from './cardFaces';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { getMaxWords } from './planLimits';
@@ -53,6 +54,7 @@ function normalizeVocabCell(text: string): string {
   if (s.split(/\s+/).length <= 3) {
     s = s.replace(/[.\s]+$/g, '');
   }
+  s = normalizeVocabOcrCell(s, 'term');
   return repairOcrGlitches(s);
 }
 

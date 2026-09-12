@@ -1,5 +1,6 @@
 import { lookupVocabGloss } from './loanwordGlosses';
 import { detectScanLang } from './scanLang';
+import { isSheetChromeText } from './vocabOcrCleanup';
 import type { WordPair } from '../types';
 
 const TITLE_FRAGMENT = /^(vocabulaire|quelques mots|dans la (lan|langue)|liste de|un peu de)\b/i;
@@ -164,6 +165,7 @@ export function isExampleSentence(text: string): boolean {
 export function isGarbageVocabTerm(text: string): boolean {
   const t = text.trim();
   if (!t || t.length < 2) return true;
+  if (isSheetChromeText(t)) return true;
   if (TITLE_FRAGMENT.test(t)) return true;
   if (isSectionTitle(t)) return true;
   const low = t.toLowerCase();
@@ -250,20 +252,24 @@ export function isPlayableDefinition(definition: string, term: string): boolean 
   if (isGarbageVocabTerm(definition)) return false;
 
   const def = definition.trim();
+  const t = term.trim();
   const defWords = def.split(/\s+/).length;
-  const termWords = term.trim().split(/\s+/).length;
+  const termWords = t.split(/\s+/).length;
 
   if (defWords >= 2 || def.length >= 14) return true;
-  if (glossMatches(term, definition)) return true;
-  if (lookupVocabGloss(term) && defWords >= 2) return true;
+  if (glossMatches(t, definition)) return true;
+  if (lookupVocabGloss(t) && defWords >= 2) return true;
+
+  /* EN infinitive lists: "To be" → "être" */
+  if (/^to\s+[\p{L}'-]+$/iu.test(t) && defWords <= 3 && def.length >= 3) return true;
 
   if (
-    looksLikeStandaloneVocabWord(term) &&
+    looksLikeStandaloneVocabWord(t) &&
     looksLikeStandaloneVocabWord(def) &&
     termWords <= 2 &&
     defWords <= 2
   ) {
-    return isLikelyTranslationPair(term, def);
+    return isLikelyTranslationPair(t, def);
   }
 
   return defWords >= 2;

@@ -29,6 +29,7 @@ import {
   type VisionOcrPair,
 } from '../_shared/googleVision.ts';
 import { looksEn, looksFr } from '../_shared/scanLang.ts';
+import { sanitizeVocabExtractPairs } from '../_shared/vocabOcrCleanup.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -254,15 +255,18 @@ function buildVisionHint(pairs: VisionOcrPair[], fullText: string, maxPairs: num
     .slice(0, 40)
     .map((p) => `${p.term} → ${p.definition}`)
     .join('\n');
-  return `OCR Google Vision (géométrie 2 colonnes) — base fiable :
+  return `OCR Google Vision (géométrie / alignement) — AIDE SEULEMENT :
 ${listed || '(peu de paires colonnes)'}
 
-Texte brut (extrait) :
+Texte brut OCR (peut coller "Tobe" au lieu de "To be") :
 ${fullText.slice(0, 2500)}
 
-Utilise cette OCR pour couvrir TOUTES les lignes jusqu'à ${maxPairs}.
-Corrige coupures (interdit FR→FR / "De qui s'agit"→"il ?").
-Garde langue1→langue2. Ajoute seulement les lignes manquantes ou mal coupées.`;
+Règles:
+- La PHOTO est la source de vérité pour l'orthographe et les espaces.
+- Corrige les fusions OCR (Tobe→To be, Tosee→To see, de mander→demander).
+- Ignore titres ("25 verbes…", Anglais/Français).
+- Couvre TOUTES les lignes jusqu'à ${maxPairs} (table complète).
+- Garde langue1→langue2. INTERDIT FR→FR / coupes "De qui s'agit"→"il ?".`;
 }
 
 async function parseOpenAiPayload(
@@ -366,13 +370,86 @@ Deno.serve(async (req) => {
     const visionWarnings = vision?.warnings ?? [];
     const visionStrong = visionOcrIsStrong(sheetType, visionPairs.length);
     let payload: ExtractPayload | null = null;
+    let mode: 'gpt-primary' | 'vision-fallback' = 'gpt-primary';
 
-    if (visionStrong) {
+    /* Vocab: GPT vision reads the page; Vision OCR is alignment/coverage hint only.
+       Never ship raw Vision-only text (Tobe / title rows). */
+    if (sheetType === 'vocab') {
+      const visionHint =
+        visionPairs.length >= 2 || (vision?.fullText?.length ?? 0) > 40
+          ? buildVisionHint(visionPairs, vision?.fullText ?? '', channel.maxPairs)
+          : `Extrais TOUTES les lignes de vocabulaire visibles jusqu'à ${channel.maxPairs}.
+Ignore titres/headers. Corrige orthographe depuis la photo.`;
+      const firstDetail = scanImageDetail(channel.model);
+      let openaiCall = await requestOpenAi(
+        openaiKey,
+        buildOpenAiBody(channel, sheetType, imageBase64, mimeType, firstDetail, visionHint),
+      );
+      if (!openaiCall.ok && firstDetail === 'original' && shouldRetryWithoutOriginal(openaiCall.text)) {
+        openaiCall = await requestOpenAi(
+          openaiKey,
+          buildOpenAiBody(channel, sheetType, imageBase64, mimeType, 'high', visionHint),
+        );
+      }
+
+      if (openaiCall.ok) {
+        const parsed = await parseOpenAiPayload(openaiCall);
+        payload = parsed.payload;
+        if (payload) {
+          if (parsed.finishReason === 'length') {
+            payload.warnings = [...(payload.warnings ?? []), 'extraction_truncated'];
+          }
+          /* GPT text first; Vision only adds missing terms (coverage). */
+          if (visionPairs.length > 0) {
+            payload = mergeExtractPayloads(
+              payload,
+              visionToPayload(sheetType, visionPairs, channel.maxPairs, visionWarnings),
+              channel.maxPairs,
+            );
+          }
+          let pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
+          if (needsFullRecount(sheetType, pairs.length, channel.maxPairs, parsed.finishReason)) {
+            const contDetail = firstDetail === 'original' ? 'high' : firstDetail;
+            const contCall = await requestOpenAi(
+              openaiKey,
+              buildOpenAiBody(
+                channel,
+                sheetType,
+                imageBase64,
+                mimeType,
+                contDetail,
+                buildFullRecountHint(sheetType, pairs, channel.maxPairs),
+              ),
+            );
+            const contParsed = await parseOpenAiPayload(contCall);
+            if (contParsed.payload) {
+              payload = pickRicherPayload(payload, contParsed.payload, channel.maxPairs);
+              payload.warnings = [...(payload.warnings ?? []), 'gpt_recount'];
+            }
+          }
+          payload.warnings = [...(payload.warnings ?? []), 'gpt_primary'];
+        }
+      }
+
+      if (!payload && visionPairs.length >= 4) {
+        payload = visionToPayload(sheetType, visionPairs, channel.maxPairs, [
+          ...visionWarnings,
+          'openai_failed_vision_fallback',
+        ]);
+        mode = 'vision-fallback';
+      } else if (!payload) {
+        console.error('analyze-sheet upstream failed', openaiCall.status, channel.label);
+        return new Response(JSON.stringify({ error: 'analysis_failed' }), {
+          status: 502,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    } else if (visionStrong) {
       payload = visionToPayload(sheetType, visionPairs, channel.maxPairs, visionWarnings);
       const coverageTarget = Math.min(channel.maxPairs, 18);
-      /* ≥18 solid bilingual rows → Vision alone. Otherwise light GPT completes missing lines. */
       if (visionPairs.length >= coverageTarget) {
         payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
+        mode = 'vision-fallback';
       } else {
         const lightCall = await requestOpenAi(
           openaiKey,
@@ -392,25 +469,7 @@ Deno.serve(async (req) => {
           payload.warnings = [...(payload.warnings ?? []), 'vision_plus_light_gpt'];
         } else {
           payload.warnings = [...(payload.warnings ?? []), 'vision_only'];
-        }
-        const afterLight = payload.pairs?.length ?? 0;
-        if (needsFullRecount(sheetType, afterLight, channel.maxPairs)) {
-          const contCall = await requestOpenAi(
-            openaiKey,
-            buildOpenAiBody(
-              channel,
-              sheetType,
-              imageBase64,
-              mimeType,
-              'high',
-              buildFullRecountHint(sheetType, payload.pairs ?? [], channel.maxPairs),
-            ),
-          );
-          const contParsed = await parseOpenAiPayload(contCall);
-          if (contParsed.payload) {
-            payload = pickRicherPayload(payload, contParsed.payload, channel.maxPairs);
-            payload.warnings = [...(payload.warnings ?? []), 'vision_gpt_recount'];
-          }
+          mode = 'vision-fallback';
         }
       }
     } else {
@@ -437,6 +496,7 @@ Deno.serve(async (req) => {
             ...(vision?.warnings ?? []),
             'openai_failed_vision_fallback',
           ]);
+          mode = 'vision-fallback';
         } else {
           console.error('analyze-sheet upstream failed', openaiCall.status, channel.label);
           return new Response(JSON.stringify({ error: 'analysis_failed' }), {
@@ -450,6 +510,7 @@ Deno.serve(async (req) => {
         if (!payload) {
           if (visionPairs.length >= 4) {
             payload = visionToPayload(sheetType, visionPairs, channel.maxPairs, vision?.warnings ?? []);
+            mode = 'vision-fallback';
           } else {
             return new Response(JSON.stringify({ error: 'analysis_failed' }), {
               status: 502,
@@ -462,17 +523,14 @@ Deno.serve(async (req) => {
           }
           if (visionPairs.length > 0) {
             payload = mergeExtractPayloads(
-              visionToPayload(sheetType, visionPairs, channel.maxPairs, vision?.warnings ?? []),
               payload,
+              visionToPayload(sheetType, visionPairs, channel.maxPairs, vision?.warnings ?? []),
               channel.maxPairs,
             );
           }
 
           let pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
-          if (
-            !visionStrong &&
-            needsFullRecount(sheetType, pairs.length, channel.maxPairs, parsed.finishReason)
-          ) {
+          if (needsFullRecount(sheetType, pairs.length, channel.maxPairs, parsed.finishReason)) {
             const contDetail = firstDetail === 'original' ? 'high' : firstDetail;
             const contCall = await requestOpenAi(
               openaiKey,
@@ -502,6 +560,7 @@ Deno.serve(async (req) => {
     }
 
     if (sheetType === 'vocab' && Array.isArray(payload.pairs)) {
+      payload.pairs = sanitizeVocabExtractPairs(payload.pairs);
       payload.pairs = dropSameLangServer(payload.pairs);
     }
 
@@ -509,7 +568,6 @@ Deno.serve(async (req) => {
       payload.pairs = payload.pairs.slice(0, channel.maxPairs);
     }
 
-    const mode = visionStrong ? 'vision-first' : 'gpt-first';
     const finalCount = payload.pairs?.length ?? 0;
     payload.warnings = [
       ...(payload.warnings ?? []),
