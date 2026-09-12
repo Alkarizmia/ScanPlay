@@ -1,4 +1,5 @@
 import { getSupabase } from './supabase';
+import { clearAccountLocalData } from './localData';
 
 export async function deleteAccount(): Promise<{ ok: boolean; error?: string }> {
   const supabase = getSupabase();
@@ -17,9 +18,9 @@ export async function deleteAccount(): Promise<{ ok: boolean; error?: string }> 
       },
     });
     if (!res.ok) {
-      const body = (await res.json().catch(() => ({}))) as { error?: string };
-      return { ok: false, error: body.error ?? 'delete_failed' };
+      return { ok: false, error: 'delete_failed' };
     }
+    clearAccountLocalData();
     return { ok: true };
   } catch {
     return { ok: false, error: 'network' };
