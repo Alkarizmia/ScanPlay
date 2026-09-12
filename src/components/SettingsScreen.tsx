@@ -2,6 +2,7 @@ import { SubscriptionSection } from './SubscriptionSection';
 import { AccountPasswordSection } from './AccountPasswordSection';
 import { PrivacyPolicySheet } from './PrivacyPolicySheet';
 import { AudioSettingsScreen } from './AudioSettingsScreen';
+import { DeleteAccountScreen } from './DeleteAccountScreen';
 import { InstallAppSheet } from './InstallAppSheet';
 import { useMemo, useState } from 'react';
 import { getUser, signOut } from '../lib/auth';
@@ -28,6 +29,7 @@ interface SettingsScreenProps {
   onLocaleChange: (locale: Locale) => void;
   onAuth: () => void;
   onLogout: () => void;
+  onAccountDeleted?: () => void;
   onPricing: () => void;
   onRefresh: () => void;
   highlightPasswordRecovery?: boolean;
@@ -42,12 +44,14 @@ export function SettingsScreen({
   onLocaleChange,
   onAuth,
   onLogout,
+  onAccountDeleted,
   onPricing,
   onRefresh,
   highlightPasswordRecovery = false,
   onPasswordHighlightDone,
 }: SettingsScreenProps) {
   const [privacyOpen, setPrivacyOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [audioOpen, setAudioOpen] = useState(false);
   const [installSheetOpen, setInstallSheetOpen] = useState(false);
   const { canNativeInstall, canShowInstall, isInstalled, install, platform, isInAppBrowser } =
@@ -98,6 +102,20 @@ export function SettingsScreen({
 
   if (audioOpen) {
     return <AudioSettingsScreen locale={locale} onBack={() => setAudioOpen(false)} />;
+  }
+
+  if (deleteOpen) {
+    return (
+      <DeleteAccountScreen
+        locale={locale}
+        onBack={() => setDeleteOpen(false)}
+        onDeleted={() => {
+          setDeleteOpen(false);
+          onAccountDeleted?.();
+          onLogout();
+        }}
+      />
+    );
   }
 
   return (
@@ -295,6 +313,15 @@ export function SettingsScreen({
           <h3 className="settings-label">{t('privacySection', locale)}</h3>
           <p className="settings-hint">{t('privacyIntro', locale)}</p>
           {isLoggedIn && <p className="settings-hint">{t('privacyDeleteHint', locale)}</p>}
+          {isLoggedIn && (
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={() => setDeleteOpen(true)}
+            >
+              {t('deleteAccount', locale)}
+            </button>
+          )}
           <button type="button" className="btn-secondary" onClick={() => setPrivacyOpen(true)}>
             {t('privacyOpen', locale)}
           </button>

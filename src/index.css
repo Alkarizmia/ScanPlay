@@ -1764,6 +1764,39 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .modal-card .btn-secondary.btn-lg {
   margin-top: 10px;
 }
+.delete-account-main {
+  padding: 16px 20px 40px;
+  max-width: 480px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.delete-account-warning {
+  margin: 0;
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, #dc2626 12%, var(--bg-soft));
+  border: 2px solid color-mix(in srgb, #dc2626 40%, transparent);
+  color: var(--text);
+  font-weight: 750;
+  font-size: 1rem;
+  line-height: 1.45;
+}
+.delete-account-body {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.delete-account-ok-input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+.delete-account-continue {
+  margin-top: 8px;
+}
 .guest-aha-card .modal-title {
   margin-top: 0;
 }
@@ -2310,6 +2343,24 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .history-review-btn svg {
   width: 16px;
   height: 16px;
+}
+.history-rescan-btn {
+  width: 100%;
+  margin-top: 6px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--surface-border, #e2e8f0));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 10%, var(--bg-elevated));
+  color: var(--accent-deep, #15803d);
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+  cursor: pointer;
+  text-align: center;
+}
+.history-rescan-btn:active {
+  transform: translateY(1px);
 }
 .history-path-progress {
   margin-top: 10px;

@@ -389,6 +389,12 @@ const strings = {
     deleteAccount: 'Supprimer mon compte',
     deleteAccountConfirm:
       'Supprimer définitivement ton compte ScanPlay, tes fiches, ta progression et tes données cloud ? Cette action est irréversible.',
+    deleteAccountWarning:
+      'C’est définitif. Es-tu sûr de vouloir supprimer ton compte ?',
+    deleteAccountBody:
+      'Cette action efface ton compte Supabase et toutes les données ScanPlay liées (profil, fiches, miniatures, progression, coach, relations sociales, salons dont tu es hôte). Un abonnement Stripe en cours est annulé. Les factures Stripe et certaines traces chez d’autres prestataires (IA, analytics, emails) peuvent rester selon leurs règles.',
+    deleteAccountTypeOk: 'Pour confirmer, écris exactement OK ci-dessous, puis appuie sur Continuer.',
+    deleteAccountContinue: 'Continuer',
     deleteAccountConfirmYes: 'Supprimer définitivement mon compte',
     deleteAccountKeep: 'Annuler',
     deleteAccountWorking: 'Suppression en cours…',
@@ -452,7 +458,7 @@ const strings = {
     privacySection: 'Confidentialité',
     privacyIntro: 'Comment ScanPlay utilise et protège tes données.',
     privacyDeleteHint:
-      'Tu peux supprimer ton compte depuis cet écran. Tes données ScanPlay liées au compte sont alors effacées côté app. D’autres prestataires (paiement, mesure d’audience, IA) peuvent conserver des traces selon leurs propres règles.',
+      'Tu peux supprimer ton compte depuis cet écran. Tu devras écrire OK puis appuyer sur Continuer. ScanPlay efface alors ton compte Supabase et les données liées. D’autres prestataires (paiement, mesure d’audience, IA) peuvent conserver des traces selon leurs propres règles.',
     privacyOpen: 'Lire la politique de confidentialité',
     privacyUpdated: 'Dernière mise à jour : septembre 2026',
     privacyClose: 'Fermer',
@@ -464,7 +470,7 @@ const strings = {
     privacyPolicy4: 'Sans compte, le scan est lu dans le navigateur. Connecté, l’image peut être envoyée à OpenAI le temps d’extraire les cartes ; ScanPlay ne garde pas le fichier original. Le texte des cartes et une miniature peuvent rester. La prononciation peut envoyer un court audio à Groq.',
     privacyPolicy5: 'Multijoueur : code de salon, scores et présence en salle. Données en base le temps de la fonctionnalité.',
     privacyPolicy6:
-      'Tes données ne sont pas vendues par ScanPlay. Tu peux supprimer ton compte dans Réglages. L’app efface alors tes données de compte ScanPlay (fiches, stats, coach, relations) et les copies locales associées. Tu peux aussi demander l’accès à tes données à support@scanplay.org.',
+      'Tes données ne sont pas vendues par ScanPlay. Tu peux supprimer ton compte dans Réglages (confirmation en tapant OK puis Continuer). L’app efface alors ton compte Supabase et tes données ScanPlay (fiches, stats, coach, relations) ainsi que les copies locales associées. Tu peux aussi demander l’accès à tes données à support@scanplay.org.',
     privacyAboutHeading: 'À propos',
     privacyPolicy7: 'ScanPlay est un projet indépendant créé par Bilal El Fahmi. L\'objectif : rendre la révision plus simple et motivante grâce au jeu, sans remplacer ton cours.',
     privacyPolicy8: 'Application web progressive (PWA) disponible sur scanplay.org. Pour toute question, suggestion ou retour : support@scanplay.org.',
@@ -1587,6 +1593,11 @@ const strings = {
     deleteAccount: 'Delete my account',
     deleteAccountConfirm:
       'Permanently delete your ScanPlay account, decks, progress and cloud data? This cannot be undone.',
+    deleteAccountWarning: 'This is permanent. Are you sure you want to delete your account?',
+    deleteAccountBody:
+      'This removes your Supabase account and all linked ScanPlay data (profile, decks, thumbnails, progress, coach, social links, rooms you host). An active Stripe subscription is canceled. Stripe invoices and traces at other providers (AI, analytics, email) may remain under their rules.',
+    deleteAccountTypeOk: 'To confirm, type OK exactly below, then press Continue.',
+    deleteAccountContinue: 'Continue',
     deleteAccountConfirmYes: 'Permanently delete my account',
     deleteAccountKeep: 'Cancel',
     deleteAccountWorking: 'Deleting…',
@@ -1650,7 +1661,7 @@ const strings = {
     privacySection: 'Privacy',
     privacyIntro: 'How ScanPlay uses and protects your data.',
     privacyDeleteHint:
-      'You can delete your account from this screen. ScanPlay then removes account data in the app. Other providers (payments, analytics, AI) may keep traces under their own rules.',
+      'You can delete your account from this screen. You must type OK then press Continue. ScanPlay then deletes your Supabase account and linked data. Other providers (payments, analytics, AI) may keep traces under their own rules.',
     privacyOpen: 'Read the privacy policy',
     privacyUpdated: 'Last updated: September 2026',
     privacyClose: 'Close',
@@ -1662,7 +1673,7 @@ const strings = {
     privacyPolicy4: 'Without an account, the scan is read in the browser. When signed in, the image may be sent to OpenAI long enough to extract cards; ScanPlay does not keep the original file. Card text and a thumbnail may remain. Speaking practice may send a short audio clip to Groq.',
     privacyPolicy5: 'Multiplayer: room code, scores and lobby presence, stored while the feature is used.',
     privacyPolicy6:
-      'ScanPlay does not sell your data. You can delete your account in Settings. The app then removes your ScanPlay account data (decks, stats, coach, social links) and related local copies. You may also request access at support@scanplay.org.',
+      'ScanPlay does not sell your data. You can delete your account in Settings (confirm by typing OK then Continue). The app then deletes your Supabase account and ScanPlay data (decks, stats, coach, social links) plus related local copies. You may also request access at support@scanplay.org.',
     privacyAboutHeading: 'About',
     privacyPolicy7: 'ScanPlay is an independent project created by Bilal El Fahmi. The goal: make studying simpler and more motivating through games, without replacing your course material.',
     privacyPolicy8: 'Progressive web app available at scanplay.org. For questions, feedback or suggestions: support@scanplay.org.',
@@ -2737,6 +2748,11 @@ const strings = {
     deleteAccount: 'Mijn account verwijderen',
     deleteAccountConfirm:
       'Je ScanPlay-account, decks, voortgang en clouddata definitief verwijderen? Dit kan niet ongedaan worden gemaakt.',
+    deleteAccountWarning: 'Dit is definitief. Weet je zeker dat je je account wilt verwijderen?',
+    deleteAccountBody:
+      'Dit verwijdert je Supabase-account en alle gekoppelde ScanPlay-gegevens (profiel, decks, miniaturen, voortgang, coach, sociale links, zalen waarvan jij host bent). Een actief Stripe-abonnement wordt geannuleerd. Stripe-facturen en sporen bij andere providers (AI, analytics, e-mail) kunnen volgens hun regels blijven.',
+    deleteAccountTypeOk: 'Typ hieronder precies OK om te bevestigen, en druk daarna op Doorgaan.',
+    deleteAccountContinue: 'Doorgaan',
     deleteAccountConfirmYes: 'Mijn account definitief verwijderen',
     deleteAccountKeep: 'Annuleren',
     deleteAccountWorking: 'Verwijderen…',
@@ -2800,7 +2816,7 @@ const strings = {
     privacySection: 'Privacy',
     privacyIntro: 'Hoe ScanPlay je gegevens gebruikt en beschermt.',
     privacyDeleteHint:
-      'Je kunt je account vanaf dit scherm verwijderen. ScanPlay wist dan de accountgegevens in de app. Andere partijen (betaling, statistieken, AI) kunnen sporen bewaren volgens hun eigen regels.',
+      'Je kunt je account vanaf dit scherm verwijderen. Je moet OK typen en daarna op Doorgaan drukken. ScanPlay verwijdert dan je Supabase-account en gekoppelde gegevens. Andere partijen (betaling, statistieken, AI) kunnen sporen bewaren volgens hun eigen regels.',
     privacyOpen: 'Privacybeleid lezen',
     privacyUpdated: 'Laatst bijgewerkt: september 2026',
     privacyClose: 'Sluiten',
@@ -2812,7 +2828,7 @@ const strings = {
     privacyPolicy4: 'Zonder account wordt de scan in de browser gelezen. Ingelogd kan de afbeelding naar OpenAI gaan om kaarten te halen; ScanPlay bewaart het originele bestand niet. Tekst van kaarten en een miniatuur kunnen blijven. Spreken kan korte audio naar Groq sturen.',
     privacyPolicy5: 'Multiplayer: roomcode, scores en aanwezigheid, bewaard zolang de functie gebruikt wordt.',
     privacyPolicy6:
-      'ScanPlay verkoopt je gegevens niet. Je kunt je account verwijderen in Instellingen. De app wist dan je ScanPlay-accountgegevens en lokale kopieën. Je kunt ook toegang vragen via support@scanplay.org.',
+      'ScanPlay verkoopt je gegevens niet. Je kunt je account verwijderen in Instellingen (bevestig met OK en Doorgaan). De app verwijdert dan je Supabase-account en ScanPlay-gegevens plus lokale kopieën. Je kunt ook toegang vragen via support@scanplay.org.',
     privacyAboutHeading: 'Over',
     privacyPolicy7: 'ScanPlay is een onafhankelijk project van Bilal El Fahmi. Het doel: studeren eenvoudiger en motiverender maken via games, zonder je cursus te vervangen.',
     privacyPolicy8: 'Progressive web app op scanplay.org. Vragen, feedback of suggesties: support@scanplay.org.',
@@ -3870,6 +3886,11 @@ const strings = {
     deleteAccount: 'Eliminar mi cuenta',
     deleteAccountConfirm:
       '¿Eliminar permanentemente tu cuenta ScanPlay, mazos, progreso y datos en la nube? No se puede deshacer.',
+    deleteAccountWarning: 'Es definitivo. ¿Seguro que quieres eliminar tu cuenta?',
+    deleteAccountBody:
+      'Esto elimina tu cuenta de Supabase y todos los datos ScanPlay vinculados (perfil, mazos, miniaturas, progreso, coach, relaciones sociales, salas de las que eres anfitrión). Se cancela una suscripción Stripe activa. Las facturas de Stripe y rastros en otros proveedores (IA, analítica, email) pueden permanecer según sus reglas.',
+    deleteAccountTypeOk: 'Para confirmar, escribe exactamente OK abajo y pulsa Continuar.',
+    deleteAccountContinue: 'Continuar',
     deleteAccountConfirmYes: 'Eliminar definitivamente mi cuenta',
     deleteAccountKeep: 'Cancelar',
     deleteAccountWorking: 'Eliminando…',
@@ -3933,7 +3954,7 @@ const strings = {
     privacySection: 'Privacidad',
     privacyIntro: 'Cómo ScanPlay usa y protege tus datos.',
     privacyDeleteHint:
-      'Puedes eliminar tu cuenta desde esta pantalla. ScanPlay borra entonces los datos de cuenta en la app. Otros proveedores (pago, analítica, IA) pueden conservar rastros según sus propias reglas.',
+      'Puedes eliminar tu cuenta desde esta pantalla. Debes escribir OK y pulsar Continuar. ScanPlay borra entonces tu cuenta de Supabase y los datos vinculados. Otros proveedores (pago, analítica, IA) pueden conservar rastros según sus propias reglas.',
     privacyOpen: 'Leer la política de privacidad',
     privacyUpdated: 'Última actualización: septiembre 2026',
     privacyClose: 'Cerrar',
@@ -3945,7 +3966,7 @@ const strings = {
     privacyPolicy4: 'Sin cuenta, el escaneo se lee en el navegador. Con sesión, la imagen puede enviarse a OpenAI el tiempo de extraer tarjetas; ScanPlay no guarda el archivo original. El texto de las tarjetas y una miniatura pueden quedar. La pronunciación puede enviar audio corto a Groq.',
     privacyPolicy5: 'Multijugador: código de sala, puntuaciones y presencia mientras se usa la función.',
     privacyPolicy6:
-      'ScanPlay no vende tus datos. Puedes eliminar tu cuenta en Ajustes. La app borra entonces tus datos de cuenta ScanPlay y las copias locales asociadas. También puedes pedir acceso en support@scanplay.org.',
+      'ScanPlay no vende tus datos. Puedes eliminar tu cuenta en Ajustes (confirma escribiendo OK y Continuar). La app borra entonces tu cuenta de Supabase y tus datos ScanPlay más las copias locales. También puedes pedir acceso en support@scanplay.org.',
     privacyAboutHeading: 'Acerca de',
     privacyPolicy7: 'ScanPlay es un proyecto independiente creado por Bilal El Fahmi. El objetivo: hacer el repaso más simple y motivador con juegos, sin sustituir tu curso.',
     privacyPolicy8: 'Aplicación web progresiva (PWA) en scanplay.org. Para preguntas, sugerencias o comentarios: support@scanplay.org.',

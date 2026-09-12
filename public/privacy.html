@@ -280,15 +280,19 @@
 
       <h2>Supprimer ton compte</h2>
       <p>
-        Dans l’application, ouvre Réglages puis <strong>Supprimer mon compte</strong>. Il faut
-        confirmer. ScanPlay identifie le compte à partir de ta session (pas d’identifiant fourni à
-        la main).
+        Dans l’application, ouvre Réglages puis <strong>Supprimer mon compte</strong>. Une page de
+        confirmation s’affiche : le texte indique que la suppression est
+        <strong>définitive</strong>. Pour continuer, tu dois écrire exactement
+        <strong>OK</strong>, puis appuyer sur <strong>Continuer</strong>. Les deux conditions sont
+        obligatoires. ScanPlay identifie le compte à partir de ta session (pas d’identifiant fourni
+        à la main).
       </p>
       <p>
-        L’app supprime alors les données ScanPlay liées à ce compte (profil, fiches et miniatures,
-        erreurs, stats, portefeuille, coach, relations sociales, salons dont tu es hôte, transferts
-        de pièces) et le compte de connexion, puis vide les copies locales ScanPlay de ce navigateur
-        (sauf thème, préférences d’affichage et choix du bandeau cookies).
+        L’app supprime alors ton <strong>compte Supabase</strong> (auth) et les données ScanPlay
+        liées à ce compte (profil, fiches et miniatures, erreurs, stats, portefeuille, coach,
+        relations sociales, salons dont tu es hôte, transferts de pièces), puis vide les copies
+        locales ScanPlay de ce navigateur (sauf thème, préférences d’affichage et choix du bandeau
+        cookies).
       </p>
       <p>
         Un abonnement Stripe en cours est <strong>annulé</strong> s’il est connu du profil, pour
@@ -505,14 +509,16 @@
 
       <h2>Deleting your account</h2>
       <p>
-        In the app, open Settings then <strong>Delete my account</strong>. You must confirm.
+        In the app, open Settings then <strong>Delete my account</strong>. A confirmation page
+        explains that deletion is <strong>permanent</strong>. To proceed, you must type
+        <strong>OK</strong> exactly, then press <strong>Continue</strong>. Both steps are required.
         ScanPlay identifies the account from your session (no user id typed by hand).
       </p>
       <p>
-        The app then deletes ScanPlay data for that account (profile, decks and thumbnails,
-        mistakes, stats, wallet, coach, social links, rooms you host, coin transfers) and the login
-        account, then clears related ScanPlay copies in this browser (except theme, display
-        preferences and the cookie-banner choice).
+        The app then deletes your <strong>Supabase account</strong> (auth) and ScanPlay data for
+        that account (profile, decks and thumbnails, mistakes, stats, wallet, coach, social links,
+        rooms you host, coin transfers), then clears related ScanPlay copies in this browser
+        (except theme, display preferences and the cookie-banner choice).
       </p>
       <p>
         An active Stripe subscription is <strong>canceled</strong> if the profile has one, so
