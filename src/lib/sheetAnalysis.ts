@@ -3,6 +3,7 @@ import { analyzeSheetWithAi, collectIgnoredAiPairs, isAiScanEnabled, mapAiPairsT
 import { collectGlossedLabelsFromText, reconcileWordListPairs } from './columnParser';
 import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
+import { getMaxWords } from './planLimits';
 import { canOpenGamePath, coercePlayablePairs } from './vocabulary';
 import type { SheetType, WordPair } from '../types';
 
@@ -27,11 +28,43 @@ async function extractViaOcr(
   return coercePlayablePairs(raw);
 }
 
-const MIN_AI_PAIRS_TO_SKIP_OCR = 8;
+function pairTermKey(pair: WordPair): string {
+  return pair.term.toLowerCase().trim();
+}
 
-function betterPairSet(a: WordPair[], b: WordPair[]): WordPair[] {
-  if (a.length >= b.length) return a;
-  return b;
+/** Prefer AI order; append OCR-only rows so a thin AI sample (e.g. 8) can still grow to full sheet. */
+export function mergeAiAndOcrPairs(aiPairs: WordPair[], ocrPairs: WordPair[], maxPairs: number): WordPair[] {
+  const out: WordPair[] = [];
+  const seen = new Set<string>();
+  for (const pair of [...aiPairs, ...ocrPairs]) {
+    const key = pairTermKey(pair);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(pair);
+    if (out.length >= maxPairs) break;
+  }
+  return out;
+}
+
+function pickMergedResult(
+  aiResult: ExtractPairsResult,
+  ocrPairs: WordPair[],
+  maxPairs: number,
+): ExtractPairsResult {
+  const merged = mergeAiAndOcrPairs(aiResult.pairs, ocrPairs, maxPairs);
+  if (merged.length <= aiResult.pairs.length) {
+    return {
+      ...aiResult,
+      pairs: aiResult.pairs.slice(0, maxPairs),
+    };
+  }
+  const aiKeys = new Set(aiResult.pairs.map(pairTermKey));
+  const ocrOnly = merged.filter((p) => !aiKeys.has(pairTermKey(p))).length;
+  return {
+    pairs: merged,
+    source: ocrOnly > 0 && merged.length > aiResult.pairs.length ? 'ocr' : 'ai',
+    ignored: aiResult.ignored,
+  };
 }
 
 export async function extractPairsFromImage(
@@ -66,9 +99,10 @@ export async function extractPairsFromImage(
           );
         }
         if (canOpenGamePath(pairs)) {
-          if (mathSheet || pairs.length >= MIN_AI_PAIRS_TO_SKIP_OCR) {
+          if (mathSheet) {
             return { pairs, source: 'ai', ignored };
           }
+          /* Always keep AI for OCR merge — never skip OCR just because AI hit ~8 cards. */
           aiResult = { pairs, source: 'ai', ignored };
         } else if (!freeText) {
           const fromLabels = collectGlossedLabelsFromText(
@@ -90,13 +124,12 @@ export async function extractPairsFromImage(
     const ocrPairs = await extractViaOcr(file, sheetType, signal);
     throwIfAborted(signal);
     if (aiResult) {
-      const best = betterPairSet(aiResult.pairs, ocrPairs);
-      return best === aiResult.pairs ? aiResult : { pairs: ocrPairs, source: 'ocr', ignored: aiResult.ignored };
+      return pickMergedResult(aiResult, ocrPairs, getMaxWords());
     }
     return { pairs: ocrPairs, source: 'ocr' };
   } catch (error) {
     if (isAbortError(error)) throw error;
-    if (aiResult) return aiResult;
+    if (aiResult) return { ...aiResult, pairs: aiResult.pairs.slice(0, getMaxWords()) };
     throw error;
   }
 }

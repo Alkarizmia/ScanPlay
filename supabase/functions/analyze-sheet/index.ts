@@ -4,11 +4,9 @@ import {
   fetchUserPlan,
   fetchUserStatsData,
   incrementScanCount,
-  PLAN_LIMITS,
 } from '../_shared/planQuotas.ts';
 import {
   isReasoningVisionModel,
-  resolveScanModel,
   scanImageDetail,
   scanReasoningEffort,
 } from '../_shared/openaiModels.ts';
@@ -17,6 +15,14 @@ import {
   SCANPLAY_EXTRACT_JSON_SCHEMA,
   buildScanUserPrompt,
 } from '../_shared/scanPrompt.ts';
+import {
+  buildFullRecountHint,
+  buildScanChannelPrompt,
+  needsFullRecount,
+  normalizeScanPlatform,
+  resolveScanChannel,
+  type ScanChannel,
+} from '../_shared/scanChannels.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,30 +33,60 @@ interface AnalyzeBody {
   imageBase64?: string;
   mimeType?: string;
   sheetType?: string;
+  /** Ignored for quotas — plan comes from Supabase profile only. */
   maxPairs?: number;
+  /** Client device channel: ios | android | windows | other */
+  platform?: string;
 }
 
-function outputBudget(sheetType: string, maxPairs: number): number {
-  if (sheetType === 'math') return 12000;
-  const scaled = Math.min(32000, 2000 + maxPairs * 90);
+interface ExtractPair {
+  term?: string;
+  definition?: string;
+  faces?: string[];
+  termLang?: string;
+  defLang?: string;
+  confidence?: string;
+}
+
+interface ExtractPayload {
+  readable?: boolean;
+  sheetType?: string;
+  detectedLangs?: string[];
+  pairs?: ExtractPair[];
+  warnings?: string[];
+}
+
+/** Headroom for reasoning tokens + dense JSON (≈25–250 cards). */
+function outputBudget(sheetType: string, maxPairs: number, reasoning: boolean): number {
+  if (sheetType === 'math') return reasoning ? 20000 : 12000;
+  const perPair = reasoning ? 180 : 120;
+  const base = reasoning ? 8000 : 4000;
+  const scaled = Math.min(48000, base + maxPairs * perPair);
   if (sheetType === 'notes' || sheetType === 'definitions') {
-    return Math.max(12000, scaled);
+    return Math.max(reasoning ? 18000 : 12000, scaled);
   }
-  return scaled;
+  return Math.max(reasoning ? 16000 : 8000, scaled);
 }
 
 function buildOpenAiBody(
-  model: string,
+  channel: ScanChannel,
   sheetType: string,
-  maxPairs: number,
   imageBase64: string,
   mimeType: string,
   imageDetail: 'high' | 'original',
+  extraUserText?: string,
 ) {
-  const userPrompt = buildScanUserPrompt(sheetType, maxPairs);
-  const reasoning = isReasoningVisionModel(model);
+  const userPrompt = [
+    buildScanChannelPrompt(channel),
+    buildScanUserPrompt(sheetType, channel.maxPairs, channel.plan),
+    extraUserText ?? '',
+  ]
+    .filter(Boolean)
+    .join('\n\n');
+
+  const reasoning = isReasoningVisionModel(channel.model);
   const body: Record<string, unknown> = {
-    model,
+    model: channel.model,
     response_format: {
       type: 'json_schema',
       json_schema: SCANPLAY_EXTRACT_JSON_SCHEMA,
@@ -74,11 +110,11 @@ function buildOpenAiBody(
   };
 
   if (reasoning) {
-    body.max_completion_tokens = outputBudget(sheetType, maxPairs);
+    body.max_completion_tokens = outputBudget(sheetType, channel.maxPairs, true);
     body.reasoning_effort = scanReasoningEffort(sheetType);
   } else {
     body.temperature = 0.1;
-    body.max_tokens = outputBudget(sheetType, maxPairs);
+    body.max_tokens = outputBudget(sheetType, channel.maxPairs, false);
   }
 
   return body;
@@ -108,6 +144,55 @@ function shouldRetryWithoutOriginal(errText: string): boolean {
     lower.includes('"original"') ||
     (lower.includes('detail') && lower.includes('invalid'))
   );
+}
+
+function asExtractPayload(parsed: unknown): ExtractPayload | null {
+  if (!parsed || typeof parsed !== 'object') return null;
+  return parsed as ExtractPayload;
+}
+
+function normalizePairKey(term: unknown, definition: unknown): string {
+  return `${String(term ?? '').toLowerCase().trim()}\t${String(definition ?? '').toLowerCase().trim()}`;
+}
+
+function mergeExtractPayloads(primary: ExtractPayload, extra: ExtractPayload, maxPairs: number): ExtractPayload {
+  const outPairs: ExtractPair[] = [];
+  const seen = new Set<string>();
+  for (const p of [...(primary.pairs ?? []), ...(extra.pairs ?? [])]) {
+    if (!p || typeof p.term !== 'string' || typeof p.definition !== 'string') continue;
+    const key = normalizePairKey(p.term, p.definition);
+    const termKey = p.term.toLowerCase().trim();
+    if (!termKey || seen.has(termKey)) continue;
+    seen.add(termKey);
+    seen.add(key);
+    outPairs.push(p);
+    if (outPairs.length >= maxPairs) break;
+  }
+  const warnings = [
+    ...(Array.isArray(primary.warnings) ? primary.warnings.filter((w) => typeof w === 'string') : []),
+    ...(Array.isArray(extra.warnings) ? extra.warnings.filter((w) => typeof w === 'string') : []),
+  ];
+  if (outPairs.length > (primary.pairs?.length ?? 0)) {
+    warnings.push('extraction_recounted');
+  }
+  return {
+    readable: Boolean(primary.readable || extra.readable),
+    sheetType: primary.sheetType ?? extra.sheetType,
+    detectedLangs: Array.isArray(primary.detectedLangs) && primary.detectedLangs.length
+      ? primary.detectedLangs
+      : extra.detectedLangs,
+    pairs: outPairs,
+    warnings,
+  };
+}
+
+/** Prefer the longer complete recount when the second pass re-lists everything. */
+function pickRicherPayload(a: ExtractPayload, b: ExtractPayload, maxPairs: number): ExtractPayload {
+  const merged = mergeExtractPayloads(a, b, maxPairs);
+  const aLen = a.pairs?.length ?? 0;
+  const bLen = b.pairs?.length ?? 0;
+  if (merged.pairs && merged.pairs.length >= Math.max(aLen, bLen)) return merged;
+  return bLen > aLen ? { ...b, pairs: (b.pairs ?? []).slice(0, maxPairs) } : a;
 }
 
 Deno.serve(async (req) => {
@@ -168,6 +253,8 @@ Deno.serve(async (req) => {
 
     const body = (await req.json()) as AnalyzeBody;
     const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab' } = body;
+    const platform = normalizeScanPlatform(body.platform);
+    const channel = resolveScanChannel(plan, platform);
 
     // Image stays in this request only. It is not written to Storage or the database.
 
@@ -178,25 +265,27 @@ Deno.serve(async (req) => {
       });
     }
 
-    const planCap = PLAN_LIMITS[plan].maxWords;
-    const maxPairs = planCap;
+    console.info('[analyze-sheet]', {
+      userId: user.id,
+      channel: channel.label,
+      sheetType,
+    });
 
-    const model = resolveScanModel(plan);
-    const firstDetail = scanImageDetail(model);
+    const firstDetail = scanImageDetail(channel.model);
     let openaiCall = await requestOpenAi(
       openaiKey,
-      buildOpenAiBody(model, sheetType, maxPairs, imageBase64, mimeType, firstDetail),
+      buildOpenAiBody(channel, sheetType, imageBase64, mimeType, firstDetail),
     );
 
     if (!openaiCall.ok && firstDetail === 'original' && shouldRetryWithoutOriginal(openaiCall.text)) {
       openaiCall = await requestOpenAi(
         openaiKey,
-        buildOpenAiBody(model, sheetType, maxPairs, imageBase64, mimeType, 'high'),
+        buildOpenAiBody(channel, sheetType, imageBase64, mimeType, 'high'),
       );
     }
 
     if (!openaiCall.ok) {
-      console.error('analyze-sheet upstream failed', openaiCall.status);
+      console.error('analyze-sheet upstream failed', openaiCall.status, channel.label);
       return new Response(JSON.stringify({ error: 'analysis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -234,22 +323,71 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (
-      openaiJson?.choices?.[0]?.finish_reason === 'length' &&
-      parsed &&
-      typeof parsed === 'object'
-    ) {
-      const rec = parsed as Record<string, unknown>;
-      const warnings = Array.isArray(rec.warnings) ? rec.warnings.filter((w) => typeof w === 'string') : [];
+    let payload = asExtractPayload(parsed);
+    if (!payload) {
+      return new Response(JSON.stringify({ error: 'analysis_failed' }), {
+        status: 502,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const finishReason = openaiJson?.choices?.[0]?.finish_reason;
+    if (finishReason === 'length') {
+      const warnings = Array.isArray(payload.warnings)
+        ? payload.warnings.filter((w) => typeof w === 'string')
+        : [];
       warnings.push('extraction_truncated');
-      rec.warnings = warnings;
+      payload.warnings = warnings;
+    }
+
+    let pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
+    let pass = 0;
+    const maxRecountPasses = 2;
+    while (
+      pass < maxRecountPasses &&
+      needsFullRecount(sheetType, pairs.length, channel.maxPairs, pass === 0 ? finishReason : undefined)
+    ) {
+      pass += 1;
+      const contDetail = firstDetail === 'original' ? 'high' : firstDetail;
+      const contCall = await requestOpenAi(
+        openaiKey,
+        buildOpenAiBody(
+          channel,
+          sheetType,
+          imageBase64,
+          mimeType,
+          contDetail,
+          buildFullRecountHint(sheetType, pairs, channel.maxPairs),
+        ),
+      );
+      if (!contCall.ok) break;
+      try {
+        const contJson = JSON.parse(contCall.text) as typeof openaiJson;
+        const contContent = contJson?.choices?.[0]?.message?.content;
+        if (typeof contContent !== 'string') break;
+        const contParsed = asExtractPayload(JSON.parse(contContent));
+        if (!contParsed) break;
+        payload = pickRicherPayload(payload, contParsed, channel.maxPairs);
+        pairs = Array.isArray(payload.pairs) ? payload.pairs : [];
+        console.info('[analyze-sheet-recount]', {
+          channel: channel.label,
+          pass,
+          pairs: pairs.length,
+        });
+      } catch {
+        break;
+      }
+    }
+
+    if (Array.isArray(payload.pairs) && payload.pairs.length > channel.maxPairs) {
+      payload.pairs = payload.pairs.slice(0, channel.maxPairs);
     }
 
     if (supabaseAdmin) {
       await incrementScanCount(supabaseAdmin, user.id);
     }
 
-    return new Response(JSON.stringify(parsed), {
+    return new Response(JSON.stringify(payload), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   } catch (e) {

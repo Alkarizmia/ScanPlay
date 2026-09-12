@@ -8,7 +8,7 @@ PROTOCOLE DE LECTURE (obligatoire, dans cet ordre) :
 2. Identifie le type réel. Si l'utilisateur s'est trompé (ex. "notes" mais 2 colonnes de mots), corrige sheetType.
 3. Découpe en BLOCS de lecture (colonne, encadré, grille). Ordre : haut→bas, gauche→droite. Un bloc après l'autre, jamais en zigzag entre blocs.
 4. Dans chaque bloc : parcours ligne visuelle par ligne visuelle, haut→bas. Termine une ligne avant la suivante. Ne saute pas une ligne sur deux. Une ligne peut contenir PLUSIEURS paires (voir VOCABULAIRE / opposés).
-5. Quand un bloc est fini, passe au suivant. Ne t'arrête JAMAIS à un échantillon (4–10 paires) s'il reste du contenu lisible.
+5. Quand un bloc est fini, passe au suivant. Ne t'arrête JAMAIS à un échantillon (4, 5, 7, 8, 10, 12 paires) s'il reste du contenu lisible. 8 n'est PAS un objectif.
 6. Avant de répondre, estime le nombre de lignes/cases visibles. Si pairs.length est nettement inférieur, tu as oublié des zones : relis-les.
 7. Ignore ombres de reliure, doigts, bords de table, texte du VERSO en transparence.
 
@@ -34,7 +34,7 @@ VISION MATHÉMATIQUE / SCIENTIFIQUE (si ces signes sont visibles) :
 - Ne recopie pas un exemple générique. Si la photo montre une autre fonction, un autre domaine, une autre science : extraire CETTE photo.
 
 VOCABULAIRE (sheetType vocab uniquement) :
-- Extrais TOUTES les paires jouables visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de cartes que de mots traduits lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de s'arrêter à 4, 5, 7 ou 10 paires s'il en reste sur la page.
+- Extrais TOUTES les paires jouables visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de cartes que de mots traduits lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de s'arrêter à 4, 5, 7, 8, 10 ou 12 paires s'il en reste sur la page. Si tu vois 13 ou 18 lignes, renvoie 13 ou 18 paires (sauf plafond maxPairs).
 - Multi-colonnes : lis chaque bloc verticalement (gauche EN/NL avec sa traduction FR sur la même ligne), puis le bloc suivant. N'aligne pas horizontalement d'une colonne à l'autre.
 - Longueur : term ≤ 55 caractères, definition ≤ 120 caractères.
 - ALIGNEMENT SIMPLE (1 mot ↔ 1 traduction sur la même ligne) : le mot source va UNIQUEMENT avec la traduction de la MÊME ligne. Vérifie la baseline.
@@ -50,7 +50,7 @@ TYPES DE FICHE (sheetType) :
 - "vocab" : mots à traduire. Une carte = un mot source + sa traduction (ou définition courte). Lignes d'opposés = plusieurs cartes. Ignore titres de chapitre et phrases d'exemple.
 - GRILLE D'IMAGES (abécédaire, pictos, flashcards dessinées) : c'est une fiche LISIBLE. Chaque dessin a un mot imprimé dessous ou à côté. Extrais TOUS les libellés (Apple, Ball, Cat…). term = le mot imprimé EXACTEMENT. definition = la traduction française usuelle (apple → pomme), 1 à 4 mots. Ce n'est PAS inventer : c'est rendre la carte jouable. Ne mets PAS readable:false parce qu'il y a des dessins. Ne copie PAS le même mot en term et definition.
 - "definitions" : notion / réponse courte. Si formules visibles, LaTeX pour la formule. EXTRAIS TOUTES les notions/définitions visibles sur la fiche, pas un échantillon, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de t'arrêter à un sous-ensemble s'il reste des notions lisibles.
-- "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte. Une idée mémorable = une paire, pas un paragraphe entier. EXTRAIS TOUTES les idées/notions distinctes visibles sur la fiche, pas un échantillon. Une fiche dense (plusieurs paragraphes, listes, sous-parties) peut contenir 15 à 30 idées mémorables : vise à toutes les capturer, une par une, section par section. INTERDIT de t'arrêter après 3, 5 ou 10 idées s'il en reste de lisibles sur la page.
+- "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte. Une idée mémorable = une paire, pas un paragraphe entier. EXTRAIS TOUTES les idées/notions distinctes visibles sur la fiche, pas un échantillon. Une fiche dense (plusieurs paragraphes, listes, sous-parties) peut contenir 15 à 30 idées mémorables : vise à toutes les capturer, une par une, section par section. INTERDIT de t'arrêter après 3, 5, 8 ou 10 idées s'il en reste de lisibles sur la page.
 - "math" : lecture vision des formules et faits scientifiques. term = libellé vu sur la fiche (Domaine, Racines, loi, grandeur…) ; definition = formule LaTeX ou fait court fidèle à l'image.
 
 QUALITÉ IMAGE FAIBLE :
@@ -84,13 +84,13 @@ export function buildScanPlayAiUserPrompt(sheetType: SheetType, maxPairs = 100):
   return `Analyse cette photo de fiche scolaire pour l'application ScanPlay.
 
 Type choisi par l'utilisateur : ${sheetType}
-Quota mots pour ce scan : extraire jusqu'à ${maxPairs} paires (pas moins si la page en contient plus).
+Quota mots pour ce scan : extraire jusqu'à ${maxPairs} paires (pas moins si la page en contient plus). INTERDIT de renvoyer seulement 8 paires si la fiche en a davantage.
 
 Objectif : produire des paires term/definition exploitables pour des jeux éducatifs.
 
 Consignes supplémentaires :
 - Photo possiblement floue, penchée, sombre, manuscrite ou photocopiée : lis quand même au maximum, zone par zone.
-- Parcours TOUS les blocs (colonnes, encadrés, grilles) avant de conclure.
+- Parcours TOUS les blocs (colonnes, encadrés, grilles) avant de conclure. Compte les lignes visibles ; pairs.length doit coller à ce compte (plafond ${maxPairs}).
 - Pour vocab : 1 mot source ↔ 1 traduction = une carte. Si une ligne a des opposés (riche / pauvre → rijk / arm), SPLIT en autant de cartes que de mots (jamais une carte unique). Enlève [phonétique]. Extraire CHAQUE mot traduit visible, jusqu'à ${maxPairs} paires, pas un échantillon. Si simple liste de mots, un mot = une carte avec une vraie définition courte en français.
 - Grille de pictos / abécédaire (dessin + mot) : LISIBLE. Un libellé par carte, definition = traduction française (Apple → pomme). Extrais toutes les cases.
 - Pour definitions : une notion = une réponse courte. EXTRAIS TOUTES les notions/définitions visibles, jusqu'à ${maxPairs}. Ne t'arrête pas après quelques-unes s'il en reste.

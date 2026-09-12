@@ -1,6 +1,9 @@
-/** Runtime scan client platform — never use account id for routing. */
+/** Runtime scan client platform — never use account id / plan for image routing. */
 
 export type ScanPlatform = 'ios' | 'android' | 'windows' | 'other';
+
+/** Image-prepare channel — one path per device family (no Android+Windows mix). */
+export type SheetPreparePath = 'ios' | 'android' | 'windows' | 'other';
 
 /**
  * Detect from navigator UA / platform / touch only.
@@ -20,7 +23,6 @@ export function getScanPlatform(
   const isIosUa = /iPhone|iPad|iPod/i.test(ua);
   const isIpadOsDesktopUa =
     /Macintosh|MacIntel/i.test(ua) && maxTouchPoints > 1;
-  // Some WebViews expose platform without classic iPhone UA tokens.
   const isIosPlatform = /iPhone|iPad|iPod/i.test(platform);
 
   if (isIosUa || isIpadOsDesktopUa || isIosPlatform) return 'ios';
@@ -29,7 +31,6 @@ export function getScanPlatform(
   return 'other';
 }
 
-/** True only for the iOS prepare fork. Android / Windows / other use the proven path. */
 export function isIosScanClient(): boolean {
   return getScanPlatform() === 'ios';
 }
@@ -37,6 +38,9 @@ export function isIosScanClient(): boolean {
 /** Which prepare implementation `prepareSheetImage` will call. */
 export function selectSheetPreparePath(
   platform: ScanPlatform = getScanPlatform(),
-): 'ios' | 'proven' {
-  return platform === 'ios' ? 'ios' : 'proven';
+): SheetPreparePath {
+  if (platform === 'ios') return 'ios';
+  if (platform === 'android') return 'android';
+  if (platform === 'windows') return 'windows';
+  return 'other';
 }

@@ -5,9 +5,9 @@ PROTOCOLE DE LECTURE (obligatoire, dans cet ordre) :
 2. Identifie le type réel. Si l'utilisateur s'est trompé (ex. "notes" mais 2 colonnes de mots), corrige sheetType.
 3. Découpe en BLOCS de lecture (colonne, encadré, grille). Ordre : haut→bas, gauche→droite. Un bloc après l'autre, jamais en zigzag entre blocs.
 4. Dans chaque bloc : parcours ligne visuelle par ligne visuelle, haut→bas. Termine une ligne avant la suivante. Ne saute pas une ligne sur deux. Une ligne peut contenir PLUSIEURS paires (voir VOCABULAIRE / opposés).
-5. Quand un bloc est fini, passe au suivant. Ne t'arrête JAMAIS à un échantillon (4–10 paires) s'il reste du contenu lisible.
+5. Quand un bloc est fini, passe au suivant. Ne t'arrête JAMAIS à un échantillon (4, 5, 7, 8, 10, 12 paires) s'il reste du contenu lisible. 8 n'est PAS un objectif.
 6. Avant de répondre, estime le nombre de lignes/cases visibles. Si pairs.length est nettement inférieur, tu as oublié des zones : relis-les.
-7. Ignore ombres de reliure, doigts, bords de table, texte du VERSO en transparence, drapeaux / déco / filigranes derrière le texte.
+7. Ignore ombres de reliure, doigts, bords de table, texte du VERSO en transparence, drapeaux / déco / filigranes derrière le texte — le texte devant reste à extraire.
 
 RÈGLES ABSOLUES :
 - Réponds UNIQUEMENT avec un JSON valide, sans markdown, sans texte avant ou après.
@@ -32,7 +32,7 @@ VISION MATHÉMATIQUE / SCIENTIFIQUE (si ces signes sont visibles) :
 - Ne recopie pas un exemple générique. Si la photo montre une autre fonction, un autre domaine, une autre science : extraire CETTE photo.
 
 VOCABULAIRE (sheetType vocab uniquement) :
-- Extrais TOUTES les paires jouables visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de cartes que de mots traduits lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de s'arrêter à 4, 5, 7 ou 10 paires s'il en reste sur la page.
+- Extrais TOUTES les paires jouables visibles, pas un échantillon. Une fiche dense (plusieurs colonnes, 40–250 mots) → vise autant de cartes que de mots traduits lisibles, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de s'arrêter à 4, 5, 7, 8, 10 ou 12 paires s'il en reste sur la page. Si tu vois 13 ou 18 lignes, renvoie 13 ou 18 paires (sauf plafond maxPairs).
 - LISTE 2 COLONNES (NL|FR, EN|FR, etc.) : chaque LIGNE visuelle = une carte. Colonne gauche = term, colonne droite = definition (la traduction EN FACE sur la MÊME baseline). INTERDIT d'aligner une ligne avec la ligne du dessus ou du dessous. INTERDIT de mettre NL+FR dans term et une autre ligne dans definition.
 - Multi-blocs : lis chaque bloc verticalement, puis le bloc suivant. N'aligne pas horizontalement d'un bloc à l'autre.
 - Longueur : term ≤ 55 caractères, definition ≤ 120 caractères (sauf faces de conjugaison, voir ci-dessous).
@@ -58,7 +58,7 @@ TYPES DE FICHE (sheetType) :
 - "vocab" : mots à traduire. Une carte = un mot source + sa traduction (ou définition courte). Lignes d'opposés = plusieurs cartes. Ignore titres de chapitre et phrases d'exemple. Tableaux de conjugaison = term + faces + definition.
 - GRILLE D'IMAGES (abécédaire, pictos, flashcards dessinées) : c'est une fiche LISIBLE. Chaque dessin a un mot imprimé dessous ou à côté. Extrais TOUS les libellés (Apple, Ball, Cat…). term = le mot imprimé EXACTEMENT. definition = la traduction française usuelle (apple → pomme), 1 à 4 mots. Ce n'est PAS inventer : c'est rendre la carte jouable. Ne mets PAS readable:false parce qu'il y a des dessins. Ne copie PAS le même mot en term et definition.
 - "definitions" : notion / réponse courte. Si formules visibles, LaTeX pour la formule. EXTRAIS TOUTES les notions/définitions visibles sur la fiche, pas un échantillon, jusqu'à la limite indiquée dans le prompt utilisateur. INTERDIT de t'arrêter à un sous-ensemble s'il reste des notions lisibles.
-- "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte. Une idée mémorable = une paire, pas un paragraphe entier. EXTRAIS TOUTES les idées/notions distinctes visibles sur la fiche, pas un échantillon. Une fiche dense (plusieurs paragraphes, listes, sous-parties) peut contenir 15 à 30 idées mémorables : vise à toutes les capturer, une par une, section par section. INTERDIT de t'arrêter après 3, 5 ou 10 idées s'il en reste de lisibles sur la page. Si la photo est clairement une liste de traduction 2 colonnes, traite-la comme vocab (corrige sheetType) avec alignement ligne à ligne.
+- "notes" : extrait clé → idée à retenir. Formules visibles → LaTeX ; phrases → texte. Une idée mémorable = une paire, pas un paragraphe entier. EXTRAIS TOUTES les idées/notions distinctes visibles sur la fiche, pas un échantillon. Une fiche dense (plusieurs paragraphes, listes, sous-parties) peut contenir 15 à 30 idées mémorables : vise à toutes les capturer, une par une, section par section. INTERDIT de t'arrêter après 3, 5, 8 ou 10 idées s'il en reste de lisibles sur la page. Si la photo est clairement une liste de traduction 2 colonnes, traite-la comme vocab (corrige sheetType) avec alignement ligne à ligne.
 - "math" : lecture vision des formules et faits scientifiques. term = libellé vu sur la fiche (Domaine, Racines, loi, grandeur…) ; definition = formule LaTeX ou fait court fidèle à l'image.
 
 QUALITÉ IMAGE FAIBLE :
@@ -122,17 +122,18 @@ export const SCANPLAY_EXTRACT_JSON_SCHEMA = {
   },
 } as const;
 
-export function buildScanUserPrompt(sheetType: string, maxPairs = 100): string {
+export function buildScanUserPrompt(sheetType: string, maxPairs = 100, plan = 'free'): string {
   return `Analyse cette photo de fiche scolaire pour l'application ScanPlay.
 
 Type choisi par l'utilisateur : ${sheetType}
-Quota mots pour ce scan : extraire jusqu'à ${maxPairs} paires (pas moins si la page en contient plus).
+Plan abonnement (serveur) : ${plan}
+Quota mots pour ce scan : extraire jusqu'à ${maxPairs} paires (pas moins si la page en contient plus). INTERDIT de renvoyer seulement 8 paires si la fiche en a davantage.
 
 Objectif : produire des paires term/definition (et faces si tableau) exploitables pour des jeux éducatifs.
 
 Consignes supplémentaires :
-- Photo possiblement floue, penchée, sombre, manuscrite, surlignée ou décorée (drapeaux) : lis quand même au maximum, zone par zone. Ignore la déco.
-- Parcours TOUS les blocs (colonnes, encadrés, grilles, tableaux) avant de conclure.
+- Photo possiblement floue, penchée, sombre, manuscrite, surlignée ou décorée (drapeaux) : lis quand même au maximum, zone par zone. Ignore la déco, garde le texte.
+- Parcours TOUS les blocs (colonnes, encadrés, grilles, tableaux) avant de conclure. Compte les lignes visibles ; pairs.length doit coller à ce compte (plafond ${maxPairs}).
 - Pour vocab liste 2 colonnes : 1 ligne = 1 carte, gauche→term, droite→definition. JAMAIS FR→FR ni décalage d'une ligne. JAMAIS NL+FR collés dans un seul champ.
 - Pour vocab tableau conjugaison (3+ colonnes) : 1 ligne = 1 carte avec term + faces[] + definition (traduction). Extrais TOUTES les lignes, jusqu'à ${maxPairs}.
 - Si une ligne a des opposés (riche / pauvre → rijk / arm), SPLIT en autant de cartes que de mots. Enlève [phonétique].

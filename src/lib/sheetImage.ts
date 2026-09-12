@@ -1,6 +1,6 @@
 /** Crop a phone photo down to the printed sheet before OCR / vision. */
 
-import { getScanPlatform, isIosScanClient } from './scanPlatform';
+import { getScanPlatform } from './scanPlatform';
 
 export interface ContentBox {
   x: number;
@@ -228,17 +228,17 @@ async function prepareSheetImageCore(
 }
 
 /**
- * Proven Android / Windows / other prepare path — behavior identical to 7aa0daa.
- * Do not change workSide, EXIF options, or desk-crop here for iOS experiments.
+ * Android-only prepare channel — isolated from Windows / iOS.
+ * Geometry matches the proven desk-crop path; do not share entry with Windows.
  */
-export async function prepareSheetImageProven(
+export async function prepareSheetImageAndroid(
   file: File,
   options?: { maxSide?: number; quality?: number; contrast?: boolean },
 ): Promise<PreparedSheetImage> {
   const prepared = await prepareSheetImageCore(file, options);
   console.info('[scan-prepare]', {
-    platform: getScanPlatform(),
-    path: 'proven',
+    platform: 'android',
+    path: 'android',
     decodeMethod: prepared.decodeMethod,
     fileType: file.type || '',
   });
@@ -246,8 +246,38 @@ export async function prepareSheetImageProven(
 }
 
 /**
+ * Windows-only prepare channel — isolated from Android / iOS.
+ * Geometry matches the proven desk-crop path; do not share entry with Android.
+ */
+export async function prepareSheetImageWindows(
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
+): Promise<PreparedSheetImage> {
+  const prepared = await prepareSheetImageCore(file, options);
+  console.info('[scan-prepare]', {
+    platform: 'windows',
+    path: 'windows',
+    decodeMethod: prepared.decodeMethod,
+    fileType: file.type || '',
+  });
+  return { blob: prepared.blob, width: prepared.width, height: prepared.height };
+}
+
+/**
+ * @deprecated Prefer prepareSheetImageAndroid / prepareSheetImageWindows.
+ * Kept for tests that assert the old shared "proven" entry.
+ */
+export async function prepareSheetImageProven(
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
+): Promise<PreparedSheetImage> {
+  return prepareSheetImageWindows(file, options);
+}
+
+/**
  * iOS-only fork: optional explicit HEIC→JPEG, then the same proven geometry.
  * Smaller encode retries stay inside this function only.
+ * Do not change Android/Windows channels from here.
  */
 export async function prepareSheetImageIos(
   file: File,
@@ -294,12 +324,22 @@ export async function prepareSheetImageIos(
   throw lastError instanceof Error ? lastError : new Error('Image prepare failed');
 }
 
+export type SheetPrepareFn = (
+  file: File,
+  options?: { maxSide?: number; quality?: number; contrast?: boolean },
+) => Promise<PreparedSheetImage>;
+
 /** Which prepare implementation the public router will call (for tests / diagnostics). */
-export function resolveSheetPrepareFn(): typeof prepareSheetImageProven {
-  return isIosScanClient() ? prepareSheetImageIos : prepareSheetImageProven;
+export function resolveSheetPrepareFn(
+  platform: ReturnType<typeof getScanPlatform> = getScanPlatform(),
+): SheetPrepareFn {
+  if (platform === 'ios') return prepareSheetImageIos;
+  if (platform === 'android') return prepareSheetImageAndroid;
+  if (platform === 'windows') return prepareSheetImageWindows;
+  return prepareSheetImageWindows;
 }
 
-/** Router: iOS → prepareSheetImageIos; Android / Windows / other → proven path unchanged. */
+/** Router: iOS / Android / Windows each have their own prepare channel. */
 export async function prepareSheetImage(
   file: File,
   options?: { maxSide?: number; quality?: number; contrast?: boolean },

@@ -3,8 +3,9 @@ import * as scanPlatform from './scanPlatform';
 import {
   contentBoundingBox,
   isExplicitHeicOrHeif,
+  prepareSheetImageAndroid,
   prepareSheetImageIos,
-  prepareSheetImageProven,
+  prepareSheetImageWindows,
   resolveSheetPrepareFn,
   scaleToMaxSide,
 } from './sheetImage';
@@ -86,11 +87,17 @@ describe('prepareSheetImage router', () => {
     vi.restoreAllMocks();
   });
 
-  it('selects iOS prepare on iOS and proven on Android/Windows', () => {
-    vi.spyOn(scanPlatform, 'isIosScanClient').mockReturnValue(true);
+  it('routes ios / android / windows to separate prepare channels', () => {
+    vi.spyOn(scanPlatform, 'getScanPlatform').mockReturnValue('ios');
     expect(resolveSheetPrepareFn()).toBe(prepareSheetImageIos);
 
-    vi.spyOn(scanPlatform, 'isIosScanClient').mockReturnValue(false);
-    expect(resolveSheetPrepareFn()).toBe(prepareSheetImageProven);
+    vi.spyOn(scanPlatform, 'getScanPlatform').mockReturnValue('android');
+    expect(resolveSheetPrepareFn()).toBe(prepareSheetImageAndroid);
+
+    vi.spyOn(scanPlatform, 'getScanPlatform').mockReturnValue('windows');
+    expect(resolveSheetPrepareFn()).toBe(prepareSheetImageWindows);
+
+    vi.spyOn(scanPlatform, 'getScanPlatform').mockReturnValue('other');
+    expect(resolveSheetPrepareFn()).toBe(prepareSheetImageWindows);
   });
 });

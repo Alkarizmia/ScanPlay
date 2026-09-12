@@ -1,15 +1,27 @@
-/** Paid plans (Plus / Pro) — best OCR for school sheets. */
+/** Paid plans — best OCR for school sheets. */
 export const SCANPLAY_DEFAULT_PAID_SCAN_MODEL = 'gpt-5.5';
 
-/** Free + guest scans — cheaper vision that still reads sheets. */
+/** Free scans — cheaper vision that still reads sheets. */
 export const SCANPLAY_DEFAULT_FREE_SCAN_MODEL = 'gpt-4.1';
 
 type ScanPlan = 'free' | 'plus' | 'pro';
 
-/** Vision + JSON extraction for school sheet photos (analyze-sheet). */
+/**
+ * Vision model per plan channel (isolated).
+ * free → FREE model ; plus → PLUS model ; pro → PRO model.
+ * Env overrides stay plan-specific so Free never shares Pro config.
+ */
 export function resolveScanModel(plan: ScanPlan = 'free'): string {
-  if (plan === 'plus' || plan === 'pro') {
+  if (plan === 'pro') {
     return (
+      Deno.env.get('OPENAI_SCAN_MODEL_PRO') ??
+      Deno.env.get('OPENAI_SCAN_MODEL_PAID') ??
+      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
+    );
+  }
+  if (plan === 'plus') {
+    return (
+      Deno.env.get('OPENAI_SCAN_MODEL_PLUS') ??
       Deno.env.get('OPENAI_SCAN_MODEL_PAID') ??
       SCANPLAY_DEFAULT_PAID_SCAN_MODEL
     );
@@ -17,10 +29,21 @@ export function resolveScanModel(plan: ScanPlan = 'free'): string {
   return Deno.env.get('OPENAI_SCAN_MODEL_FREE') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
 }
 
-/** Text games (translate / speak sentences). Free = GPT-4.1 ; Plus/Pro = GPT-5.5. */
+/** Text games. Free = 4.1 ; Plus/Pro = paid (isolated env keys). */
 export function resolveExerciseModel(plan: ScanPlan = 'free'): string {
-  if (plan === 'plus' || plan === 'pro') {
-    return Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ?? SCANPLAY_DEFAULT_PAID_SCAN_MODEL;
+  if (plan === 'pro') {
+    return (
+      Deno.env.get('OPENAI_EXERCISE_MODEL_PRO') ??
+      Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ??
+      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
+    );
+  }
+  if (plan === 'plus') {
+    return (
+      Deno.env.get('OPENAI_EXERCISE_MODEL_PLUS') ??
+      Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ??
+      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
+    );
   }
   return Deno.env.get('OPENAI_EXERCISE_MODEL_FREE') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
 }
@@ -43,11 +66,14 @@ export function isReasoningVisionModel(model: string): boolean {
   return /^(gpt-5|gpt-6|o[1-9])/i.test(model.trim());
 }
 
-export function scanReasoningEffort(sheetType: string): 'medium' | 'high' {
-  if (sheetType === 'math') {
-    return 'high';
-  }
-  return 'medium';
+/**
+ * Vocab/notes: low reasoning so completion tokens go to listing ALL pairs (avoids ~8-card samples).
+ * Math keeps high effort for formula reading.
+ */
+export function scanReasoningEffort(sheetType: string): 'low' | 'medium' | 'high' {
+  if (sheetType === 'math') return 'high';
+  if (sheetType === 'notes' || sheetType === 'definitions') return 'medium';
+  return 'low';
 }
 
 export function scanImageDetail(model: string): 'high' | 'original' {

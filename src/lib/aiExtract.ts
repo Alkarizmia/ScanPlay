@@ -7,6 +7,7 @@ import { normalizeFaces } from './cardFaces';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { getMaxWords } from './planLimits';
 import { blobToBase64, prepareSheetImage } from './sheetImage';
+import { getScanPlatform } from './scanPlatform';
 import type { LangCode, SheetType, WordPair } from '../types';
 
 export interface AiExtractPair {
@@ -332,7 +333,9 @@ export async function analyzeSheetWithAi(
     imageBase64: base64,
     mimeType,
     sheetType,
+    /* Hint only — server ignores this and uses Supabase profile plan. */
     maxPairs,
+    platform: getScanPlatform(),
   };
 
   try {
