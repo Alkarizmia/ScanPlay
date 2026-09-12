@@ -2,13 +2,16 @@ import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react
 import { LandingPage } from './components/landing/LandingPage';
 import { applyDeviceAttributes, detectDeviceProfile } from './lib/device';
 import { hasStoredAuthSession } from './lib/authSessionHint';
-import { setBootIntent } from './lib/bootIntent';
+import { applyUrlBootIntent, setBootIntent } from './lib/bootIntent';
 import { landingLangFromNavigator } from './lib/landingI18n';
 
 const App = lazy(() => import('./App'));
 
 export function Root() {
-  const [showApp, setShowApp] = useState(() => hasStoredAuthSession());
+  const [showApp, setShowApp] = useState(() => {
+    const fromUrl = applyUrlBootIntent();
+    return Boolean(fromUrl) || hasStoredAuthSession();
+  });
   const [device, setDevice] = useState(() => detectDeviceProfile());
   const locale = useMemo(() => landingLangFromNavigator(), []);
 

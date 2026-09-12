@@ -26,6 +26,7 @@ interface HistoryScreenProps {
   locale: Locale;
   isLoggedIn: boolean;
   onOpenDeck: (entry: HistoryEntry) => void;
+  onRescan?: () => void;
   refreshKey: number;
   onRefresh: () => void;
   onUpgrade: (reason: UpgradeReason) => void;
@@ -85,6 +86,7 @@ export function HistoryScreen({
   locale,
   isLoggedIn,
   onOpenDeck,
+  onRescan,
   refreshKey,
   onRefresh,
   onUpgrade,
@@ -182,6 +184,19 @@ export function HistoryScreen({
               </>
             )}
           </button>
+
+          {onRescan && entry.pairs.length <= 7 && (
+            <button
+              type="button"
+              className="history-rescan-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                onRescan();
+              }}
+            >
+              {t('historyRescanCta', locale)}
+            </button>
+          )}
 
           <div
             className="history-path-progress"
