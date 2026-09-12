@@ -714,12 +714,12 @@ export default function App() {
         if (parsed.length === 0) {
           if (isDemo) parsed = SAMPLE_PAIRS;
           else {
-            failImport(t('ocrEmpty', locale));
+            failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
             return;
           }
         }
         if (!isDemo && !canOpenGamePath(parsed, sheetType === 'math' ? { mathSheet: true } : undefined)) {
-          failImport(t('sheetUnreadable', locale));
+          failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'sheetUnreadable', locale));
           return;
         }
         setPairs(parsed);
@@ -763,13 +763,13 @@ export default function App() {
         if (usedSample) {
           goModes(SAMPLE_PAIRS, thumbnail, false, true);
         } else {
-          failImport(t('ocrEmpty', locale));
+          failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
         }
         return;
       }
 
       if (!usedSample && !canOpenGamePath(parsed, sheetType === 'math' ? { mathSheet: true } : undefined)) {
-        failImport(t('sheetUnreadable', locale));
+        failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'sheetUnreadable', locale));
         return;
       }
 
@@ -961,7 +961,7 @@ export default function App() {
         if (finished || ac.signal.aborted) return;
         finished = true;
         ac.abort();
-        failImport(t('ocrEmpty', locale));
+        failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
       };
 
       const aiScan = isAiScanEnabled() && !guestScan;

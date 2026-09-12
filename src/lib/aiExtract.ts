@@ -283,11 +283,15 @@ export function parseAiExtractResponse(raw: unknown, fallbackSheetType?: SheetTy
 const AI_SCAN_MAX_SIDE = 2000;
 const AI_SCAN_JPEG_QUALITY = 0.86;
 
-async function loadImageForAi(file: File): Promise<{ base64: string; mimeType: string }> {
+async function loadImageForAi(
+  file: File,
+  options?: { contrast?: boolean },
+): Promise<{ base64: string; mimeType: string }> {
   const prepared = await prepareSheetImage(file, {
     maxSide: AI_SCAN_MAX_SIDE,
     quality: AI_SCAN_JPEG_QUALITY,
-    contrast: true,
+    /* Contrast helps vocab photos; it can wash out printed formula sheets. */
+    contrast: options?.contrast !== false,
   });
   const base64 = await blobToBase64(prepared.blob);
   if (!base64) throw new Error('Encode failed');
@@ -319,7 +323,9 @@ export async function analyzeSheetWithAi(
   let base64: string | undefined;
   let mimeType: string;
   try {
-    const encoded = await loadImageForAi(file);
+    const encoded = await loadImageForAi(file, {
+      contrast: sheetType !== 'math' && sheetType !== 'definitions',
+    });
     throwIfAborted(signal);
     base64 = encoded.base64;
     mimeType = encoded.mimeType;
@@ -343,7 +349,7 @@ export async function analyzeSheetWithAi(
   };
 
   try {
-    const timeoutMs = sheetType === 'math' || sheetType === 'definitions' ? 75_000 : 0;
+    const timeoutMs = sheetType === 'math' || sheetType === 'definitions' ? 120_000 : 0;
     const timeoutCtrl = timeoutMs > 0 ? new AbortController() : null;
     const timeoutId =
       timeoutCtrl && timeoutMs > 0

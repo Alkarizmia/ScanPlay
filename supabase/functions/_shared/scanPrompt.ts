@@ -29,17 +29,22 @@ export const SCANPLAY_MATH_SYSTEM_PROMPT = `Moteur d'extraction ScanPlay (math/s
 JSON uniquement. N'invente pas. PHOTO = vérité.
 
 Table 2 colonnes (ex. Fonction f(x) | Dérivée f'(x)) :
-- term = libellé/formule de GAUCHE (ex. "\\\\sin x", "x^n", "k (constante)")
-- definition = formule de DROITE en LaTeX (ex. "\\\\cos x", "nx^{n-1}", "0")
-Une ligne du tableau = 1 carte. Garde les réponses courtes ("0", "1", "k").
+- term = cellule GAUCHE (formule ou libellé)
+- definition = cellule DROITE en LaTeX
+Une ligne = 1 carte. Garde les réponses courtes ("0", "1", "k").
 
-Autres fiches : term = libellé vu (Domaine, loi, grandeur…) ; definition = formule LaTeX ou fait court.
+Exemple attendu pour une fiche de dérivées :
+{"term":"\\\\sin x","definition":"\\\\cos x","faces":[],"termLang":"unknown","defLang":"unknown","confidence":"high"}
+{"term":"x^n","definition":"nx^{n-1}",...}
+{"term":"k (constante)","definition":"0",...}
+
+Autres fiches : term = libellé (Domaine, loi…) ; definition = formule LaTeX.
 LaTeX : \\\\frac, ^{}, _{}, \\\\sqrt, \\\\sin, \\\\cos, \\\\tan, \\\\mathbb{R}…
-Ignore titres, chapitres, noms de prof, numéros de page. Pas d'exercice type mémorisé.
+Ignore titres, chapitres, noms de prof, numéros de page. Pas d'exercice type inventé.
 Extrais TOUTES les lignes jusqu'à maxPairs.
-readable=true dès ≥2 paires (une table de formules courte compte).
+readable=true dès ≥2 paires.
 
-Sortie: readable, sheetType, detectedLangs, pairs[{term,definition,faces,termLang,defLang,confidence}], warnings.`;
+Sortie: readable, sheetType="math", detectedLangs, pairs[{term,definition,faces,termLang,defLang,confidence}], warnings.`;
 
 export const SCANPLAY_DEFINITIONS_SYSTEM_PROMPT = `Moteur d'extraction ScanPlay (définitions / formules).
 JSON uniquement. N'invente pas. PHOTO = vérité.
@@ -94,9 +99,10 @@ export const SCANPLAY_EXTRACT_JSON_SCHEMA = {
 export function buildScanUserPrompt(sheetType: string, maxPairs = 100, plan = 'free'): string {
   if (sheetType === 'math') {
     return `Type=math plan=${plan} maxPairs=${maxPairs}.
-Tableau formule→résultat : chaque ligne = 1 carte (term=gauche, definition=droite LaTeX).
-Exemple dérivées: term="\\\\sin x" definition="\\\\cos x" ; term="x^n" definition="nx^{n-1}" ; term="k" definition="0".
-Extrais toutes les lignes visibles. Ignore titres.`;
+IMPORTANT: renvoie au moins une carte par ligne du tableau visible.
+Tableau formule→résultat : term=gauche, definition=droite (LaTeX).
+Exemple: term="\\\\sin x" definition="\\\\cos x" ; term="x^n" definition="nx^{n-1}" ; term="k" definition="0".
+Ne renvoie PAS pairs:[]. sheetType doit être "math". Ignore titres.`;
   }
   if (sheetType === 'definitions') {
     return `Type=definitions plan=${plan} maxPairs=${maxPairs}. Toutes les notions/formules visibles. Table 2 colonnes → term|definition. Si traduction bilingue → sheetType vocab.`;

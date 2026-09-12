@@ -125,10 +125,30 @@ export async function extractPairsFromImage(
         freeText = !mathSheet && (resolvedType === 'notes' || resolvedType === 'definitions');
         const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet, freeText });
         const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet, freeText });
-        let pairs: WordPair[];
+
+        /* Formules: never drop a usable AI table because of vocab filters. */
         if (mathSheet) {
-          pairs = coercePlayablePairs(mapped, { mathSheet: true });
-        } else if (freeText) {
+          let pairs = coercePlayablePairs(mapped, { mathSheet: true });
+          if (pairs.length < 2 && mapped.length >= 2) pairs = mapped;
+          if (pairs.length < 2) {
+            pairs = ai.pairs
+              .filter((p) => p.term?.trim() && p.definition?.trim())
+              .map((p) => ({
+                term: p.term.trim().slice(0, 120),
+                definition: p.definition.trim().slice(0, 280),
+                termLang: 'unknown' as const,
+                defLang: 'unknown' as const,
+                quality: 'trusted' as const,
+              }))
+              .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase());
+          }
+          if (pairs.length >= 2) {
+            return { pairs: pairs.slice(0, getMaxWords()), source: 'ai', ignored };
+          }
+        }
+
+        let pairs: WordPair[];
+        if (freeText) {
           pairs = coercePlayablePairs(mapped);
         } else {
           const fromVision = (ai.warnings ?? []).some(

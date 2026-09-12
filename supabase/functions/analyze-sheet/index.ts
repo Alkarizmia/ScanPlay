@@ -379,17 +379,11 @@ Deno.serve(async (req) => {
 
     /* Math / définitions-formules: GPT only — Vision OCR is slow and destroys LaTeX tables. */
     if (sheetType === 'math' || sheetType === 'definitions') {
-      const firstDetail = scanImageDetail(channel.model);
+      const firstDetail = 'high' as const;
       let openaiCall = await requestOpenAi(
         openaiKey,
         buildOpenAiBody(channel, sheetType, imageBase64, mimeType, firstDetail),
       );
-      if (!openaiCall.ok && firstDetail === 'original' && shouldRetryWithoutOriginal(openaiCall.text)) {
-        openaiCall = await requestOpenAi(
-          openaiKey,
-          buildOpenAiBody(channel, sheetType, imageBase64, mimeType, 'high'),
-        );
-      }
       if (openaiCall.ok) {
         const parsed = await parseOpenAiPayload(openaiCall);
         payload = parsed.payload;
@@ -397,7 +391,30 @@ Deno.serve(async (req) => {
           if (parsed.finishReason === 'length') {
             payload.warnings = [...(payload.warnings ?? []), 'extraction_truncated'];
           }
+          payload.sheetType = sheetType;
           payload.warnings = [...(payload.warnings ?? []), 'gpt_primary', 'math_no_vision'];
+        }
+      }
+      /* Second pass if first returned nothing usable. */
+      if ((!payload || (payload.pairs?.length ?? 0) < 2) && openaiCall.ok) {
+        const retryCall = await requestOpenAi(
+          openaiKey,
+          buildOpenAiBody(
+            channel,
+            sheetType,
+            imageBase64,
+            mimeType,
+            'high',
+            sheetType === 'math'
+              ? 'RETRY: la photo contient un tableau de formules. Extrais CHAQUE ligne en term→definition LaTeX. Minimum 2 paires. Ne renvoie pas pairs vide.'
+              : 'RETRY: extrais toutes les notions/formules visibles. Minimum 2 paires.',
+          ),
+        );
+        const retryParsed = await parseOpenAiPayload(retryCall);
+        if (retryParsed.payload && (retryParsed.payload.pairs?.length ?? 0) > (payload?.pairs?.length ?? 0)) {
+          payload = retryParsed.payload;
+          payload.sheetType = sheetType;
+          payload.warnings = [...(payload.warnings ?? []), 'gpt_math_retry'];
         }
       }
       if (!payload) {
@@ -406,6 +423,28 @@ Deno.serve(async (req) => {
           status: 502,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
+      }
+      /* Keep short math answers; drop only empty cells. */
+      if (Array.isArray(payload.pairs)) {
+        payload.pairs = payload.pairs
+          .filter(
+            (p) =>
+              typeof p?.term === 'string' &&
+              typeof p?.definition === 'string' &&
+              p.term.trim().length > 0 &&
+              p.definition.trim().length > 0 &&
+              p.term.trim().toLowerCase() !== p.definition.trim().toLowerCase(),
+          )
+          .map((p) => ({
+            ...p,
+            term: p.term!.trim(),
+            definition: p.definition!.trim(),
+            faces: Array.isArray(p.faces) ? p.faces : [],
+            termLang: p.termLang ?? 'unknown',
+            defLang: p.defLang ?? 'unknown',
+            confidence: p.confidence ?? 'medium',
+          }));
+        payload.readable = payload.pairs.length >= 2;
       }
     } else if (sheetType === 'vocab') {
       const visionHint =

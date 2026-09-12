@@ -341,6 +341,8 @@ const strings = {
     back: 'Retour',
     ocrFallback: 'On passe en mode rapide',
     ocrEmpty: 'Peu de texte détecté. Réessaie avec une photo plus nette.',
+    ocrEmptyMath:
+      'Impossible de lire les formules sur cette photo. Recadre le tableau (fonction / dérivée), évite le flou, et réessaie en mode Formules.',
     ocrFewWords: 'Peu de mots détectés. On joue avec ta fiche quand même.',
     scanning: 'Pix lance l\'aventure !',
     reading: 'Pix lit ta fiche…',
@@ -1545,6 +1547,8 @@ const strings = {
     back: 'Back',
     ocrFallback: 'Switching to quick mode',
     ocrEmpty: 'Not enough text detected. Try a clearer photo.',
+    ocrEmptyMath:
+      'Could not read the formulas on this photo. Frame the table (function / derivative), avoid blur, and retry in Formulas mode.',
     ocrFewWords: 'Few words detected. Playing with your sheet anyway.',
     scanning: 'Pix starts the adventure!',
     reading: 'Pix is reading your sheet…',
@@ -2700,6 +2704,8 @@ const strings = {
     back: 'Terug',
     ocrFallback: 'We schakelen over naar snelle modus',
     ocrEmpty: 'Te weinig tekst gevonden. Probeer een duidelijkere foto.',
+    ocrEmptyMath:
+      'Kon de formules op deze foto niet lezen. Kader de tabel (functie / afgeleide), vermijd wazigheid, en probeer opnieuw in Formules.',
     ocrFewWords: 'Weinig woorden. We spelen toch met je blad.',
     scanning: 'Pix start het avontuur!',
     reading: 'Pix leest je blad…',
@@ -3838,6 +3844,8 @@ const strings = {
     back: 'Volver',
     ocrFallback: 'Pasamos al modo rápido',
     ocrEmpty: 'Poco texto detectado. Prueba una foto más clara.',
+    ocrEmptyMath:
+      'No se pudieron leer las fórmulas de esta foto. Encuadra la tabla (función / derivada), evita el desenfoque y reintenta en Fórmulas.',
     ocrFewWords: 'Pocas palabras. Jugamos con tu ficha igualmente.',
     scanning: '¡Pix lanza la aventura!',
     reading: 'Pix lee tu ficha…',
