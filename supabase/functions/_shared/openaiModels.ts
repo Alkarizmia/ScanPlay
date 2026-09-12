@@ -1,35 +1,27 @@
-/** Paid plans — best OCR for school sheets. */
-export const SCANPLAY_DEFAULT_PAID_SCAN_MODEL = 'gpt-5.5';
+/** Default vision model for all plans — photo pipeline matters more than GPT-5.x spend. */
+export const SCANPLAY_DEFAULT_SCAN_MODEL = 'gpt-4.1';
 
-/** Free scans — cheaper vision that still reads sheets. */
-export const SCANPLAY_DEFAULT_FREE_SCAN_MODEL = 'gpt-4.1';
+/** @deprecated Alias kept for older env docs / imports. */
+export const SCANPLAY_DEFAULT_FREE_SCAN_MODEL = SCANPLAY_DEFAULT_SCAN_MODEL;
+
+/** Paid exercises / coach overrides may still point here. */
+export const SCANPLAY_DEFAULT_PAID_SCAN_MODEL = 'gpt-5.5';
 
 type ScanPlan = 'free' | 'plus' | 'pro';
 
 /**
- * Vision model per plan channel (isolated).
- * free → FREE model ; plus → PLUS model ; pro → PRO model.
- * Env overrides stay plan-specific so Free never shares Pro config.
+ * Scan vision: same model for free / plus / pro (default gpt-4.1).
+ * Override with OPENAI_SCAN_MODEL (all plans) if needed.
  */
-export function resolveScanModel(plan: ScanPlan = 'free'): string {
-  if (plan === 'pro') {
-    return (
-      Deno.env.get('OPENAI_SCAN_MODEL_PRO') ??
-      Deno.env.get('OPENAI_SCAN_MODEL_PAID') ??
-      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
-    );
-  }
-  if (plan === 'plus') {
-    return (
-      Deno.env.get('OPENAI_SCAN_MODEL_PLUS') ??
-      Deno.env.get('OPENAI_SCAN_MODEL_PAID') ??
-      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
-    );
-  }
-  return Deno.env.get('OPENAI_SCAN_MODEL_FREE') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
+export function resolveScanModel(_plan: ScanPlan = 'free'): string {
+  return (
+    Deno.env.get('OPENAI_SCAN_MODEL') ??
+    Deno.env.get('OPENAI_SCAN_MODEL_FREE') ??
+    SCANPLAY_DEFAULT_SCAN_MODEL
+  );
 }
 
-/** Text games. Free = 4.1 ; Plus/Pro = paid (isolated env keys). */
+/** Text games. Free = 4.1 ; Plus/Pro can stay on paid if env set. */
 export function resolveExerciseModel(plan: ScanPlan = 'free'): string {
   if (plan === 'pro') {
     return (
@@ -45,7 +37,7 @@ export function resolveExerciseModel(plan: ScanPlan = 'free'): string {
       SCANPLAY_DEFAULT_PAID_SCAN_MODEL
     );
   }
-  return Deno.env.get('OPENAI_EXERCISE_MODEL_FREE') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
+  return Deno.env.get('OPENAI_EXERCISE_MODEL_FREE') ?? SCANPLAY_DEFAULT_SCAN_MODEL;
 }
 
 /** Text synthesis (generate-synthesis) — keep mini for cost. */
@@ -56,7 +48,7 @@ export function resolveSynthesisModel(): string {
 /** Mini-coach chat. Free stays on mini. Plus/Pro can use 4.1. */
 export function resolveCoachModel(plan: ScanPlan = 'free'): string {
   if (plan === 'plus' || plan === 'pro') {
-    return Deno.env.get('OPENAI_COACH_MODEL_PAID') ?? SCANPLAY_DEFAULT_FREE_SCAN_MODEL;
+    return Deno.env.get('OPENAI_COACH_MODEL_PAID') ?? SCANPLAY_DEFAULT_SCAN_MODEL;
   }
   return Deno.env.get('OPENAI_COACH_MODEL_FREE') ?? 'gpt-4o-mini';
 }
@@ -66,10 +58,6 @@ export function isReasoningVisionModel(model: string): boolean {
   return /^(gpt-5|gpt-6|o[1-9])/i.test(model.trim());
 }
 
-/**
- * Vocab/notes: low reasoning so completion tokens go to listing ALL pairs (avoids ~8-card samples).
- * Math keeps high effort for formula reading.
- */
 export function scanReasoningEffort(sheetType: string): 'low' | 'medium' | 'high' {
   if (sheetType === 'math') return 'high';
   if (sheetType === 'notes' || sheetType === 'definitions') return 'medium';

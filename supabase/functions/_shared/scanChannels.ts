@@ -33,11 +33,11 @@ export function resolveScanChannel(plan: Plan, platform: ScanClientPlatform): Sc
 
 /** Short channel header — avoid burning tokens on prose. */
 export function buildScanChannelPrompt(channel: ScanChannel): string {
-  return `Canal serveur: plan=${channel.plan} appareil=${channel.platform} plafond=${channel.maxPairs}
-Extrais TOUTES les lignes visibles jusqu'à ${channel.maxPairs}. Pas d'échantillon (8/10/12).`;
+  return `Canal: plan=${channel.plan} appareil=${channel.platform} plafond=${channel.maxPairs}
+Extrais TOUTES les lignes visibles jusqu'à ${channel.maxPairs}. Pas d'échantillon.`;
 }
 
-/** Thin first pass → one full recount. */
+/** Thin first pass → one recount only when clearly undersampled (saves OpenAI $). */
 export function needsFullRecount(
   sheetType: string,
   pairCount: number,
@@ -47,8 +47,8 @@ export function needsFullRecount(
   if (sheetType === 'math') return false;
   if (pairCount <= 0 || pairCount >= maxPairs) return false;
   if (finishReason === 'length') return true;
-  /* Undersample zone ~8–14 while quota allows more */
-  return pairCount < Math.min(20, maxPairs);
+  /* Only retry the classic ~8-card undersample — not every 12–15 pass. */
+  return pairCount <= 8;
 }
 
 export function buildFullRecountHint(

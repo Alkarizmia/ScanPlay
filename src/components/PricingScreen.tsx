@@ -49,7 +49,7 @@ type CompareRow = {
 };
 
 const ROWS: CompareRow[] = [
-  { labelKey: 'compareScanAi', free: 'gpt-4.1', plus: 'gpt-5.5', pro: 'gpt-5.5' },
+  { labelKey: 'compareScanAi', free: 'gpt-4.1', plus: 'gpt-4.1', pro: 'gpt-4.1' },
   { labelKey: 'compareScans', free: `${PLAN_LIMITS.free.scansPerDay}/j`, plus: `${PLAN_LIMITS.plus.scansPerDay}/j`, pro: `${PLAN_LIMITS.pro.scansPerDay}/j` },
   { labelKey: 'compareWords', free: String(PLAN_LIMITS.free.maxWords), plus: String(PLAN_LIMITS.plus.maxWords), pro: String(PLAN_LIMITS.pro.maxWords) },
   { labelKey: 'comparePath', free: String(PLAN_LIMITS.free.pathSteps), plus: String(PLAN_LIMITS.plus.pathSteps), pro: String(PLAN_LIMITS.pro.pathSteps) },
@@ -238,7 +238,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
                     <span>{t('planCardWordsLabel', locale)}</span>
                   </div>
                   <div className="pricing-metric">
-                    <strong>GPT-5.5</strong>
+                    <strong>GPT-4.1</strong>
                     <span>{t('planCardAiLabel', locale)}</span>
                   </div>
                 </div>
