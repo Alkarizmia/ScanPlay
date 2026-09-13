@@ -1940,7 +1940,8 @@ html[data-landing='true'] .screen.sp-landing {
   position: relative;
   min-height: 268px;
   overflow: visible;
-  touch-action: pan-x;
+  /* pan-y: page can scroll when finger is on the cards; JS handles horizontal swipe */
+  touch-action: pan-y;
   scrollbar-width: none;
 }
 
@@ -1959,7 +1960,8 @@ html[data-landing='true'] .screen.sp-landing {
   transform-origin: 50% 0;
   cursor: grab;
   user-select: none;
-  touch-action: pan-x;
+  -webkit-user-select: none;
+  touch-action: pan-y;
   overflow: visible;
 }
 

@@ -247,7 +247,7 @@ export function stripeErrorMessage(code: string, locale: Locale = 'fr'): string 
     portal_url_missing: 'Impossible d\'ouvrir le portail Stripe. Réessaie.',
     portal_blocked: 'Ouvre scanplay.org dans Chrome ou Safari, puis réessaie.',
     supabase_not_configured:
-      'Configuration serveur incomplète. Ajoute SUPABASE_SERVICE_ROLE_KEY dans Vercel (Supabase → Settings → API).',
+      'Paiement temporairement indisponible. Réessaie plus tard ou écris à support@scanplay.org.',
   };
   const en: Record<string, string> = {
     not_logged_in: 'Sign in to subscribe.',
@@ -266,7 +266,7 @@ export function stripeErrorMessage(code: string, locale: Locale = 'fr'): string 
     portal_url_missing: 'Could not open the Stripe portal. Try again.',
     portal_blocked: 'Open scanplay.org in Chrome or Safari, then try again.',
     supabase_not_configured:
-      'Server config incomplete. Add SUPABASE_SERVICE_ROLE_KEY in Vercel (Supabase → Settings → API).',
+      'Checkout temporarily unavailable. Try again later or email support@scanplay.org.',
   };
   return (locale === 'en' ? en : fr)[code] ?? code;
 }

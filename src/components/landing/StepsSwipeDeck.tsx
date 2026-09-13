@@ -92,6 +92,10 @@ export function StepsSwipeDeck({ steps, locale }: StepsSwipeDeckProps) {
     }, FLY_MS);
   }, []);
 
+  const unlockTouchAction = (el: HTMLElement) => {
+    el.style.touchAction = '';
+  };
+
   const onPointerDown = (event: ReactPointerEvent<HTMLElement>) => {
     if (flyingRef.current || allGone) return;
     if (event.button !== 0) return;
@@ -120,14 +124,16 @@ export function StepsSwipeDeck({ steps, locale }: StepsSwipeDeckProps) {
     drag.lastT = event.timeStamp;
 
     if (drag.locked == null) {
-      if (Math.abs(moveX) < 8 && Math.abs(moveY) < 8) return;
-      if (Math.abs(moveY) > Math.abs(moveX)) {
+      if (Math.abs(moveX) < 10 && Math.abs(moveY) < 10) return;
+      // Vertical intent → let the page scroll (do not capture the pointer).
+      if (Math.abs(moveY) >= Math.abs(moveX)) {
         drag.locked = false;
         dragRef.current = null;
         setDx(0);
         return;
       }
       drag.locked = true;
+      event.currentTarget.style.touchAction = 'none';
       event.currentTarget.setPointerCapture(event.pointerId);
     }
     if (!drag.locked) return;
@@ -139,6 +145,7 @@ export function StepsSwipeDeck({ steps, locale }: StepsSwipeDeckProps) {
   const onPointerUp = (event: ReactPointerEvent<HTMLElement>) => {
     const drag = dragRef.current;
     if (!drag || drag.pointerId !== event.pointerId) return;
+    unlockTouchAction(event.currentTarget);
     if (event.currentTarget.hasPointerCapture(event.pointerId)) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
