@@ -81,6 +81,13 @@ describe('gradeTypedAnswer math', () => {
     expect(gradeTypedAnswer('\\cos x', '\\cos x', true)).toBe('correct');
   });
 
+  it('accepts keyboard join that used to inject LaTeX control-space', () => {
+    // Old appendToken produced "\\cos\\ x" which rendered as cos x but graded wrong.
+    expect(gradeTypedAnswer('\\cos\\ x', '\\cos x', true)).toBe('correct');
+    expect(gradeTypedAnswer('\\cos\\ x', '\\cos{x}', true)).toBe('correct');
+    expect(gradeTypedAnswer('\\cos\\ x', 'cos x', false)).toBe('correct');
+  });
+
   it('accepts fraction forms for derivative of sqrt', () => {
     const ans = '\\frac{1}{2\\sqrt{x}}';
     expect(gradeTypedAnswer('1/(2√x)', ans, true)).toBe('correct');

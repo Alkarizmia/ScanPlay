@@ -39,7 +39,14 @@ function buildDeck(pairs: WordPair[], pairCap = 6): Card[] {
 }
 
 export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComplete, onExit, embedded = false, onStepProgress, maxItems }: MatchGameProps) {
-  const pairCap = examMode ? Math.min(6, pairs.length) : Math.min(maxItems ?? 6, pairs.length);
+  const formulaHeavy = useMemo(
+    () => pairs.slice(0, 8).some((p) => isMathLikeText(p.term) || isMathLikeText(p.definition)),
+    [pairs],
+  );
+  const defaultCap = formulaHeavy ? 4 : 6;
+  const pairCap = examMode
+    ? Math.min(formulaHeavy ? 4 : 6, pairs.length)
+    : Math.min(maxItems ?? defaultCap, pairs.length);
   const deck = useMemo(() => buildDeck(pairs, pairCap), [pairs, pairCap]);
   const pairById = useMemo(() => pairs.slice(0, pairCap), [pairs, pairCap]);
   const totalPairs = deck.length / 2;
@@ -141,8 +148,8 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
   };
 
   const grid = (
-    <div className="game-body match-body">
-      <div className="match-grid">
+    <div className={`game-body match-body${formulaHeavy ? ' match-body--math' : ''}`}>
+      <div className={`match-grid${formulaHeavy ? ' match-grid--math' : ''}`}>
         {deck.map((card) => {
           const isMatched = matched.has(card.pairId);
           const isSelected = selected?.id === card.id;

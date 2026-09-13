@@ -140,6 +140,7 @@ export function isMathLikeText(text: string): boolean {
   if (/^[\d]+$/.test(t)) return true;
   if (/^[a-z]'+?$/i.test(t)) return true;
   if (/^\d+[a-z]+$/i.test(t)) return true;
+  if (/\b(sin|cos|tan|ln|log|exp|sqrt)\b/i.test(t)) return true;
   return /[=+\-×÷*/^√∫∑]|\\frac|[0-9]\s*[+\-*/^]|[a-z]\s*=\s*[^=]|'v\b|uv'/i.test(text);
 }
 
@@ -247,12 +248,20 @@ function mathAnswersMatch(typed: string, expected: string): boolean {
 }
 
 export function answersMatch(typed: string, expected: string, mathLike = false): boolean {
-  const a = normalizeTypedAnswer(typed, mathLike);
-  const b = normalizeTypedAnswer(expected, mathLike);
+  const treatAsMath =
+    mathLike || isMathLikeText(typed) || isMathLikeText(expected) || looksLikeMathPair(typed, expected);
+  const a = normalizeTypedAnswer(typed, treatAsMath);
+  const b = normalizeTypedAnswer(expected, treatAsMath);
   if (!a || !b) return false;
   if (a === b) return true;
-  if (mathLike) return mathAnswersMatch(typed, expected);
+  if (treatAsMath) return mathAnswersMatch(typed, expected);
   return false;
+}
+
+/** Plain trig / short formula answers that isMathLikeText can miss (e.g. "cos x"). */
+function looksLikeMathPair(typed: string, expected: string): boolean {
+  const both = `${typed} ${expected}`;
+  return /\\|\b(sin|cos|tan|ln|log|exp|sqrt)\b|[^=]=[^=]|\^|√|∫|∑/i.test(both);
 }
 
 function levenshtein(a: string, b: string): number {

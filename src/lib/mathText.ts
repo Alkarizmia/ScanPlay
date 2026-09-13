@@ -79,6 +79,9 @@ export function latexToComparablePlain(raw: string): string {
       /\\(cos|sin|tan|cot|sec|csc|log|ln|exp|lim|max|min|det|gcd|arcsin|arccos|arctan)\b/gi,
       (_, name: string) => name.toLowerCase(),
     )
+    /* LaTeX spacing / control-space (\ , \, \; \: \!) — must not leave stray "\". */
+    .replace(/\\[,:; !]/g, '')
+    .replace(/\\(?=\s)/g, '')
     .replace(/\^\{([^{}]+)\}/g, '^$1')
     .replace(/_\{([^{}]+)\}/g, '_$1')
     .replace(/\\([A-Za-z]+)/g, '$1')
@@ -89,6 +92,7 @@ export function latexToComparablePlain(raw: string): string {
     .replace(/²/g, '^2')
     .replace(/³/g, '^3')
     .replace(/\u2032/g, "'")
+    .replace(/\\/g, '')
     .replace(/\s+/g, '')
     .toLowerCase();
 

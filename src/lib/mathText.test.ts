@@ -25,6 +25,7 @@ describe('mathText', () => {
 
   it('compares plain keyboard math with LaTeX', () => {
     expect(latexToComparablePlain('\\cos x')).toBe(latexToComparablePlain('cos x'));
+    expect(latexToComparablePlain('\\cos\\ x')).toBe(latexToComparablePlain('cos x'));
     expect(mathComparableVariants('cos x').some((v) => mathComparableVariants('\\cos x').includes(v))).toBe(
       true,
     );

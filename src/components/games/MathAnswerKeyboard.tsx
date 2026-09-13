@@ -30,8 +30,10 @@ const OPS = [
 function appendToken(base: string, token: string): string {
   if (!token) return base;
   if (!base) return token.trimStart();
-  if (/^[A-Za-z\\]/.test(token) && /[A-Za-z0-9)]$/.test(base.trimEnd())) {
-    return `${base}\\ ${token}`;
+  const trimmed = base.trimEnd();
+  // Join with a normal space when needed — never inject LaTeX "\ " (breaks grading).
+  if (/^[A-Za-z\\]/.test(token) && /[A-Za-z0-9)]$/.test(trimmed) && !/\s$/.test(base)) {
+    return `${base} ${token}`;
   }
   return base + token;
 }

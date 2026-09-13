@@ -1269,29 +1269,43 @@ html[data-device="desktop"] .flashcard.flipped .back {
   display: flex;
   flex-direction: column;
   min-height: 0;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 .match-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-auto-rows: 1fr;
-  gap: 10px;
+  grid-auto-rows: minmax(64px, auto);
+  gap: 8px;
   padding-bottom: 16px;
-  flex: 1;
+  flex: 0 0 auto;
   min-height: 0;
-  align-content: stretch;
+  align-content: start;
+  width: 100%;
+  max-width: 520px;
+  margin-inline: auto;
+}
+.match-grid--math {
+  grid-auto-rows: minmax(52px, auto);
+  gap: 6px;
+  max-width: 420px;
 }
 .match-card-wrap {
   position: relative;
   display: flex;
   flex-direction: column;
   min-height: 0;
-  height: 100%;
+  height: auto;
 }
 .match-card-wrap .match-card {
   width: 100%;
-  height: 100%;
-  min-height: 96px;
-  aspect-ratio: 1.4 / 1;
+  height: auto;
+  min-height: 64px;
+  aspect-ratio: auto;
+}
+.match-grid--math .match-card-wrap .match-card {
+  min-height: 52px;
+  padding: 10px 8px;
 }
 .match-card-wrap.selected .match-card {
   border-color: var(--accent);
@@ -1313,14 +1327,14 @@ html[data-device="desktop"] .flashcard.flipped .back {
   align-self: auto;
 }
 .match-card {
-  min-height: 96px;
-  padding: 14px 12px;
+  min-height: 64px;
+  padding: 10px 10px;
   border: 2px solid transparent;
   border-radius: var(--radius);
   background: var(--bg-card);
   color: var(--text);
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: var(--shadow);
@@ -1328,7 +1342,7 @@ html[data-device="desktop"] .flashcard.flipped .back {
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.25;
   word-break: break-word;
 }
 .match-card-inner {
@@ -1338,17 +1352,23 @@ html[data-device="desktop"] .flashcard.flipped .back {
   width: 100%;
   max-width: 100%;
   padding: 2px 4px;
+  overflow: hidden;
 }
 .match-card-inner .formula-text {
-  font-size: 1.15em;
+  font-size: 1em;
+  max-width: 100%;
 }
 .match-card-inner .formula-text .katex {
-  font-size: 1.2em;
-  line-height: 1.35;
+  font-size: 1.05em;
+  line-height: 1.25;
+  max-width: 100%;
+}
+.match-grid--math .match-card-inner .formula-text .katex {
+  font-size: 0.95em;
 }
 .match-card span {
   display: -webkit-box;
-  -webkit-line-clamp: 5;
+  -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
