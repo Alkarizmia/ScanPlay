@@ -14,6 +14,7 @@ import { speakText } from '../lib/speech';
 import { canRecordCoachVoice, recordSpeechWithVAD, transcribeViaServer } from '../lib/speechServer';
 import { MicIcon } from './icons/MicIcon';
 import type { Locale } from '../types';
+import { parseCoachSegments } from '../lib/coachMessageFormat';
 
 interface ChatScreenProps {
   locale: Locale;
@@ -21,6 +22,17 @@ interface ChatScreenProps {
   isLoggedIn: boolean;
   onAuth: () => void;
   onUpgrade: () => void;
+}
+
+function CoachBubbleBody({ content, role }: { content: string; role: CoachMessage['role'] }) {
+  if (role === 'user') return <>{content}</>;
+  return (
+    <>
+      {parseCoachSegments(content).map((part, i) =>
+        part.type === 'bold' ? <strong key={i}>{part.value}</strong> : <span key={i}>{part.value}</span>,
+      )}
+    </>
+  );
 }
 
 function CoachComingSoon({ locale }: { locale: Locale }) {
@@ -216,7 +228,7 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
           )}
           {messages.map((row) => (
             <p key={row.id} className={`chat-bubble chat-bubble--${row.role}`}>
-              {row.content}
+              <CoachBubbleBody content={row.content} role={row.role} />
             </p>
           ))}
           {busy && <p className="chat-bubble chat-bubble--assistant chat-bubble--pending">…</p>}

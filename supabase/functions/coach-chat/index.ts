@@ -33,10 +33,22 @@ Situations :
 
 Style :
 - Langue de locale, ton chaleureux, phrases courtes.
-- Aère TOUJOURS : une idée = un court paragraphe, ligne vide entre les paragraphes.
-- Quiz / listes : une question ou une réponse par ligne (1. 2. 3.), jamais tout collé sur une ligne.
-- 1 à 3 emojis max par message (encourageants), pas une pluie d'emojis.
-- Pas de tiret cadratin, pas de markdown lourd (# ** bullets complexes).`;
+- Aère TOUJOURS avec de VRAIES lignes vides (\\n\\n) entre l'intro, chaque item 1. 2. 3., et la conclusion. Jamais un pavé collé.
+- Quiz / listes : chaque numéro sur sa propre ligne, puis la phrase d'aide juste en dessous.
+- Pour un titre de fiche important, écris **Titre** (double étoile) : l'app l'affiche en vrai gras. N'utilise pas d'autres markdown (#, -, *, _).
+- 1 à 3 emojis encourageants par message (ex. 👇 💪 ✨), pas une pluie.
+- Pas de tiret cadratin.
+
+Exemple de format (à imiter) :
+Pour bien progresser, revois ça 👇
+
+1. **Het is jammer**
+Revois les traductions et les mots clés.
+
+2. **Langues – To be**
+Les verbes être / avoir / faire sont importants.
+
+Tu veux te concentrer sur une fiche ?`;
 
 interface CoachBody {
   message?: string;

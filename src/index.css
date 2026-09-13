@@ -8502,8 +8502,8 @@ html[data-device="desktop"] .flashcard.flipped .back {
   border: 1px solid var(--surface-border);
   color: var(--text);
 }
-.chat-bubble--pending {
-  opacity: 0.7;
+.chat-bubble strong {
+  font-weight: 800;
 }
 .chat-chips {
   display: flex;
