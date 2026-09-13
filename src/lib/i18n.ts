@@ -985,6 +985,9 @@ const strings = {
     chatQuotaIdle: '{limit} messages IA / jour, après un scan',
     chatQuotaEmpty: 'Quota du jour atteint. Passe à Plus ou Pro pour plus de messages.',
     chatFreeLocked: 'Pix est réservé aux plans Plus et Pro. Passe à un plan payant pour réviser avec le coach.',
+    chatFreeLockedReply:
+      'Hey 👋\n\nJe suis Pix, mais le coach IA est inclus avec **Plus** et **Pro**.\n\nPasse à un abonnement pour qu’on révise ensemble 💪',
+    chatFreeQuotaHint: 'Coach IA inclus avec Plus et Pro',
     chatUpgradeCta: 'Voir Plus et Pro',
     chatChipQuiz: 'Mini-test sur hier',
     chatChipBoost: 'Encourage-moi',
@@ -2166,6 +2169,9 @@ const strings = {
     chatQuotaIdle: '{limit} AI messages / day, after a scan',
     chatQuotaEmpty: 'Daily quota reached. Upgrade to Plus or Pro for more messages.',
     chatFreeLocked: 'Pix is reserved for Plus and Pro. Upgrade to revise with the coach.',
+    chatFreeLockedReply:
+      "Hey 👋\n\nI'm Pix, but the AI coach comes with **Plus** and **Pro**.\n\nUpgrade so we can revise together 💪",
+    chatFreeQuotaHint: 'AI coach included with Plus and Pro',
     chatUpgradeCta: 'See Plus and Pro',
     chatChipQuiz: 'Mini-test on yesterday',
     chatChipBoost: 'Cheer me on',
@@ -3311,6 +3317,9 @@ const strings = {
     chatQuotaIdle: '{limit} AI-berichten / dag, na een scan',
     chatQuotaEmpty: 'Daglimiet bereikt. Ga naar Plus of Pro voor meer berichten.',
     chatFreeLocked: 'Pix is voor Plus en Pro. Upgrade om met de coach te oefenen.',
+    chatFreeLockedReply:
+      'Hey 👋\n\nIk ben Pix, maar de AI-coach zit bij **Plus** en **Pro**.\n\nUpgrade zodat we samen kunnen herhalen 💪',
+    chatFreeQuotaHint: 'AI-coach inbegrepen bij Plus en Pro',
     chatUpgradeCta: 'Bekijk Plus en Pro',
     chatChipQuiz: 'Mini-test van gisteren',
     chatChipBoost: 'Moedig me aan',
@@ -4456,6 +4465,9 @@ const strings = {
     chatQuotaIdle: '{limit} mensajes IA / día, después de un escaneo',
     chatQuotaEmpty: 'Cupo del día agotado. Pasa a Plus o Pro para más mensajes.',
     chatFreeLocked: 'Pix está reservado a Plus y Pro. Mejora tu plan para repasar con el coach.',
+    chatFreeLockedReply:
+      'Hey 👋\n\nSoy Pix, pero el coach IA va con **Plus** y **Pro**.\n\nMejora tu plan para que repasemos juntos 💪',
+    chatFreeQuotaHint: 'Coach IA incluido con Plus y Pro',
     chatUpgradeCta: 'Ver Plus y Pro',
     chatChipQuiz: 'Mini test de ayer',
     chatChipBoost: 'Anímame',

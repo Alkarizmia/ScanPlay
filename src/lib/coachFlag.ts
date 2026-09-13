@@ -6,9 +6,9 @@ function envFlag(value: string | undefined): boolean | null {
   return null;
 }
 
-/** Chat Coach live in local `vite`/dev. Production stays “coming soon” unless VITE_COACH_CHAT=1. */
+/** Chat Coach is live everywhere. Set VITE_COACH_CHAT=0 to show the coming-soon screen. */
 export function isCoachChatEnabled(): boolean {
   const override = envFlag(import.meta.env.VITE_COACH_CHAT);
   if (override != null) return override;
-  return import.meta.env.DEV;
+  return true;
 }

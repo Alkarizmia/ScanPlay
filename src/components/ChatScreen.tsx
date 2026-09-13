@@ -50,30 +50,9 @@ function CoachComingSoon({ locale }: { locale: Locale }) {
   );
 }
 
-function CoachFreeLocked({ locale, onUpgrade }: { locale: Locale; onUpgrade: () => void }) {
-  return (
-    <div className="screen tab-screen chat-screen">
-      <header className="top-bar">
-        <h2 className="screen-title">{t('chatTitle', locale)}</h2>
-      </header>
-      <main className="settings-main scroll-natural">
-        <section className="settings-section">
-          <p className="stats-login-hint">{t('chatFreeLocked', locale)}</p>
-          <button type="button" className="btn-primary" onClick={onUpgrade}>
-            {t('chatUpgradeCta', locale)}
-          </button>
-        </section>
-      </main>
-    </div>
-  );
-}
-
 export function ChatScreen(props: ChatScreenProps) {
   if (!isCoachChatEnabled()) {
     return <CoachComingSoon locale={props.locale} />;
-  }
-  if (props.isLoggedIn && (getPlan() === 'free' || getDailyChatLimit() <= 0)) {
-    return <CoachFreeLocked locale={props.locale} onUpgrade={props.onUpgrade} />;
   }
   return <ChatScreenLive {...props} />;
 }
@@ -123,7 +102,9 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
   const used = Number.isFinite(Number(quota.used)) ? Number(quota.used) : 0;
   const limit = Number(quota.limit) || getDailyChatLimit();
   const noSheets = getHistory().length === 0;
-  const blocked = !noSheets && remaining <= 0 && used >= limit;
+  const freeLocked = getPlan() === 'free' || getDailyChatLimit() <= 0;
+  // Free can write; paid only blocks when daily quota is exhausted.
+  const blocked = !freeLocked && !noSheets && remaining <= 0 && used >= limit;
 
   const send = async (text: string, speakReply = false) => {
     const message = text.trim();
@@ -138,14 +119,29 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
     const localId = `local-${Date.now()}`;
     setMessages((prev) => [...prev, { id: localId, role: 'user', content: message }]);
 
+    if (freeLocked) {
+      setMessages((prev) => [
+        ...prev.filter((row) => row.id !== localId),
+        { id: `${localId}-user`, role: 'user', content: message },
+        { id: `${localId}-bot`, role: 'assistant', content: t('chatFreeLockedReply', locale) },
+      ]);
+      setBusy(false);
+      return;
+    }
+
     const result = await sendCoachMessage(message, locale);
     if ('error' in result) {
       setMessages((prev) => prev.filter((row) => row.id !== localId));
       if (result.quota) setQuota(result.quota);
       if (result.error === 'quota') setError(t('chatQuotaEmpty', locale));
       else if (result.error === 'plan') {
-        onUpgrade();
-        setError(t('chatFreeLocked', locale));
+        setMessages((prev) => [
+          ...prev,
+          { id: `${localId}-user`, role: 'user', content: message },
+          { id: `${localId}-bot`, role: 'assistant', content: t('chatFreeLockedReply', locale) },
+        ]);
+        setBusy(false);
+        return;
       }
       else if (result.error === 'rpc') setError(t('chatErrorSql', locale));
       else if (result.error === 'ai') setError(t('chatErrorAi', locale));
@@ -213,11 +209,13 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
       <header className="top-bar">
         <h2 className="screen-title">{t('chatTitle', locale)}</h2>
         <p className="chat-quota">
-          {noSheets
-            ? t('chatQuotaIdle', locale).replace('{limit}', String(limit))
-            : t('chatQuota', locale)
-                .replace('{remaining}', String(remaining))
-                .replace('{limit}', String(limit))}
+          {freeLocked
+            ? t('chatFreeQuotaHint', locale)
+            : noSheets
+              ? t('chatQuotaIdle', locale).replace('{limit}', String(limit))
+              : t('chatQuota', locale)
+                  .replace('{remaining}', String(remaining))
+                  .replace('{limit}', String(limit))}
         </p>
       </header>
 
@@ -263,7 +261,7 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
         </div>
 
         {error && <p className="shop-msg shop-msg--error">{error}</p>}
-        {blocked && (
+        {(blocked || freeLocked) && (
           <button type="button" className="btn-primary" onClick={onUpgrade}>
             {t('chatUpgradeCta', locale)}
           </button>
