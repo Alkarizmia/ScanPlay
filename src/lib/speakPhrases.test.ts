@@ -52,6 +52,15 @@ describe('speak phrases', () => {
     expect(sentence.toLowerCase()).toMatch(/een beetje/);
   });
 
+  it('does not build Hier is de doen for a Dutch verb', () => {
+    const pair: WordPair = { term: 'doen', definition: 'faire', termLang: 'nl', defLang: 'fr' };
+    const challenge = buildSpeakChallenge(pair);
+    expect(challenge.phraseSpeech).toMatch(/doen/i);
+    expect(challenge.phraseSpeech).not.toMatch(/Hier is de doen/i);
+    expect(challenge.phraseSpeech).not.toMatch(/Ik heb de doen/i);
+    expect(challenge.phraseSpeech).toMatch(/^(Ik wil|Wij gaan|Zij moet) doen\./i);
+  });
+
   it('uses an AI sentence when it still contains the target word', () => {
     const pair: WordPair = {
       term: 'beetje',

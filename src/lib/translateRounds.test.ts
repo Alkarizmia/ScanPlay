@@ -80,6 +80,30 @@ describe('translateRounds', () => {
     expect(wrapVocabSentence('to be born', 'en').toLowerCase()).toMatch(/born/);
   });
 
+  it('treats Dutch verbs like zijn/doen as verbs, not "Ik heb de …"', () => {
+    expect(wrapVocabSentence('zijn', 'nl')).toMatch(/^(Ik wil|Wij gaan|Zij moet) zijn\./i);
+    expect(wrapVocabSentence('zijn', 'nl')).not.toMatch(/Ik heb de zijn/i);
+    expect(wrapVocabSentence('zijn', 'nl')).not.toMatch(/Hier is de zijn/i);
+    expect(wrapVocabSentence('doen', 'nl')).toMatch(/^(Ik wil|Wij gaan|Zij moet) doen\./i);
+    expect(wrapVocabSentence('doen', 'nl')).not.toMatch(/Hier is de doen/i);
+    expect(wrapVocabSentence('être', 'fr')).toMatch(/^(Je veux|Nous allons|Il faut) être\./i);
+    expect(wrapVocabSentence('faire', 'fr')).not.toMatch(/J'ai un faire/i);
+  });
+
+  it('aligns Ik↔Je tiles for a zijn/être translate round', () => {
+    const pair: WordPair = { term: 'zijn', definition: 'être', termLang: 'nl', defLang: 'fr' };
+    const round = buildLocalTranslateRound(pair, 0, [pair]);
+    expect(round).toBeTruthy();
+    expect(round!.source).toMatch(/zijn/i);
+    expect(round!.source).not.toMatch(/Ik heb de zijn/i);
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/être/);
+    const bankText = round!.bank.map((t) => t.text.toLowerCase());
+    if (/^ik wil\b/i.test(round!.source)) {
+      expect(round!.expected.some((t) => /^je$/i.test(t))).toBe(true);
+      expect(bankText).toContain('je');
+    }
+  });
+
   it('does not build a translate round for a French math card', () => {
     const math: WordPair = { term: 'Signe', definition: 'f(x) > 0', termLang: 'fr', defLang: 'fr' };
     expect(buildLocalTranslateRound(math, 0, [math])).toBeNull();

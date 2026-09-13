@@ -133,16 +133,58 @@ export function phraseForSentence(raw: string): string {
   return extractPlayableLemma(raw);
 }
 
+const NL_COMMON_VERBS = new Set([
+  'zijn', 'doen', 'gaan', 'komen', 'zien', 'hebben', 'worden', 'moeten', 'kunnen', 'willen',
+  'mogen', 'zeggen', 'geven', 'nemen', 'maken', 'werken', 'leren', 'lezen', 'schrijven',
+  'spreken', 'luisteren', 'kijken', 'eten', 'drinken', 'slapen', 'spelen', 'helpen',
+  'vragen', 'antwoorden', 'focussen', 'spreiden', 'verdenken', 'noteren', 'opschrijven',
+  'beantwoorden', 'uitschakelen', 'concentreren', 'suspecteren', 'disperseren',
+  'proberen', 'beginnen', 'stoppen', 'blijven', 'staan', 'zitten', 'liggen',
+  'lopen', 'rijden', 'vliegen', 'vallen', 'denken', 'weten', 'kennen', 'voelen', 'houden',
+]);
+
+/** Dutch words ending in -en that are not infinitives. */
+const NL_NOT_VERB_EN = new Set([
+  'open', 'oven', 'regen', 'zegen', 'deken', 'teken', 'keuken', 'reken', 'haven', 'molen',
+  'wagen', 'lagen', 'dagen', 'wegen', 'regen', 'ogen', 'oren', 'mensen', 'woorden', 'kinderen',
+]);
+
+const FR_COMMON_VERBS = new Set([
+  'être', 'avoir', 'faire', 'dire', 'aller', 'venir', 'voir', 'savoir', 'pouvoir', 'vouloir',
+  'devoir', 'falloir', 'mettre', 'prendre', 'donner', 'parler', 'aimer', 'noter', 'répondre',
+  'suspecter', 'concentrer', 'disperser', 'éliminer', 'écrire', 'lire', 'écouter', 'regarder',
+]);
+
 function classifyVocab(word: string, lang: LangCode): VocabKind {
   const t = word.trim();
   const low = stripArticlePrefix(t).toLowerCase();
   const qty = QUANTITY[lang];
   if (qty?.has(low)) return 'quantity';
   if (/^to\s+/i.test(t)) return 'verb';
+  if (lang === 'fr' && FR_COMMON_VERBS.has(low)) return 'verb';
   if (lang === 'fr' && !ARTICLE_PREFIX.test(t) && wordsAreInfinitive(stripArticlePrefix(t))) {
     return 'verb';
   }
   if (lang === 'nl' && /^te\s+/i.test(t)) return 'verb';
+  if (lang === 'nl' && NL_COMMON_VERBS.has(low)) return 'verb';
+  if (
+    lang === 'nl' &&
+    !ARTICLE_PREFIX.test(t) &&
+    !/\s/.test(t) &&
+    /(?:eren|elen|igen|oren)$/i.test(low)
+  ) {
+    return 'verb';
+  }
+  if (
+    lang === 'nl' &&
+    !ARTICLE_PREFIX.test(t) &&
+    !/\s/.test(t) &&
+    /^[a-zà-ÿ]+en$/i.test(low) &&
+    low.length >= 4 &&
+    !NL_NOT_VERB_EN.has(low)
+  ) {
+    return 'verb';
+  }
   if (lang === 'es' && /(?:ar|er|ir)$/i.test(low) && low.length >= 4 && !ES_ADJECTIVES.has(low)) {
     if (!ARTICLE_PREFIX.test(t) && !/\s/.test(t)) return 'verb';
   }
@@ -161,6 +203,22 @@ function classifyVocab(word: string, lang: LangCode): VocabKind {
     return 'noun';
   }
   return 'noun';
+}
+
+/** Prefer verb/adj/quantity when either side of a bilingual pair signals that kind. */
+function classifyPair(
+  term: string,
+  termLang: LangCode,
+  definition: string,
+  defLang: LangCode,
+): VocabKind {
+  const a = classifyVocab(term, termLang);
+  const b = classifyVocab(definition, defLang);
+  if (a === 'verb' || b === 'verb') return 'verb';
+  if (a === 'quantity' || b === 'quantity') return 'quantity';
+  if (a === 'adj' && b === 'adj') return 'adj';
+  if (a === 'adj' && b === 'noun') return 'adj';
+  return a === 'noun' ? b : a;
 }
 
 function wordsAreInfinitive(text: string): boolean {
@@ -236,15 +294,20 @@ export function extractPlayableLemma(raw: string): string {
   return cleaned.split(/\s+/)[0] ?? cleaned;
 }
 
-export function wrapVocabSentence(word: string, lang: LangCode, slot?: number): string {
+export function wrapVocabSentence(
+  word: string,
+  lang: LangCode,
+  slot?: number,
+  forcedKind?: VocabKind,
+): string {
   const w = lemmaInSentence(word);
   if (!w) return '';
-  const kind = classifyVocab(w, lang);
+  const kind = forcedKind ?? classifyVocab(w, lang);
   const seed = `${lang}:${kind}:${w.toLowerCase()}`;
 
   if (lang === 'fr') {
     if (kind === 'verb') {
-      return pickAligned([`Je veux ${w}.`, `Il faut ${w}.`, `Nous allons ${w}.`], slot, seed);
+      return pickAligned([`Je veux ${w}.`, `Nous allons ${w}.`, `Il faut ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
       return pickAligned([`Il est ${w}.`, `Elle est ${w}.`, `C'est trop ${w}.`], slot, seed);
@@ -275,7 +338,7 @@ export function wrapVocabSentence(word: string, lang: LangCode, slot?: number): 
   if (lang === 'en') {
     if (kind === 'verb') {
       const inf = /^to\s+/i.test(w) ? w : `to ${w}`;
-      return pickAligned([`I want ${inf}.`, `They need ${inf}.`, `We try ${inf}.`], slot, seed);
+      return pickAligned([`I want ${inf}.`, `We try ${inf}.`, `They need ${inf}.`], slot, seed);
     }
     if (kind === 'adj') {
       return pickAligned([`It is ${w}.`, `She is ${w}.`, `He looks ${w}.`], slot, seed);
@@ -290,7 +353,7 @@ export function wrapVocabSentence(word: string, lang: LangCode, slot?: number): 
 
   if (lang === 'es') {
     if (kind === 'verb') {
-      return pickAligned([`Quiero ${w}.`, `Hay que ${w}.`, `Vamos a ${w}.`], slot, seed);
+      return pickAligned([`Quiero ${w}.`, `Vamos a ${w}.`, `Hay que ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
       return pickAligned([`Él es ${w}.`, `Ella es ${w}.`, `Es demasiado ${w}.`], slot, seed);
@@ -328,6 +391,18 @@ export function framesMatch(source: string, target: string): boolean {
     { src: /^j['’]ai\b/i, dst: /^(i have|ik heb|tengo)\b/i },
     { src: /^ik heb\b/i, dst: /^(j['’]ai|i have|tengo)\b/i },
     { src: /^tengo\b/i, dst: /^(j['’]ai|i have|ik heb)\b/i },
+    { src: /^ik wil\b/i, dst: /^(je veux|i want|quiero)\b/i },
+    { src: /^je veux\b/i, dst: /^(ik wil|i want|quiero)\b/i },
+    { src: /^i want\b/i, dst: /^(je veux|ik wil|quiero)\b/i },
+    { src: /^quiero\b/i, dst: /^(je veux|ik wil|i want)\b/i },
+    { src: /^wij gaan\b/i, dst: /^(nous allons|we try|vamos a)\b/i },
+    { src: /^nous allons\b/i, dst: /^(wij gaan|we try|vamos a)\b/i },
+    { src: /^we try\b/i, dst: /^(wij gaan|nous allons|vamos a)\b/i },
+    { src: /^vamos a\b/i, dst: /^(wij gaan|nous allons|we try)\b/i },
+    { src: /^zij moet\b/i, dst: /^(il faut|they need|hay que)\b/i },
+    { src: /^il faut\b/i, dst: /^(zij moet|they need|hay que)\b/i },
+    { src: /^they need\b/i, dst: /^(zij moet|il faut|hay que)\b/i },
+    { src: /^hay que\b/i, dst: /^(zij moet|il faut|they need)\b/i },
   ];
   for (const { src, dst } of frames) {
     if (src.test(s)) return dst.test(t);
@@ -493,9 +568,19 @@ export function buildLocalTranslateRound(
     if (termLang === defLang) return null;
   }
 
-  const slot = hashSlot(`${term}|${definition}|${termLang}|${defLang}`, 3);
-  const source = wrapVocabSentence(pair.term, termLang, slot);
-  const target = wrapVocabSentence(pair.definition, defLang, slot);
+  const kind = classifyPair(term, termLang, definition, defLang);
+  const baseSlot = hashSlot(`${term}|${definition}|${termLang}|${defLang}|${kind}`, 3);
+  let source = '';
+  let target = '';
+  for (let offset = 0; offset < 3; offset += 1) {
+    const slot = (baseSlot + offset) % 3;
+    const src = wrapVocabSentence(pair.term, termLang, slot, kind);
+    const tgt = wrapVocabSentence(pair.definition, defLang, slot, kind);
+    if (!src || !tgt) continue;
+    source = src;
+    target = tgt;
+    if (framesMatch(src, tgt)) break;
+  }
   if (!source || !target) return null;
   const expected = tokenizePhrase(target);
   if (expected.length === 0) return null;

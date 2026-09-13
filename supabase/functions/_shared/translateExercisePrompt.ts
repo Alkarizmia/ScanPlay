@@ -20,10 +20,11 @@ TYPE DE MOT :
 - Adjectif (old, young, oud, jeune, viejo) → phrase d'état : "She is old." / "Elle est jeune." / "Hij is oud." / "Ella es joven." Pas "I see old".
 - Nom (a baby, la grossesse, de auto, la casa) → article CORRECT : "This is a baby." / "C'est un bébé." / "Dit is de auto." / "Esto es una casa."
 - Quantité (beetje, peu, bit, poco) → JAMAIS "Dit is de beetje". Utilise "een beetje" / "un peu" : "Er is een beetje water." / "Il y a un peu d'eau." / "There is a bit of water." / "Hay un poco de agua."
-- Verbe (to be born, naître, nacer) → "I want to be born." / "Je veux naître." / "Quiero nacer."
-- Néerlandais : de/het/een justes. Diminutifs et "huis/kind/water" → het. "beetje" → een beetje.
+- Verbe (to be born, naître, nacer, zijn, doen, être, faire) → infinitif dans une vraie phrase : "Ik wil zijn." / "Je veux être." / "I want to be." / "Quiero ser." JAMAIS "Ik heb de zijn" / "Hier is de doen" / "J'ai un être".
+- Néerlandais : de/het/een justes. Diminutifs et "huis/kind/water" → het. "beetje" → een beetje. Verbes en -en (zijn, doen, opschrijven) = verbes, pas des noms.
 - Espagnol : un/una/el/la justes. Infinitif -ar/-er/-ir dans une vraie phrase.
 - Si le term est un adjectif et la definition un nom (old → la vieillesse), NE FORCE PAS la même structure.
+- Alignement sujet : "Ik …" ↔ "Je …" / "I …" ; "Wij …" ↔ "Nous …" / "We …". La pastille du pronom cible doit exister dans target.
 
 VARIÉTÉ :
 - Varie sujet et verbe d'un round à l'autre (être, avoir, voici/dit is/esto es, il y a/er is/hay, vouloir…). Jamais 3 rounds d'affilée avec le même verbe.
@@ -38,6 +39,8 @@ EXEMPLES :
 - Bon : "She is old." / "C'est la vieillesse."
 - Mauvais : "Dit is de beetje." / "beetje – een beetje"
 - Bon : "Er is een beetje water." / "Il y a un peu d'eau."
+- Mauvais : "Ik heb de zijn." / "Hier is de doen." / "J'ai un être."
+- Bon : "Ik wil zijn." / "Je veux être." / "Ik wil doen." / "Je veux faire."
 - Mauvais : "auto = voiture"
 - Bon : "De auto is rood." / "La voiture est rouge."
 - Bon ES : "Esto es un libro." / "Tengo una casa."
