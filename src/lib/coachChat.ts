@@ -124,8 +124,15 @@ export async function loadCoachMessages(): Promise<CoachMessage[]> {
 export async function sendCoachMessage(
   message: string,
   locale: Locale,
-): Promise<{ reply: string; quota: CoachQuota | null; blocked?: string } | { error: 'quota' | 'rpc' | 'generic' | 'ai' | 'auth'; quota?: CoachQuota }> {
+): Promise<
+  | { reply: string; quota: CoachQuota | null; blocked?: string }
+  | { error: 'quota' | 'rpc' | 'generic' | 'ai' | 'auth' | 'plan'; quota?: CoachQuota }
+> {
   const context = buildCoachContext(locale);
+  if (getPlan() === 'free' || getDailyChatLimit() <= 0) {
+    return { error: 'plan' };
+  }
+
   const canned = localCoachReply(message, locale, {
     sheetCount: context.sheetCount,
     isNewAccount: context.isNewAccount,
@@ -148,12 +155,26 @@ export async function sendCoachMessage(
     },
   });
 
-  const payload = data as {
+  let payload = data as {
     error?: string;
     reply?: string;
     quota?: CoachQuota | null;
     blocked?: string;
   } | null;
+
+  let status = Number((error as { context?: { status?: number } } | null)?.context?.status ?? 0);
+  if (error && (!payload || !payload.reply)) {
+    try {
+      const res = (error as { context?: Response }).context;
+      if (res && typeof res.json === 'function') {
+        const body = (await res.clone().json()) as typeof payload;
+        if (body && typeof body === 'object') payload = body;
+        if (!status && typeof res.status === 'number') status = res.status;
+      }
+    } catch {
+      /* ignore parse errors */
+    }
+  }
 
   if (payload?.reply) {
     return {
@@ -163,6 +184,9 @@ export async function sendCoachMessage(
     };
   }
 
+  if (payload?.error === 'plan_required' || status === 403) {
+    return { error: 'plan' };
+  }
   if (payload?.error === 'quota_exceeded') {
     return { error: 'quota', quota: normalizeQuota(payload.quota ?? undefined) };
   }
@@ -170,7 +194,6 @@ export async function sendCoachMessage(
     return { error: 'rpc' };
   }
 
-  const status = Number((error as { context?: { status?: number } } | null)?.context?.status ?? 0);
   if (status === 429) return { error: 'quota', quota: normalizeQuota(payload?.quota ?? undefined) };
   if (status === 401) return { error: 'auth' };
   if (status === 502 || status === 503) return { error: 'ai' };

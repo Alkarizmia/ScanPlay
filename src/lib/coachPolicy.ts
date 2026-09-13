@@ -1,7 +1,7 @@
 export type CoachPlan = 'free' | 'plus' | 'pro';
 
 export const COACH_LIMITS = {
-  free: { chatPerDay: 3, maxChars: 150, historyWindow: 2 },
+  free: { chatPerDay: 0, maxChars: 150, historyWindow: 0 },
   plus: { chatPerDay: 15, maxChars: 200, historyWindow: 4 },
   pro: { chatPerDay: 40, maxChars: 250, historyWindow: 7 },
 } as const;

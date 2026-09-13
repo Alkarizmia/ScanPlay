@@ -7,7 +7,7 @@ import {
   type CoachQuota,
 } from '../lib/coachChat';
 import { getHistory } from '../lib/history';
-import { getChatMaxChars, getDailyChatLimit } from '../lib/planLimits';
+import { getChatMaxChars, getDailyChatLimit, getPlan } from '../lib/planLimits';
 import { isCoachChatEnabled } from '../lib/coachFlag';
 import { t } from '../lib/i18n';
 import { speakText } from '../lib/speech';
@@ -38,9 +38,30 @@ function CoachComingSoon({ locale }: { locale: Locale }) {
   );
 }
 
+function CoachFreeLocked({ locale, onUpgrade }: { locale: Locale; onUpgrade: () => void }) {
+  return (
+    <div className="screen tab-screen chat-screen">
+      <header className="top-bar">
+        <h2 className="screen-title">{t('chatTitle', locale)}</h2>
+      </header>
+      <main className="settings-main scroll-natural">
+        <section className="settings-section">
+          <p className="stats-login-hint">{t('chatFreeLocked', locale)}</p>
+          <button type="button" className="btn-primary" onClick={onUpgrade}>
+            {t('chatUpgradeCta', locale)}
+          </button>
+        </section>
+      </main>
+    </div>
+  );
+}
+
 export function ChatScreen(props: ChatScreenProps) {
   if (!isCoachChatEnabled()) {
     return <CoachComingSoon locale={props.locale} />;
+  }
+  if (props.isLoggedIn && (getPlan() === 'free' || getDailyChatLimit() <= 0)) {
+    return <CoachFreeLocked locale={props.locale} onUpgrade={props.onUpgrade} />;
   }
   return <ChatScreenLive {...props} />;
 }
@@ -110,6 +131,10 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
       setMessages((prev) => prev.filter((row) => row.id !== localId));
       if (result.quota) setQuota(result.quota);
       if (result.error === 'quota') setError(t('chatQuotaEmpty', locale));
+      else if (result.error === 'plan') {
+        onUpgrade();
+        setError(t('chatFreeLocked', locale));
+      }
       else if (result.error === 'rpc') setError(t('chatErrorSql', locale));
       else if (result.error === 'ai') setError(t('chatErrorAi', locale));
       else if (result.error === 'auth') setError(t('chatErrorAuth', locale));

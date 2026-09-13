@@ -71,7 +71,7 @@ Deno.serve(async (req) => {
 
   try {
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openaiKey) return json(503, { error: 'OPENAI_API_KEY not configured' });
+    if (!openaiKey) return json(503, { error: 'coach_unavailable' });
 
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseAnon = Deno.env.get('SUPABASE_ANON_KEY') ?? '';
@@ -92,6 +92,9 @@ Deno.serve(async (req) => {
     const locale = trimText(body.locale, 8) || 'fr';
     const plan = (await fetchUserPlan(supabase, user.id)) as CoachPlan;
     const caps = COACH_LIMITS[plan] ?? COACH_LIMITS.free;
+    if (plan === 'free' || caps.chatPerDay <= 0) {
+      return json(403, { error: 'plan_required' });
+    }
     const rawMessage = typeof body.message === 'string' ? body.message.replace(/\s+/g, ' ').trim() : '';
 
     if (rawMessage.length < 2) return json(400, { error: 'empty_message' });
@@ -236,15 +239,15 @@ Deno.serve(async (req) => {
 
     if (!openaiRes.ok) {
       await supabase.rpc('refund_coach_chat_credit');
-      const errText = await openaiRes.text();
-      return json(502, { error: 'OpenAI request failed', detail: errText });
+      console.error('coach-chat upstream failed', openaiRes.status);
+      return json(502, { error: 'coach_failed' });
     }
 
     const openaiJson = await openaiRes.json();
     const reply = trimText(openaiJson?.choices?.[0]?.message?.content, 1800);
     if (!reply) {
       await supabase.rpc('refund_coach_chat_credit');
-      return json(502, { error: 'Empty OpenAI response' });
+      return json(502, { error: 'coach_failed' });
     }
 
     const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';

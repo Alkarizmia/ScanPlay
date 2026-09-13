@@ -3,7 +3,7 @@
 -- À coller dans Supabase → SQL Editor → Run
 --
 -- Quotas (Europe/Paris) :
---   Free 3 messages / jour, 150 caractères, 2 dernières fiches
+--   Free 0 message / jour (Pix réservé Plus / Pro)
 --   Plus 15 messages / jour, 200 caractères, 4 dernières fiches
 --   Pro  40 messages / jour, 250 caractères, 7 dernières fiches
 -- Mode vocal : Groq Whisper (GROQ_API_KEY sur Vercel, /api/transcribe)
@@ -27,7 +27,7 @@ comment on table public.scanplay_coach_plan_limits is
 insert into public.scanplay_coach_plan_limits
   (plan, messages_per_day, max_chars, history_window, voice_enabled, voice_provider)
 values
-  ('free', 3, 150, 2, true, 'groq'),
+  ('free', 0, 150, 0, true, 'groq'),
   ('plus', 15, 200, 4, true, 'groq'),
   ('pro', 40, 250, 7, true, 'groq')
 on conflict (plan) do update set
@@ -98,7 +98,7 @@ stable
 as $$
   select coalesce(
     (select messages_per_day from public.scanplay_coach_plan_limits where plan = coalesce(p_plan, 'free')),
-    3
+    0
   );
 $$;
 

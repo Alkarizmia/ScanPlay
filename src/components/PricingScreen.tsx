@@ -49,7 +49,6 @@ type CompareRow = {
 };
 
 const ROWS: CompareRow[] = [
-  { labelKey: 'compareScanAi', free: 'gpt-4.1', plus: 'gpt-4.1', pro: 'gpt-4.1' },
   { labelKey: 'compareScans', free: `${PLAN_LIMITS.free.scansPerDay}/j`, plus: `${PLAN_LIMITS.plus.scansPerDay}/j`, pro: `${PLAN_LIMITS.pro.scansPerDay}/j` },
   { labelKey: 'compareWords', free: String(PLAN_LIMITS.free.maxWords), plus: String(PLAN_LIMITS.plus.maxWords), pro: String(PLAN_LIMITS.pro.maxWords) },
   { labelKey: 'comparePath', free: String(PLAN_LIMITS.free.pathSteps), plus: String(PLAN_LIMITS.plus.pathSteps), pro: String(PLAN_LIMITS.pro.pathSteps) },
@@ -57,9 +56,9 @@ const ROWS: CompareRow[] = [
   { labelKey: 'compareReplay', free: `${PLAN_LIMITS.free.historyReplay}`, plus: `${PLAN_LIMITS.plus.historyReplay}`, pro: `${PLAN_LIMITS.pro.historyReplay}` },
   { labelKey: 'compareSpaced', free: '·', plus: '✓', pro: '✓' },
   { labelKey: 'compareSynthesis', free: '2/m', plus: '15/m', pro: '40/m' },
-  { labelKey: 'compareCoach', free: `${PLAN_LIMITS.free.chatPerDay}/j`, plus: `${PLAN_LIMITS.plus.chatPerDay}/j`, pro: `${PLAN_LIMITS.pro.chatPerDay}/j` },
-  { labelKey: 'compareCoachChars', free: String(PLAN_LIMITS.free.chatMaxChars), plus: String(PLAN_LIMITS.plus.chatMaxChars), pro: String(PLAN_LIMITS.pro.chatMaxChars) },
-  { labelKey: 'compareCoachHistory', free: String(PLAN_LIMITS.free.chatHistoryWindow), plus: String(PLAN_LIMITS.plus.chatHistoryWindow), pro: String(PLAN_LIMITS.pro.chatHistoryWindow) },
+  { labelKey: 'compareCoach', free: '—', plus: `${PLAN_LIMITS.plus.chatPerDay}/j`, pro: `${PLAN_LIMITS.pro.chatPerDay}/j` },
+  { labelKey: 'compareCoachChars', free: '—', plus: String(PLAN_LIMITS.plus.chatMaxChars), pro: String(PLAN_LIMITS.pro.chatMaxChars) },
+  { labelKey: 'compareCoachHistory', free: '—', plus: String(PLAN_LIMITS.plus.chatHistoryWindow), pro: String(PLAN_LIMITS.pro.chatHistoryWindow) },
   { labelKey: 'compareStats', free: '·', plus: '✓', pro: '✓' },
   { labelKey: 'compareExam', free: '·', plus: '·', pro: '✓' },
   { labelKey: 'compareShare', free: '·', plus: '·', pro: '✓' },
