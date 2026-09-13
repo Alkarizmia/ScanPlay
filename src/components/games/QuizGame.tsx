@@ -11,6 +11,7 @@ import { markDifficult } from '../../lib/spacedRepetition';
 import {
   getQuizPool,
   hasEnoughQuizPairsRelaxed,
+  isMathLikeText,
   MIN_QUIZ_PAIRS_RELAXED,
   pickQuizOptions,
 } from '../../lib/vocabulary';
@@ -204,7 +205,9 @@ export function QuizGame({
           <span className="game-eyebrow">{t(reverse ? 'quizPromptReverse' : 'quizPrompt', locale)}</span>
           <h2 className="game-question quiz-term">
             <FormulaText text={promptText} />
-            <HearButton text={promptText} lang={resolveSideLang(q, reverse ? 'def' : 'term')} locale={locale} iconOnly />
+            {sheetType !== 'math' && !isMathLikeText(promptText) && (
+              <HearButton text={promptText} lang={resolveSideLang(q, reverse ? 'def' : 'term')} locale={locale} iconOnly />
+            )}
           </h2>
         </div>
 

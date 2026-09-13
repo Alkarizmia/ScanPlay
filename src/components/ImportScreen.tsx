@@ -160,13 +160,13 @@ export function ImportScreen({
   const handleSheetTypeChange = (type: SheetType) => {
     onSheetTypeChange(type);
     if (!isTrainingFocusApplicable(type)) {
-      setTrainingFocus(DEFAULT_FOCUS);
+      setTrainingFocus(['written']);
     }
   };
 
   const startScan = () => {
     if (picked.length === 0) return;
-    const focus = showTrainingFocus ? trainingFocus : DEFAULT_FOCUS;
+    const focus = showTrainingFocus ? trainingFocus : (['written'] as TrainingFocus[]);
     onFile(picked.length === 1 ? picked[0] : picked, focus, examWanted, sheetType);
   };
 

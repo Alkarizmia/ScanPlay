@@ -87,6 +87,23 @@ describe('getNextGameForStep listen path', () => {
     }
   });
 
+  it('blocks oral even if a formula deck was mislabeled as vocab', () => {
+    setPathSheetType('vocab');
+    const formulaDeck: WordPair[] = [
+      { term: '\\sin x', definition: '\\cos x' },
+      { term: '\\cos x', definition: '-\\sin x' },
+      { term: '\\sqrt{x}', definition: '\\frac{1}{2\\sqrt{x}}' },
+      { term: '(uv)\'', definition: 'u\'v + uv\'' },
+    ];
+    for (const step of [0, 1, 2, 6]) {
+      const games = pickPathStepGames(step, formulaDeck);
+      expect(games).not.toContain('listen');
+      expect(games).not.toContain('speak');
+      expect(games).not.toContain('dictation');
+      expect(games).toContain('type');
+    }
+  });
+
   it('never puts translate on a math sheet', () => {
     setPathSheetType('math');
     expect(pickPathStepGames(0, mathPairs).join(',')).not.toContain('translate');

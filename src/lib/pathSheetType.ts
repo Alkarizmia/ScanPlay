@@ -14,9 +14,29 @@ export function getPathSheetType(): SheetType {
   return currentSheetType;
 }
 
-/** Oral games: vocab, notes, definitions. Never math/science formulas. */
+/** Oral games: vocab / notes / definitions only — never formula sheets. */
 export function isOralAllowedForSheet(sheetType: SheetType = getPathSheetType()): boolean {
   return sheetType === 'vocab' || sheetType === 'notes' || sheetType === 'definitions';
+}
+
+/** True when this deck is (or clearly behaves like) a formula sheet. */
+export function isFormulaSheet(
+  sheetType: SheetType = getPathSheetType(),
+  pairs?: WordPair[],
+): boolean {
+  if (sheetType === 'math') return true;
+  if (!pairs || pairs.length === 0) return false;
+  const hits = pairs.filter(pairLooksLikeMathCourse).length;
+  return hits >= Math.max(2, Math.ceil(pairs.length * 0.5));
+}
+
+/** Oral / listening only when the sheet is linguistic, not formulas. */
+export function isOralAllowedForDeck(
+  sheetType: SheetType = getPathSheetType(),
+  pairs?: WordPair[],
+): boolean {
+  if (isFormulaSheet(sheetType, pairs)) return false;
+  return isOralAllowedForSheet(sheetType);
 }
 
 const MATH_COURSE_WORD =

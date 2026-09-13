@@ -8,6 +8,7 @@ import { resolveSpeakLang } from '../../lib/speakLang';
 import { getCardSides } from '../../lib/cardFaces';
 import { getLocale, t } from '../../lib/i18n';
 import { FormulaText } from '../FormulaText';
+import { isMathLikeText } from '../../lib/vocabulary';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -247,19 +248,21 @@ export function FlashcardsGame({
                   />
                 ))}
               </div>
-              <HearButton
-                text={shown}
-                lang={
-                  faceIndex === 0
-                    ? resolveSpeakLang(current)
-                    : faceIndex === sides.length - 1
-                      ? current.defLang
-                      : resolveSpeakLang(current)
-                }
-                locale={locale}
-                className="flashcard-hear"
-                iconOnly
-              />
+              {!isMathLikeText(shown) && (
+                <HearButton
+                  text={shown}
+                  lang={
+                    faceIndex === 0
+                      ? resolveSpeakLang(current)
+                      : faceIndex === sides.length - 1
+                        ? current.defLang
+                        : resolveSpeakLang(current)
+                  }
+                  locale={locale}
+                  className="flashcard-hear"
+                  iconOnly
+                />
+              )}
               <span className="card-hint">
                 {lastFace ? t('cardTapToRestart', locale) : t('cardTapNextFace', locale)}
               </span>

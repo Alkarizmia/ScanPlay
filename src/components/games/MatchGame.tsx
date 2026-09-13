@@ -6,6 +6,7 @@ import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { resolveSpeakLang } from '../../lib/speakLang';
 import { FormulaText } from '../FormulaText';
+import { isMathLikeText } from '../../lib/vocabulary';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -163,7 +164,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
                   <FormulaText text={card.text} />
                 </span>
               </button>
-              {isSelected && (
+              {isSelected && !isMathLikeText(card.text) && (
                 <HearButton
                   text={card.text}
                   lang={card.lang}

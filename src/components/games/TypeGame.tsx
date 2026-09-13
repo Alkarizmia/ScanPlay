@@ -216,11 +216,13 @@ export function TypeGame({
             <h2 className="type-game-term">
               <FormulaText text={prompt} />
             </h2>
-            <HearButton
-              text={typeKeyword ? current.definition : current.term}
-              lang={resolveSideLang(current, typeKeyword ? 'def' : 'term')}
-              locale={locale}
-            />
+            {!mathLike && (
+              <HearButton
+                text={typeKeyword ? current.definition : current.term}
+                lang={resolveSideLang(current, typeKeyword ? 'def' : 'term')}
+                locale={locale}
+              />
+            )}
           </div>
         )}
 

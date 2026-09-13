@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { GameMode, Locale, PairDirection, SheetType, WordPair } from '../../types';
 import { getLessonTotalUnits, getLessonUnitOffsets, getGameUnitCount } from '../../lib/lessonUnits';
+import { isFormulaSheet } from '../../lib/pathSheetType';
 import { gameProgressPct, GameHeader } from './GameHeader';
 import { FlashcardsGame } from './FlashcardsGame';
 import { TrueFalseGame } from './TrueFalseGame';
@@ -34,6 +35,8 @@ interface LessonRunnerProps {
   onToast?: (message: string) => void;
 }
 
+const FORMULA_BLOCKED: GameMode[] = ['listen', 'speak', 'listenpick', 'dictation', 'imagepick', 'translate'];
+
 export function LessonRunner({
   pairs,
   locale,
@@ -51,21 +54,31 @@ export function LessonRunner({
   onNotEnoughPairs,
   onToast,
 }: LessonRunnerProps) {
-  const safeStart = Math.min(Math.max(0, startGameIndex), Math.max(0, games.length - 1));
+  const lessonGames = useMemo(() => {
+    if (!isFormulaSheet(sheetType ?? 'vocab', pairs)) return games;
+    const filtered = games.filter((g) => !FORMULA_BLOCKED.includes(g));
+    return filtered.length > 0 ? filtered : (['flashcards', 'match', 'quiz', 'type'] as GameMode[]);
+  }, [games, sheetType, pairs]);
+
+  const safeStart = Math.min(Math.max(0, startGameIndex), Math.max(0, lessonGames.length - 1));
   const [gameIndex, setGameIndex] = useState(safeStart);
   const [stepDone, setStepDone] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
   const segmentStart = useRef(Date.now());
 
-  const currentMode = games[gameIndex] ?? games[0]!;
+  useEffect(() => {
+    setGameIndex((i) => Math.min(i, Math.max(0, lessonGames.length - 1)));
+  }, [lessonGames.length]);
+
+  const currentMode = lessonGames[gameIndex] ?? lessonGames[0]!;
   const itemCap = currentMode === 'match' ? 3 : 2;
   const playPairs = useMemo(() => {
     if (pairs.length <= 1) return pairs;
     const offset = (gameIndex * 2 + pairShift) % pairs.length;
     return [...pairs.slice(offset), ...pairs.slice(0, offset)];
   }, [pairs, gameIndex, pairShift]);
-  const unitOffsets = useMemo(() => getLessonUnitOffsets(games, pairs, false), [games, pairs]);
-  const totalUnits = useMemo(() => getLessonTotalUnits(games, pairs, false), [games, pairs]);
+  const unitOffsets = useMemo(() => getLessonUnitOffsets(lessonGames, pairs, false), [lessonGames, pairs]);
+  const totalUnits = useMemo(() => getLessonTotalUnits(lessonGames, pairs, false), [lessonGames, pairs]);
   const overallProgress = gameProgressPct((unitOffsets[gameIndex] ?? 0) + stepDone, totalUnits);
 
   const handleStepProgress = useCallback((done: number, total: number) => {
@@ -98,7 +111,7 @@ export function LessonRunner({
 
   const handleComplete = useCallback(
     (score: number, total: number) => {
-      const continues = gameIndex < games.length - 1;
+      const continues = gameIndex < lessonGames.length - 1;
       setStepDone(getGameUnitCount(currentMode, pairs, false));
       onSubGameComplete(currentMode, score, total, continues);
       if (continues) {
@@ -109,7 +122,7 @@ export function LessonRunner({
         }, 280);
       }
     },
-    [currentMode, gameIndex, games.length, onSubGameComplete, pairs],
+    [currentMode, gameIndex, lessonGames.length, onSubGameComplete, pairs],
   );
 
   const handleExit = () => {

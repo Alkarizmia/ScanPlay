@@ -138,7 +138,7 @@ import {
 } from './lib/planLimits';
 import { hasMinimumForGames, parseContent } from './lib/parser';
 import { getNextGameForStep, getResumeGameIndex, isNodeAllGold, pickPathStepGames, resolveStepMode } from './lib/pathGamePlan';
-import { isOralAllowedForSheet, setPathSheetType } from './lib/pathSheetType';
+import { isOralAllowedForDeck, setPathSheetType } from './lib/pathSheetType';
 import {
   canOpenGamePath,
   coercePlayablePairs,
@@ -1115,7 +1115,7 @@ export default function App() {
         resolved === 'speak' ||
         resolved === 'listenpick' ||
         resolved === 'dictation') &&
-      !isOralAllowedForSheet(sheetType)
+      !isOralAllowedForDeck(sheetType, play)
     ) {
       resolved = resolveStepMode('type', play);
     }
