@@ -151,7 +151,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
           if (isSelected) cls += ' selected';
           if (isWrong) cls += ' wrong';
           return (
-            <div key={card.id} className={`match-card-wrap ${cls}`}>
+            <div key={card.id} className={cls}>
               <button
                 type="button"
                 className="match-card"
@@ -159,7 +159,9 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
                 disabled={isMatched}
                 aria-label={card.text}
               >
-                <FormulaText text={card.text} />
+                <span className="match-card-inner">
+                  <FormulaText text={card.text} />
+                </span>
               </button>
               {isSelected && (
                 <HearButton

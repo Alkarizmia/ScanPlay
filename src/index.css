@@ -1266,21 +1266,32 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .match-body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 .match-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
+  grid-auto-rows: 1fr;
   gap: 10px;
   padding-bottom: 16px;
+  flex: 1;
+  min-height: 0;
+  align-content: stretch;
 }
 .match-card-wrap {
+  position: relative;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  align-items: stretch;
+  min-height: 0;
+  height: 100%;
 }
 .match-card-wrap .match-card {
   width: 100%;
+  height: 100%;
+  min-height: 96px;
+  aspect-ratio: 1.4 / 1;
 }
 .match-card-wrap.selected .match-card {
   border-color: var(--accent);
@@ -1295,30 +1306,49 @@ html[data-device="desktop"] .flashcard.flipped .back {
   animation: shake 0.35s ease;
 }
 .match-card-hear {
-  align-self: center;
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  align-self: auto;
 }
 .match-card {
-  min-height: 72px;
-  padding: 12px;
+  min-height: 96px;
+  padding: 14px 12px;
   border: 2px solid transparent;
   border-radius: var(--radius);
   background: var(--bg-card);
   color: var(--text);
   font-family: inherit;
-  font-size: 0.8rem;
-  font-weight: 600;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
   box-shadow: var(--shadow);
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  line-height: 1.25;
+  line-height: 1.3;
   word-break: break-word;
+}
+.match-card-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 100%;
+  padding: 2px 4px;
+}
+.match-card-inner .formula-text {
+  font-size: 1.15em;
+}
+.match-card-inner .formula-text .katex {
+  font-size: 1.2em;
+  line-height: 1.35;
 }
 .match-card span {
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 5;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -1831,9 +1861,18 @@ html[data-device="desktop"] .flashcard.flipped .back {
 }
 
 .tab-screen > .top-bar > :not(.screen-title) {
-  margin-left: auto;
   position: relative;
   z-index: 1;
+}
+
+/* Back arrow stays left; trailing actions / spacer stay right */
+.tab-screen > .top-bar > .icon-btn:first-child {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.tab-screen > .top-bar > :not(.screen-title):not(:first-child) {
+  margin-left: auto;
 }
 
 .tab-screen > .shop-main,
@@ -5470,6 +5509,103 @@ html[data-device="desktop"] .flashcard.flipped .back {
 
 .type-game-input {
   font-size: 1.05rem;
+}
+
+.type-game-body--math {
+  gap: 10px;
+}
+
+.math-answer-keyboard {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.math-answer-keyboard.is-disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.math-answer-preview {
+  min-height: 52px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 2px solid color-mix(in srgb, var(--accent) 35%, transparent);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: 700;
+  overflow-x: auto;
+}
+
+.math-answer-preview-ph {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.math-answer-frac-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.math-key-row {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.math-key-row--digits {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+}
+
+.math-key-row--atoms {
+  grid-template-columns: repeat(auto-fit, minmax(44px, 1fr));
+}
+
+.math-key {
+  min-height: 44px;
+  padding: 8px 4px;
+  border: 1px solid rgba(100, 116, 139, 0.22);
+  border-radius: 12px;
+  background: var(--bg-soft);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.math-key:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.math-key--atom {
+  background: color-mix(in srgb, var(--accent) 14%, var(--bg-card));
+  border-color: color-mix(in srgb, var(--accent) 28%, transparent);
+}
+
+.math-key--op {
+  font-size: 1.05rem;
+}
+
+.math-key--frac.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: transparent;
+}
+
+.math-key--danger {
+  font-size: 0.85rem;
+  color: var(--danger);
 }
 
 .type-game-options {

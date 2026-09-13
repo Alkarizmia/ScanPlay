@@ -1,5 +1,5 @@
 import type { PairDirection, WordPair } from '../types';
-import { looksLikeLatex } from './mathText';
+import { looksLikeLatex, mathComparableVariants } from './mathText';
 import { seededShuffle } from './seededRandom';
 import { enrichPairsWithVisuals } from './wordVisuals';
 import {
@@ -218,15 +218,9 @@ export function normalizeTypedAnswer(raw: string, mathLike = false): string {
     .trim();
 }
 
-/** Formule maths : sans espaces, primes unifiées, opérateurs × · * unifiés. */
+/** Formule maths : LaTeX + unicode + texte clavier → forme comparable. */
 function normalizeMathExpression(raw: string): string {
-  return raw
-    .trim()
-    .replace(/\u2032/g, "'")
-    .replace(/[×·⋅∙]/g, '*')
-    .replace(/÷/g, '/')
-    .replace(/\s+/g, '')
-    .toLowerCase();
+  return mathComparableVariants(raw)[0] ?? '';
 }
 
 /** Prend la partie après le dernier = si l'utilisateur ne tape que le résultat. */
@@ -238,12 +232,12 @@ function extractMathAnswerSide(text: string): string {
 
 function mathAnswersMatch(typed: string, expected: string): boolean {
   const typedSides = [
-    normalizeMathExpression(typed),
-    normalizeMathExpression(extractMathAnswerSide(typed)),
+    ...mathComparableVariants(typed),
+    ...mathComparableVariants(extractMathAnswerSide(typed)),
   ].filter(Boolean);
   const expectedSides = [
-    normalizeMathExpression(expected),
-    normalizeMathExpression(extractMathAnswerSide(expected)),
+    ...mathComparableVariants(expected),
+    ...mathComparableVariants(extractMathAnswerSide(expected)),
   ].filter(Boolean);
 
   const uniqueExpected = [...new Set(expectedSides)];

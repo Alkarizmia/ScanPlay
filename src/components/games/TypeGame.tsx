@@ -22,6 +22,7 @@ import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
 import { ChoiceCard, type ChoiceState } from './ChoiceCard';
+import { MathAnswerKeyboard } from './MathAnswerKeyboard';
 
 interface TypeGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -51,7 +52,11 @@ export function TypeGame({
   onStepProgress,
   maxItems,
 }: TypeGameProps) {
-  const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
+  const formulaSheet = sheetType === 'math' || sheetType === 'definitions';
+  const pool = useMemo(
+    () => coercePlayablePairs(pairs, formulaSheet ? { mathSheet: true } : undefined),
+    [pairs, formulaSheet],
+  );
   const total = Math.min(pool.length, examMode ? 8 : (maxItems ?? 6));
   const deck = pool.slice(0, total);
   const [index, setIndex] = useState(0);
@@ -67,7 +72,7 @@ export function TypeGame({
 
   const current = deck[index];
   const mathLike =
-    sheetType === 'math' ||
+    formulaSheet ||
     Boolean(current && (isMathLikeText(current.term) || isMathLikeText(current.definition)));
   const useVisual = sheetType === 'vocab' && Boolean(current?.visual) && !mathLike;
   const typeKeyword = sheetType === 'definitions' || sheetType === 'notes';
@@ -78,6 +83,10 @@ export function TypeGame({
     return pickTypeGameOptions(current, pool, 3, `${deckId ?? 'type'}-${index}-${expected.slice(0, 12)}`);
   }, [current, mathLike, expected, pool, deckId, index]);
   const useChoiceMode = !mathLike && isLongExpectedAnswer(expected) && choiceOptions.length >= MIN_CHOICE_OPTIONS;
+  const mathSeedTexts = useMemo(() => {
+    if (!mathLike) return [];
+    return deck.flatMap((p) => [p.term, p.definition]);
+  }, [mathLike, deck]);
   const timerSeconds = examMode ? getExamTimerSeconds('type', total) : 0;
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const [reportOpen, setReportOpen] = useState(false);
@@ -108,8 +117,8 @@ export function TypeGame({
     setRevealed(false);
     setGrade('wrong');
     setLastXp(0);
-    if (!useChoiceMode) inputRef.current?.focus();
-  }, [index, useChoiceMode]);
+    if (!useChoiceMode && !mathLike) inputRef.current?.focus();
+  }, [index, useChoiceMode, mathLike]);
 
   const finish = useCallback(
     (finalScore: number) => onComplete(finalScore, total),
@@ -188,7 +197,7 @@ export function TypeGame({
         ) : null
       }
     >
-      <div className="game-body type-game-body">
+      <div className={`game-body type-game-body${mathLike && !useChoiceMode ? ' type-game-body--math' : ''}`}>
         <p className="type-game-prompt">
           {useChoiceMode
             ? t('typePromptChoice', locale)
@@ -238,10 +247,19 @@ export function TypeGame({
               );
             })}
           </div>
+        ) : mathLike ? (
+          <MathAnswerKeyboard
+            key={index}
+            value={input}
+            onChange={setInput}
+            seedTexts={mathSeedTexts}
+            locale={locale}
+            disabled={revealed}
+          />
         ) : (
           <>
             <label className="field-label" htmlFor="type-answer">
-              {mathLike ? t('typePromptMath', locale) : t('typeAnswerLabel', locale)}
+              {t('typeAnswerLabel', locale)}
             </label>
             <input
               id="type-answer"
@@ -265,7 +283,6 @@ export function TypeGame({
             />
           </>
         )}
-
       </div>
 
       <div className={`game-actions${revealed && grade === 'wrong' ? ' game-actions--stacked' : ''}`}>
