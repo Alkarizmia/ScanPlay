@@ -21,7 +21,7 @@ interface ImportScreenProps {
   initialFiles?: File[];
   onBack: () => void;
   onSheetTypeChange: (type: SheetType) => void;
-  onFile: (file: File | File[], trainingFocus: TrainingFocus[], examRequested?: boolean) => void;
+  onFile: (file: File | File[], trainingFocus: TrainingFocus[], examRequested?: boolean, sheetTypeOverride?: SheetType) => void;
   onUpgrade?: (reason: 'exam') => void;
   onToast?: (message: string) => void;
   onAuth?: () => void;
@@ -167,7 +167,7 @@ export function ImportScreen({
   const startScan = () => {
     if (picked.length === 0) return;
     const focus = showTrainingFocus ? trainingFocus : DEFAULT_FOCUS;
-    onFile(picked.length === 1 ? picked[0] : picked, focus, examWanted);
+    onFile(picked.length === 1 ? picked[0] : picked, focus, examWanted, sheetType);
   };
 
   const handleBack = () => {

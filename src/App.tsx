@@ -714,12 +714,12 @@ export default function App() {
         if (parsed.length === 0) {
           if (isDemo) parsed = SAMPLE_PAIRS;
           else {
-            failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
-            return;
+            failImport(t(sheetType === 'math' || sheetType === 'definitions' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
           }
+          return;
         }
-        if (!isDemo && !canOpenGamePath(parsed, sheetType === 'math' ? { mathSheet: true } : undefined)) {
-          failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'sheetUnreadable', locale));
+        if (!isDemo && !canOpenGamePath(parsed, sheetType === 'math' || sheetType === 'definitions' ? { mathSheet: true } : undefined)) {
+          failImport(t(sheetType === 'math' || sheetType === 'definitions' ? 'ocrEmptyMath' : 'sheetUnreadable', locale));
           return;
         }
         setPairs(parsed);
@@ -763,13 +763,13 @@ export default function App() {
         if (usedSample) {
           goModes(SAMPLE_PAIRS, thumbnail, false, true);
         } else {
-          failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
+          failImport(t(sheetType === 'math' || sheetType === 'definitions' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
         }
         return;
       }
 
-      if (!usedSample && !canOpenGamePath(parsed, sheetType === 'math' ? { mathSheet: true } : undefined)) {
-        failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'sheetUnreadable', locale));
+      if (!usedSample && !canOpenGamePath(parsed, sheetType === 'math' || sheetType === 'definitions' ? { mathSheet: true } : undefined)) {
+        failImport(t(sheetType === 'math' || sheetType === 'definitions' ? 'ocrEmptyMath' : 'sheetUnreadable', locale));
         return;
       }
 
@@ -866,7 +866,15 @@ export default function App() {
   };
 
   const processImage = useCallback(
-    async (file: File | File[], focus: TrainingFocus[] = ['written', 'oral'], examRequested = false) => {
+    async (
+      file: File | File[],
+      focus: TrainingFocus[] = ['written', 'oral'],
+      examRequested = false,
+      scanSheetType?: SheetType,
+    ) => {
+      const activeSheetType = scanSheetType ?? sheetType;
+      if (scanSheetType) setSheetType(scanSheetType);
+      const isFormulaScan = activeSheetType === 'math' || activeSheetType === 'definitions';
       const guestScan = !isLoggedIn();
       if (guestScan) {
         if (!canGuestScan()) {
@@ -961,7 +969,7 @@ export default function App() {
         if (finished || ac.signal.aborted) return;
         finished = true;
         ac.abort();
-        failImport(t(sheetType === 'math' ? 'ocrEmptyMath' : 'ocrEmpty', locale));
+        failImport(t(isFormulaScan ? 'ocrEmptyMath' : 'ocrEmpty', locale));
       };
 
       const aiScan = isAiScanEnabled() && !guestScan;
@@ -986,7 +994,7 @@ export default function App() {
           );
           const { pairs, source, ignored } = await extractPairsFromImage(
             scanFiles[i],
-            sheetType,
+            activeSheetType,
             ac.signal,
           );
           if (source === 'ocr' && isAiScanEnabled() && i === 0) {
@@ -996,7 +1004,7 @@ export default function App() {
           if (ignored?.length) allIgnored.push(...ignored);
         }
         if (finished || ac.signal.aborted) return;
-        const mathOpts = sheetType === 'math' ? { mathSheet: true } : undefined;
+        const mathOpts = isFormulaScan ? { mathSheet: true } : undefined;
         const playable = coercePlayablePairs(allPairs, mathOpts);
         if (canOpenGamePath(playable, mathOpts)) {
           if (guestScan) recordGuestScan();

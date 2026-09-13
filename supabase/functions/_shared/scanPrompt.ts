@@ -59,7 +59,8 @@ export const SCANPLAY_AI_SYSTEM_PROMPT = SCANPLAY_VOCAB_SYSTEM_PROMPT;
 
 export function selectScanSystemPrompt(sheetType: string): string {
   if (sheetType === 'math') return SCANPLAY_MATH_SYSTEM_PROMPT;
-  if (sheetType === 'definitions') return SCANPLAY_DEFINITIONS_SYSTEM_PROMPT;
+  /* Same table-extraction rules help "définitions" sheets that are really formula tables. */
+  if (sheetType === 'definitions') return SCANPLAY_MATH_SYSTEM_PROMPT;
   if (sheetType === 'notes') return SCANPLAY_NOTES_SYSTEM_PROMPT;
   return SCANPLAY_VOCAB_SYSTEM_PROMPT;
 }

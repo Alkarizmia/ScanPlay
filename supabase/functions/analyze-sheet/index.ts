@@ -278,21 +278,44 @@ async function parseOpenAiPayload(
 ): Promise<{ payload: ExtractPayload | null; finishReason?: string }> {
   if (!openaiCall.ok) return { payload: null };
   let openaiJson: {
-    choices?: Array<{ finish_reason?: string; message?: { content?: string } }>;
+    choices?: Array<{
+      finish_reason?: string;
+      message?: { content?: string | Array<{ type?: string; text?: string }> };
+    }>;
   };
   try {
     openaiJson = JSON.parse(openaiCall.text) as typeof openaiJson;
   } catch {
     return { payload: null };
   }
-  const content = openaiJson?.choices?.[0]?.message?.content;
-  if (!content || typeof content !== 'string') return { payload: null };
-  try {
-    const parsed = asExtractPayload(JSON.parse(content));
-    return { payload: parsed, finishReason: openaiJson?.choices?.[0]?.finish_reason };
-  } catch {
-    return { payload: null };
+  const rawContent = openaiJson?.choices?.[0]?.message?.content;
+  let content = '';
+  if (typeof rawContent === 'string') {
+    content = rawContent;
+  } else if (Array.isArray(rawContent)) {
+    content = rawContent.map((part) => (typeof part?.text === 'string' ? part.text : '')).join('');
   }
+  if (!content.trim()) return { payload: null };
+
+  const tryParse = (raw: string): ExtractPayload | null => {
+    try {
+      return asExtractPayload(JSON.parse(raw));
+    } catch {
+      return null;
+    }
+  };
+
+  let parsed = tryParse(content.trim());
+  if (!parsed) {
+    const fence = content.match(/```(?:json)?\s*([\s\S]*?)```/i);
+    if (fence?.[1]) parsed = tryParse(fence[1].trim());
+  }
+  if (!parsed) {
+    const start = content.indexOf('{');
+    const end = content.lastIndexOf('}');
+    if (start >= 0 && end > start) parsed = tryParse(content.slice(start, end + 1));
+  }
+  return { payload: parsed, finishReason: openaiJson?.choices?.[0]?.finish_reason };
 }
 
 Deno.serve(async (req) => {
@@ -415,6 +438,39 @@ Deno.serve(async (req) => {
           payload = retryParsed.payload;
           payload.sheetType = sheetType;
           payload.warnings = [...(payload.warnings ?? []), 'gpt_math_retry'];
+        }
+      }
+      /* Last resort for math: OCR text → GPT (no image). Does not run for vocab/notes. */
+      if (sheetType === 'math' && (payload?.pairs?.length ?? 0) < 2) {
+        const visionFb = await runGoogleVisionOcr(imageBase64);
+        const ocrText = (visionFb?.fullText ?? '').trim();
+        if (ocrText.length >= 40) {
+          const textCall = await requestOpenAi(
+            openaiKey,
+            buildOpenAiBody(
+              channel,
+              'math',
+              null,
+              mimeType,
+              'high',
+              `Texte OCR d'une fiche de formules (tableau fonction → dérivée / résultat) :
+${ocrText.slice(0, 4500)}
+
+Transforme CHAQUE ligne utile en paire JSON : term = gauche (fonction), definition = droite (dérivée en LaTeX).
+Exemple: term="\\\\sin x" definition="\\\\cos x" ; term="k" definition="0".
+Minimum 2 paires. sheetType="math". Ignore titres et nom du prof.`,
+            ),
+          );
+          const textParsed = await parseOpenAiPayload(textCall);
+          if (textParsed.payload && (textParsed.payload.pairs?.length ?? 0) >= 2) {
+            payload = textParsed.payload;
+            payload.sheetType = 'math';
+            payload.warnings = [
+              ...(payload.warnings ?? []),
+              ...(visionFb?.warnings ?? []),
+              'math_ocr_text_fallback',
+            ];
+          }
         }
       }
       if (!payload) {

@@ -120,14 +120,21 @@ export async function extractPairsFromImage(
       const ai = await analyzeSheetWithAi(file, sheetType, signal);
       throwIfAborted(signal);
       if (ai?.pairs.length) {
-        const mathSheet = sheetType === 'math' || ai.sheetType === 'math';
+        const formulaSheet = sheetType === 'math' || sheetType === 'definitions';
+        const mathSheet = formulaSheet || ai.sheetType === 'math';
         const resolvedType = ai.sheetType ?? sheetType;
         freeText = !mathSheet && (resolvedType === 'notes' || resolvedType === 'definitions');
-        const mapped = mapAiPairsToWordPairs(ai.pairs, { mathSheet, freeText });
-        const ignored = collectIgnoredAiPairs(ai.pairs, { mathSheet, freeText });
+        const mapped = mapAiPairsToWordPairs(ai.pairs, {
+          mathSheet: mathSheet || formulaSheet,
+          freeText,
+        });
+        const ignored = collectIgnoredAiPairs(ai.pairs, {
+          mathSheet: mathSheet || formulaSheet,
+          freeText,
+        });
 
-        /* Formules: never drop a usable AI table because of vocab filters. */
-        if (mathSheet) {
+        /* Formules / définitions: never drop a usable AI table because of vocab filters. */
+        if (mathSheet || formulaSheet) {
           let pairs = coercePlayablePairs(mapped, { mathSheet: true });
           if (pairs.length < 2 && mapped.length >= 2) pairs = mapped;
           if (pairs.length < 2) {
@@ -174,10 +181,6 @@ export async function extractPairsFromImage(
         }
         if (canOpenGamePath(pairs, mathSheet ? { mathSheet: true } : undefined)) {
           if (mathSheet) {
-            return { pairs, source: 'ai', ignored };
-          }
-          /* Définitions/formules: keep AI result — skip slow Tesseract on formula tables. */
-          if (sheetType === 'definitions') {
             return { pairs, source: 'ai', ignored };
           }
           if ((ai.warnings ?? []).some((w) => w.startsWith('vision_') || w.startsWith('final_'))) {
