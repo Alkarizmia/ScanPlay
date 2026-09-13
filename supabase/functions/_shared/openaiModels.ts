@@ -45,12 +45,15 @@ export function resolveSynthesisModel(): string {
   return Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini';
 }
 
-/** Mini-coach chat — same solid model as scan for Plus/Pro; Free has no coach access. */
+/** Mini-coach chat — text-only, cheap model; scan stays on gpt-4.1. */
+export const SCANPLAY_DEFAULT_COACH_MODEL = 'gpt-4o-mini';
+
+/** Mini-coach chat — Free has no coach access; Plus/Pro use mini by default. */
 export function resolveCoachModel(plan: ScanPlan = 'free'): string {
   if (plan === 'plus' || plan === 'pro') {
-    return Deno.env.get('OPENAI_COACH_MODEL_PAID') ?? SCANPLAY_DEFAULT_SCAN_MODEL;
+    return Deno.env.get('OPENAI_COACH_MODEL_PAID') ?? SCANPLAY_DEFAULT_COACH_MODEL;
   }
-  return Deno.env.get('OPENAI_COACH_MODEL_FREE') ?? SCANPLAY_DEFAULT_SCAN_MODEL;
+  return Deno.env.get('OPENAI_COACH_MODEL_FREE') ?? SCANPLAY_DEFAULT_COACH_MODEL;
 }
 
 /** GPT-5+ / GPT-6: reasoning tokens, max_completion_tokens, image detail original. */

@@ -8484,11 +8484,12 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .chat-bubble {
   margin: 0;
   max-width: 88%;
-  padding: 10px 12px;
+  padding: 12px 14px;
   border-radius: 16px;
   font-size: 0.95rem;
-  line-height: 1.4;
+  line-height: 1.55;
   white-space: pre-wrap;
+  word-break: break-word;
 }
 .chat-bubble--user {
   align-self: flex-end;

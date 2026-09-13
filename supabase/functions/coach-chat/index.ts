@@ -31,7 +31,12 @@ Situations :
 - INTERDIT : email, téléphone, adresse ou données perso d'un AUTRE élève.
 - INTERDIT : une fiche hors liste autorisée (plan gratuit = 2 plus récentes seulement).
 
-Style : langue de locale, phrases courtes, pas de tiret cadratin, pas de markdown lourd.`;
+Style :
+- Langue de locale, ton chaleureux, phrases courtes.
+- Aère TOUJOURS : une idée = un court paragraphe, ligne vide entre les paragraphes.
+- Quiz / listes : une question ou une réponse par ligne (1. 2. 3.), jamais tout collé sur une ligne.
+- 1 à 3 emojis max par message (encourageants), pas une pluie d'emojis.
+- Pas de tiret cadratin, pas de markdown lourd (# ** bullets complexes).`;
 
 interface CoachBody {
   message?: string;
