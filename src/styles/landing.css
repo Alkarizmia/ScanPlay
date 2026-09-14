@@ -2545,6 +2545,14 @@ html[data-landing='true'] .screen.sp-landing {
   background: var(--lp-surface);
 }
 
+.lp-proof-stars {
+  margin: 0 0 10px;
+  color: #ca8a04;
+  letter-spacing: 1px;
+  font-size: 1rem;
+  line-height: 1;
+}
+
 .lp-proof-card blockquote {
   margin: 0;
   color: var(--lp-text);

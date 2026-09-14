@@ -1,4 +1,4 @@
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 
 import { LogoWordmark } from '../Logo';
 import {
@@ -26,18 +26,12 @@ interface LandingPageProps {
   onAuth: () => void;
 }
 
-/**
- * Social proof placeholder. ScanPlay has no collected testimonials yet, so the
- * section stays unrendered rather than showing invented quotes. Fill this array
- * with real ones and the section appears automatically.
- */
 interface Testimonial {
   quote: string;
   author: string;
   context: string;
+  rating?: number;
 }
-const TESTIMONIALS: Testimonial[] = [];
-
 const STEPS: {
   num: string;
   title: LandingCopyKey;
@@ -118,6 +112,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   const lang = useMemo(() => landingLangFromNavigator(), []);
   const locale: Locale = lang;
   const { ref: heroCtaRef, passed: heroCtaPassed } = usePassed<HTMLDivElement>();
+  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   // The guest app shell locks html/body scrolling for the in-app screens.
   // The landing needs the document to scroll, so flag it only while mounted.
@@ -128,6 +123,35 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
       delete document.documentElement.dataset.landing;
     };
   }, [lang]);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      try {
+        const res = await fetch('/api/testimonial');
+        if (!res.ok) return;
+        const data = (await res.json()) as {
+          items?: { author_name?: string; role?: string; quote?: string; rating?: number }[];
+        };
+        if (cancelled) return;
+        setTestimonials(
+          (data.items ?? [])
+            .filter((item) => item.quote && item.author_name)
+            .map((item) => ({
+              quote: String(item.quote),
+              author: String(item.author_name),
+              context: String(item.role || ''),
+              rating: Number(item.rating) || undefined,
+            })),
+        );
+      } catch {
+        /* landing stays without proof */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const scan = (placement: string) => {
     trackEvent('clic_cta_landing', { emplacement: placement });
@@ -405,14 +429,20 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
         </Section>
 
         {/* ---------- SOCIAL PROOF (hidden until real data exists) ---------- */}
-        {TESTIMONIALS.length > 0 && (
+        {testimonials.length > 0 && (
           <Section className="lp-section--proof" labelledBy="lp-proof-title">
             <header className="lp-section-head">
               <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
             </header>
             <ul className="lp-proof-grid">
-              {TESTIMONIALS.map((item) => (
-                <li key={item.author} className="lp-proof-card">
+              {testimonials.map((item) => (
+                <li key={`${item.author}-${item.quote.slice(0, 24)}`} className="lp-proof-card">
+                  {item.rating ? (
+                    <p className="lp-proof-stars" aria-label={`${item.rating} / 5`}>
+                      {'★'.repeat(item.rating)}
+                      {'☆'.repeat(5 - item.rating)}
+                    </p>
+                  ) : null}
                   <blockquote>{item.quote}</blockquote>
                   <p className="lp-proof-author">
                     <strong>{item.author}</strong>
@@ -495,6 +525,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="lp-footer-nav-title">{lt('lpFooterHelp', locale)}</p>
               <a href="mailto:support@scanplay.org">support@scanplay.org</a>
               <a href="/privacy.html">{lt('lpPrivacy', locale)}</a>
+              <a href="/terms.html">{lt('lpTerms', locale)}</a>
             </div>
           </nav>
         </div>

@@ -1,6 +1,15 @@
 /* ScanPlay — PWA shell. Network-first for HTML/JS so deploys never leave a blank screen. */
-const CACHE = 'scanplay-shell-v7';
+const CACHE = 'scanplay-shell-v8';
 const STATIC = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/logo.png'];
+const NO_SPA_FALLBACK = new Set([
+  '/avis',
+  '/avis/',
+  '/avis.html',
+  '/avis-admin',
+  '/avis-admin.html',
+  '/privacy.html',
+  '/terms.html',
+]);
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -55,6 +64,12 @@ self.addEventListener('fetch', (event) => {
   if (request.method !== 'GET' || !isSameOrigin(request)) return;
 
   const { pathname } = new URL(request.url);
+
+  // Never fall back review/legal pages to the SPA shell.
+  if (NO_SPA_FALLBACK.has(pathname) || pathname.endsWith('.html')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
 
   // Always fetch fresh HTML and hashed bundles after each deploy.
   if (isDocumentRequest(request) || pathname.startsWith('/assets/')) {

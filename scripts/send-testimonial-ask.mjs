@@ -28,7 +28,7 @@ const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
 const service = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const resendKey = process.env.RESEND_API_KEY;
 const APP = 'https://scanplay.org';
-const CTA = `${APP}/avis.html`;
+const CTA = `${APP}/avis`;
 const dryRun = process.argv.includes('--dry-run');
 const daysArg = process.argv.find((a) => a.startsWith('--days='));
 const DAYS = Math.max(1, Number(daysArg?.split('=')[1] ?? 2) || 2);

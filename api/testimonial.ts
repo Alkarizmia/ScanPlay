@@ -6,8 +6,8 @@ const SUPPORT = 'support@scanplay.org';
 
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'content-type');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'content-type, x-admin-secret');
 }
 
 function trim(value: unknown, max: number): string {
@@ -15,6 +15,14 @@ function trim(value: unknown, max: number): string {
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, max);
+}
+
+function adminOk(req: VercelRequest): boolean {
+  const secret = process.env.TESTIMONIAL_ADMIN_SECRET || process.env.CRON_SECRET;
+  if (!secret) return false;
+  const header = String(req.headers['x-admin-secret'] ?? '');
+  const query = typeof req.query.secret === 'string' ? req.query.secret : '';
+  return header === secret || query === secret;
 }
 
 async function notifySupport(row: {
@@ -38,7 +46,7 @@ async function notifySupport(row: {
     '',
     row.quote,
     '',
-    'Valider dans Supabase → scanplay_testimonials (approved = true).',
+    'Modère sur https://scanplay.org/avis-admin.html',
   ].join('\n');
 
   await fetch('https://api.resend.com/emails', {
@@ -59,6 +67,47 @@ async function notifySupport(row: {
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
+
+  const admin = tryGetSupabaseAdmin();
+  if (!admin) return res.status(503).json({ error: 'not_configured' });
+
+  if (req.method === 'GET') {
+    const scope = typeof req.query.scope === 'string' ? req.query.scope : 'approved';
+    if (scope === 'all') {
+      if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+      const { data, error } = await admin
+        .from('scanplay_testimonials')
+        .select('id, created_at, author_name, role, rating, quote, email, locale, approved')
+        .order('created_at', { ascending: false })
+        .limit(100);
+      if (error) return res.status(500).json({ error: error.message });
+      return res.status(200).json({ items: data ?? [] });
+    }
+    const { data, error } = await admin
+      .from('scanplay_testimonials')
+      .select('id, author_name, role, rating, quote')
+      .eq('approved', true)
+      .order('created_at', { ascending: false })
+      .limit(12);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ items: data ?? [] });
+  }
+
+  if (req.method === 'PATCH') {
+    if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
+    const body = (typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body) as {
+      id?: string;
+      approved?: boolean;
+    };
+    const id = trim(body.id, 80);
+    if (!id || typeof body.approved !== 'boolean') {
+      return res.status(400).json({ error: 'id_and_approved_required' });
+    }
+    const { error } = await admin.from('scanplay_testimonials').update({ approved: body.approved }).eq('id', id);
+    if (error) return res.status(500).json({ error: error.message });
+    return res.status(200).json({ ok: true });
+  }
+
   if (req.method !== 'POST') return res.status(405).json({ error: 'method_not_allowed' });
 
   const body = (typeof req.body === 'string' ? JSON.parse(req.body || '{}') : req.body) as Record<
@@ -76,9 +125,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (author_name.length < 2) return res.status(400).json({ error: 'name_required' });
   if (quote.length < 12) return res.status(400).json({ error: 'quote_too_short' });
   if (!Number.isFinite(rating) || rating < 1) return res.status(400).json({ error: 'rating_required' });
-
-  const admin = tryGetSupabaseAdmin();
-  if (!admin) return res.status(503).json({ error: 'not_configured' });
 
   const { error } = await admin.from('scanplay_testimonials').insert({
     author_name,

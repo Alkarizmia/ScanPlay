@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Modération avis — ScanPlay</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <style>
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: #f8fafc;
+        color: #0f172a;
+        padding: 20px 16px 48px;
+      }
+      .wrap { max-width: 720px; margin: 0 auto; }
+      h1 { font-size: 1.35rem; margin: 0 0 12px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+      input {
+        flex: 1;
+        min-width: 180px;
+        padding: 10px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font: inherit;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 800;
+        cursor: pointer;
+        background: #58cc02;
+        color: #14350c;
+      }
+      button.secondary { background: #e2e8f0; color: #0f172a; }
+      button.danger { background: #fee2e2; color: #991b1b; }
+      .card {
+        background: #fff;
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 14px 14px 12px;
+        margin-bottom: 12px;
+      }
+      .meta { color: #64748b; font-size: 0.85rem; margin: 0 0 8px; }
+      .quote { margin: 0 0 12px; line-height: 1.5; }
+      .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .err { color: #b91c1c; }
+      .ok { color: #15803d; }
+      .stars { color: #ca8a04; letter-spacing: 1px; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>Modération des avis</h1>
+      <p class="meta">Secret = variable Vercel <code>TESTIMONIAL_ADMIN_SECRET</code> (ou CRON_SECRET).</p>
+      <div class="row">
+        <input id="secret" type="password" placeholder="Secret admin" autocomplete="off" />
+        <button type="button" id="load">Charger</button>
+      </div>
+      <p id="status" class="meta"></p>
+      <div id="list"></div>
+    </div>
+    <script>
+      const status = document.getElementById('status');
+      const list = document.getElementById('list');
+      const secretInput = document.getElementById('secret');
+      secretInput.value = localStorage.getItem('sp_avis_secret') || '';
+
+      async function load() {
+        const secret = secretInput.value.trim();
+        localStorage.setItem('sp_avis_secret', secret);
+        status.textContent = 'Chargement…';
+        list.innerHTML = '';
+        const res = await fetch('/api/testimonial?scope=all', {
+          headers: { 'x-admin-secret': secret },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          status.className = 'err';
+          status.textContent = data.error || 'Erreur';
+          return;
+        }
+        status.className = 'ok';
+        status.textContent = (data.items || []).length + ' avis';
+        for (const item of data.items || []) {
+          const stars = '★'.repeat(item.rating) + '☆'.repeat(5 - item.rating);
+          const el = document.createElement('article');
+          el.className = 'card';
+          el.innerHTML =
+            '<p class="meta"><span class="stars">' +
+            stars +
+            '</span> · ' +
+            (item.approved ? 'PUBLIÉ' : 'en attente') +
+            ' · ' +
+            (item.author_name || '') +
+            ' (' +
+            (item.role || '') +
+            ')' +
+            (item.email ? ' · ' + item.email : '') +
+            '</p><p class="quote"></p><div class="actions"></div>';
+          el.querySelector('.quote').textContent = item.quote || '';
+          const actions = el.querySelector('.actions');
+          const approve = document.createElement('button');
+          approve.textContent = item.approved ? 'Déjà sur landing' : 'Publier sur landing';
+          approve.disabled = item.approved;
+          approve.onclick = () => setApproved(item.id, true, el);
+          const reject = document.createElement('button');
+          reject.className = 'danger';
+          reject.textContent = 'Retirer / refuser';
+          reject.onclick = () => setApproved(item.id, false, el);
+          actions.append(approve, reject);
+          list.appendChild(el);
+        }
+      }
+
+      async function setApproved(id, approved, el) {
+        const secret = secretInput.value.trim();
+        const res = await fetch('/api/testimonial', {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-admin-secret': secret,
+          },
+          body: JSON.stringify({ id, approved }),
+        });
+        if (!res.ok) {
+          status.className = 'err';
+          status.textContent = 'Maj impossible';
+          return;
+        }
+        await load();
+      }
+
+      document.getElementById('load').onclick = () => void load();
+      if (secretInput.value) void load();
+    </script>
+  </body>
+</html>
