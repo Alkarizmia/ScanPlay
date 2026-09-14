@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ton avis — ScanPlay</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <style>
+      :root {
+        --green: #58cc02;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --card: #fff;
+        --bg: #f8fafc;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100dvh;
+        font-family: Inter, system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        padding: 24px 16px 48px;
+      }
+      .wrap { max-width: 440px; margin: 0 auto; }
+      .brand {
+        display: flex; align-items: center; gap: 10px;
+        margin-bottom: 20px; font-weight: 800; color: #16a34a; font-size: 1.1rem;
+      }
+      .brand img { width: 40px; height: 40px; border-radius: 10px; }
+      .card {
+        background: var(--card);
+        border: 1px solid #e2e8f0;
+        border-radius: 16px;
+        padding: 22px 18px 20px;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+      }
+      h1 { margin: 0 0 8px; font-size: 1.35rem; letter-spacing: -0.02em; }
+      .sub { margin: 0 0 18px; color: var(--muted); line-height: 1.5; font-size: 0.95rem; }
+      label { display: block; font-weight: 700; font-size: 0.85rem; margin: 14px 0 6px; }
+      input, select, textarea {
+        width: 100%;
+        padding: 12px 12px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font: inherit;
+        background: #fff;
+      }
+      textarea { min-height: 110px; resize: vertical; }
+      .stars {
+        display: flex; gap: 6px; flex-wrap: wrap;
+      }
+      .stars button {
+        width: 44px; height: 44px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        background: #fff;
+        font-size: 1.25rem;
+        cursor: pointer;
+      }
+      .stars button.is-on {
+        border-color: #eab308;
+        background: #fffbeb;
+      }
+      .btn {
+        margin-top: 18px;
+        width: 100%;
+        border: 0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        background: var(--green);
+        color: #14350c;
+        font-weight: 800;
+        font-size: 1rem;
+        cursor: pointer;
+      }
+      .btn:disabled { opacity: 0.55; cursor: wait; }
+      .msg { margin-top: 14px; line-height: 1.5; font-size: 0.95rem; }
+      .msg.ok { color: #15803d; }
+      .msg.err { color: #b91c1c; }
+      .home { display: inline-block; margin-top: 18px; color: #16a34a; font-weight: 700; text-decoration: none; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="brand">
+        <img src="/logo.png" alt="" width="40" height="40" />
+        <span>ScanPlay</span>
+      </div>
+      <div class="card">
+        <h1>Ton avis en 30 secondes</h1>
+        <p class="sub">Ça aide d’autres élèves (et les écoles) à voir si ScanPlay vaut le coup. Merci 💚</p>
+        <form id="form">
+          <label for="name">Prénom ou pseudo</label>
+          <input id="name" name="name" required maxlength="40" autocomplete="nickname" placeholder="Ex. Léa" />
+
+          <label for="role">Tu es…</label>
+          <select id="role" name="role">
+            <option value="élève">Élève</option>
+            <option value="parent">Parent</option>
+            <option value="prof">Prof</option>
+            <option value="autre">Autre</option>
+          </select>
+
+          <label>Note</label>
+          <div class="stars" id="stars" role="group" aria-label="Note sur 5">
+            <button type="button" data-v="1" aria-label="1 étoile">★</button>
+            <button type="button" data-v="2" aria-label="2 étoiles">★</button>
+            <button type="button" data-v="3" aria-label="3 étoiles">★</button>
+            <button type="button" data-v="4" aria-label="4 étoiles">★</button>
+            <button type="button" data-v="5" aria-label="5 étoiles">★</button>
+          </div>
+          <input type="hidden" id="rating" name="rating" value="5" />
+
+          <label for="quote">Ton témoignage</label>
+          <textarea id="quote" name="quote" required maxlength="500" placeholder="Ex. J’ai scanné ma fiche de vocab et j’ai révisé en jouant…"></textarea>
+
+          <label for="email">Email (optionnel, jamais publié)</label>
+          <input id="email" name="email" type="email" maxlength="120" autocomplete="email" placeholder="toi@email.com" />
+
+          <button class="btn" id="submit" type="submit">Envoyer mon avis</button>
+          <p class="msg" id="msg" hidden></p>
+        </form>
+      </div>
+      <a class="home" href="/">← Retour à ScanPlay</a>
+    </div>
+    <script>
+      const stars = document.getElementById('stars');
+      const ratingInput = document.getElementById('rating');
+      const form = document.getElementById('form');
+      const msg = document.getElementById('msg');
+      const submit = document.getElementById('submit');
+
+      function paint(n) {
+        ratingInput.value = String(n);
+        [...stars.querySelectorAll('button')].forEach((btn) => {
+          btn.classList.toggle('is-on', Number(btn.dataset.v) <= n);
+        });
+      }
+      paint(5);
+      stars.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-v]');
+        if (btn) paint(Number(btn.dataset.v));
+      });
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        msg.hidden = true;
+        submit.disabled = true;
+        try {
+          const res = await fetch('/api/testimonial', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: document.getElementById('name').value,
+              role: document.getElementById('role').value,
+              rating: Number(ratingInput.value),
+              quote: document.getElementById('quote').value,
+              email: document.getElementById('email').value,
+              locale: navigator.language?.startsWith('fr') ? 'fr' : 'en',
+            }),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (!res.ok) throw new Error(data.error || 'save_failed');
+          form.reset();
+          paint(5);
+          msg.className = 'msg ok';
+          msg.textContent = 'Merci ! Ton avis est enregistré. On le publie après validation.';
+          msg.hidden = false;
+        } catch (err) {
+          msg.className = 'msg err';
+          msg.textContent = 'Envoi impossible pour le moment. Réessaie ou écris à support@scanplay.org.';
+          msg.hidden = false;
+        } finally {
+          submit.disabled = false;
+        }
+      });
+    </script>
+  </body>
+</html>
