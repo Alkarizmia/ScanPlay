@@ -285,6 +285,40 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           </div>
         </Section>
 
+        {/* ---------- SOCIAL PROOF (after steps — only when approved) ---------- */}
+        {testimonials.length > 0 && (
+          <Section className="lp-section--proof" labelledBy="lp-proof-title">
+            <header className="lp-section-head">
+              <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
+            </header>
+            <ul className="lp-proof-grid">
+              {testimonials.map((item) => (
+                <li key={`${item.author}-${item.quote.slice(0, 24)}`} className="lp-proof-card">
+                  {item.rating ? (
+                    <p className="lp-proof-stars" aria-label={`${item.rating} / 5`}>
+                      {Array.from({ length: 5 }, (_, i) => (
+                        <span
+                          key={i}
+                          className={`lp-proof-star${i < item.rating! ? ' is-on' : ''}`}
+                          style={{ ['--star-i' as string]: String(i) }}
+                          aria-hidden="true"
+                        >
+                          {i < item.rating! ? '★' : '☆'}
+                        </span>
+                      ))}
+                    </p>
+                  ) : null}
+                  <blockquote>{item.quote}</blockquote>
+                  <p className="lp-proof-author">
+                    <strong>{item.author}</strong>
+                    <span>{item.context}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        )}
+
         {/* ---------- PRODUCT ---------- */}
         <Section id="le-produit" className="lp-section--product" labelledBy="lp-product-title">
           <header className="lp-section-head">
@@ -427,32 +461,6 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             </div>
           </div>
         </Section>
-
-        {/* ---------- SOCIAL PROOF (hidden until real data exists) ---------- */}
-        {testimonials.length > 0 && (
-          <Section className="lp-section--proof" labelledBy="lp-proof-title">
-            <header className="lp-section-head">
-              <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
-            </header>
-            <ul className="lp-proof-grid">
-              {testimonials.map((item) => (
-                <li key={`${item.author}-${item.quote.slice(0, 24)}`} className="lp-proof-card">
-                  {item.rating ? (
-                    <p className="lp-proof-stars" aria-label={`${item.rating} / 5`}>
-                      {'★'.repeat(item.rating)}
-                      {'☆'.repeat(5 - item.rating)}
-                    </p>
-                  ) : null}
-                  <blockquote>{item.quote}</blockquote>
-                  <p className="lp-proof-author">
-                    <strong>{item.author}</strong>
-                    <span>{item.context}</span>
-                  </p>
-                </li>
-              ))}
-            </ul>
-          </Section>
-        )}
 
         {/* ---------- FAQ ---------- */}
         <Section id="questions" className="lp-section--faq" labelledBy="lp-faq-title">
