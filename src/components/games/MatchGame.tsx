@@ -167,8 +167,8 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
                 disabled={isMatched}
                 aria-label={card.text}
               >
-                <span className="match-card-inner">
-                  <FormulaText text={card.text} />
+                <span className={`match-card-inner${formulaHeavy ? ' match-card-inner--math' : ''}`}>
+                  <FormulaText text={card.text.trim() || '…'} />
                 </span>
               </button>
               {isSelected && !isMathLikeText(card.text) && (

@@ -1285,11 +1285,6 @@ html[data-device="desktop"] .flashcard.flipped .back {
   max-width: 520px;
   margin-inline: auto;
 }
-.match-grid--math {
-  grid-auto-rows: minmax(52px, auto);
-  gap: 6px;
-  max-width: 420px;
-}
 .match-card-wrap {
   position: relative;
   display: flex;
@@ -1302,10 +1297,6 @@ html[data-device="desktop"] .flashcard.flipped .back {
   height: auto;
   min-height: 64px;
   aspect-ratio: auto;
-}
-.match-grid--math .match-card-wrap .match-card {
-  min-height: 52px;
-  padding: 10px 8px;
 }
 .match-card-wrap.selected .match-card {
   border-color: var(--accent);
@@ -1352,25 +1343,50 @@ html[data-device="desktop"] .flashcard.flipped .back {
   width: 100%;
   max-width: 100%;
   padding: 2px 4px;
-  overflow: hidden;
+  overflow: visible;
+}
+.match-card-inner--math {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
 }
 .match-card-inner .formula-text {
   font-size: 1em;
   max-width: 100%;
+  overflow: visible;
+  color: inherit;
 }
 .match-card-inner .formula-text .katex {
   font-size: 1.05em;
-  line-height: 1.25;
-  max-width: 100%;
+  line-height: 1.35;
+  max-width: none;
+  white-space: normal;
+  display: inline-block;
+  text-align: center;
+  color: inherit;
 }
-.match-grid--math .match-card-inner .formula-text .katex {
-  font-size: 0.95em;
+.match-card-inner .formula-text .katex-html {
+  display: inline-block;
+  white-space: nowrap;
 }
-.match-card span {
+/* Never force KaTeX spans into a vertical line-clamp box (breaks formulas / blanks cards). */
+.match-card-inner > span:not(.formula-text) {
   display: -webkit-box;
   -webkit-line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+.match-grid--math {
+  grid-auto-rows: minmax(72px, auto);
+  gap: 8px;
+  max-width: 440px;
+}
+.match-grid--math .match-card-wrap .match-card {
+  min-height: 72px;
+  padding: 12px 10px;
+}
+.match-grid--math .match-card-inner .formula-text .katex {
+  font-size: 1.05em;
 }
 .hear-btn {
   display: inline-flex;
