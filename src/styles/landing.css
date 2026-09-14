@@ -330,7 +330,7 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-section-head h2,
 .lp-final h2,
-.lp-problem h2,
+.lp-contrast-pane h2,
 .lp-game h2 {
   margin: 0;
   font-size: clamp(1.6rem, 5.4vw, 2.25rem);
@@ -1889,7 +1889,6 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-step h3,
 .lp-product-list h3,
-.lp-benefits h3,
 .lp-game-list h3 {
   margin: 0;
   font-size: 1.1rem;
@@ -2304,96 +2303,82 @@ html[data-landing='true'] .screen.sp-landing {
 }
 
 /* ============================================================
-   Problem → solution
+   Problem → solution (compact contrast, bottom of page)
    ============================================================ */
 
-.lp-problem {
+.lp-contrast {
   display: grid;
-  gap: 16px;
+  gap: 12px;
 }
 
-.lp-problem-side {
-  padding: clamp(22px, 4vw, 34px);
+.lp-contrast-pane {
+  padding: clamp(18px, 3.5vw, 26px);
   border: 1px solid var(--lp-border);
-  border-radius: 22px;
+  border-radius: 20px;
   background: var(--lp-surface);
 }
 
-.lp-problem-side--solution {
-  border-color: rgba(34, 197, 94, 0.3);
-  background: linear-gradient(180deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.03));
+.lp-contrast-pane--solution {
+  border-color: rgba(34, 197, 94, 0.35);
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.03));
 }
 
-.lp-problem-side h3 {
-  margin: 0;
-  font-size: clamp(1.25rem, 4vw, 1.6rem);
+.lp-contrast-pane h2,
+.lp-contrast-pane h3 {
+  margin: 8px 0 0;
+  font-size: clamp(1.2rem, 3.8vw, 1.45rem);
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.22;
   letter-spacing: -0.02em;
   color: var(--lp-text);
 }
 
-.lp-problem-body {
-  margin: 14px 0 0;
-  color: var(--lp-muted);
-  font-size: 1rem;
-  line-height: 1.62;
-}
-
-.lp-benefits {
-  display: grid;
-  gap: 14px;
-  margin: clamp(24px, 4vw, 40px) 0 0;
+.lp-benefit-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 18px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.lp-benefits > li {
-  padding: 20px;
+.lp-benefit-strip > li {
+  padding: 10px 14px;
+  border-radius: 999px;
   border: 1px solid var(--lp-border);
-  border-radius: 18px;
-  background: var(--lp-surface);
+  background: color-mix(in srgb, var(--lp-surface) 88%, transparent);
+  color: var(--lp-text);
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
 }
 
-.lp-why {
-  margin-top: clamp(28px, 5vw, 48px);
-}
-
-.lp-why-title {
-  margin: 0 0 clamp(16px, 3vw, 24px);
-  font-size: clamp(1.35rem, 4.4vw, 1.85rem);
-  font-weight: 800;
-  letter-spacing: -0.025em;
-  line-height: 1.2;
-  text-wrap: balance;
-}
-
-.lp-why-list {
-  display: grid;
-  gap: 14px;
-  margin: 0;
+.lp-game-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 18px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.lp-why-list > li {
-  padding: 20px;
+.lp-game-strip > li {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
   border: 1px solid var(--lp-border);
-  border-radius: 18px;
   background: var(--lp-surface);
+  color: var(--lp-text);
+  font-size: 0.92rem;
+  font-weight: 700;
 }
 
-.lp-why-list h3 {
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 750;
-}
-
-.lp-why-list p {
-  margin: 8px 0 0;
-  color: var(--lp-muted);
-  font-size: 0.95rem;
-  line-height: 1.55;
+.lp-game-strip .lp-game-icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
 }
 
 /* ============================================================
@@ -2866,31 +2851,9 @@ html[data-landing='true'] .screen.sp-landing {
    ============================================================ */
 
 @media (min-width: 640px) {
-  .lp-benefits,
-  .lp-why-list {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .lp-steps {
-    max-width: 38rem;
-  }
-
-  .lp-swipe {
-    max-width: 38rem;
-  }
-
-  .lp-step {
-    padding-bottom: 2.15rem;
-    padding-left: 4.4rem;
-  }
-
-  .lp-step h3 {
-    font-size: 1.22rem;
-  }
-
-  .lp-problem {
+  .lp-contrast {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
+    gap: 16px;
   }
 
   .lp-proof-grid {

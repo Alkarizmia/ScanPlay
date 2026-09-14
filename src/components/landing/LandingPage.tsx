@@ -43,16 +43,10 @@ const STEPS: {
   { num: '03', title: 'lpStep3Title', body: 'lpStep3Body', icon: TrophyIcon },
 ];
 
-const BENEFITS: { title: LandingCopyKey; body: LandingCopyKey }[] = [
-  { title: 'lpBenefit1Title', body: 'lpBenefit1Body' },
-  { title: 'lpBenefit2Title', body: 'lpBenefit2Body' },
-  { title: 'lpBenefit3Title', body: 'lpBenefit3Body' },
-];
-
-const WHY: { title: LandingCopyKey; body: LandingCopyKey }[] = [
-  { title: 'lpWhy1Title', body: 'lpWhy1Body' },
-  { title: 'lpWhy2Title', body: 'lpWhy2Body' },
-  { title: 'lpWhy3Title', body: 'lpWhy3Body' },
+const BENEFITS: { title: LandingCopyKey }[] = [
+  { title: 'lpBenefit1Title' },
+  { title: 'lpBenefit2Title' },
+  { title: 'lpBenefit3Title' },
 ];
 
 const FAQ: { q: LandingCopyKey; a: LandingCopyKey }[] = [
@@ -79,9 +73,6 @@ const GAME_TAGS: LandingCopyKey[] = [
   'lpModeReorder',
   'lpModeImagePick',
 ];
-
-/** Keep in sync with ACHIEVEMENTS.length — landing must not import achievements.ts. */
-const LANDING_ACHIEVEMENT_COUNT = 44;
 
 function Section({
   id,
@@ -359,61 +350,24 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <p>{lt('lpRanksSub', locale)}</p>
           </header>
           <PathRanksMock locale={locale} />
-          <ul className="lp-ranks-copy">
-            <li>
-              <h3>{lt('lpRanksGlowTitle', locale)}</h3>
-              <p>{lt('lpRanksGlowBody', locale)}</p>
-            </li>
-            <li>
-              <h3>{lt('lpRanksBronzeTitle', locale)}</h3>
-              <p>{lt('lpRanksBronzeBody', locale)}</p>
-            </li>
-            <li>
-              <h3>{lt('lpRanksIronTitle', locale)}</h3>
-              <p>{lt('lpRanksIronBody', locale)}</p>
-            </li>
-            <li>
-              <h3>{lt('lpRanksGoldTitle', locale)}</h3>
-              <p>{lt('lpRanksGoldBody', locale)}</p>
-            </li>
-          </ul>
         </Section>
 
-        {/* ---------- PROBLEM → SOLUTION ---------- */}
+        {/* ---------- PROBLEM → SOLUTION (compact) ---------- */}
         <Section className="lp-section--problem" labelledBy="lp-problem-title">
-          <div className="lp-problem">
-            <div className="lp-problem-side">
+          <div className="lp-contrast">
+            <div className="lp-contrast-pane">
               <p className="lp-kicker">{lt('lpProblemKicker', locale)}</p>
               <h2 id="lp-problem-title">{lt('lpProblemTitle', locale)}</h2>
-              <p className="lp-problem-body">{lt('lpProblemBody', locale)}</p>
             </div>
-            <div className="lp-problem-side lp-problem-side--solution">
+            <div className="lp-contrast-pane lp-contrast-pane--solution">
               <p className="lp-kicker lp-kicker--accent">{lt('lpSolutionKicker', locale)}</p>
               <h3>{lt('lpSolutionTitle', locale)}</h3>
-              <p className="lp-problem-body">{lt('lpSolutionBody', locale)}</p>
             </div>
           </div>
 
-          <ul className="lp-benefits">
+          <ul className="lp-benefit-strip" aria-label={lt('lpSolutionKicker', locale)}>
             {BENEFITS.map((benefit) => (
-              <li key={benefit.title}>
-                <h3>{lt(benefit.title, locale)}</h3>
-                <p>{lt(benefit.body, locale)}</p>
-              </li>
-            ))}
-          </ul>
-        </Section>
-
-        <Section className="lp-section--why" labelledBy="lp-why-title">
-          <h2 id="lp-why-title" className="lp-why-title">
-            {lt('lpWhyTitle', locale)}
-          </h2>
-          <ul className="lp-why-list">
-            {WHY.map((item) => (
-              <li key={item.title}>
-                <h3>{lt(item.title, locale)}</h3>
-                <p>{lt(item.body, locale)}</p>
-              </li>
+              <li key={benefit.title}>{lt(benefit.title, locale)}</li>
             ))}
           </ul>
         </Section>
@@ -425,33 +379,24 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <h2 id="lp-game-title">{lt('lpGameTitle', locale)}</h2>
               <p className="lp-section-sub">{lt('lpGameSub', locale)}</p>
 
-              <ul className="lp-game-list">
+              <ul className="lp-game-strip">
                 <li>
                   <span className="lp-game-icon" aria-hidden="true">
                     <SparkIcon />
                   </span>
-                  <div>
-                    <h3>{lt('lpGameXpTitle', locale)}</h3>
-                    <p>{lt('lpGameXpBody', locale)}</p>
-                  </div>
+                  <span>{lt('lpGameXpTitle', locale)}</span>
                 </li>
                 <li>
                   <span className="lp-game-icon" aria-hidden="true">
                     <FlameIcon size={22} />
                   </span>
-                  <div>
-                    <h3>{lt('lpGameStreakTitle', locale)}</h3>
-                    <p>{lt('lpGameStreakBody', locale)}</p>
-                  </div>
+                  <span>{lt('lpGameStreakTitle', locale)}</span>
                 </li>
                 <li>
                   <span className="lp-game-icon" aria-hidden="true">
                     <TrophyIcon />
                   </span>
-                  <div>
-                    <h3>{lt('lpGameAchTitle', locale)}</h3>
-                    <p>{lt('lpGameAchBody', locale).replace('{n}', String(LANDING_ACHIEVEMENT_COUNT))}</p>
-                  </div>
+                  <span>{lt('lpGameAchTitle', locale)}</span>
                 </li>
               </ul>
             </div>
