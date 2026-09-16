@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { speakText, canSpeak } from '../lib/speech';
 import { t } from '../lib/i18n';
 import { SpeakerIcon } from './icons/SpeakerIcon';
@@ -23,22 +23,34 @@ export function HearButton({
   autoPlay = false,
 }: HearButtonProps) {
   const speakable = canSpeak();
+  const [busy, setBusy] = useState(false);
+
+  const play = useCallback(async () => {
+    if (!speakable || !text.trim()) return;
+    setBusy(true);
+    try {
+      await speakText(text, lang);
+    } finally {
+      setBusy(false);
+    }
+  }, [speakable, text, lang]);
 
   useEffect(() => {
     if (!autoPlay || !speakable || !text.trim()) return;
-    void speakText(text, lang);
-  }, [autoPlay, speakable, text, lang]);
+    void play();
+  }, [autoPlay, speakable, text, lang, play]);
 
   return (
     <button
       type="button"
-      className={`hear-btn ${iconOnly ? 'hear-btn--icon' : ''} ${className}`.trim()}
+      className={`hear-btn ${iconOnly ? 'hear-btn--icon' : ''} ${busy ? 'hear-btn--busy' : ''} ${className}`.trim()}
       aria-label={t('hearPronunciation', locale)}
+      aria-busy={busy}
       disabled={!speakable}
       onClick={(e) => {
         e.stopPropagation();
         e.preventDefault();
-        void speakText(text, lang);
+        void play();
       }}
     >
       <SpeakerIcon size={iconOnly ? 22 : 18} />
