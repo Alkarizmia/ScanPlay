@@ -11,7 +11,12 @@ import {
   getNextGameForStep,
   getNodeGamesDone,
 } from '../lib/pathGamePlan';
-import { claimPathTestChest, isPathTestChestOpened, PATH_TEST_CHEST_AFTER_STEP } from '../lib/pathChest';
+import {
+  claimPathTestChest,
+  healPathTestChestIfPastGate,
+  isPathTestChestOpened,
+  PATH_TEST_CHEST_AFTER_STEP,
+} from '../lib/pathChest';
 import type { WordPair } from '../types';
 import {
   canPlayStep,
@@ -70,12 +75,16 @@ export function GamePath({
   const areaHeight = pathAreaHeight(pathSteps.length);
 
   const firstActiveIdx = getFirstActiveStep(stepProgress, pathStepCount, examMode, pairs);
-  const [chestOpened, setChestOpened] = useState(() => isPathTestChestOpened(deckId));
+  const [chestOpened, setChestOpened] = useState(
+    () => healPathTestChestIfPastGate(deckId, firstActiveIdx) || isPathTestChestOpened(deckId),
+  );
   const [chestOverlayOpen, setChestOverlayOpen] = useState(false);
 
   useEffect(() => {
-    setChestOpened(isPathTestChestOpened(deckId));
-  }, [deckId]);
+    const opened =
+      healPathTestChestIfPastGate(deckId, firstActiveIdx) || isPathTestChestOpened(deckId);
+    setChestOpened(opened);
+  }, [deckId, firstActiveIdx]);
 
   const chestPending = !examMode && firstActiveIdx > PATH_TEST_CHEST_AFTER_STEP && !chestOpened;
   const chestBlocksLater = chestPending;

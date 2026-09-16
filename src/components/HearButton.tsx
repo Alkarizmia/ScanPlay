@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { speakText, canSpeak } from '../lib/speech';
+import { speakText, canSpeak, prefetchSpeak, unlockSpeakAudio } from '../lib/speech';
 import { t } from '../lib/i18n';
 import { SpeakerIcon } from './icons/SpeakerIcon';
 import type { LangCode, Locale } from '../types';
@@ -27,6 +27,7 @@ export function HearButton({
 
   const play = useCallback(async () => {
     if (!speakable || !text.trim()) return;
+    unlockSpeakAudio();
     setBusy(true);
     try {
       await speakText(text, lang);
@@ -37,6 +38,7 @@ export function HearButton({
 
   useEffect(() => {
     if (!autoPlay || !speakable || !text.trim()) return;
+    prefetchSpeak(text, lang);
     void play();
   }, [autoPlay, speakable, text, lang, play]);
 

@@ -24,7 +24,12 @@ const VOICE_HINTS: Record<string, string[]> = {
   'es-ES': ['Google español', 'es-ES', 'Spanish', 'Jorge', 'Monica'],
 };
 
+const SILENCE_WAV =
+  'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+
 let voicesReady: Promise<SpeechSynthesisVoice[]> | null = null;
+let sharedAudio: HTMLAudioElement | null = null;
+let audioUnlocked = false;
 
 function loadVoices(): Promise<SpeechSynthesisVoice[]> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
@@ -71,6 +76,35 @@ function neuralTtsEnabled(): boolean {
   return true;
 }
 
+function ensurePlayer(): HTMLAudioElement | null {
+  if (typeof Audio === 'undefined') return null;
+  if (!sharedAudio) {
+    sharedAudio = new Audio();
+    sharedAudio.playsInline = true;
+    sharedAudio.setAttribute('playsinline', 'true');
+    sharedAudio.preload = 'auto';
+  }
+  return sharedAudio;
+}
+
+/** Call from a tap so later neural playback is allowed on mobile. */
+export function unlockSpeakAudio(): void {
+  const player = ensurePlayer();
+  if (!player || audioUnlocked) return;
+  player.src = SILENCE_WAV;
+  const play = player.play();
+  if (play) {
+    void play
+      .then(() => {
+        player.pause();
+        audioUnlocked = true;
+      })
+      .catch(() => {
+        /* next tap retries */
+      });
+  }
+}
+
 /** Retire crochets phonétiques, astérisques et symboles pour une lecture vocale naturelle. */
 export function sanitizeTextForSpeech(text: string): string {
   return text
@@ -92,20 +126,14 @@ export interface SpeakOptions {
 const audioCache = new Map<string, Blob>();
 const inflight = new Map<string, Promise<Blob | null>>();
 let speakGen = 0;
-let currentAudio: HTMLAudioElement | null = null;
-let currentAbort: AbortController | null = null;
+let objectUrl: string | null = null;
 
-function stopPlayback(): void {
-  currentAbort?.abort();
-  currentAbort = null;
+function stopPlaying(): void {
   if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
     window.speechSynthesis.cancel();
   }
-  if (currentAudio) {
-    currentAudio.pause();
-    currentAudio.removeAttribute('src');
-    currentAudio.load();
-    currentAudio = null;
+  if (sharedAudio) {
+    sharedAudio.pause();
   }
 }
 
@@ -131,17 +159,15 @@ async function fetchNeuralBlob(
   text: string,
   lang: LangCode | undefined,
   slow: boolean,
-  signal: AbortSignal,
 ): Promise<Blob | null> {
   const token = await authToken();
-  if (!token || signal.aborted) return null;
+  if (!token) return null;
   const payload = { text: clipTtsInput(text), lang: lang ?? 'fr', slow };
 
   if (isSupabaseConfigured) {
     const supabase = getSupabase();
     if (supabase) {
       const { data, error } = await supabase.functions.invoke('tts', { body: payload });
-      if (signal.aborted) return null;
       if (!error && data && typeof data === 'object' && 'audio' in data) {
         const row = data as { audio?: string; mime?: string };
         if (row.audio) return base64ToBlob(row.audio, row.mime ?? 'audio/mpeg');
@@ -156,7 +182,6 @@ async function fetchNeuralBlob(
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify(payload),
-    signal,
   });
   if (!res.ok) return null;
   const data = (await res.json()) as { audio?: string; mime?: string };
@@ -168,7 +193,6 @@ function getNeuralBlob(
   text: string,
   lang: LangCode | undefined,
   slow: boolean,
-  signal: AbortSignal,
 ): Promise<Blob | null> {
   const key = ttsCacheKey(text, lang, slow ? 0.65 : undefined);
   const cached = audioCache.get(key);
@@ -177,7 +201,7 @@ function getNeuralBlob(
   const pending = inflight.get(key);
   if (pending) return pending;
 
-  const request = fetchNeuralBlob(text, lang, slow, signal)
+  const request = fetchNeuralBlob(text, lang, slow)
     .then((blob) => {
       if (blob) audioCache.set(key, blob);
       return blob;
@@ -189,26 +213,25 @@ function getNeuralBlob(
   return request;
 }
 
+export function prefetchSpeak(text: string, lang?: LangCode, options?: SpeakOptions): void {
+  if (!neuralTtsEnabled()) return;
+  const spoken = sanitizeTextForSpeech(text);
+  if (!spoken) return;
+  const slow = (options?.rate ?? 0.84) < 0.75;
+  void getNeuralBlob(spoken, lang, slow);
+}
+
 async function playBlob(blob: Blob, gen: number): Promise<boolean> {
-  if (gen !== speakGen || typeof Audio === 'undefined') return false;
-  const url = URL.createObjectURL(blob);
-  const audio = new Audio(url);
-  audio.preload = 'auto';
-  currentAudio = audio;
+  const player = ensurePlayer();
+  if (!player || gen !== speakGen) return false;
+  if (objectUrl) URL.revokeObjectURL(objectUrl);
+  objectUrl = URL.createObjectURL(blob);
+  player.src = objectUrl;
   try {
-    await audio.play();
-    audio.addEventListener(
-      'ended',
-      () => {
-        URL.revokeObjectURL(url);
-        if (currentAudio === audio) currentAudio = null;
-      },
-      { once: true },
-    );
+    await player.play();
+    audioUnlocked = true;
     return true;
   } catch {
-    URL.revokeObjectURL(url);
-    if (currentAudio === audio) currentAudio = null;
     return false;
   }
 }
@@ -238,21 +261,23 @@ export async function speakText(
   if (!spoken) return;
 
   const gen = ++speakGen;
-  stopPlayback();
-  const abort = new AbortController();
-  currentAbort = abort;
+  stopPlaying();
   const slow = (options?.rate ?? 0.84) < 0.75;
+  const neuralOn = neuralTtsEnabled();
 
-  if (neuralTtsEnabled()) {
+  if (neuralOn) {
     try {
       const blob = await Promise.race([
-        getNeuralBlob(spoken, lang, slow, abort.signal),
+        getNeuralBlob(spoken, lang, slow),
         new Promise<null>((resolve) => {
           window.setTimeout(() => resolve(null), 8000);
         }),
       ]);
       if (gen !== speakGen) return;
-      if (blob && (await playBlob(blob, gen))) return;
+      if (blob) {
+        await playBlob(blob, gen);
+        return;
+      }
     } catch {
       if (gen !== speakGen) return;
     }

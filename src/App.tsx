@@ -160,7 +160,7 @@ import {
   resolvePathStepCount,
   TECHNICAL_PCT,
 } from './lib/stepProgress';
-import { canSpeak } from './lib/speech';
+import { canSpeak, unlockSpeakAudio } from './lib/speech';
 import { resetTrainingFocus, setTrainingFocus } from './lib/trainingFocus';
 import { canReplayHistoryEntry } from './lib/historyReplay';
 import { mergeWithDifficult } from './lib/spacedRepetition';
@@ -1096,6 +1096,7 @@ export default function App() {
   };
 
   const startGame = (m: GameMode, stepIndex?: number, deckPairs?: WordPair[], skipGoldConfirm = false) => {
+    unlockSpeakAudio();
     if (promptGuestPlayReady()) return;
     const base = deckPairs ?? pairs;
     if (
