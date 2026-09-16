@@ -84,10 +84,13 @@ describe('translateRounds', () => {
     expect(wrapVocabSentence('zijn', 'nl')).toMatch(/^(Ik wil|Wij gaan|Zij moet) zijn\./i);
     expect(wrapVocabSentence('zijn', 'nl')).not.toMatch(/Ik heb de zijn/i);
     expect(wrapVocabSentence('zijn', 'nl')).not.toMatch(/Hier is de zijn/i);
-    expect(wrapVocabSentence('doen', 'nl')).toMatch(/^(Ik wil|Wij gaan|Zij moet) doen\./i);
+    expect(wrapVocabSentence('doen', 'nl')).toMatch(/^(Ik wil iets|Wij kunnen iets|Zij moet iets) doen\./i);
     expect(wrapVocabSentence('doen', 'nl')).not.toMatch(/Hier is de doen/i);
     expect(wrapVocabSentence('être', 'fr')).toMatch(/^(Je veux|Nous allons|Il faut) être\./i);
     expect(wrapVocabSentence('faire', 'fr')).not.toMatch(/J'ai un faire/i);
+    expect(wrapVocabSentence('vinden', 'nl', undefined, 'verb', 'sleutel').toLowerCase()).toMatch(/sleutel/);
+    expect(wrapVocabSentence('vinden', 'nl', undefined, 'verb', 'sleutel').toLowerCase()).toMatch(/vinden/);
+    expect(wrapVocabSentence('vinden', 'nl')).not.toMatch(/^(Ik wil|Wij gaan|Zij moet) vinden\.$/i);
   });
 
   it('aligns Ik↔Je tiles for a zijn/être translate round', () => {
@@ -183,6 +186,19 @@ describe('translateRounds', () => {
       [{ term: 'old', definition: 'vieillesse', termLang: 'en', defLang: 'fr' }],
     );
     expect(parsed).toBeNull();
+  });
+
+  it('builds a complete verb sentence with a noun from the same sheet', () => {
+    const vinden: WordPair = { term: 'vinden', definition: 'trouver', termLang: 'nl', defLang: 'fr' };
+    const sleutel: WordPair = { term: 'sleutel', definition: 'clé', termLang: 'nl', defLang: 'fr' };
+    const round = buildLocalTranslateRound(vinden, 0, [vinden, sleutel]);
+    expect(round).toBeTruthy();
+    expect(round!.source.toLowerCase()).toMatch(/vinden/);
+    expect(round!.source.toLowerCase()).toMatch(/sleutel/);
+    expect(round!.source).not.toMatch(/^(Ik wil|Wij gaan|Zij moet) vinden\.$/i);
+    const target = round!.expected.join(' ').toLowerCase();
+    expect(target).toMatch(/trouver/);
+    expect(target).toMatch(/clé|cle/);
   });
 
   it('builds tiles that include the target word', () => {

@@ -1,4 +1,4 @@
-import type { LangCode, WordPair } from '../types';
+import type { LangCode, Locale, WordPair } from '../types';
 import { detectLang } from './columnParser';
 
 /** Langue cible pour prononcer / écouter le terme (pas la traduction). */
@@ -35,6 +35,20 @@ export function resolveSideLang(pair: WordPair, side: 'term' | 'def'): LangCode 
   if (termLang === 'nl') return 'fr';
   if (termLang === 'en') return 'fr';
   return 'unknown';
+}
+
+/**
+ * Oral games: pronounce the language that is not the user's settings language.
+ * FR user + FR/NL sheet → speak Dutch. EN user + EN/FR sheet → speak French.
+ */
+export function speakSideForLocale(pair: WordPair, locale?: Locale): 'term' | 'def' {
+  if (!locale) return 'term';
+  const known = locale as LangCode;
+  const termLang = resolveSideLang(pair, 'term');
+  const defLang = resolveSideLang(pair, 'def');
+  if (termLang === known && defLang !== 'unknown' && defLang !== known) return 'def';
+  if (defLang === known && termLang !== 'unknown' && termLang !== known) return 'term';
+  return 'term';
 }
 
 /** True when the scanned pair is two different languages (vocab, not a monolingual note). */

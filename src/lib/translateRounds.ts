@@ -294,19 +294,110 @@ export function extractPlayableLemma(raw: string): string {
   return cleaned.split(/\s+/)[0] ?? cleaned;
 }
 
+const BARE_OBJECTS = new Set([
+  'iets', 'niets', 'ietsje', 'quelque chose', 'something', 'nothing', 'algo', 'nada',
+]);
+
+const NO_OBJECT_VERBS: Record<string, Set<string>> = {
+  nl: new Set(['zijn', 'worden', 'blijven', 'gaan', 'komen', 'liggen', 'zitten', 'staan']),
+  fr: new Set(['être', 'devenir', 'rester', 'aller', 'venir']),
+  en: new Set(['be', 'become', 'remain', 'go', 'come']),
+  es: new Set(['ser', 'estar', 'ir', 'venir', 'quedar']),
+};
+
+function verbTakesObject(word: string, lang: LangCode): boolean {
+  const stripped = stripArticlePrefix(word)
+    .toLowerCase()
+    .replace(/^to\s+/i, '')
+    .replace(/^te\s+/i, '');
+  const first = stripped.split(/\s+/)[0] ?? stripped;
+  return !NO_OBJECT_VERBS[lang]?.has(stripped) && !NO_OBJECT_VERBS[lang]?.has(first);
+}
+
+function genericObjectLemma(lang: LangCode): string {
+  if (lang === 'nl') return 'iets';
+  if (lang === 'fr') return 'quelque chose';
+  if (lang === 'es') return 'algo';
+  return 'something';
+}
+
+function objectPhrase(word: string, lang: LangCode): string {
+  const w = lemmaInSentence(word);
+  if (!w) return '';
+  if (BARE_OBJECTS.has(w.toLowerCase())) return w.toLowerCase();
+  if (lang === 'fr') return frNounPhrase(w);
+  if (lang === 'nl') return nlNounPhrase(w, 'noun');
+  if (lang === 'en') return enNounPhrase(w);
+  if (lang === 'es') return esNounPhrase(w);
+  return w;
+}
+
+function samePair(a: WordPair, b: WordPair): boolean {
+  return a.term.trim().toLowerCase() === b.term.trim().toLowerCase()
+    && a.definition.trim().toLowerCase() === b.definition.trim().toLowerCase();
+}
+
+/** Another noun from the same sheet, on one column. */
+export function pickSheetObjectLemma(
+  pool: WordPair[],
+  exclude: WordPair,
+  side: 'term' | 'def',
+  lang: LangCode,
+): string | undefined {
+  for (const other of pool) {
+    if (samePair(other, exclude)) continue;
+    const raw = side === 'term' ? other.term : other.definition;
+    const lemma = extractPlayableLemma(raw);
+    if (!lemma) continue;
+    if (classifyVocab(lemma, lang) === 'noun') return lemma;
+  }
+  return undefined;
+}
+
+/** Matching noun pair (term ↔ definition) so both sentences stay translations of each other. */
+export function pickAlignedSheetObject(
+  pair: WordPair,
+  pool: WordPair[],
+  termLang: LangCode,
+  defLang: LangCode,
+): { term: string; def: string } | undefined {
+  for (const other of pool) {
+    if (samePair(other, pair)) continue;
+    const t = extractPlayableLemma(other.term);
+    const d = extractPlayableLemma(other.definition);
+    if (!t || !d) continue;
+    if (classifyVocab(t, termLang) !== 'noun' || classifyVocab(d, defLang) !== 'noun') continue;
+    return { term: t, def: d };
+  }
+  return undefined;
+}
+
 export function wrapVocabSentence(
   word: string,
   lang: LangCode,
   slot?: number,
   forcedKind?: VocabKind,
+  objectLemma?: string,
 ): string {
   const w = lemmaInSentence(word);
   if (!w) return '';
   const kind = forcedKind ?? classifyVocab(w, lang);
   const seed = `${lang}:${kind}:${w.toLowerCase()}`;
+  const objRaw =
+    kind === 'verb' && verbTakesObject(w, lang)
+      ? (objectLemma?.trim() || genericObjectLemma(lang))
+      : '';
+  const obj = objRaw ? objectPhrase(objRaw, lang) : '';
 
   if (lang === 'fr') {
     if (kind === 'verb') {
+      if (obj) {
+        return pickAligned(
+          [`Je veux ${w} ${obj}.`, `Nous pouvons ${w} ${obj}.`, `Il faut ${w} ${obj}.`],
+          slot,
+          seed,
+        );
+      }
       return pickAligned([`Je veux ${w}.`, `Nous allons ${w}.`, `Il faut ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
@@ -322,6 +413,13 @@ export function wrapVocabSentence(
 
   if (lang === 'nl') {
     if (kind === 'verb') {
+      if (obj) {
+        return pickAligned(
+          [`Ik wil ${obj} ${w}.`, `Wij kunnen ${obj} ${w}.`, `Zij moet ${obj} ${w}.`],
+          slot,
+          seed,
+        );
+      }
       return pickAligned([`Ik wil ${w}.`, `Wij gaan ${w}.`, `Zij moet ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
@@ -338,6 +436,14 @@ export function wrapVocabSentence(
   if (lang === 'en') {
     if (kind === 'verb') {
       const inf = /^to\s+/i.test(w) ? w : `to ${w}`;
+      const bare = inf.replace(/^to\s+/i, '');
+      if (obj) {
+        return pickAligned(
+          [`I want ${inf} ${obj}.`, `We can ${bare} ${obj}.`, `They need ${inf} ${obj}.`],
+          slot,
+          seed,
+        );
+      }
       return pickAligned([`I want ${inf}.`, `We try ${inf}.`, `They need ${inf}.`], slot, seed);
     }
     if (kind === 'adj') {
@@ -353,6 +459,13 @@ export function wrapVocabSentence(
 
   if (lang === 'es') {
     if (kind === 'verb') {
+      if (obj) {
+        return pickAligned(
+          [`Quiero ${w} ${obj}.`, `Podemos ${w} ${obj}.`, `Hay que ${w} ${obj}.`],
+          slot,
+          seed,
+        );
+      }
       return pickAligned([`Quiero ${w}.`, `Vamos a ${w}.`, `Hay que ${w}.`], slot, seed);
     }
     if (kind === 'adj') {
@@ -399,6 +512,10 @@ export function framesMatch(source: string, target: string): boolean {
     { src: /^nous allons\b/i, dst: /^(wij gaan|we try|vamos a)\b/i },
     { src: /^we try\b/i, dst: /^(wij gaan|nous allons|vamos a)\b/i },
     { src: /^vamos a\b/i, dst: /^(wij gaan|nous allons|we try)\b/i },
+    { src: /^wij kunnen\b/i, dst: /^(nous pouvons|we can|podemos)\b/i },
+    { src: /^nous pouvons\b/i, dst: /^(wij kunnen|we can|podemos)\b/i },
+    { src: /^we can\b/i, dst: /^(wij kunnen|nous pouvons|podemos)\b/i },
+    { src: /^podemos\b/i, dst: /^(wij kunnen|nous pouvons|we can)\b/i },
     { src: /^zij moet\b/i, dst: /^(il faut|they need|hay que)\b/i },
     { src: /^il faut\b/i, dst: /^(zij moet|they need|hay que)\b/i },
     { src: /^they need\b/i, dst: /^(zij moet|il faut|hay que)\b/i },
@@ -569,13 +686,14 @@ export function buildLocalTranslateRound(
   }
 
   const kind = classifyPair(term, termLang, definition, defLang);
+  const companion = kind === 'verb' ? pickAlignedSheetObject(pair, pool, termLang, defLang) : undefined;
   const baseSlot = hashSlot(`${term}|${definition}|${termLang}|${defLang}|${kind}`, 3);
   let source = '';
   let target = '';
   for (let offset = 0; offset < 3; offset += 1) {
     const slot = (baseSlot + offset) % 3;
-    const src = wrapVocabSentence(pair.term, termLang, slot, kind);
-    const tgt = wrapVocabSentence(pair.definition, defLang, slot, kind);
+    const src = wrapVocabSentence(pair.term, termLang, slot, kind, companion?.term);
+    const tgt = wrapVocabSentence(pair.definition, defLang, slot, kind, companion?.def);
     if (!src || !tgt) continue;
     source = src;
     target = tgt;

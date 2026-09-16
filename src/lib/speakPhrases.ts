@@ -1,9 +1,10 @@
 import type { TranslationKey } from './i18n';
-import type { LangCode, WordPair } from '../types';
-import { resolveSpeakLang } from './speakLang';
+import type { LangCode, Locale, WordPair } from '../types';
+import { resolveSideLang, speakSideForLocale } from './speakLang';
 import { pickSpeakTarget, speakVariantNote, stripGrammarParentheses } from './speakTerm';
 import {
   phraseForSentence,
+  pickSheetObjectLemma,
   tokenizePhrase,
   wrapVocabSentence,
 } from './translateRounds';
@@ -82,14 +83,14 @@ function alreadyCompleteSentence(text: string): boolean {
   return tokenizePhrase(cleaned).length >= 3;
 }
 
-export function buildSpeakSentence(rawTerm: string, lang: LangCode): string {
+export function buildSpeakSentence(rawTerm: string, lang: LangCode, objectLemma?: string): string {
   const cleaned = stripGrammarParentheses(rawTerm);
   if (alreadyCompleteSentence(cleaned)) {
     return ensureSentencePunctuation(cleaned);
   }
 
   const wrapLang = lang === 'unknown' ? 'en' : lang;
-  const wrapped = wrapVocabSentence(cleaned, wrapLang);
+  const wrapped = wrapVocabSentence(cleaned, wrapLang, undefined, undefined, objectLemma);
   if (wrapped && alreadyCompleteSentence(wrapped) && !/[–—]/.test(wrapped)) {
     return ensureSentencePunctuation(wrapped);
   }
@@ -117,23 +118,30 @@ export function withAiSpeakSentence(
   };
 }
 
-export function buildSpeakChallenge(pair: WordPair): SpeakChallenge {
-  const rawTerm = pair.term.trim();
-  const target = pickSpeakTarget(rawTerm, pair.definition);
-  const lang = resolveSpeakLang(pair);
-  const seed = `${target}|${pair.definition}`;
-  const phraseSpeech = buildSpeakSentence(rawTerm, lang);
+export function buildSpeakChallenge(
+  pair: WordPair,
+  locale?: Locale,
+  pool: WordPair[] = [],
+): SpeakChallenge {
+  const side = speakSideForLocale(pair, locale);
+  const rawSpeak = (side === 'def' ? pair.definition : pair.term).trim();
+  const rawMeaning = (side === 'def' ? pair.term : pair.definition).trim();
+  const lang = resolveSideLang(pair, side);
+  const target = pickSpeakTarget(rawSpeak, rawMeaning);
+  const objectLemma = pickSheetObjectLemma(pool, pair, side, lang);
+  const seed = `${target}|${rawMeaning}`;
+  const phraseSpeech = buildSpeakSentence(rawSpeak, lang, objectLemma);
   const focus = phraseForSentence(target) || target;
   const phraseDisplay = markFocusInSentence(phraseSpeech, focus);
 
   return {
-    context: pair.definition.trim(),
+    context: rawMeaning,
     phraseDisplay,
     phraseSpeech,
     target,
     lang,
     cueKey: pickSpeakCueKey(seed),
-    altFormsNote: speakVariantNote(rawTerm, target),
+    altFormsNote: speakVariantNote(rawSpeak, target),
   };
 }
 

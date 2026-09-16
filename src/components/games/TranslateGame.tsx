@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { ScanPlayMascot } from '../mascot/ScanPlayMascot';
 import { HintIcon } from '../icons/HintIcon';
@@ -7,7 +7,6 @@ import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { t } from '../../lib/i18n';
 import { coercePlayablePairs } from '../../lib/vocabulary';
-import { fetchAiTranslateRoundsTimed } from '../../lib/aiTranslate';
 import {
   applyTranslateHint,
   buildLocalTranslateRounds,
@@ -65,20 +64,9 @@ export function TranslateGame({
   const [lastXp, setLastXp] = useState(0);
   const [hintTick, setHintTick] = useState(0);
   const [hintMsg, setHintMsg] = useState<string | null>(null);
-  const startedRef = useRef(false);
 
   useEffect(() => {
-    let cancelled = false;
-    startedRef.current = false;
-    const local = buildLocalTranslateRounds(pool, want);
-    setRounds(local);
-    void fetchAiTranslateRoundsTimed(pool, want).then((ai) => {
-      if (cancelled || startedRef.current) return;
-      if (ai && ai.length > 0) setRounds(ai.slice(0, want));
-    });
-    return () => {
-      cancelled = true;
-    };
+    setRounds(buildLocalTranslateRounds(pool, want));
   }, [pool, want]);
 
   const round = rounds[index];
@@ -109,7 +97,6 @@ export function TranslateGame({
   const pickFromBank = (id: string) => {
     if (feedback === 'ok' || feedback === 'fail' || picked.includes(id)) return;
     if (round && picked.length >= round.expected.length) return;
-    startedRef.current = true;
     playSound('tap');
     setPicked((ids) => [...ids, id]);
     if (feedback === 'almost') setFeedback('idle');
@@ -156,7 +143,6 @@ export function TranslateGame({
       setHintMsg(t('translateNoHints', locale));
       return;
     }
-    startedRef.current = true;
     playSound('tap');
     setHintMsg(null);
     setPicked(next);

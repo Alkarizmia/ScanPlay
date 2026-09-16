@@ -58,7 +58,25 @@ describe('speak phrases', () => {
     expect(challenge.phraseSpeech).toMatch(/doen/i);
     expect(challenge.phraseSpeech).not.toMatch(/Hier is de doen/i);
     expect(challenge.phraseSpeech).not.toMatch(/Ik heb de doen/i);
-    expect(challenge.phraseSpeech).toMatch(/^(Ik wil|Wij gaan|Zij moet) doen\./i);
+    expect(challenge.phraseSpeech).toMatch(/^(Ik wil iets|Wij kunnen iets|Zij moet iets) doen\./i);
+  });
+
+  it('makes a French user pronounce Dutch on a FR/NL sheet, even if the pair is flipped', () => {
+    const forward: WordPair = { term: 'vinden', definition: 'trouver', termLang: 'nl', defLang: 'fr' };
+    const flipped: WordPair = { term: 'trouver', definition: 'vinden', termLang: 'fr', defLang: 'nl' };
+    const sleutel: WordPair = { term: 'sleutel', definition: 'clé', termLang: 'nl', defLang: 'fr' };
+    const fromTerm = buildSpeakChallenge(forward, 'fr', [forward, sleutel]);
+    expect(fromTerm.lang).toBe('nl');
+    expect(fromTerm.phraseSpeech.toLowerCase()).toMatch(/vinden/);
+    expect(fromTerm.phraseSpeech.toLowerCase()).not.toMatch(/trouver/);
+    expect(fromTerm.context.toLowerCase()).toMatch(/trouver/);
+    expect(fromTerm.phraseSpeech.toLowerCase()).toMatch(/sleutel/);
+
+    const fromDef = buildSpeakChallenge(flipped, 'fr');
+    expect(fromDef.lang).toBe('nl');
+    expect(fromDef.phraseSpeech.toLowerCase()).toMatch(/vinden/);
+    expect(fromDef.phraseSpeech.toLowerCase()).not.toMatch(/trouver/);
+    expect(fromDef.context.toLowerCase()).toMatch(/trouver/);
   });
 
   it('uses an AI sentence when it still contains the target word', () => {

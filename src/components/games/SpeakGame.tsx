@@ -5,8 +5,7 @@ import { playSound } from '../../lib/sounds';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
-import { buildSpeakChallenge, parsePhraseDisplay, withAiSpeakSentence } from '../../lib/speakPhrases';
-import { fetchAiTranslateRoundsTimed } from '../../lib/aiTranslate';
+import { buildSpeakChallenge, parsePhraseDisplay } from '../../lib/speakPhrases';
 import {
   acquireMicStream,
   getActiveMicStream,
@@ -24,6 +23,7 @@ import {
   type ServerTranscribeError,
 } from '../../lib/speechServer';
 import { coercePlayablePairs, isMathLikeText, type AnswerGrade } from '../../lib/vocabulary';
+import { speakSideForLocale } from '../../lib/speakLang';
 import type { GameCompleteMeta, LangCode, Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
@@ -60,36 +60,20 @@ export function SpeakGame({
 }: SpeakGameProps) {
   const pool = useMemo(
     () =>
-      coercePlayablePairs(pairs).filter(
-        (p) => !isMathLikeText(p.term) && p.term.trim().split(/\s+/).length <= 6 && p.term.length >= 2,
-      ),
-    [pairs],
+      coercePlayablePairs(pairs).filter((p) => {
+        const side = speakSideForLocale(p, locale);
+        const spoken = (side === 'def' ? p.definition : p.term).trim();
+        return !isMathLikeText(spoken) && spoken.split(/\s+/).length <= 6 && spoken.length >= 2;
+      }),
+    [pairs, locale],
   );
   const total = Math.min(pool.length, examMode ? 6 : (maxItems ?? 5));
   const deck = useMemo(() => pool.slice(0, total), [pool, total]);
   const [index, setIndex] = useState(0);
-  const [aiSourceByIndex, setAiSourceByIndex] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setAiSourceByIndex({});
-    if (deck.length === 0) return;
-    void fetchAiTranslateRoundsTimed(deck, total).then((rounds) => {
-      if (cancelled || !rounds?.length) return;
-      const next: Record<number, string> = {};
-      for (const round of rounds) {
-        if (round.source) next[round.pairIndex] = round.source;
-      }
-      setAiSourceByIndex(next);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [deck, total]);
 
   const [score, setScore] = useState(0);
   const [voicePhase, setVoicePhase] = useState<VoicePhase>('idle');
@@ -119,9 +103,7 @@ export function SpeakGame({
   const supported = useGroq || isSpeechRecognitionSupported();
 
   const current = deck[index];
-  const challenge = current
-    ? withAiSpeakSentence(buildSpeakChallenge(current), aiSourceByIndex[index])
-    : null;
+  const challenge = current ? buildSpeakChallenge(current, locale, deck) : null;
   const timerSeconds = examMode ? getExamTimerSeconds('speak', total) : 0;
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
 
