@@ -36,10 +36,30 @@ interface LandingPageProps {
 }
 
 interface Testimonial {
+  id: string;
   quote: string;
   author: string;
   context: string;
   rating?: number;
+}
+
+function ProofStars({ rating }: { rating: number }) {
+  return (
+    <p className="lp-proof-stars" aria-label={`${rating} / 5`}>
+      {Array.from({ length: 5 }, (_, i) => (
+        <span
+          key={i}
+          className={`lp-proof-star${i < rating ? ' is-on' : ''}`}
+          style={{ ['--star-i' as string]: String(i) }}
+          aria-hidden="true"
+        >
+          <svg viewBox="0 0 24 24" focusable="false">
+            <path d="M12 2.4l2.86 6.42 7 .62-5.32 4.66 1.62 6.9L12 17.7 5.84 21l1.62-6.9L2.14 9.44l7-.62L12 2.4z" />
+          </svg>
+        </span>
+      ))}
+    </p>
+  );
 }
 const STEPS: {
   num: string;
@@ -128,16 +148,25 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
     let cancelled = false;
     void (async () => {
       try {
-        const res = await fetch('/api/testimonial');
+        const res = await fetch(
+          import.meta.env.DEV ? 'https://scanplay.org/api/testimonial' : '/api/testimonial',
+        );
         if (!res.ok) return;
         const data = (await res.json()) as {
-          items?: { author_name?: string; role?: string; quote?: string; rating?: number }[];
+          items?: {
+            id?: string;
+            author_name?: string;
+            role?: string;
+            quote?: string;
+            rating?: number;
+          }[];
         };
         if (cancelled) return;
         setTestimonials(
           (data.items ?? [])
             .filter((item) => item.quote && item.author_name)
-            .map((item) => ({
+            .map((item, index) => ({
+              id: item.id || `${item.author_name}-${index}`,
               quote: String(item.quote),
               author: String(item.author_name),
               context: String(item.role || ''),
@@ -328,31 +357,30 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <header className="lp-section-head">
               <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
             </header>
-            <ul className="lp-proof-grid">
-              {testimonials.map((item) => (
-                <li key={`${item.author}-${item.quote.slice(0, 24)}`} className="lp-proof-card">
-                  {item.rating ? (
-                    <p className="lp-proof-stars" aria-label={`${item.rating} / 5`}>
-                      {Array.from({ length: 5 }, (_, i) => (
-                        <span
-                          key={i}
-                          className={`lp-proof-star${i < item.rating! ? ' is-on' : ''}`}
-                          style={{ ['--star-i' as string]: String(i) }}
-                          aria-hidden="true"
-                        >
-                          {i < item.rating! ? '★' : '☆'}
+            <div
+              className="lp-proof-marquee"
+              style={{ ['--lp-proof-n' as string]: String(testimonials.length) }}
+            >
+              <ul className="lp-proof-track">
+                {[0, 1, 2].flatMap((copy) =>
+                  testimonials.map((item) => (
+                    <li key={`${item.id}-${copy}`} className="lp-proof-card" aria-hidden={copy > 0}>
+                      {item.rating ? <ProofStars rating={item.rating} /> : null}
+                      <blockquote>{item.quote}</blockquote>
+                      <p className="lp-proof-author">
+                        <span className="lp-proof-avatar" aria-hidden="true">
+                          {item.author.slice(0, 1).toUpperCase()}
                         </span>
-                      ))}
-                    </p>
-                  ) : null}
-                  <blockquote>{item.quote}</blockquote>
-                  <p className="lp-proof-author">
-                    <strong>{item.author}</strong>
-                    <span>{item.context}</span>
-                  </p>
-                </li>
-              ))}
-            </ul>
+                        <span>
+                          <strong>{item.author}</strong>
+                          <span>{item.context}</span>
+                        </span>
+                      </p>
+                    </li>
+                  )),
+                )}
+              </ul>
+            </div>
           </Section>
         )}
 

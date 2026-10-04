@@ -2809,15 +2809,45 @@ html[data-landing='true'] .screen.sp-landing {
    Social proof (renders only with real testimonials)
    ============================================================ */
 
-.lp-proof-grid {
-  display: grid;
+.lp-section--proof {
+  overflow: hidden;
+}
+
+.lp-proof-marquee {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+}
+
+.lp-proof-track {
+  display: flex;
   gap: 16px;
+  width: max-content;
   margin: 0;
-  padding: 0;
+  padding: 4px 0;
   list-style: none;
+  animation: lp-proof-scroll calc(18s + var(--lp-proof-n, 3) * 8s) linear infinite;
+}
+
+.lp-proof-marquee:hover .lp-proof-track,
+.lp-proof-marquee:focus-within .lp-proof-track {
+  animation-play-state: paused;
+}
+
+@keyframes lp-proof-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% / 3));
+  }
 }
 
 .lp-proof-card {
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 min(340px, 82vw);
+  min-height: 220px;
   padding: 20px 22px;
   border: 1px solid var(--lp-border);
   border-radius: 20px;
@@ -2826,56 +2856,84 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-proof-stars {
   display: flex;
-  gap: 2px;
-  margin: 0 0 10px;
-  color: #ca8a04;
-  font-size: 1.05rem;
+  gap: 4px;
+  margin: 0 0 12px;
   line-height: 1;
 }
 
 .lp-proof-star {
-  display: inline-block;
-  opacity: 0.35;
-  filter: blur(6px);
-  transform: translateY(4px) scale(0.92);
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
 }
 
-.lp-section--proof.is-in .lp-proof-star {
-  animation: lp-proof-star-in 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
-  animation-delay: calc(80ms + var(--star-i, 0) * 70ms);
+.lp-proof-star svg {
+  width: 20px;
+  height: 20px;
+  fill: rgba(148, 163, 184, 0.22);
+}
+
+.lp-proof-star.is-on svg {
+  fill: #facc15;
+  filter: drop-shadow(0 0 7px rgba(250, 204, 21, 0.55));
 }
 
 .lp-section--proof.is-in .lp-proof-star.is-on {
-  opacity: 1;
+  animation: lp-proof-star-pop 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(90ms + var(--star-i, 0) * 80ms);
 }
 
-@keyframes lp-proof-star-in {
+@keyframes lp-proof-star-pop {
   from {
     opacity: 0;
-    filter: blur(8px);
-    transform: translateY(6px) scale(0.9);
+    transform: scale(0.45);
   }
   to {
     opacity: 1;
-    filter: blur(0);
-    transform: none;
+    transform: scale(1);
   }
 }
 
 .lp-proof-card blockquote {
+  flex: 1;
   margin: 0;
   color: var(--lp-text);
-  font-size: 0.98rem;
+  font-size: 0.95rem;
   line-height: 1.55;
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 7;
 }
 
 .lp-proof-author {
   display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin: 14px 0 0;
+  align-items: center;
+  gap: 10px;
+  margin: 16px 0 0;
   font-size: 0.88rem;
   color: var(--lp-dim);
+}
+
+.lp-proof-author > span:last-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.lp-proof-avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #334155, #1e293b);
+  color: #f8fafc;
+  font-size: 0.9rem;
+  font-weight: 700;
 }
 
 /* ============================================================
@@ -3141,10 +3199,6 @@ html[data-landing='true'] .screen.sp-landing {
     gap: 16px;
   }
 
-  .lp-proof-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .lp-section-cta .lp-btn,
   .lp-final .lp-btn {
     width: auto;
@@ -3326,9 +3380,6 @@ html[data-landing='true'] .screen.sp-landing {
     flex: 1 1 42%;
   }
 
-  .lp-proof-grid {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
 }
 
 /* ============================================================
@@ -3353,15 +3404,22 @@ html[data-landing='true'] .screen.sp-landing {
     transform: none;
   }
 
-  .lp-proof-star {
-    opacity: 0.35;
-    filter: none;
-    transform: none;
+  .lp-proof-track {
+    flex-wrap: wrap;
+    width: auto;
     animation: none !important;
+    transform: none;
   }
 
+  .lp-proof-card[aria-hidden='true'] {
+    display: none;
+  }
+
+  .lp-proof-star,
   .lp-proof-star.is-on {
     opacity: 1;
+    transform: none;
+    animation: none !important;
   }
 
   .lp-sheet-scanline {
