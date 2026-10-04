@@ -32,15 +32,6 @@ type ImportStep = 'pick' | 'photos' | 'configure';
 
 const DEFAULT_FOCUS: TrainingFocus[] = ['written', 'oral'];
 
-function hintKeyForSheetType(
-  sheetType: SheetType,
-): 'importHintVocab' | 'importHintNotes' | 'importHintDefinitions' | 'importHintMath' {
-  if (sheetType === 'notes') return 'importHintNotes';
-  if (sheetType === 'definitions') return 'importHintDefinitions';
-  if (sheetType === 'math') return 'importHintMath';
-  return 'importHintVocab';
-}
-
 export function ImportScreen({
   locale,
   sheetType,
@@ -340,10 +331,9 @@ export function ImportScreen({
       )}
 
       {step === 'configure' && (
-        <main className="import-config-main scroll-natural">
+        <main className="import-config-main">
           <div className="import-config-center">
             <h3 className="import-config-heading">{t('sheetTypeTitle', locale)}</h3>
-            <p className="import-config-sub">{t('importConfigureSub', locale)}</p>
 
             <SheetTypePicker
               locale={locale}
@@ -353,7 +343,7 @@ export function ImportScreen({
             />
 
             {showTrainingFocus && (
-              <TrainingFocusPicker locale={locale} value={trainingFocus} onChange={setTrainingFocus} />
+              <TrainingFocusPicker locale={locale} value={trainingFocus} onChange={setTrainingFocus} compact />
             )}
 
             <ExamSetupChip
@@ -362,8 +352,6 @@ export function ImportScreen({
               onToggle={() => setExamWanted((v) => !v)}
               onUpgrade={() => onUpgrade?.('exam')}
             />
-
-            <p className="import-sheet-hint import-config-hint">{t(hintKeyForSheetType(sheetType), locale)}</p>
 
             <button type="button" className="btn-primary btn-lg import-scan-btn import-config-scan" onClick={startScan}>
               {t('importStart', locale)}

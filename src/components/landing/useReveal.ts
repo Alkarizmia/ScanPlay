@@ -37,23 +37,28 @@ export function useReveal<T extends HTMLElement>() {
   return { ref, shown } as const;
 }
 
-/** True once the observed element has scrolled out of the viewport. */
-export function usePassed<T extends HTMLElement>() {
+/**
+ * True whenever the observed element is NOT in the viewport — whether it was
+ * scrolled past (above) or has not been reached yet (below the fold).
+ * Used to show the sticky CTA only when the hero CTA is out of sight.
+ */
+export function useOutOfView<T extends HTMLElement>() {
   const ref = useRef<T>(null);
-  const [passed, setPassed] = useState(false);
+  const [outOfView, setOutOfView] = useState(false);
 
   useEffect(() => {
     const el = ref.current;
     if (!el || typeof IntersectionObserver === 'undefined') return;
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setPassed(!entry.isIntersecting && entry.boundingClientRect.top < 0);
+        setOutOfView(!entry.isIntersecting);
       },
-      { threshold: 0 },
+      // The bottom 80px is where the sticky bar sits: a CTA hidden under it counts as out of view.
+      { threshold: 0, rootMargin: '0px 0px -80px 0px' },
     );
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
 
-  return { ref, passed } as const;
+  return { ref, outOfView } as const;
 }

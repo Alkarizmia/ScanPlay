@@ -166,10 +166,14 @@ export function StepsSwipeDeck({ steps, locale }: StepsSwipeDeckProps) {
   return (
     <div className={`lp-swipe${allGone ? ' is-empty' : ''}`}>
       {allGone ? (
-        <div className="lp-swipe-arrow" aria-hidden="true">
-          <DownArrow />
+        <div className="lp-swipe-done">
+          <span className="lp-swipe-done-mark" aria-hidden="true">
+            <DownArrow />
+          </span>
+          <p className="lp-swipe-done-label">{lt('lpSwipeDone', locale)}</p>
         </div>
       ) : (
+        <>
         <div
           className="lp-swipe-deck"
           role="group"
@@ -186,8 +190,9 @@ export function StepsSwipeDeck({ steps, locale }: StepsSwipeDeckProps) {
                 className={`lp-swipe-card lp-swipe-card--${step.num}${isTop ? ' is-top' : ''}${isTop && flying ? ' is-flying' : ''}${isTop && dx !== 0 && !flying ? ' is-dragging' : ''}`}
                 style={{
                   zIndex: steps.length - depth,
-                  ['--stack-y' as string]: `${depth * 11}px`,
-                  ['--stack-scale' as string]: `${1 - depth * 0.035}`,
+                  ['--stack-y' as string]: `${depth * 12}px`,
+                  ['--stack-x' as string]: `${depth * 14}px`,
+                  ['--stack-scale' as string]: `${1 - depth * 0.045}`,
                   ['--drag-x' as string]: isTop ? `${dx}px` : '0px',
                   ['--drag-rot' as string]: isTop ? `${dx * 0.045}deg` : '0deg',
                 }}
@@ -210,21 +215,45 @@ export function StepsSwipeDeck({ steps, locale }: StepsSwipeDeckProps) {
             );
           })}
         </div>
+        <div className="lp-swipe-nav">
+          <button type="button" className="lp-swipe-arrow-btn" onClick={() => dismiss(-1)} aria-label={lt('lpSwipeHint', locale)}>
+            <Chevron dir="left" />
+          </button>
+          <p className="lp-swipe-hint">
+            <span>{lt('lpSwipeHint', locale)}</span>
+            <span className="lp-swipe-count">
+              {index + 1}/{steps.length}
+            </span>
+          </p>
+          <button type="button" className="lp-swipe-arrow-btn lp-swipe-arrow-btn--right" onClick={() => dismiss(1)} aria-label={lt('lpSwipeHint', locale)}>
+            <Chevron dir="right" />
+          </button>
+        </div>
+        </>
       )}
     </div>
   );
 }
 
-function DownArrow() {
+function Chevron({ dir }: { dir: 'left' | 'right' }) {
   return (
-    <svg width="36" height="48" viewBox="0 0 36 48" fill="none" aria-hidden="true">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
-        d="M18 4v34M7 27.5 18 40.5 29 27.5"
+        d={dir === 'left' ? 'M14.5 6 8.5 12l6 6' : 'M9.5 6 15.5 12l-6 6'}
         stroke="currentColor"
-        strokeWidth="3.2"
+        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
+    </svg>
+  );
+}
+
+function DownArrow() {
+  return (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path d="M12 4.2v10.2" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+      <path d="M6.4 12.4 12 19l5.6-6.6" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

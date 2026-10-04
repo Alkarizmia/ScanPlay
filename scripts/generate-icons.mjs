@@ -50,6 +50,8 @@ async function writePwaIcon(dest, size, glyphRatio) {
 }
 
 await writePng(resolve(root, 'public/logo.png'), 512);
+// Small variant for header/wordmark (<= 40px rendered): avoids shipping ~200 KB on mobile.
+await writePng(resolve(root, 'public/logo-128.png'), 128);
 await writePng(resolve(root, 'public/favicon.png'), 192);
 await writePng(resolve(root, 'api/assets/scanplay-checkout-icon.png'), 512);
 

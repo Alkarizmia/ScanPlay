@@ -1,5 +1,8 @@
+import { Logo } from '../Logo';
+import { LockIcon } from '../icons/LockIcon';
+import { PathGameKindIcon, type PathGameKind } from '../icons/PathGameIcons';
+import { ScanPlayChest } from '../ScanPlayChest';
 import { StreakFlame } from '../icons/StreakFlame';
-import { MicIcon } from '../icons/MicIcon';
 import { lt, type LandingLang } from '../../lib/landingI18n';
 import type { Locale } from '../../types';
 
@@ -18,21 +21,12 @@ const SHEET_ROWS: { term: string; definition: string; marked?: boolean }[] = [
   { term: 'oiseau', definition: 'bird' },
 ];
 
-const QUIZ_OPTIONS: { label: string; correct?: boolean }[] = [
-  { label: 'book' },
+const QUIZ_OPTIONS: { label: string; correct?: boolean; wrong?: boolean }[] = [
+  { label: 'book', wrong: true },
   { label: 'dog', correct: true },
   { label: 'bird' },
   { label: 'house' },
 ];
-
-const SPEAK_WORDS = ['The', 'dog', 'is', 'home'] as const;
-const REORDER_BANK = [
-  { id: 'dog', leave: 1 },
-  { id: 'home', leave: 4 },
-  { id: 'The', leave: 2 },
-  { id: 'is', leave: 3 },
-] as const;
-const REORDER_WRONG = ['dog', 'The', 'is', 'home'] as const;
 
 export function SheetMock({ locale }: { locale: Locale }) {
   return (
@@ -48,7 +42,9 @@ export function SheetMock({ locale }: { locale: Locale }) {
           ))}
         </ul>
         <span className="lp-sheet-scanline" />
+        <span className="lp-sheet-flash" />
       </div>
+      <span className="lp-sheet-frame" />
     </figure>
   );
 }
@@ -71,13 +67,39 @@ export function HeroGameCapture({ lang }: { lang: LandingLang }) {
   );
 }
 
-/** Phone cycling through real ScanPlay mini-games — what the sheet above turns into. */
+/**
+ * Phone looping the whole product story, synced with the sheet scan:
+ * sheet read → cards generated → quiz (wrong → correction → success).
+ */
 export function QuizPhoneMock({ locale }: { locale: Locale }) {
   return (
     <div className="lp-phone lp-phone--hero" aria-hidden="true">
       <div className="lp-phone-frame">
         <span className="lp-phone-island" />
         <div className="lp-phone-screen lp-demo-screen">
+          <div className="lp-demo-gen">
+            <p className="lp-demo-gen-title">
+              <span className="lp-demo-gen-spinner" />
+              {lt('lpMockGenReading', locale)}
+            </p>
+            <span className="lp-demo-gen-bar">
+              <span />
+            </span>
+            <ul className="lp-demo-gen-cards">
+              {SHEET_ROWS.map((row, index) => (
+                <li key={row.term} style={{ ['--i' as string]: String(index) }}>
+                  <span>{row.term}</span>
+                  <span className="lp-demo-gen-arrow">→</span>
+                  <strong>{row.definition}</strong>
+                </li>
+              ))}
+            </ul>
+            <p className="lp-demo-gen-ready">
+              <CheckIcon />
+              {lt('lpMockGenReady', locale)}
+            </p>
+          </div>
+
           <div className="lp-mock-hud">
             <span className="lp-mock-progress">
               <span className="lp-mock-progress-fill" />
@@ -87,75 +109,34 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
             </span>
           </div>
 
-          <div className="lp-demo-scenes">
-            <div className="lp-demo-scene lp-demo-scene--quiz">
-              <p className="lp-mock-prompt">{lt('lpMockPrompt', locale)}</p>
-              <p className="lp-mock-word">chien</p>
-              <ul className="lp-mock-options">
-                {QUIZ_OPTIONS.map((option) => (
-                  <li
-                    key={option.label}
-                    className={`lp-mock-option${option.correct ? ' lp-mock-option--answer' : ''}`}
-                  >
+          <div className="lp-demo-quiz">
+            <p className="lp-mock-prompt">{lt('lpMockPrompt', locale)}</p>
+            <p className="lp-mock-word">chien</p>
+            <ul className="lp-mock-options">
+              {QUIZ_OPTIONS.map((option) => {
+                const stateClass = option.correct
+                  ? ' lp-mock-option--answer'
+                  : option.wrong
+                    ? ' lp-mock-option--wrong'
+                    : '';
+                return (
+                  <li key={option.label} className={`lp-mock-option${stateClass}`}>
                     {option.label}
                     {option.correct && <CheckIcon />}
                   </li>
-                ))}
-              </ul>
-              <p className="lp-mock-xp">+10 XP</p>
-            </div>
-
-            <div className="lp-demo-scene lp-demo-scene--speak">
-              <p className="lp-mock-prompt">{lt('lpMockSpeakPrompt', locale)}</p>
-              <p className="lp-demo-speak-phrase">
-                {SPEAK_WORDS.map((word) => (
-                  <span key={word} className="lp-demo-speak-word">
-                    {word}
-                  </span>
-                ))}
-              </p>
-              <div className="lp-demo-mic-wrap">
-                <span className="lp-demo-mic-ring" />
-                <span className="lp-demo-mic-ring lp-demo-mic-ring--late" />
-                <span className="lp-demo-mic">
-                  <MicIcon size={18} />
+                );
+              })}
+            </ul>
+            <div className="lp-demo-error">
+              <span className="lp-demo-error-mark">✕</span>
+              <span className="lp-demo-error-copy">
+                <strong>{lt('lpFeedbackWrong', locale)}</strong>
+                <span>
+                  {lt('lpFeedbackAnswer', locale)} : dog
                 </span>
-              </div>
-              <p className="lp-demo-speak-status">{lt('lpSpeakListen', locale)}</p>
+              </span>
             </div>
-
-            <div className="lp-demo-scene lp-demo-scene--reorder">
-              <p className="lp-mock-prompt">{lt('lpReorderInstruction', locale)}</p>
-              <p className="lp-demo-reorder-clue">{lt('lpMockReorderClue', locale)}</p>
-              <div className="lp-demo-reorder-answer">
-                {REORDER_WRONG.map((word, index) => (
-                  <span key={`${word}-${index}`} className="lp-demo-reorder-placed">
-                    {word}
-                  </span>
-                ))}
-              </div>
-              <div className="lp-demo-reorder-bank">
-                {REORDER_BANK.map((tile) => (
-                  <span key={tile.id} className={`lp-demo-reorder-tile lp-demo-leave--${tile.leave}`}>
-                    {tile.id}
-                  </span>
-                ))}
-              </div>
-              <div className="lp-demo-error">
-                <span className="lp-demo-error-mark">✕</span>
-                <span className="lp-demo-error-copy">
-                  <strong>{lt('lpFeedbackWrong', locale)}</strong>
-                  <span>
-                    {lt('lpFeedbackAnswer', locale)} : {lt('lpMockReorderAnswer', locale)}
-                  </span>
-                  <span>{lt('lpMockReorderNote', locale)}</span>
-                </span>
-              </div>
-            </div>
-
-            <div className="lp-demo-scene lp-demo-scene--tease">
-              <p className="lp-demo-tease">{lt('lpMockTease', locale)}</p>
-            </div>
+            <p className="lp-mock-xp">+10 XP</p>
           </div>
         </div>
       </div>
@@ -176,79 +157,104 @@ function buildLandingPathD(steps: { x: number; y: number }[]): string {
   return d;
 }
 
-/** Phone showing the per-sheet path of steps. */
-const PATH_MOCK_NODES = [
-  { state: 'bronze' as const, x: 28, y: 12 },
-  { state: 'iron' as const, x: 72, y: 28 },
-  { state: 'gold' as const, x: 28, y: 44 },
-  { state: 'active' as const, x: 72, y: 60 },
-  { state: 'locked' as const, x: 28, y: 76 },
-  { state: 'locked' as const, x: 72, y: 90 },
+/** Phone showing the per-sheet path, with the same node marks as in the app. */
+const PATH_MOCK_NODES: {
+  state: 'bronze' | 'iron' | 'gold' | 'active' | 'locked';
+  icon?: PathGameKind;
+  x: number;
+  y: number;
+}[] = [
+  { state: 'bronze', icon: 'quiz', x: 28, y: 12 },
+  { state: 'iron', icon: 'listen', x: 72, y: 28 },
+  { state: 'gold', icon: 'write', x: 28, y: 44 },
+  { state: 'active', icon: 'quiz', x: 72, y: 60 },
+  { state: 'locked', x: 28, y: 76 },
+  { state: 'locked', x: 72, y: 90 },
 ];
 
 const PATH_MOCK_D = buildLandingPathD(PATH_MOCK_NODES);
 
 export function PathPhoneMock({ locale }: { locale: Locale }) {
-  return (
-    <div className="lp-phone lp-phone--path" aria-hidden="true">
-      <div className="lp-phone-frame">
-        <span className="lp-phone-island" />
-        <div className="lp-phone-screen lp-phone-screen--path">
-          <div className="lp-path-banner">
-            <span className="lp-path-banner-thumb" />
-            <span className="lp-path-banner-text">
-              <span className="lp-path-banner-tag">{lt('lpMockSheetTitle', locale)}</span>
-              <span className="lp-path-banner-title">{lt('lpMockPathSteps', locale)}</span>
-            </span>
-          </div>
+  const legend = [
+    { id: 'bronze', label: lt('lpPathLegendBronze', locale), cls: 'lp-path-legend-dot--bronze' },
+    { id: 'iron', label: lt('lpPathLegendIron', locale), cls: 'lp-path-legend-dot--iron' },
+    { id: 'gold', label: lt('lpPathLegendGold', locale), cls: 'lp-path-legend-dot--gold' },
+  ] as const;
 
-          <div className="lp-path-track">
-            <svg
-              className="lp-path-line"
-              viewBox="0 0 100 100"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              <path
-                d={PATH_MOCK_D}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2.6"
-                strokeLinecap="round"
-                strokeDasharray="3 7"
-                vectorEffect="non-scaling-stroke"
-              />
-            </svg>
-            <ol className="lp-path-nodes">
-              {PATH_MOCK_NODES.map((node, index) => {
-                const done = node.state === 'bronze' || node.state === 'iron' || node.state === 'gold';
-                return (
-                  <li
-                    key={index}
-                    className={`lp-path-node lp-path-node--${node.state}`}
-                    style={{ left: `${node.x}%`, top: `${node.y}%` }}
-                  >
-                    <span className="lp-path-node-dot">
-                      {done && (
-                        <span className="lp-path-node-flames">
-                          <StreakFlame lit size={10} />
-                          <StreakFlame lit size={13} />
-                          <StreakFlame lit size={10} />
-                        </span>
-                      )}
-                      {node.state === 'locked' ? (
-                        <LockIcon />
-                      ) : node.state === 'active' ? (
-                        <PlayIcon />
-                      ) : null}
-                    </span>
-                  </li>
-                );
-              })}
-            </ol>
+  return (
+    <div className="lp-path-mock">
+      <div className="lp-phone lp-phone--path" aria-hidden="true">
+        <div className="lp-phone-frame">
+          <span className="lp-phone-island" />
+          <div className="lp-phone-screen lp-phone-screen--path">
+            <div className="lp-path-banner">
+              <span className="lp-path-banner-thumb">
+                <Logo size={22} />
+              </span>
+              <span className="lp-path-banner-text">
+                <span className="lp-path-banner-tag">{lt('lpMockSheetTitle', locale)}</span>
+                <span className="lp-path-banner-title">{lt('lpMockPathSteps', locale)}</span>
+              </span>
+            </div>
+
+            <div className="lp-path-track">
+              <svg
+                className="lp-path-line"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  d={PATH_MOCK_D}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.6"
+                  strokeLinecap="round"
+                  strokeDasharray="3 7"
+                  vectorEffect="non-scaling-stroke"
+                />
+              </svg>
+              <ol className="lp-path-nodes">
+                {PATH_MOCK_NODES.map((node, index) => {
+                  const done = node.state === 'bronze' || node.state === 'iron' || node.state === 'gold';
+                  return (
+                    <li
+                      key={index}
+                      className={`lp-path-node lp-path-node--${node.state}`}
+                      style={{ left: `${node.x}%`, top: `${node.y}%` }}
+                    >
+                      <span className="lp-path-node-dot">
+                        {done && (
+                          <span className="lp-path-node-flames">
+                            <StreakFlame lit size={10} />
+                            <StreakFlame lit size={13} />
+                            <StreakFlame lit size={10} />
+                          </span>
+                        )}
+                        {node.state === 'locked' ? (
+                          <LockIcon size={16} />
+                        ) : (
+                          node.icon && <PathGameKindIcon kind={node.icon} size={16} />
+                        )}
+                        {node.state === 'active' && <span className="lp-path-node-frac">1/3</span>}
+                      </span>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
           </div>
         </div>
       </div>
+
+      <ul className="lp-path-legend" aria-label={lt('lpPathLegendLabel', locale)}>
+        {legend.map((item) => (
+          <li key={item.id}>
+            <span className={`lp-path-legend-dot ${item.cls}`} aria-hidden="true" />
+            <span>{item.label}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -257,14 +263,14 @@ export function PathPhoneMock({ locale }: { locale: Locale }) {
 export function ProgressCardMock({ locale }: { locale: Locale }) {
   return (
     <div className="lp-progress-card" aria-hidden="true">
-      <div className="lp-progress-row">
-        <span className="lp-progress-flame">
-          <FlameIcon size={24} />
-        </span>
-        <span className="lp-progress-text">
+      <div className="lp-progress-hud">
+        <span className="lp-progress-streak">
+          <StreakFlame lit size={22} />
           <strong>7</strong>
           <span>{lt('lpMockStreakLabel', locale)}</span>
         </span>
+        <LevelRing level={4} size={36} />
+        <ScanPlayChest size={34} />
       </div>
       <div className="lp-progress-level">
         <span className="lp-progress-level-head">
@@ -279,20 +285,65 @@ export function ProgressCardMock({ locale }: { locale: Locale }) {
   );
 }
 
+export function LevelRing({ level, size = 40 }: { level: number; size?: number }) {
+  const r = 16;
+  const circ = 2 * Math.PI * r;
+  const filled = circ * 0.68;
+  return (
+    <span className="lp-level-ring" style={{ width: size, height: size }}>
+      <svg viewBox="0 0 40 40" aria-hidden="true">
+        <circle cx="20" cy="20" r={r} fill="none" stroke="rgba(255,255,255,0.16)" strokeWidth="3.4" />
+        <circle
+          cx="20"
+          cy="20"
+          r={r}
+          fill="none"
+          stroke="#22c55e"
+          strokeWidth="3.4"
+          strokeLinecap="round"
+          strokeDasharray={`${filled} ${circ}`}
+          transform="rotate(-90 20 20)"
+        />
+      </svg>
+      <span>{level}</span>
+    </span>
+  );
+}
+
 /** Rank fire explained on the landing page — same flame mark as in-app. */
 export function PathRanksMock({ locale }: { locale: Locale }) {
   const ranks = [
-    { id: 'glow', label: lt('lpRanksGlowTitle', locale), cls: 'lp-rank-node--glow' },
-    { id: 'bronze', label: lt('lpRanksBronzeTitle', locale), cls: 'lp-rank-node--bronze' },
-    { id: 'iron', label: lt('lpRanksIronTitle', locale), cls: 'lp-rank-node--iron' },
-    { id: 'gold', label: lt('lpRanksGoldTitle', locale), cls: 'lp-rank-node--gold' },
+    {
+      id: 'glow',
+      label: lt('lpRanksGlowTitle', locale),
+      body: lt('lpRanksGlowBody', locale),
+      cls: 'lp-rank-node--glow',
+    },
+    {
+      id: 'bronze',
+      label: lt('lpRanksBronzeTitle', locale),
+      body: lt('lpRanksBronzeBody', locale),
+      cls: 'lp-rank-node--bronze',
+    },
+    {
+      id: 'iron',
+      label: lt('lpRanksIronTitle', locale),
+      body: lt('lpRanksIronBody', locale),
+      cls: 'lp-rank-node--iron',
+    },
+    {
+      id: 'gold',
+      label: lt('lpRanksGoldTitle', locale),
+      body: lt('lpRanksGoldBody', locale),
+      cls: 'lp-rank-node--gold',
+    },
   ] as const;
 
   return (
-    <ul className="lp-ranks-row" aria-hidden="true">
+    <ul className="lp-ranks-row">
       {ranks.map((rank) => (
         <li key={rank.id} className="lp-rank-item">
-          <span className={`lp-rank-node ${rank.cls}`}>
+          <span className={`lp-rank-node ${rank.cls}`} aria-hidden="true">
             {rank.id !== 'glow' && (
               <span className="lp-rank-flames">
                 <StreakFlame lit size={14} />
@@ -302,6 +353,7 @@ export function PathRanksMock({ locale }: { locale: Locale }) {
             )}
           </span>
           <span className="lp-rank-label">{rank.label}</span>
+          <span className="lp-rank-body">{rank.body}</span>
         </li>
       ))}
     </ul>
@@ -324,22 +376,6 @@ function CheckIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-function PlayIcon() {
-  return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M9 6.5v11a1 1 0 0 0 1.5.87l8.5-5.5a1 1 0 0 0 0-1.74l-8.5-5.5A1 1 0 0 0 9 6.5Z" />
-    </svg>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-      <path d="M12 3a4.5 4.5 0 0 0-4.5 4.5V10H7a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7a2 2 0 0 0-2-2h-.5V7.5A4.5 4.5 0 0 0 12 3Zm2.5 7h-5V7.5a2.5 2.5 0 0 1 5 0V10Z" />
     </svg>
   );
 }

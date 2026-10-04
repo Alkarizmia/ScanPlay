@@ -46,7 +46,7 @@ export function SheetTypePicker({ locale, value, onChange, variant = 'default' }
               {opt.icon}
             </span>
             <span className="sheet-type-label">{t(opt.titleKey, locale)}</span>
-            <span className="sheet-type-desc">{t(opt.descKey, locale)}</span>
+            {!premium && <span className="sheet-type-desc">{t(opt.descKey, locale)}</span>}
           </button>
         ))}
       </div>

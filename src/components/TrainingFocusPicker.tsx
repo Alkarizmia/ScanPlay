@@ -15,9 +15,10 @@ interface TrainingFocusPickerProps {
   locale: Locale;
   value: TrainingFocus[];
   onChange: (focus: TrainingFocus[]) => void;
+  compact?: boolean;
 }
 
-export function TrainingFocusPicker({ locale, value, onChange }: TrainingFocusPickerProps) {
+export function TrainingFocusPicker({ locale, value, onChange, compact = false }: TrainingFocusPickerProps) {
   const toggle = (id: TrainingFocus) => {
     const active = value.includes(id);
     if (active && value.length === 1) return;
@@ -25,17 +26,18 @@ export function TrainingFocusPicker({ locale, value, onChange }: TrainingFocusPi
   };
 
   return (
-    <section className="training-focus-picker">
+    <section className={`training-focus-picker${compact ? ' training-focus-picker--compact' : ''}`}>
       <h3 className="training-focus-title">{t('trainingFocusTitle', locale)}</h3>
-      <p className="training-focus-intro">{t('trainingFocusIntro', locale)}</p>
+      {!compact && <p className="training-focus-intro">{t('trainingFocusIntro', locale)}</p>}
       <div className="training-focus-options">
-        {OPTIONS.map((opt) => {
+        {OPTIONS.map((opt, index) => {
           const selected = value.includes(opt.id);
           return (
             <button
               key={opt.id}
               type="button"
               className={`training-focus-card${selected ? ' training-focus-card--active' : ''}`}
+              style={compact ? { animationDelay: `${220 + index * 70}ms` } : undefined}
               onClick={() => toggle(opt.id)}
               aria-pressed={selected}
             >
@@ -43,7 +45,7 @@ export function TrainingFocusPicker({ locale, value, onChange }: TrainingFocusPi
                 {opt.icon}
               </span>
               <span className="training-focus-label">{t(opt.titleKey, locale)}</span>
-              <span className="training-focus-desc">{t(opt.descKey, locale)}</span>
+              {!compact && <span className="training-focus-desc">{t(opt.descKey, locale)}</span>}
               <span className="training-focus-check" aria-hidden="true">
                 {selected ? '✓' : ''}
               </span>

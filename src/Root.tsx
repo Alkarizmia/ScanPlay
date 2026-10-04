@@ -3,7 +3,7 @@ import { LandingPage } from './components/landing/LandingPage';
 import { applyDeviceAttributes, detectDeviceProfile } from './lib/device';
 import { hasStoredAuthSession } from './lib/authSessionHint';
 import { applyUrlBootIntent, setBootIntent } from './lib/bootIntent';
-import { landingLangFromNavigator } from './lib/landingI18n';
+import { initialLandingLang } from './lib/landingI18n';
 
 const App = lazy(() => import('./App'));
 
@@ -13,7 +13,7 @@ export function Root() {
     return Boolean(fromUrl) || hasStoredAuthSession();
   });
   const [device, setDevice] = useState(() => detectDeviceProfile());
-  const locale = useMemo(() => landingLangFromNavigator(), []);
+  const locale = useMemo(() => initialLandingLang(), []);
 
   useEffect(() => {
     applyDeviceAttributes(device);

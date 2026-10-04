@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { LogoWordmark } from '../Logo';
+import { ScanPlayChest } from '../ScanPlayChest';
 import {
   CameraIcon,
   FlameIcon,
+  LevelRing,
   PathPhoneMock,
   PathRanksMock,
   QuizPhoneMock,
@@ -12,10 +14,17 @@ import {
   SparkIcon,
   TrophyIcon,
 } from './LandingVisuals';
+import { LanguageMenu } from './LanguageMenu';
 import { StepsSwipeDeck } from './StepsSwipeDeck';
-import { usePassed, useReveal } from './useReveal';
+import { useOutOfView, useReveal } from './useReveal';
 import { trackEvent } from '../../lib/analytics';
-import { landingLangFromNavigator, lt, type LandingCopyKey } from '../../lib/landingI18n';
+import {
+  initialLandingLang,
+  lt,
+  persistLandingLang,
+  type LandingCopyKey,
+  type LandingLang,
+} from '../../lib/landingI18n';
 import type { DeviceProfile } from '../../lib/device';
 import type { Locale } from '../../types';
 
@@ -100,9 +109,9 @@ function Section({
 
 export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: LandingPageProps) {
   const isDesktop = device.kind === 'desktop';
-  const lang = useMemo(() => landingLangFromNavigator(), []);
+  const [lang, setLang] = useState<LandingLang>(initialLandingLang);
   const locale: Locale = lang;
-  const { ref: heroCtaRef, passed: heroCtaPassed } = usePassed<HTMLDivElement>();
+  const { ref: heroCtaRef, outOfView: heroCtaHidden } = useOutOfView<HTMLDivElement>();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
 
   // The guest app shell locks html/body scrolling for the in-app screens.
@@ -144,13 +153,21 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
     };
   }, []);
 
+  const changeLang = (next: LandingLang) => {
+    trackEvent('changement_langue_landing', { langue: next });
+    persistLandingLang(next);
+    setLang(next);
+  };
+
   const scan = (placement: string) => {
     trackEvent('clic_cta_landing', { emplacement: placement });
+    persistLandingLang(lang);
     onScanPlay();
   };
 
   const login = () => {
     trackEvent('ouverture_inscription', { etape: 'page_de_garde' });
+    persistLandingLang(lang);
     onAuth();
   };
 
@@ -182,6 +199,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           )}
 
           <div className="lp-header-actions">
+            <LanguageMenu lang={lang} onChange={changeLang} />
             <button type="button" className="lp-btn lp-btn--ghost" onClick={login}>
               {lt('lpConnect', locale)}
             </button>
@@ -201,6 +219,11 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
       <main id="lp-main" className="lp-main">
         {/* ---------- HERO ---------- */}
         <section className="lp-hero" aria-labelledby="lp-hero-title">
+          <div className="lp-hero-bg" aria-hidden="true">
+            <span className="lp-hero-aurora" />
+            <span className="lp-hero-dots" />
+          </div>
+
           <div className="lp-container lp-hero-inner">
             <div className="lp-hero-intro">
               <p className="lp-eyebrow">
@@ -209,7 +232,8 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               </p>
 
               <h1 id="lp-hero-title" className="lp-hero-title">
-                {lt('lpHeroTitle', locale)}
+                {lt('lpHeroTitleStart', locale)}{' '}
+                <span className="lp-hero-title-accent">{lt('lpHeroTitleAccent', locale)}</span>
               </h1>
             </div>
 
@@ -226,29 +250,50 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                     {lt('lpVisualGame', locale)}
                   </span>
                   <QuizPhoneMock locale={locale} />
+                  <span className="lp-demo-combo" aria-hidden="true">
+                    <FlameIcon size={14} />
+                    Combo ×3
+                  </span>
                 </div>
               </div>
+
+              <ol className="lp-hero-steps">
+                <li className="lp-hero-step lp-hero-step--1">
+                  <CameraIcon size={15} />
+                  {lt('lpHeroStep1', locale)}
+                </li>
+                <li className="lp-hero-step lp-hero-step--2">
+                  <SparkIcon />
+                  {lt('lpHeroStep2', locale)}
+                </li>
+                <li className="lp-hero-step lp-hero-step--3">
+                  <TrophyIcon />
+                  {lt('lpHeroStep3', locale)}
+                </li>
+              </ol>
             </div>
 
             <div className="lp-hero-rest">
+              <p className="lp-hero-sub">{lt('lpHeroSub', locale)}</p>
+
               <div className="lp-hero-actions" ref={heroCtaRef}>
                 <button
                   type="button"
-                  className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block"
+                  className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block lp-btn--hero"
                   onClick={() => scan('hero')}
                 >
                   <CameraIcon />
                   {lt('lpHeroCta', locale)}
                 </button>
-                {ctaNote}
               </div>
 
-              <p className="lp-hero-sub">{lt('lpHeroSub', locale)}</p>
-
-              <ul className="lp-hero-chips">
-                <li>{lt('lpHeroChip1', locale)}</li>
-                <li>{lt('lpHeroChip2', locale)}</li>
-                <li>{lt('lpHeroChip3', locale)}</li>
+              <ul className="lp-hero-trust">
+                {(['lpHeroTrust1', 'lpHeroTrust2', 'lpHeroTrust3'] as const).map((key) => (
+                  <li key={key}>
+                    <TickIcon />
+                    {lt(key, locale)}
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -259,6 +304,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           <header className="lp-section-head">
             <h2 id="lp-steps-title">{lt('lpStepsTitle', locale)}</h2>
             <p>{lt('lpStepsSub', locale)}</p>
+            <p className="lp-steps-diff">{lt('lpStepsDifferentiator', locale)}</p>
           </header>
 
           <StepsSwipeDeck steps={STEPS} locale={locale} />
@@ -379,24 +425,33 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <h2 id="lp-game-title">{lt('lpGameTitle', locale)}</h2>
               <p className="lp-section-sub">{lt('lpGameSub', locale)}</p>
 
-              <ul className="lp-game-strip">
+              <ul className="lp-game-list">
                 <li>
-                  <span className="lp-game-icon" aria-hidden="true">
-                    <SparkIcon />
+                  <span className="lp-game-mark" aria-hidden="true">
+                    <LevelRing level={4} size={36} />
                   </span>
-                  <span>{lt('lpGameXpTitle', locale)}</span>
+                  <div>
+                    <h3>{lt('lpGameXpTitle', locale)}</h3>
+                    <p>{lt('lpGameXpBody', locale)}</p>
+                  </div>
                 </li>
                 <li>
-                  <span className="lp-game-icon" aria-hidden="true">
-                    <FlameIcon size={22} />
+                  <span className="lp-game-mark" aria-hidden="true">
+                    <FlameIcon size={26} />
                   </span>
-                  <span>{lt('lpGameStreakTitle', locale)}</span>
+                  <div>
+                    <h3>{lt('lpGameStreakTitle', locale)}</h3>
+                    <p>{lt('lpGameStreakBody', locale)}</p>
+                  </div>
                 </li>
                 <li>
-                  <span className="lp-game-icon" aria-hidden="true">
-                    <TrophyIcon />
+                  <span className="lp-game-mark" aria-hidden="true">
+                    <ScanPlayChest size={32} />
                   </span>
-                  <span>{lt('lpGameAchTitle', locale)}</span>
+                  <div>
+                    <h3>{lt('lpGameAchTitle', locale)}</h3>
+                    <p>{lt('lpGameAchBody', locale)}</p>
+                  </div>
                 </li>
               </ul>
             </div>
@@ -490,18 +545,17 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
 
       {/* ---------- MOBILE STICKY CTA ---------- */}
       {!isDesktop && (
-        <div className={`lp-sticky${heroCtaPassed ? ' is-visible' : ''}`}>
+        <div className={`lp-sticky${heroCtaHidden ? ' is-visible' : ''}`}>
           <button
             type="button"
             className="lp-btn lp-btn--primary lp-btn--lg lp-btn--block"
             onClick={() => scan('sticky')}
-            tabIndex={heroCtaPassed ? 0 : -1}
-            aria-hidden={!heroCtaPassed}
+            tabIndex={heroCtaHidden ? 0 : -1}
+            aria-hidden={!heroCtaHidden}
           >
             <CameraIcon size={20} />
             {lt('lpHeroCta', locale)}
           </button>
-          <p className="lp-sticky-note">{lt('lpStickyNote', locale)}</p>
         </div>
       )}
     </div>
@@ -514,6 +568,20 @@ function ShieldIcon() {
   return (
     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M12 2 4 5.2v6.1c0 5 3.4 9.6 8 10.7 4.6-1.1 8-5.7 8-10.7V5.2L12 2Zm3.8 7.7-4.4 5a1 1 0 0 1-1.5.04L8 12.8a1 1 0 1 1 1.5-1.3l1.2 1.4 3.7-4.2a1 1 0 0 1 1.5 1.3Z" />
+    </svg>
+  );
+}
+
+function TickIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="m5 12.5 4.5 4.5L19 7.5"
+        stroke="currentColor"
+        strokeWidth="3"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
