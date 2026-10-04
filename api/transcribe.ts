@@ -57,8 +57,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
     if (!groqRes.ok) {
-      const detail = await groqRes.text();
-      return res.status(502).json({ error: 'transcribe_failed', detail: detail.slice(0, 200) });
+      return res.status(502).json({ error: 'transcribe_failed' });
     }
 
     const data = (await groqRes.json()) as { text?: string };

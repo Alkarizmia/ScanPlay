@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
   try {
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiKey) {
-      return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
+      return new Response(JSON.stringify({ error: 'synthesis_unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -166,8 +166,8 @@ Deno.serve(async (req) => {
     });
 
     if (!openaiRes.ok) {
-      const errText = await openaiRes.text();
-      return new Response(JSON.stringify({ error: 'OpenAI request failed', detail: errText }), {
+      console.error('generate-synthesis upstream failed', openaiRes.status);
+      return new Response(JSON.stringify({ error: 'synthesis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -177,7 +177,7 @@ Deno.serve(async (req) => {
     const content = openaiJson?.choices?.[0]?.message?.content;
 
     if (!content || typeof content !== 'string') {
-      return new Response(JSON.stringify({ error: 'Empty OpenAI response' }), {
+      return new Response(JSON.stringify({ error: 'synthesis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -187,7 +187,7 @@ Deno.serve(async (req) => {
     try {
       parsed = JSON.parse(content);
     } catch {
-      return new Response(JSON.stringify({ error: 'Invalid JSON from OpenAI', raw: content }), {
+      return new Response(JSON.stringify({ error: 'synthesis_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { grantAdConsent, needsAdConsentPrompt } from '../lib/ads/consent';
+import { grantAdConsent, needsAdConsentPrompt, revokeAdConsent } from '../lib/ads/consent';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -25,16 +25,31 @@ export function AdConsentBanner({ locale, delayMs = 0 }: AdConsentBannerProps) {
     setVisible(false);
   };
 
+  const refuse = () => {
+    revokeAdConsent();
+    setVisible(false);
+  };
+
   return (
     <div className="ad-consent-banner" role="dialog" aria-labelledby="ad-consent-title">
       <div className="ad-consent-inner">
         <p id="ad-consent-title" className="ad-consent-title">
           {t('shopAdConsentTitle', locale)}
         </p>
-        <p className="ad-consent-body">{t('shopAdConsentBody', locale)}</p>
-        <button type="button" className="btn-primary ad-consent-btn" onClick={accept}>
-          {t('shopAdConsentAccept', locale)}
-        </button>
+        <p className="ad-consent-body">
+          {t('shopAdConsentBody', locale)}{' '}
+          <a href={locale === 'fr' ? '/privacy.html#fr-cookies' : '/privacy.html#en-cookies'}>
+            {t('shopAdConsentMore', locale)}
+          </a>
+        </p>
+        <div className="ad-consent-actions">
+          <button type="button" className="btn-secondary ad-consent-btn" onClick={refuse}>
+            {t('shopAdConsentRefuse', locale)}
+          </button>
+          <button type="button" className="btn-primary ad-consent-btn" onClick={accept}>
+            {t('shopAdConsentAccept', locale)}
+          </button>
+        </div>
       </div>
     </div>
   );

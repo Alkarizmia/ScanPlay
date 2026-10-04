@@ -80,7 +80,6 @@ function ensurePlayer(): HTMLAudioElement | null {
   if (typeof Audio === 'undefined') return null;
   if (!sharedAudio) {
     sharedAudio = new Audio();
-    sharedAudio.playsInline = true;
     sharedAudio.setAttribute('playsinline', 'true');
     sharedAudio.preload = 'auto';
   }

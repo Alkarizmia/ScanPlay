@@ -21,7 +21,10 @@ function resizeImageToDataUrl(file: File, maxSize: number, quality: number): Pro
       }
       ctx.drawImage(img, 0, 0, w, h);
       URL.revokeObjectURL(url);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      canvas.width = 0;
+      canvas.height = 0;
+      resolve(dataUrl);
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);

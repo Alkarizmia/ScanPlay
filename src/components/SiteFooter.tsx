@@ -10,6 +10,12 @@ export function SiteFooter({ locale }: { locale: Locale }) {
       <span className="site-footer-sep" aria-hidden="true">
         ·
       </span>
+      <a href="/terms.html" className="site-footer-link">
+        {t('termsOpen', locale)}
+      </a>
+      <span className="site-footer-sep" aria-hidden="true">
+        ·
+      </span>
       <a href="mailto:support@scanplay.org" className="site-footer-link">
         support@scanplay.org
       </a>

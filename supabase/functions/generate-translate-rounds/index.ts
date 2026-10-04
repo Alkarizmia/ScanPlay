@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   try {
     const openaiKey = Deno.env.get('OPENAI_API_KEY');
     if (!openaiKey) {
-      return new Response(JSON.stringify({ error: 'OPENAI_API_KEY not configured' }), {
+      return new Response(JSON.stringify({ error: 'translate_unavailable' }), {
         status: 503,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
@@ -103,8 +103,8 @@ ${list}`,
     });
 
     if (!openaiRes.ok) {
-      const errText = await openaiRes.text();
-      return new Response(JSON.stringify({ error: 'openai_failed', detail: errText.slice(0, 200) }), {
+      console.error('generate-translate-rounds upstream failed', openaiRes.status);
+      return new Response(JSON.stringify({ error: 'translate_failed' }), {
         status: 502,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });

@@ -1,6 +1,5 @@
 import { createPortal } from 'react-dom';
 import { BackIcon } from './icons/BackIcon';
-import { ADSENSE_UI_PAUSED } from '../lib/ads/config';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -24,7 +23,8 @@ type PrivacyBlock =
         | 'privacyPolicy7'
         | 'privacyPolicy8'
         | 'privacyPolicy9'
-        | 'privacyPolicy10';
+        | 'privacyPolicy10'
+        | 'privacyPolicyMinors';
     };
 
 const PRIVACY_BLOCKS: PrivacyBlock[] = [
@@ -35,7 +35,8 @@ const PRIVACY_BLOCKS: PrivacyBlock[] = [
   { kind: 'paragraph', key: 'privacyPolicy5' },
   { kind: 'paragraph', key: 'privacyPolicy6' },
   { kind: 'paragraph', key: 'privacyPolicy9' },
-  ...(ADSENSE_UI_PAUSED ? [] : [{ kind: 'paragraph' as const, key: 'privacyPolicy10' as const }]),
+  { kind: 'paragraph', key: 'privacyPolicy10' },
+  { kind: 'paragraph', key: 'privacyPolicyMinors' },
   { kind: 'heading', key: 'privacyAboutHeading' },
   { kind: 'paragraph', key: 'privacyPolicy7' },
   { kind: 'paragraph', key: 'privacyPolicy8' },
@@ -60,6 +61,11 @@ export function PrivacyPolicySheet({ open, locale, onClose }: PrivacyPolicySheet
           {t('privacySection', locale)}
         </h3>
         <p className="privacy-sheet-updated">{t('privacyUpdated', locale)}</p>
+        <p className="privacy-sheet-paragraph">
+          <a href="/privacy.html">{t('privacyFullPolicy', locale)}</a>
+          {' · '}
+          <a href="/terms.html">{t('termsOpen', locale)}</a>
+        </p>
         <div className="privacy-sheet-body scroll-natural">
           {PRIVACY_BLOCKS.map((block) =>
             block.kind === 'heading' ? (

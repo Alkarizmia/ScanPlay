@@ -44,6 +44,10 @@ body,
   letter-spacing: -0.03em;
   line-height: 1;
   white-space: nowrap;
+}
+
+.lp-header-brand .wordmark-text,
+.lp-footer-brand .wordmark-text {
   color: #f6faf8;
 }
 
