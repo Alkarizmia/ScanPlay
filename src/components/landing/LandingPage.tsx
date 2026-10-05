@@ -300,10 +300,6 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="sr-only">{lt('lpVisualAlt', locale)}</p>
               <div className="lp-transform">
                 <SheetMock locale={locale} />
-                <span className="lp-transform-arrow" aria-hidden="true">
-                  <ArrowIcon />
-                  <span>{lt('lpVisualScan', locale)}</span>
-                </span>
                 <div className="lp-transform-phone">
                   <span className="lp-phone-label" aria-hidden="true">
                     {lt('lpVisualGame', locale)}
@@ -731,20 +727,6 @@ function TickIcon() {
         d="m5 12.5 4.5 4.5L19 7.5"
         stroke="currentColor"
         strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M3 12h16m0 0-6-6m6 6-6 6"
-        stroke="currentColor"
-        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

@@ -616,20 +616,6 @@ html[data-landing='true'] .screen.sp-landing {
   }
 }
 
-@keyframes lp-scan-pulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 4px rgba(34, 197, 94, 0.08),
-      0 12px 28px rgba(34, 197, 94, 0.22);
-  }
-  50% {
-    box-shadow:
-      0 0 0 8px rgba(34, 197, 94, 0.16),
-      0 14px 32px rgba(34, 197, 94, 0.38);
-  }
-}
-
 .lp-hero-inner {
   display: flex;
   flex-direction: column;
@@ -913,10 +899,9 @@ html[data-landing='true'] .screen.sp-landing {
 .lp-transform {
   /* Size from the viewport width, not the short WebView height — Instagram
      chrome made 40svh shrink the phone. Extra padding keeps labels/combo. */
-  --lp-phone-w: clamp(188px, 56vw, 240px);
-  --lp-sheet-overlap: 34px;
+  --lp-phone-w: clamp(188px, 54vw, 240px);
   --lp-cam-x: -62%;
-  --lp-cam-y: 8%;
+  --lp-cam-y: 4%;
 
   position: relative;
   display: flex;
@@ -928,15 +913,11 @@ html[data-landing='true'] .screen.sp-landing {
   padding: 18px 16px 8px;
 }
 
-.lp-transform-arrow {
-  display: none;
-}
-
 .lp-transform-phone {
   position: relative;
   z-index: 2;
   margin-left: auto;
-  margin-right: clamp(0px, 3vw, 24px);
+  margin-right: 0;
   transform-origin: center center;
   animation: lp-phone-cam var(--lp-loop) linear infinite;
 }
@@ -947,32 +928,32 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-phone-cam {
   0%,
-  6% {
-    transform: translate3d(0, 0, 0) scale(1);
+  7% {
+    transform: translate3d(0, 0, 0);
     z-index: 2;
   }
-  12%,
-  26% {
-    transform: translate3d(var(--lp-cam-x), var(--lp-cam-y), 0) scale(1.06);
+  14%,
+  27% {
+    transform: translate3d(var(--lp-cam-x), var(--lp-cam-y), 0);
     z-index: 6;
   }
-  34%,
+  35%,
   100% {
-    transform: translate3d(0, 0, 0) scale(1);
+    transform: translate3d(0, 0, 0);
     z-index: 2;
   }
 }
 
 @keyframes lp-label-rest {
   0%,
-  8% {
+  6% {
     opacity: 1;
   }
-  12%,
-  30% {
+  10%,
+  32% {
     opacity: 0;
   }
-  36%,
+  37%,
   100% {
     opacity: 1;
   }
@@ -1019,13 +1000,13 @@ html[data-landing='true'] .screen.sp-landing {
 .lp-sheet {
   position: absolute;
   left: 0;
-  right: calc(var(--lp-phone-w) - var(--lp-sheet-overlap));
-  bottom: 6%;
+  right: auto;
+  bottom: 14%;
   z-index: 1;
-  width: auto;
-  max-width: 190px;
+  width: min(28vw, 112px);
+  max-width: 112px;
   margin: 0;
-  transform: rotate(-7deg);
+  transform: rotate(-6deg);
 }
 
 .lp-sheet-paper {
@@ -1104,18 +1085,18 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-scan {
   0%,
-  12% {
+  8% {
     transform: translateY(-110%);
     opacity: 0;
   }
-  14% {
+  11% {
     opacity: 1;
   }
-  25% {
+  26% {
     transform: translateY(220%);
     opacity: 1;
   }
-  28%,
+  32%,
   100% {
     transform: translateY(220%);
     opacity: 0;
@@ -1124,13 +1105,13 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-sheet-flash {
   0%,
-  24% {
+  26% {
     opacity: 0;
   }
-  26% {
+  29% {
     opacity: 0.8;
   }
-  30%,
+  34%,
   100% {
     opacity: 0;
   }
@@ -1138,16 +1119,16 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-sheet-frame {
   0%,
-  10% {
+  7% {
     opacity: 0;
     transform: scale(1.04);
   }
-  13%,
-  26% {
+  11%,
+  28% {
     opacity: 1;
     transform: scale(1);
   }
-  32%,
+  34%,
   100% {
     opacity: 0;
     transform: scale(1.04);
@@ -1356,7 +1337,7 @@ html[data-landing='true'] .screen.sp-landing {
   background: #0b1220;
   opacity: 0;
   pointer-events: none;
-  animation: lp-demo-cam var(--lp-loop) ease-in-out infinite;
+  animation: lp-demo-cam var(--lp-loop) linear infinite;
 }
 
 .lp-demo-cam-paper {
@@ -1428,14 +1409,14 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-demo-cam {
   0%,
-  10% {
+  6% {
     opacity: 0;
   }
-  13%,
-  26% {
+  9%,
+  30% {
     opacity: 1;
   }
-  31%,
+  35%,
   100% {
     opacity: 0;
   }
@@ -1443,10 +1424,10 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-demo-play {
   0%,
-  32% {
+  34% {
     opacity: 0;
   }
-  36%,
+  37%,
   96% {
     opacity: 1;
   }
@@ -3609,41 +3590,21 @@ html[data-landing='true'] .screen.sp-landing {
   }
 }
 
-@keyframes lp-arrow-dim {
-  0%,
-  8% {
-    opacity: 1;
-  }
-  12%,
-  30% {
-    opacity: 0;
-  }
-  36%,
-  100% {
-    opacity: 1;
-  }
-}
-
-/* The explicit sheet → scan → game row needs room to breathe. */
+/* Sheet and phone sit side by side. The phone travels exactly onto the sheet. */
 @media (min-width: 720px) {
   .lp-transform {
     display: grid;
-    grid-template-columns: var(--lp-story-cols, minmax(168px, 0.85fr) auto minmax(220px, 1fr));
+    grid-template-columns: auto auto;
+    justify-content: center;
     align-items: center;
-    gap: clamp(8px, 2vw, 20px);
+    --lp-sheet-w: clamp(150px, 16vw, 210px);
+    --lp-pair-gap: clamp(20px, 3vw, 40px);
+    column-gap: var(--lp-pair-gap);
     min-height: 0;
     overflow: visible;
-    padding: 20px 12px 10px;
-    --lp-cam-x: -155%;
-    --lp-cam-y: 6%;
-  }
-
-  .lp-transform-arrow {
-    animation: lp-arrow-dim var(--lp-loop) ease infinite;
-  }
-
-  .lp-hero-visual {
-    --lp-story-cols: minmax(168px, 0.85fr) auto minmax(220px, 1fr);
+    padding: 20px 8px 10px;
+    --lp-cam-x: calc(-1 * (var(--lp-sheet-w) + var(--lp-pair-gap)));
+    --lp-cam-y: 0px;
   }
 
   .lp-sheet {
@@ -3651,43 +3612,15 @@ html[data-landing='true'] .screen.sp-landing {
     left: auto;
     right: auto;
     bottom: auto;
-    width: 100%;
-    max-width: 240px;
-    justify-self: center;
+    width: var(--lp-sheet-w);
+    max-width: none;
+    justify-self: end;
     transform: rotate(-4deg);
-  }
-
-  .lp-transform-arrow {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    min-width: 72px;
-    padding: 14px 12px 12px;
-    border-radius: 20px;
-    border: 1px solid rgba(74, 222, 128, 0.5);
-    background: rgba(34, 197, 94, 0.16);
-    box-shadow:
-      0 0 0 4px rgba(34, 197, 94, 0.08),
-      0 12px 28px rgba(34, 197, 94, 0.22);
-    color: #86efac;
-    font-size: 0.78rem;
-    font-weight: 850;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    animation: lp-scan-pulse 2.4s ease-in-out infinite;
-  }
-
-  .lp-transform-arrow svg {
-    width: 36px;
-    height: 36px;
-    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.75));
   }
 
   .lp-transform-phone {
     margin: 0;
-    justify-self: center;
+    justify-self: start;
   }
 
   .lp-phone-label {
@@ -3900,8 +3833,7 @@ html[data-landing='true'] .screen.sp-landing {
   .lp-demo-cam,
   .lp-demo-play,
   .lp-transform-phone,
-  .lp-transform-phone .lp-phone-label,
-  .lp-transform-arrow {
+  .lp-transform-phone .lp-phone-label {
     animation: none !important;
   }
 
