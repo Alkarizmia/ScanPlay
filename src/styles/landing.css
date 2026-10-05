@@ -3499,41 +3499,6 @@ html[data-landing='true'] .screen.sp-landing {
     --lp-story-cols: minmax(168px, 0.85fr) auto minmax(220px, 1fr);
   }
 
-  .lp-hero-steps {
-    display: grid;
-    grid-template-columns: var(--lp-story-cols);
-    gap: clamp(8px, 2vw, 20px);
-    width: 100%;
-    position: relative;
-    margin-top: 10px;
-  }
-
-  .lp-hero-steps::before {
-    content: '';
-    position: absolute;
-    left: 16%;
-    right: 16%;
-    top: 50%;
-    height: 2px;
-    border-radius: 999px;
-    background: linear-gradient(90deg, #4ade80, #a78bfa, #facc15);
-    opacity: 0.55;
-    pointer-events: none;
-  }
-
-  .lp-hero-step {
-    justify-self: center;
-    z-index: 1;
-  }
-
-  .lp-hero-step + .lp-hero-step {
-    margin-left: 0;
-  }
-
-  .lp-hero-step + .lp-hero-step::before {
-    content: none;
-  }
-
   .lp-sheet {
     position: relative;
     left: auto;
