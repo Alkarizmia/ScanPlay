@@ -223,6 +223,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <nav className="lp-nav" aria-label={lt('lpNavLabel', locale)}>
               <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
               <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#plans">{lt('lpNavPlans', locale)}</a>
               <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </nav>
           )}
@@ -490,6 +491,77 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           </div>
         </Section>
 
+        <Section id="plans" className="lp-section--plans" labelledBy="lp-plans-title">
+          <header className="lp-section-head">
+            <h2 id="lp-plans-title">{lt('lpPlansTitle', locale)}</h2>
+            <p>{lt('lpPlansSub', locale)}</p>
+          </header>
+
+          <div className="lp-plans">
+            <article className="lp-plan">
+              <h3>{lt('lpPlanFreeName', locale)}</h3>
+              <p className="lp-plan-price">
+                {lt('lpPlanFreePrice', locale)}
+                <small>{lt('lpPlanFreePeriod', locale)}</small>
+              </p>
+              <ul>
+                <li>{lt('lpPlanFree1', locale)}</li>
+                <li>{lt('lpPlanFree2', locale)}</li>
+                <li>{lt('lpPlanFree3', locale)}</li>
+              </ul>
+              <button
+                type="button"
+                className="lp-btn lp-btn--ghost lp-btn--block"
+                onClick={() => scan('plans_free')}
+              >
+                {lt('lpPlanCtaFree', locale)}
+              </button>
+            </article>
+
+            <article className="lp-plan lp-plan--plus">
+              <p className="lp-plan-badge">{lt('lpPlanPopular', locale)}</p>
+              <h3>{lt('lpPlanPlusName', locale)}</h3>
+              <p className="lp-plan-price">
+                {lt('lpPlanPlusPrice', locale)}
+                <small>{lt('lpPlanPlusPeriod', locale)}</small>
+              </p>
+              <ul>
+                <li>{lt('lpPlanPlus1', locale)}</li>
+                <li>{lt('lpPlanPlus2', locale)}</li>
+                <li>{lt('lpPlanPlus3', locale)}</li>
+              </ul>
+              <button
+                type="button"
+                className="lp-btn lp-btn--primary lp-btn--block"
+                onClick={() => scan('plans_plus')}
+              >
+                {lt('lpPlanCtaPaid', locale)}
+              </button>
+            </article>
+
+            <article className="lp-plan">
+              <h3>{lt('lpPlanProName', locale)}</h3>
+              <p className="lp-plan-price">
+                {lt('lpPlanProPrice', locale)}
+                <small>{lt('lpPlanProPeriod', locale)}</small>
+              </p>
+              <ul>
+                <li>{lt('lpPlanPro1', locale)}</li>
+                <li>{lt('lpPlanPro2', locale)}</li>
+                <li>{lt('lpPlanPro3', locale)}</li>
+              </ul>
+              <button
+                type="button"
+                className="lp-btn lp-btn--ghost lp-btn--block"
+                onClick={() => scan('plans_pro')}
+              >
+                {lt('lpPlanCtaPaid', locale)}
+              </button>
+            </article>
+          </div>
+          <p className="lp-plans-note">{lt('lpPlanFootnote', locale)}</p>
+        </Section>
+
         {/* ---------- FAQ ---------- */}
         <Section id="questions" className="lp-section--faq" labelledBy="lp-faq-title">
           <header className="lp-section-head">
@@ -555,6 +627,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="lp-footer-nav-title">{lt('lpFooterProduct', locale)}</p>
               <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
               <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#plans">{lt('lpNavPlans', locale)}</a>
               <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </div>
             <div>
@@ -616,11 +689,11 @@ function TickIcon() {
 
 function ArrowIcon() {
   return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <path
-        d="M4 12h15m0 0-5.5-5.5M19 12l-5.5 5.5"
+        d="M3 12h16m0 0-6-6m6 6-6 6"
         stroke="currentColor"
-        strokeWidth="2"
+        strokeWidth="2.4"
         strokeLinecap="round"
         strokeLinejoin="round"
       />

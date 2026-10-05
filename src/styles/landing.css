@@ -616,6 +616,20 @@ html[data-landing='true'] .screen.sp-landing {
   }
 }
 
+@keyframes lp-scan-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgba(34, 197, 94, 0.08),
+      0 12px 28px rgba(34, 197, 94, 0.22);
+  }
+  50% {
+    box-shadow:
+      0 0 0 8px rgba(34, 197, 94, 0.16),
+      0 14px 32px rgba(34, 197, 94, 0.38);
+  }
+}
+
 .lp-hero-inner {
   display: flex;
   flex-direction: column;
@@ -730,8 +744,9 @@ html[data-landing='true'] .screen.sp-landing {
 .lp-hero-steps {
   display: flex;
   justify-content: center;
-  gap: 6px;
-  margin: 14px 0 0;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 0;
   padding: 0;
   list-style: none;
 }
@@ -740,12 +755,12 @@ html[data-landing='true'] .screen.sp-landing {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 11px;
+  padding: 8px 14px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(18, 26, 50, 0.92);
   color: rgba(226, 232, 240, 0.62);
-  font-size: 0.78rem;
+  font-size: 0.8rem;
   font-weight: 750;
 }
 
@@ -756,6 +771,18 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-hero-step + .lp-hero-step {
   position: relative;
+  margin-left: 14px;
+}
+
+.lp-hero-step + .lp-hero-step::before {
+  content: '';
+  position: absolute;
+  left: -18px;
+  top: 50%;
+  width: 14px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(74, 222, 128, 0.55), rgba(250, 204, 21, 0.55));
 }
 
 .lp-hero-step--1 {
@@ -3040,6 +3067,121 @@ html[data-landing='true'] .screen.sp-landing {
 }
 
 /* ============================================================
+   Plans
+   ============================================================ */
+
+.lp-plans {
+  display: grid;
+  gap: 14px;
+}
+
+.lp-plan {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 22px 20px 20px;
+  border: 1px solid var(--lp-border);
+  border-radius: 22px;
+  background: var(--lp-surface);
+}
+
+.lp-plan h3 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.lp-plan-price {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 1.85rem;
+  font-weight: 850;
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.lp-plan-price small {
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--lp-muted);
+}
+
+.lp-plan ul {
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.lp-plan li {
+  color: var(--lp-muted);
+  font-size: 0.94rem;
+  line-height: 1.4;
+  padding-left: 18px;
+  position: relative;
+}
+
+.lp-plan li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--lp-green);
+}
+
+.lp-plan .lp-btn {
+  margin-top: auto;
+}
+
+.lp-plan--plus {
+  border-color: rgba(34, 197, 94, 0.45);
+  background: linear-gradient(180deg, rgba(34, 197, 94, 0.16), rgba(255, 255, 255, 0.04));
+  box-shadow: 0 16px 40px rgba(34, 197, 94, 0.12);
+}
+
+.lp-plan-badge {
+  position: absolute;
+  top: -11px;
+  left: 18px;
+  margin: 0;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #22c55e;
+  color: #052e16;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.lp-plans-note {
+  margin: 16px 0 0;
+  color: var(--lp-dim);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+@media (min-width: 860px) {
+  .lp-plans {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+    align-items: stretch;
+  }
+
+  .lp-plan--plus {
+    transform: translateY(-8px);
+  }
+}
+
+/* ============================================================
    Final CTA
    ============================================================ */
 
@@ -3295,12 +3437,51 @@ html[data-landing='true'] .screen.sp-landing {
 @media (min-width: 720px) {
   .lp-transform {
     display: grid;
-    grid-template-columns: minmax(168px, 0.85fr) auto minmax(220px, 1fr);
+    grid-template-columns: var(--lp-story-cols, minmax(168px, 0.85fr) auto minmax(220px, 1fr));
     align-items: center;
     gap: clamp(8px, 2vw, 20px);
     min-height: 0;
     overflow: visible;
     padding: 20px 12px 10px;
+  }
+
+  .lp-hero-visual {
+    --lp-story-cols: minmax(168px, 0.85fr) auto minmax(220px, 1fr);
+  }
+
+  .lp-hero-steps {
+    display: grid;
+    grid-template-columns: var(--lp-story-cols);
+    gap: clamp(8px, 2vw, 20px);
+    width: 100%;
+    position: relative;
+    margin-top: 10px;
+  }
+
+  .lp-hero-steps::before {
+    content: '';
+    position: absolute;
+    left: 16%;
+    right: 16%;
+    top: 50%;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #4ade80, #a78bfa, #facc15);
+    opacity: 0.55;
+    pointer-events: none;
+  }
+
+  .lp-hero-step {
+    justify-self: center;
+    z-index: 1;
+  }
+
+  .lp-hero-step + .lp-hero-step {
+    margin-left: 0;
+  }
+
+  .lp-hero-step + .lp-hero-step::before {
+    content: none;
   }
 
   .lp-sheet {
@@ -3318,12 +3499,28 @@ html[data-landing='true'] .screen.sp-landing {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
     gap: 4px;
-    color: var(--lp-green);
-    font-size: 0.72rem;
-    font-weight: 750;
-    letter-spacing: 0.08em;
+    min-width: 72px;
+    padding: 14px 12px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(74, 222, 128, 0.5);
+    background: rgba(34, 197, 94, 0.16);
+    box-shadow:
+      0 0 0 4px rgba(34, 197, 94, 0.08),
+      0 12px 28px rgba(34, 197, 94, 0.22);
+    color: #86efac;
+    font-size: 0.78rem;
+    font-weight: 850;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
+    animation: lp-scan-pulse 2.4s ease-in-out infinite;
+  }
+
+  .lp-transform-arrow svg {
+    width: 36px;
+    height: 36px;
+    filter: drop-shadow(0 0 8px rgba(74, 222, 128, 0.75));
   }
 
   .lp-transform-phone {
@@ -3537,7 +3734,8 @@ html[data-landing='true'] .screen.sp-landing {
   }
 
   .lp-hero-aurora,
-  .lp-btn--hero::after {
+  .lp-btn--hero::after,
+  .lp-transform-arrow {
     animation: none !important;
   }
 
