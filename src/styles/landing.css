@@ -883,11 +883,13 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-hero-visual {
   position: relative;
+  overflow: visible;
 }
 
 .lp-transform {
-  /* % of the visual, not 100vw — vw includes WebView chrome and overflows. */
-  --lp-phone-w: clamp(140px, min(50%, calc(40svh * 9 / 15.2)), 200px);
+  /* Size from the viewport width, not the short WebView height — Instagram
+     chrome made 40svh shrink the phone. Extra padding keeps labels/combo. */
+  --lp-phone-w: clamp(188px, 56vw, 240px);
   --lp-sheet-overlap: 34px;
 
   position: relative;
@@ -896,8 +898,8 @@ html[data-landing='true'] .screen.sp-landing {
   justify-content: center;
   min-width: 0;
   min-height: 0;
-  overflow: hidden;
-  padding-top: 16px;
+  overflow: visible;
+  padding: 18px 16px 8px;
 }
 
 .lp-transform-arrow {
@@ -3293,10 +3295,12 @@ html[data-landing='true'] .screen.sp-landing {
 @media (min-width: 720px) {
   .lp-transform {
     display: grid;
-    grid-template-columns: minmax(0, 0.85fr) auto minmax(0, 1fr);
+    grid-template-columns: minmax(168px, 0.85fr) auto minmax(220px, 1fr);
     align-items: center;
     gap: clamp(8px, 2vw, 20px);
     min-height: 0;
+    overflow: visible;
+    padding: 20px 12px 10px;
   }
 
   .lp-sheet {
@@ -3305,7 +3309,7 @@ html[data-landing='true'] .screen.sp-landing {
     right: auto;
     bottom: auto;
     width: 100%;
-    max-width: 230px;
+    max-width: 240px;
     justify-self: center;
     transform: rotate(-4deg);
   }
@@ -3350,7 +3354,7 @@ html[data-landing='true'] .screen.sp-landing {
 
   .lp-hero-inner {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 1fr);
     grid-template-areas:
       'intro visual'
       'rest visual';
@@ -3371,7 +3375,8 @@ html[data-landing='true'] .screen.sp-landing {
 
   .lp-hero-visual {
     grid-area: visual;
-    min-width: 0;
+    min-width: 280px;
+    overflow: visible;
   }
 
   .lp-hero-rest .lp-hero-sub {
@@ -3383,7 +3388,7 @@ html[data-landing='true'] .screen.sp-landing {
   }
 
   .lp-transform {
-    --lp-phone-w: min(236px, 22vw);
+    --lp-phone-w: clamp(240px, 22vw, 280px);
   }
 
   .lp-hero-title {
@@ -3391,11 +3396,11 @@ html[data-landing='true'] .screen.sp-landing {
   }
 
   .lp-phone {
-    width: min(258px, 24vw);
+    width: var(--lp-phone-w);
   }
 
   .lp-phone--hero {
-    width: min(236px, 22vw);
+    width: var(--lp-phone-w);
   }
 
   .lp-product-grid {
