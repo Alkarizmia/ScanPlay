@@ -218,16 +218,15 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
 
   const paidPrice = (plan: 'plus' | 'pro') =>
     billing === 'annual'
-      ? lt(plan === 'plus' ? 'lpPlanPlusPriceYear' : 'lpPlanProPriceYear', locale)
+      ? lt(plan === 'plus' ? 'lpPlanPlusMonthEquiv' : 'lpPlanProMonthEquiv', locale)
       : lt(plan === 'plus' ? 'lpPlanPlusPrice' : 'lpPlanProPrice', locale);
 
-  const paidPeriod =
-    billing === 'annual' ? lt('lpPlanPeriodYear', locale) : lt('lpPlanPeriodMonth', locale);
+  const paidPeriod = lt('lpPlanPeriodMonth', locale);
 
-  const paidEquiv = (plan: 'plus' | 'pro') =>
-    lt('lpPlanMonthEquiv', locale).replace(
+  const paidYearHint = (plan: 'plus' | 'pro') =>
+    lt('lpPlanYearBilled', locale).replace(
       '{price}',
-      lt(plan === 'plus' ? 'lpPlanPlusMonthEquiv' : 'lpPlanProMonthEquiv', locale),
+      lt(plan === 'plus' ? 'lpPlanPlusPriceYear' : 'lpPlanProPriceYear', locale),
     );
 
   const ctaNote = (
@@ -575,7 +574,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                 {paidPrice('plus')}
                 <small>{paidPeriod}</small>
               </p>
-              {billing === 'annual' && <p className="lp-plan-equiv">{paidEquiv('plus')}</p>}
+              {billing === 'annual' && <p className="lp-plan-equiv">{paidYearHint('plus')}</p>}
               <ul>
                 <li>{lt('lpPlanPlus1', locale)}</li>
                 <li>{lt('lpPlanPlus2', locale)}</li>
@@ -596,7 +595,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                 {paidPrice('pro')}
                 <small>{paidPeriod}</small>
               </p>
-              {billing === 'annual' && <p className="lp-plan-equiv">{paidEquiv('pro')}</p>}
+              {billing === 'annual' && <p className="lp-plan-equiv">{paidYearHint('pro')}</p>}
               <ul>
                 <li>{lt('lpPlanPro1', locale)}</li>
                 <li>{lt('lpPlanPro2', locale)}</li>

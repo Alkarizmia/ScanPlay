@@ -119,6 +119,7 @@
   "lpPlanPeriodMonth": "/ maand",
   "lpPlanPeriodYear": "/ jaar",
   "lpPlanMonthEquiv": "oftewel {price} / maand",
+  "lpPlanYearBilled": "gefactureerd {price} / jaar",
   "lpBillingLabel": "Maandelijks of jaarlijks",
   "lpBillingMonthly": "Maandelijks",
   "lpBillingAnnual": "Jaarlijks",

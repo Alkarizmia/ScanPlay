@@ -119,6 +119,7 @@
   "lpPlanPeriodMonth": "/ mois",
   "lpPlanPeriodYear": "/ an",
   "lpPlanMonthEquiv": "soit {price} / mois",
+  "lpPlanYearBilled": "facturé {price} / an",
   "lpBillingLabel": "Mensuel ou annuel",
   "lpBillingMonthly": "Mensuel",
   "lpBillingAnnual": "Annuel",
