@@ -69,8 +69,7 @@ html[data-landing='true'] .screen.sp-landing {
   min-height: 100dvh;
   max-height: none;
   padding: 0;
-  overflow-x: hidden;
-  overflow-y: visible;
+  overflow: visible;
   animation: none;
 }
 
@@ -106,7 +105,8 @@ html[data-landing='true'] .screen.sp-landing {
   isolation: isolate;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
+  padding-top: calc(var(--lp-header-h) + env(safe-area-inset-top, 0px));
   background: linear-gradient(180deg, #0b1026 0%, var(--lp-bg) 38%, #0a1020 100%);
   color: var(--lp-text);
   text-align: left;
@@ -268,14 +268,15 @@ html[data-landing='true'] .screen.sp-landing {
    ============================================================ */
 
 .lp-header {
-  position: sticky;
+  position: fixed;
   top: 0;
   left: 0;
-  z-index: 40;
+  right: 0;
+  z-index: 50;
   width: 100%;
   max-width: 100%;
   padding-top: env(safe-area-inset-top, 0px);
-  background: rgba(9, 13, 32, 0.45);
+  background: rgba(9, 13, 32, 0.86);
   -webkit-backdrop-filter: blur(16px) saturate(1.3);
   backdrop-filter: blur(16px) saturate(1.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
