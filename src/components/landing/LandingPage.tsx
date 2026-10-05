@@ -552,7 +552,6 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <ul>
                 <li>{lt('lpPlanFree1', locale)}</li>
                 <li>{lt('lpPlanFree2', locale)}</li>
-                <li>{lt('lpPlanFree3', locale)}</li>
               </ul>
               <button
                 type="button"
@@ -596,6 +595,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                 <li>{lt('lpPlanPro1', locale)}</li>
                 <li>{lt('lpPlanPro2', locale)}</li>
                 <li>{lt('lpPlanPro3', locale)}</li>
+                <li>{lt('lpPlanPro4', locale)}</li>
               </ul>
               <button
                 type="button"
