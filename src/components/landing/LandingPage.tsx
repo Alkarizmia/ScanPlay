@@ -133,6 +133,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   const locale: Locale = lang;
   const { ref: heroCtaRef, outOfView: heroCtaHidden } = useOutOfView<HTMLDivElement>();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
 
   // The guest app shell locks html/body scrolling for the in-app screens.
   // The landing needs the document to scroll, so flag it only while mounted.
@@ -199,6 +200,35 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
     persistLandingLang(lang);
     onAuth();
   };
+
+  const persistBilling = (cycle: 'monthly' | 'annual') => {
+    setBilling(cycle);
+    try {
+      localStorage.setItem('scanplay-billing', cycle);
+    } catch {
+      /* private mode */
+    }
+  };
+
+  const choosePaid = (plan: 'plus' | 'pro') => {
+    persistBilling(billing);
+    trackEvent('clic_cta_landing', { emplacement: `plans_${plan}` });
+    login();
+  };
+
+  const paidPrice = (plan: 'plus' | 'pro') =>
+    billing === 'annual'
+      ? lt(plan === 'plus' ? 'lpPlanPlusPriceYear' : 'lpPlanProPriceYear', locale)
+      : lt(plan === 'plus' ? 'lpPlanPlusPrice' : 'lpPlanProPrice', locale);
+
+  const paidPeriod =
+    billing === 'annual' ? lt('lpPlanPeriodYear', locale) : lt('lpPlanPeriodMonth', locale);
+
+  const paidEquiv = (plan: 'plus' | 'pro') =>
+    lt('lpPlanMonthEquiv', locale).replace(
+      '{price}',
+      lt(plan === 'plus' ? 'lpPlanPlusMonthEquiv' : 'lpPlanProMonthEquiv', locale),
+    );
 
   const ctaNote = (
     <p className="lp-cta-note">
@@ -497,6 +527,26 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <p>{lt('lpPlansSub', locale)}</p>
           </header>
 
+          <div className="lp-billing" role="group" aria-label={lt('lpBillingLabel', locale)}>
+            <button
+              type="button"
+              className={`lp-billing-btn${billing === 'monthly' ? ' is-on' : ''}`}
+              aria-pressed={billing === 'monthly'}
+              onClick={() => persistBilling('monthly')}
+            >
+              {lt('lpBillingMonthly', locale)}
+            </button>
+            <button
+              type="button"
+              className={`lp-billing-btn${billing === 'annual' ? ' is-on' : ''}`}
+              aria-pressed={billing === 'annual'}
+              onClick={() => persistBilling('annual')}
+            >
+              {lt('lpBillingAnnual', locale)}
+              <span className="lp-billing-save">{lt('lpBillingSave', locale)}</span>
+            </button>
+          </div>
+
           <div className="lp-plans">
             <article className="lp-plan">
               <h3>{lt('lpPlanFreeName', locale)}</h3>
@@ -522,9 +572,10 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="lp-plan-badge">{lt('lpPlanPopular', locale)}</p>
               <h3>{lt('lpPlanPlusName', locale)}</h3>
               <p className="lp-plan-price">
-                {lt('lpPlanPlusPrice', locale)}
-                <small>{lt('lpPlanPlusPeriod', locale)}</small>
+                {paidPrice('plus')}
+                <small>{paidPeriod}</small>
               </p>
+              {billing === 'annual' && <p className="lp-plan-equiv">{paidEquiv('plus')}</p>}
               <ul>
                 <li>{lt('lpPlanPlus1', locale)}</li>
                 <li>{lt('lpPlanPlus2', locale)}</li>
@@ -533,10 +584,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <button
                 type="button"
                 className="lp-btn lp-btn--primary lp-btn--block"
-                onClick={() => {
-                  trackEvent('clic_cta_landing', { emplacement: 'plans_plus' });
-                  login();
-                }}
+                onClick={() => choosePaid('plus')}
               >
                 {lt('lpPlanCtaPlus', locale)}
               </button>
@@ -545,9 +593,10 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <article className="lp-plan">
               <h3>{lt('lpPlanProName', locale)}</h3>
               <p className="lp-plan-price">
-                {lt('lpPlanProPrice', locale)}
-                <small>{lt('lpPlanProPeriod', locale)}</small>
+                {paidPrice('pro')}
+                <small>{paidPeriod}</small>
               </p>
+              {billing === 'annual' && <p className="lp-plan-equiv">{paidEquiv('pro')}</p>}
               <ul>
                 <li>{lt('lpPlanPro1', locale)}</li>
                 <li>{lt('lpPlanPro2', locale)}</li>
@@ -556,10 +605,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <button
                 type="button"
                 className="lp-btn lp-btn--ghost lp-btn--block"
-                onClick={() => {
-                  trackEvent('clic_cta_landing', { emplacement: 'plans_pro' });
-                  login();
-                }}
+                onClick={() => choosePaid('pro')}
               >
                 {lt('lpPlanCtaPro', locale)}
               </button>
