@@ -68,7 +68,7 @@ html[data-landing='true'] .screen.sp-landing {
   height: auto;
   min-height: 100dvh;
   max-height: none;
-  padding: 0;
+  padding: calc(var(--lp-header-h) + env(safe-area-inset-top, 0px)) 0 0;
   overflow: visible;
   animation: none;
 }
@@ -95,7 +95,7 @@ html[data-landing='true'] .screen.sp-landing {
   --lp-gutter: clamp(16px, 4.5vw, 40px);
   --lp-max: 1120px;
   --lp-section-y: clamp(56px, 9vw, 104px);
-  --lp-header-h: 60px;
+  --lp-header-h: 64px;
   /* One clock for the whole hero story (sheet scan, phone demo, step pills). */
   --lp-loop: 10s;
 
@@ -106,7 +106,6 @@ html[data-landing='true'] .screen.sp-landing {
   width: 100%;
   max-width: 100%;
   overflow-x: clip;
-  padding-top: calc(var(--lp-header-h) + env(safe-area-inset-top, 0px));
   background: linear-gradient(180deg, #0b1026 0%, var(--lp-bg) 38%, #0a1020 100%);
   color: var(--lp-text);
   text-align: left;
