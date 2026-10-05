@@ -133,6 +133,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   const locale: Locale = lang;
   const { ref: heroCtaRef, outOfView: heroCtaHidden } = useOutOfView<HTMLDivElement>();
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
 
   // The guest app shell locks html/body scrolling for the in-app screens.
   // The landing needs the document to scroll, so flag it only while mounted.
@@ -200,6 +201,34 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
     onAuth();
   };
 
+  const persistBilling = (cycle: 'monthly' | 'annual') => {
+    setBilling(cycle);
+    try {
+      localStorage.setItem('scanplay-billing', cycle);
+    } catch {
+      /* private mode */
+    }
+  };
+
+  const choosePaid = (plan: 'plus' | 'pro') => {
+    persistBilling(billing);
+    trackEvent('clic_cta_landing', { emplacement: `plans_${plan}` });
+    login();
+  };
+
+  const paidPrice = (plan: 'plus' | 'pro') =>
+    billing === 'annual'
+      ? lt(plan === 'plus' ? 'lpPlanPlusMonthEquiv' : 'lpPlanProMonthEquiv', locale)
+      : lt(plan === 'plus' ? 'lpPlanPlusPrice' : 'lpPlanProPrice', locale);
+
+  const paidPeriod = lt('lpPlanPeriodMonth', locale);
+
+  const paidYearHint = (plan: 'plus' | 'pro') =>
+    lt('lpPlanYearBilled', locale).replace(
+      '{price}',
+      lt(plan === 'plus' ? 'lpPlanPlusPriceYear' : 'lpPlanProPriceYear', locale),
+    );
+
   const ctaNote = (
     <p className="lp-cta-note">
       <ShieldIcon />
@@ -223,6 +252,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <nav className="lp-nav" aria-label={lt('lpNavLabel', locale)}>
               <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
               <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#plans">{lt('lpNavPlans', locale)}</a>
               <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </nav>
           )}
@@ -270,10 +300,6 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="sr-only">{lt('lpVisualAlt', locale)}</p>
               <div className="lp-transform">
                 <SheetMock locale={locale} />
-                <span className="lp-transform-arrow" aria-hidden="true">
-                  <ArrowIcon />
-                  <span>{lt('lpVisualScan', locale)}</span>
-                </span>
                 <div className="lp-transform-phone">
                   <span className="lp-phone-label" aria-hidden="true">
                     {lt('lpVisualGame', locale)}
@@ -490,6 +516,99 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           </div>
         </Section>
 
+        <Section id="plans" className="lp-section--plans" labelledBy="lp-plans-title">
+          <header className="lp-section-head">
+            <h2 id="lp-plans-title">{lt('lpPlansTitle', locale)}</h2>
+            <p>{lt('lpPlansSub', locale)}</p>
+          </header>
+
+          <div className="lp-billing" role="group" aria-label={lt('lpBillingLabel', locale)}>
+            <button
+              type="button"
+              className={`lp-billing-btn${billing === 'monthly' ? ' is-on' : ''}`}
+              aria-pressed={billing === 'monthly'}
+              onClick={() => persistBilling('monthly')}
+            >
+              {lt('lpBillingMonthly', locale)}
+            </button>
+            <button
+              type="button"
+              className={`lp-billing-btn${billing === 'annual' ? ' is-on' : ''}`}
+              aria-pressed={billing === 'annual'}
+              onClick={() => persistBilling('annual')}
+            >
+              {lt('lpBillingAnnual', locale)}
+              <span className="lp-billing-save">{lt('lpBillingSave', locale)}</span>
+            </button>
+          </div>
+
+          <div className="lp-plans">
+            <article className="lp-plan">
+              <h3>{lt('lpPlanFreeName', locale)}</h3>
+              <p className="lp-plan-price">
+                {lt('lpPlanFreePrice', locale)}
+                <small>{lt('lpPlanFreePeriod', locale)}</small>
+              </p>
+              <ul>
+                <li>{lt('lpPlanFree1', locale)}</li>
+                <li>{lt('lpPlanFree2', locale)}</li>
+              </ul>
+              <button
+                type="button"
+                className="lp-btn lp-btn--ghost lp-btn--block"
+                onClick={() => scan('plans_free')}
+              >
+                {lt('lpPlanCtaFree', locale)}
+              </button>
+            </article>
+
+            <article className="lp-plan lp-plan--plus">
+              <p className="lp-plan-badge">{lt('lpPlanPopular', locale)}</p>
+              <h3>{lt('lpPlanPlusName', locale)}</h3>
+              <p className="lp-plan-price">
+                {paidPrice('plus')}
+                <small>{paidPeriod}</small>
+              </p>
+              {billing === 'annual' && <p className="lp-plan-equiv">{paidYearHint('plus')}</p>}
+              <ul>
+                <li>{lt('lpPlanPlus1', locale)}</li>
+                <li>{lt('lpPlanPlus2', locale)}</li>
+                <li>{lt('lpPlanPlus3', locale)}</li>
+              </ul>
+              <button
+                type="button"
+                className="lp-btn lp-btn--primary lp-btn--block"
+                onClick={() => choosePaid('plus')}
+              >
+                {lt('lpPlanCtaPlus', locale)}
+              </button>
+            </article>
+
+            <article className="lp-plan">
+              <h3>{lt('lpPlanProName', locale)}</h3>
+              <p className="lp-plan-price">
+                {paidPrice('pro')}
+                <small>{paidPeriod}</small>
+              </p>
+              {billing === 'annual' && <p className="lp-plan-equiv">{paidYearHint('pro')}</p>}
+              <ul>
+                <li>{lt('lpPlanPro1', locale)}</li>
+                <li>{lt('lpPlanPro2', locale)}</li>
+                <li>{lt('lpPlanPro3', locale)}</li>
+                <li>{lt('lpPlanPro4', locale)}</li>
+              </ul>
+              <button
+                type="button"
+                className="lp-btn lp-btn--ghost lp-btn--block"
+                onClick={() => choosePaid('pro')}
+              >
+                {lt('lpPlanCtaPro', locale)}
+              </button>
+            </article>
+          </div>
+          <p className="lp-plans-note">{lt('lpPlanFootnote', locale)}</p>
+        </Section>
+
         {/* ---------- FAQ ---------- */}
         <Section id="questions" className="lp-section--faq" labelledBy="lp-faq-title">
           <header className="lp-section-head">
@@ -555,6 +674,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="lp-footer-nav-title">{lt('lpFooterProduct', locale)}</p>
               <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
               <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#plans">{lt('lpNavPlans', locale)}</a>
               <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </div>
             <div>
@@ -607,20 +727,6 @@ function TickIcon() {
         d="m5 12.5 4.5 4.5L19 7.5"
         stroke="currentColor"
         strokeWidth="3"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function ArrowIcon() {
-  return (
-    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M4 12h15m0 0-5.5-5.5M19 12l-5.5 5.5"
-        stroke="currentColor"
-        strokeWidth="2"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
