@@ -915,8 +915,8 @@ html[data-landing='true'] .screen.sp-landing {
      chrome made 40svh shrink the phone. Extra padding keeps labels/combo. */
   --lp-phone-w: clamp(188px, 56vw, 240px);
   --lp-sheet-overlap: 34px;
-  --lp-cam-x: -50%;
-  --lp-cam-y: 10%;
+  --lp-cam-x: -62%;
+  --lp-cam-y: 8%;
 
   position: relative;
   display: flex;
@@ -938,7 +938,7 @@ html[data-landing='true'] .screen.sp-landing {
   margin-left: auto;
   margin-right: clamp(0px, 3vw, 24px);
   transform-origin: center center;
-  animation: lp-phone-cam var(--lp-loop) cubic-bezier(0.45, 0.05, 0.2, 1) infinite;
+  animation: lp-phone-cam var(--lp-loop) linear infinite;
 }
 
 .lp-transform-phone .lp-phone-label {
@@ -947,12 +947,12 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-phone-cam {
   0%,
-  5% {
+  6% {
     transform: translate3d(0, 0, 0) scale(1);
     z-index: 2;
   }
-  16%,
-  24% {
+  12%,
+  26% {
     transform: translate3d(var(--lp-cam-x), var(--lp-cam-y), 0) scale(1.06);
     z-index: 6;
   }
@@ -965,7 +965,7 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-label-rest {
   0%,
-  7% {
+  8% {
     opacity: 1;
   }
   12%,
@@ -1108,14 +1108,14 @@ html[data-landing='true'] .screen.sp-landing {
     transform: translateY(-110%);
     opacity: 0;
   }
-  15% {
+  14% {
     opacity: 1;
   }
-  23% {
+  25% {
     transform: translateY(220%);
     opacity: 1;
   }
-  26%,
+  28%,
   100% {
     transform: translateY(220%);
     opacity: 0;
@@ -1124,13 +1124,13 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-sheet-flash {
   0%,
-  22% {
+  24% {
     opacity: 0;
   }
-  24% {
+  26% {
     opacity: 0.8;
   }
-  28%,
+  30%,
   100% {
     opacity: 0;
   }
@@ -1138,11 +1138,11 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-sheet-frame {
   0%,
-  8% {
+  10% {
     opacity: 0;
     transform: scale(1.04);
   }
-  12%,
+  13%,
   26% {
     opacity: 1;
     transform: scale(1);
@@ -1361,16 +1361,15 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-demo-cam-paper {
   position: absolute;
-  inset: 18px 12px 28px;
-  padding: 12px 10px;
-  border-radius: 3px;
+  inset: 10px 8px 26px;
+  padding: 14px 12px;
+  border-radius: 2px;
   background: #f8f5ea;
   color: #1f2937;
   font-family: 'Segoe Script', 'Comic Sans MS', cursive;
-  font-size: 0.68rem;
-  line-height: 1.45;
-  transform: rotate(-4deg) scale(1.04);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
 }
 
 .lp-demo-cam-paper .lp-sheet-title {
@@ -1429,14 +1428,14 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-demo-cam {
   0%,
-  6% {
+  10% {
     opacity: 0;
   }
-  12%,
+  13%,
   26% {
     opacity: 1;
   }
-  32%,
+  31%,
   100% {
     opacity: 0;
   }
@@ -1444,10 +1443,10 @@ html[data-landing='true'] .screen.sp-landing {
 
 @keyframes lp-demo-play {
   0%,
-  28% {
+  32% {
     opacity: 0;
   }
-  33%,
+  36%,
   96% {
     opacity: 1;
   }
@@ -3615,7 +3614,7 @@ html[data-landing='true'] .screen.sp-landing {
   8% {
     opacity: 1;
   }
-  13%,
+  12%,
   30% {
     opacity: 0;
   }
