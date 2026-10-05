@@ -68,8 +68,8 @@ export function HeroGameCapture({ lang }: { lang: LandingLang }) {
 }
 
 /**
- * Phone looping the whole product story, synced with the sheet scan:
- * sheet read → cards generated → quiz (wrong → correction → success).
+ * Phone looping the product story:
+ * camera over the sheet → back to rest → read the sheet → quiz.
  */
 export function QuizPhoneMock({ locale }: { locale: Locale }) {
   return (
@@ -77,6 +77,22 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
       <div className="lp-phone-frame">
         <span className="lp-phone-island" />
         <div className="lp-phone-screen lp-demo-screen">
+          <div className="lp-demo-cam">
+            <div className="lp-demo-cam-paper">
+              <p className="lp-sheet-title">{lt('lpMockSheetTitle', locale)}</p>
+              <ul className="lp-sheet-rows">
+                {SHEET_ROWS.map((row) => (
+                  <li key={row.term}>
+                    {row.marked ? <mark>{row.term}</mark> : row.term} : {row.definition}
+                  </li>
+                ))}
+              </ul>
+              <span className="lp-demo-cam-line" />
+            </div>
+            <span className="lp-demo-cam-corners" />
+            <p className="lp-demo-cam-caption">{lt('lpVisualScan', locale)}</p>
+          </div>
+          <div className="lp-demo-play">
           <div className="lp-demo-gen">
             <p className="lp-demo-gen-title">
               <span className="lp-demo-gen-spinner" />
@@ -137,6 +153,7 @@ export function QuizPhoneMock({ locale }: { locale: Locale }) {
               </span>
             </div>
             <p className="lp-mock-xp">+10 XP</p>
+          </div>
           </div>
         </div>
       </div>
