@@ -533,9 +533,12 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <button
                 type="button"
                 className="lp-btn lp-btn--primary lp-btn--block"
-                onClick={() => scan('plans_plus')}
+                onClick={() => {
+                  trackEvent('clic_cta_landing', { emplacement: 'plans_plus' });
+                  login();
+                }}
               >
-                {lt('lpPlanCtaPaid', locale)}
+                {lt('lpPlanCtaPlus', locale)}
               </button>
             </article>
 
@@ -553,9 +556,12 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <button
                 type="button"
                 className="lp-btn lp-btn--ghost lp-btn--block"
-                onClick={() => scan('plans_pro')}
+                onClick={() => {
+                  trackEvent('clic_cta_landing', { emplacement: 'plans_pro' });
+                  login();
+                }}
               >
-                {lt('lpPlanCtaPaid', locale)}
+                {lt('lpPlanCtaPro', locale)}
               </button>
             </article>
           </div>
