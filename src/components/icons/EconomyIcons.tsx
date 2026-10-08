@@ -643,7 +643,7 @@ export function EconomyGlyph({
     case 'gem':
       return <LootGem size={size} className={className} />;
     case 'xp':
-      return <XpBoltIcon size={size} className={tone} />;
+      return <LootXp size={size} className={className} />;
     case 'potion':
       return <LootPotion size={size} className={className} />;
     case 'megaPotion':

@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pathGameKind } from '../components/icons/PathGameIcons';
 import { buildPathSteps } from './pathSteps';
-import { PATH_TEST_CHEST_AFTER_STEP, PATH_TEST_CHEST_ID } from './pathChest';
 import type { WordPair } from '../types';
 
 const pairs: WordPair[] = [
@@ -34,24 +33,13 @@ describe('pathGameKind', () => {
   });
 });
 
-describe('buildPathSteps test chest', () => {
-  it('keeps game ids and zigzag when inserting one chest', () => {
+describe('buildPathSteps', () => {
+  it('builds game-only zigzag nodes (no path chests)', () => {
     const nodes = buildPathSteps(8, pairs, { testChest: true });
-    const games = nodes.filter((n) => n.kind === 'game');
-    const chests = nodes.filter((n) => n.kind === 'chest');
-    expect(games.map((g) => g.kind === 'game' && g.id)).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
-    expect(chests).toHaveLength(1);
-    expect(chests[0]).toMatchObject({ kind: 'chest', chestId: PATH_TEST_CHEST_ID });
-    const chestIndex = nodes.findIndex((n) => n.kind === 'chest');
-    expect(chestIndex).toBe(PATH_TEST_CHEST_AFTER_STEP + 1);
+    expect(nodes.every((n) => n.kind === 'game')).toBe(true);
+    expect(nodes.map((n) => (n.kind === 'game' ? n.id : -1))).toEqual([0, 1, 2, 3, 4, 5, 6, 7]);
     expect(nodes[0]?.x).toBe(26);
     expect(nodes[1]?.x).toBe(74);
     expect(nodes[2]?.x).toBe(26);
-  });
-
-  it('does not insert a chest by default', () => {
-    const nodes = buildPathSteps(8, pairs);
-    expect(nodes.every((n) => n.kind === 'game')).toBe(true);
-    expect(nodes).toHaveLength(8);
   });
 });

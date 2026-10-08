@@ -14,13 +14,18 @@ html[data-landing='true'] #root {
   height: auto;
   min-height: 100%;
   max-height: none;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   overscroll-behavior: auto;
   background: #0f172a;
 }
 
 html[data-landing='true'] {
   scroll-behavior: smooth;
+  /* Lock the layout to the viewport width so hero overflow (phone halo,
+     combo chip) cannot widen the document and nudge sticky header / CTAs. */
+  width: 100%;
+  max-width: 100%;
 }
 
 html[data-landing='true'] body {
@@ -31,12 +36,13 @@ html[data-landing='true'] .app-shell,
 html[data-landing='true'] .app-shell.app-shell--guest {
   display: block;
   width: 100%;
-  max-width: none;
+  max-width: 100%;
   height: auto;
   min-height: 100dvh;
   max-height: none;
   margin: 0;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   box-shadow: none;
   grid-template-columns: none;
 }
@@ -46,20 +52,26 @@ html[data-landing='true'] .app-main,
 html[data-landing='true'] .app-shell.app-shell--guest .app-main {
   display: block;
   flex: none;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   min-height: 0;
   max-height: none;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
 }
 
 html[data-landing='true'] .screen.sp-landing {
   display: block;
   flex: none;
+  width: 100%;
+  max-width: 100%;
   height: auto;
   min-height: 100dvh;
   max-height: none;
   padding: 0;
-  overflow: visible;
+  overflow-x: clip;
+  overflow-y: visible;
   animation: none;
 }
 
@@ -254,7 +266,10 @@ html[data-landing='true'] .screen.sp-landing {
 .lp-header {
   position: sticky;
   top: 0;
+  left: 0;
   z-index: 40;
+  width: 100%;
+  max-width: 100%;
   padding-top: env(safe-area-inset-top, 0px);
   background: rgba(9, 13, 32, 0.45);
   -webkit-backdrop-filter: blur(16px) saturate(1.3);
@@ -732,6 +747,20 @@ html[data-landing='true'] .screen.sp-landing {
   position: relative;
 }
 
+/* Process line between Photo → Cartes → Jeu (prod story flow). */
+.lp-hero-step + .lp-hero-step::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  right: calc(100% + 1px);
+  width: 6px;
+  height: 1.5px;
+  border-radius: 1px;
+  background: rgba(255, 255, 255, 0.22);
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
 .lp-hero-step--1 {
   animation: lp-step-1 var(--lp-loop) linear infinite;
 }
@@ -865,12 +894,17 @@ html[data-landing='true'] .screen.sp-landing {
   --lp-phone-w: clamp(140px, min(50vw, calc(40vh * 9 / 15.2)), 200px);
   --lp-phone-w: clamp(140px, min(50vw, calc(40svh * 9 / 15.2)), 200px);
   --lp-sheet-overlap: 34px;
+  /* Scan dock: phone slides over the sheet (Photo), then back right (Jeu). */
+  --lp-phone-scan-shift: min(36vw, 132px);
 
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 0;
+  width: 100%;
+  /* Layout width stays fixed — phone motion is paint-only (transform). */
+  overflow: visible;
 }
 
 .lp-transform-arrow {
@@ -882,6 +916,27 @@ html[data-landing='true'] .screen.sp-landing {
   z-index: 2;
   margin-left: auto;
   margin-right: clamp(0px, 3vw, 24px);
+  /* Same story as prod: left over the sheet to scan, right for the game.
+     transform only → Se connecter / Scanner never reflow. */
+  animation: lp-phone-scan-dock var(--lp-loop) cubic-bezier(0.45, 0.05, 0.2, 1) infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes lp-phone-scan-dock {
+  /* Photo: docked over the sheet (aha / scan pose) */
+  0%,
+  12% {
+    transform: translate3d(calc(-1 * var(--lp-phone-scan-shift)), 0, 0);
+  }
+  /* Cartes → Jeu: back to the right */
+  18%,
+  94% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(calc(-1 * var(--lp-phone-scan-shift)), 0, 0);
+  }
 }
 
 /* Soft halo behind the phone so it pops off the aurora. */
@@ -913,6 +968,22 @@ html[data-landing='true'] .screen.sp-landing {
 .lp-phone-label {
   top: -12px;
   right: 8px;
+  /* Hide "TON JEU" while the phone is the scan viewfinder. */
+  animation: lp-phone-label-dock var(--lp-loop) linear infinite;
+}
+
+@keyframes lp-phone-label-dock {
+  0%,
+  14% {
+    opacity: 0;
+  }
+  18%,
+  94% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
 }
 
 .lp-sheet-label {
@@ -1113,6 +1184,46 @@ html[data-landing='true'] .screen.sp-landing {
   position: relative;
   gap: 6px;
   padding: 24px 10px 10px;
+}
+
+/* Photo beat: phone is a viewfinder over the sheet (screen + frame fill clear). */
+.lp-phone--hero .lp-phone-frame {
+  animation: lp-phone-cam-frame var(--lp-loop) linear infinite;
+}
+
+.lp-phone--hero .lp-demo-screen {
+  animation: lp-phone-cam-screen var(--lp-loop) linear infinite;
+}
+
+@keyframes lp-phone-cam-frame {
+  0%,
+  12% {
+    background: transparent;
+  }
+  16%,
+  96% {
+    background: #f6f8fa;
+  }
+  100% {
+    background: transparent;
+  }
+}
+
+@keyframes lp-phone-cam-screen {
+  0%,
+  12% {
+    background: transparent;
+    opacity: 0;
+  }
+  16%,
+  96% {
+    background: #f6f8fa;
+    opacity: 1;
+  }
+  100% {
+    background: transparent;
+    opacity: 0;
+  }
 }
 
 .lp-phone-screen--capture {
@@ -2814,32 +2925,55 @@ html[data-landing='true'] .screen.sp-landing {
 }
 
 .lp-proof-marquee {
+  /* Full-bleed past the section container gutters. */
+  margin-inline: calc(-1 * var(--lp-gutter));
+  width: calc(100% + 2 * var(--lp-gutter));
   overflow: hidden;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
-  mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+  /* Pause the GPU layer when the section is off-screen (toggled in JS). */
+}
+
+.lp-proof-marquee.is-paused .lp-proof-track {
+  animation-play-state: paused;
 }
 
 .lp-proof-track {
   display: flex;
-  gap: 16px;
   width: max-content;
   margin: 0;
   padding: 4px 0;
-  list-style: none;
-  animation: lp-proof-scroll calc(18s + var(--lp-proof-n, 3) * 8s) linear infinite;
+  /* Two identical strips; duration scales with count (~constant px/s). */
+  animation: lp-proof-scroll calc(var(--lp-proof-n, 3) * 7s) linear infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+  transform: translate3d(0, 0, 0);
 }
 
-.lp-proof-marquee:hover .lp-proof-track,
-.lp-proof-marquee:focus-within .lp-proof-track {
-  animation-play-state: paused;
+.lp-proof-strip {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 16px;
+  margin: 0;
+  padding: 0 16px 0 0;
+  list-style: none;
+}
+
+/* Hover-pause only on real pointers — sticky :hover on touch was freezing the loop. */
+@media (hover: hover) and (pointer: fine) {
+  .lp-proof-marquee:hover .lp-proof-track,
+  .lp-proof-marquee:focus-within .lp-proof-track {
+    animation-play-state: paused;
+  }
 }
 
 @keyframes lp-proof-scroll {
   from {
-    transform: translateX(0);
+    transform: translate3d(0, 0, 0);
   }
   to {
-    transform: translateX(calc(-100% / 3));
+    /* Exactly one duplicated strip — seamless, no jump. */
+    transform: translate3d(-50%, 0, 0);
   }
 }
 
@@ -3146,6 +3280,9 @@ html[data-landing='true'] .screen.sp-landing {
   right: 0;
   bottom: 0;
   z-index: 45;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
   padding: 10px var(--lp-gutter) calc(10px + env(safe-area-inset-bottom, 0px));
   background: rgba(9, 13, 32, 0.97);
   border-top: 1px solid var(--lp-border);
@@ -3279,6 +3416,29 @@ html[data-landing='true'] .screen.sp-landing {
   .lp-transform-phone {
     margin: 0;
     justify-self: center;
+    /* Desktop already lays out sheet → phone; keep it still. */
+    animation: none;
+    will-change: auto;
+    transform: none;
+  }
+
+  .lp-phone--hero .lp-phone-frame,
+  .lp-phone--hero .lp-demo-screen,
+  .lp-phone-label {
+    animation: none;
+  }
+
+  .lp-phone--hero .lp-phone-frame {
+    background: #f6f8fa;
+  }
+
+  .lp-phone--hero .lp-demo-screen {
+    background: #f6f8fa;
+    opacity: 1;
+  }
+
+  .lp-phone-label {
+    opacity: 1;
   }
 
   .lp-phone-label {
@@ -3407,12 +3567,21 @@ html[data-landing='true'] .screen.sp-landing {
   .lp-proof-track {
     flex-wrap: wrap;
     width: auto;
+    max-width: 100%;
     animation: none !important;
     transform: none;
+    will-change: auto;
   }
 
-  .lp-proof-card[aria-hidden='true'] {
+  .lp-proof-strip[aria-hidden='true'] {
     display: none;
+  }
+
+  .lp-proof-strip {
+    flex-wrap: wrap;
+    padding: 0;
+    gap: 12px;
+    width: 100%;
   }
 
   .lp-proof-star,
@@ -3483,6 +3652,24 @@ html[data-landing='true'] .screen.sp-landing {
     animation: none !important;
     opacity: 1;
     transform: none;
+  }
+
+  .lp-transform-phone {
+    animation: none !important;
+    transform: none;
+    will-change: auto;
+  }
+
+  .lp-phone--hero .lp-phone-frame,
+  .lp-phone--hero .lp-demo-screen,
+  .lp-phone-label {
+    animation: none !important;
+    opacity: 1 !important;
+  }
+
+  .lp-phone--hero .lp-phone-frame,
+  .lp-phone--hero .lp-demo-screen {
+    background: #f6f8fa !important;
   }
 
   .lp-hero-aurora,

@@ -59,6 +59,7 @@ import { StreakLostModal } from './components/StreakLostModal';
 import { ShopScreen } from './components/ShopScreen';
 import { Toast } from './components/Toast';
 import { UpgradeModal } from './components/UpgradeModal';
+import { CoachFab } from './components/CoachFab';
 import { MascotCorner } from './components/mascot/MascotCorner';
 import { shouldWelcomeBack } from './lib/mascot/firstLaunch';
 import {
@@ -1854,6 +1855,30 @@ export default function App() {
       <AdConsentBanner locale={locale} delayMs={2500} />
       <MascotCorner locale={locale} enabled={flow === 'playing' || flow === 'lesson'} />
 
+      {isLoggedIn() &&
+        (flow === 'modes' || flow === 'results' || flow === 'lessonComplete' || flow === 'reviewCards') && (
+        <CoachFab
+          locale={locale}
+          onOpen={() => {
+            if (historyId) {
+              updateHistoryDeckProgress(historyId, {
+                stepProgress,
+                examStepProgress,
+                examModeLocked,
+              });
+            }
+            markNavReplace();
+            closeFlow();
+            setMode(null);
+            setResult(null);
+            setLessonSession(null);
+            setShowConfetti(false);
+            setActiveStepIndex(null);
+            setTab('chat');
+          }}
+        />
+      )}
+
       {showBottomNav && (
         <>
           <NavMoreSheet
@@ -1955,6 +1980,7 @@ export default function App() {
           onOpenDeck={openHistoryDeck}
           onOpenAchievements={() => handleTabChange('achievements')}
           onOpenShop={() => handleTabChange('shop')}
+          onOpenSettings={() => handleTabChange('settings')}
           onNewUnlocks={celebrateAchievements}
         />
       )}
@@ -1978,6 +2004,9 @@ export default function App() {
           isLoggedIn={isLoggedIn()}
           onAuth={() => setFlow('auth')}
           onUpgrade={() => setUpgradeReason('coach')}
+          onOpenScan={() => startScanFlow()}
+          onOpenSettings={() => handleTabChange('settings')}
+          onOpenHome={() => handleTabChange('home')}
         />
       )}
       {flow === null && tab === 'friends' && (

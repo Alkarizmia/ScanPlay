@@ -14,7 +14,7 @@ import { t } from '../lib/i18n';
 import { processNewUnlocks, snapshotUnlockedIds } from '../lib/achievementUnlocks';
 import type { AchievementDef } from '../lib/achievements';
 import { AchievementGlyph } from './icons/AchievementGlyph';
-import { EconomyGlyph } from './icons/EconomyIcons';
+import { LootCoin, LootGem, LootPotion, LootXp } from './icons/EconomyIcons';
 import type { Locale } from '../types';
 
 const UPGRADE_TAPS = 3;
@@ -238,9 +238,9 @@ export function DailyChestOverlay({
 function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale }) {
   if (reward.type === 'coins') {
     return (
-      <span className="daily-chest-reward-coins">
-        <span className="daily-chest-reward-emoji" aria-hidden="true">
-          <EconomyGlyph id="coin" size={56} />
+      <span className="daily-chest-reward-other">
+        <span className="daily-chest-reward-tile daily-chest-reward-tile--coin" aria-hidden="true">
+          <LootCoin size={52} />
         </span>
         <span className="daily-chest-reward-label">+{reward.amount}</span>
       </span>
@@ -249,8 +249,8 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   if (reward.type === 'xp') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-emoji" aria-hidden="true">
-          <EconomyGlyph id="xp" size={56} />
+        <span className="daily-chest-reward-tile daily-chest-reward-tile--xp" aria-hidden="true">
+          <LootXp size={52} />
         </span>
         <span className="daily-chest-reward-label">+{reward.amount} XP</span>
       </span>
@@ -259,8 +259,8 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   if (reward.type === 'gems') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-emoji" aria-hidden="true">
-          <EconomyGlyph id="gem" size={56} />
+        <span className="daily-chest-reward-tile daily-chest-reward-tile--gem" aria-hidden="true">
+          <LootGem size={52} />
         </span>
         <span className="daily-chest-reward-label">
           +{reward.amount} {t('dashGems', locale)}
@@ -271,8 +271,8 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   if (reward.type === 'xp_potion') {
     return (
       <span className="daily-chest-reward-other">
-        <span className="daily-chest-reward-emoji" aria-hidden="true">
-          <EconomyGlyph id="potion" size={56} />
+        <span className="daily-chest-reward-tile daily-chest-reward-tile--potion" aria-hidden="true">
+          <LootPotion size={52} />
         </span>
         <span className="daily-chest-reward-label">{t('chestRewardPotion', locale)}</span>
       </span>
@@ -280,8 +280,8 @@ function RewardDisplay({ reward, locale }: { reward: ChestReward; locale: Locale
   }
   return (
     <span className="daily-chest-reward-other">
-      <span className="daily-chest-reward-emoji" aria-hidden="true">
-        <AchievementGlyph achievement={reward.achievement} size={56} />
+      <span className="daily-chest-reward-tile daily-chest-reward-tile--badge" aria-hidden="true">
+        <AchievementGlyph achievement={reward.achievement} size={52} />
       </span>
       <span className="daily-chest-reward-label">{t(reward.achievement.nameKey, locale)}</span>
     </span>

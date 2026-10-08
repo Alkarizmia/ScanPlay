@@ -1,14 +1,13 @@
 import type { GameMode, WordPair } from '../types';
 import { DEFAULT_PATH_STEP_COUNT } from './planLimits';
-import { PATH_TEST_CHEST_AFTER_STEP, PATH_TEST_CHEST_ID } from './pathChest';
 import { pickPathStepGames } from './pathGamePlan';
 
 /** @deprecated use DEFAULT_PATH_STEP_COUNT or getPathStepCount() */
 export const PATH_STEP_COUNT = DEFAULT_PATH_STEP_COUNT;
 
 export type PathNode =
-  | { kind: 'game'; id: number; games: GameMode[]; x: number; y: number }
-  | { kind: 'chest'; chestId: string; x: number; y: number };
+    | { kind: 'game'; id: number; games: GameMode[]; x: number; y: number }
+    | { kind: 'chest'; chestId: string; x: number; y: number };
 
 /** @deprecated use PathNode */
 export type PathStep = PathNode;
@@ -16,11 +15,11 @@ export type PathStep = PathNode;
 export function buildPathSteps(
   count: number = DEFAULT_PATH_STEP_COUNT,
   pairs: WordPair[] = [],
-  options?: { testChest?: boolean },
+  _options?: { testChest?: boolean },
 ): PathNode[] {
+  void _options;
   const fallback: WordPair[] = [{ term: 'a', definition: 'b' }];
   const source = pairs.length > 0 ? pairs : fallback;
-  const includeChest = Boolean(options?.testChest) && count > PATH_TEST_CHEST_AFTER_STEP + 1;
 
   const visual: PathNode[] = [];
   for (let i = 0; i < count; i += 1) {
@@ -31,9 +30,6 @@ export function buildPathSteps(
       x: 0,
       y: 0,
     });
-    if (includeChest && i === PATH_TEST_CHEST_AFTER_STEP) {
-      visual.push({ kind: 'chest', chestId: PATH_TEST_CHEST_ID, x: 0, y: 0 });
-    }
   }
 
   const n = visual.length;

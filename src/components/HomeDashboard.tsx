@@ -18,6 +18,7 @@ import type { Locale } from '../types';
 interface HomeDashboardProps {
   locale: Locale;
   refreshKey?: number;
+  streakPulseKey?: number;
   welcomeMessage?: string;
   onRefresh?: () => void;
   onOpenShop?: () => void;
@@ -100,6 +101,7 @@ function DashLootStat({
 export function HomeDashboard({
   locale,
   refreshKey = 0,
+  streakPulseKey = 0,
   welcomeMessage,
   onRefresh,
   onOpenShop,
@@ -119,6 +121,8 @@ export function HomeDashboard({
   const [missionsOpen, setMissionsOpen] = useState(true);
   const [chestOverlayOpen, setChestOverlayOpen] = useState(false);
   const [missionTick, setMissionTick] = useState(0);
+  const [streakClaimBurst, setStreakClaimBurst] = useState(false);
+  const [coachBurstKey, setCoachBurstKey] = useState(0);
   void missionTick;
 
   useEffect(() => {
@@ -127,6 +131,14 @@ export function HomeDashboard({
       onRefresh?.();
     }
   }, [refreshKey]);
+
+  useEffect(() => {
+    if (streakPulseKey <= 0) return;
+    setStreakClaimBurst(true);
+    setCoachBurstKey((k) => k + 1);
+    const id = window.setTimeout(() => setStreakClaimBurst(false), 2200);
+    return () => window.clearTimeout(id);
+  }, [streakPulseKey]);
 
   const handleChestOpened = (_reward: ChestReward, _rarity?: ChestRarity) => {
     onRefresh?.();
@@ -137,20 +149,21 @@ export function HomeDashboard({
       <article className="dash-card dash-card--welcome">
         <div className="dash-welcome-row">
           <MascotCoach
-            className="dash-streak-coach"
-            expression={streak > 0 ? 'streak' : 'welcome'}
+            key={coachBurstKey}
+            className={`dash-streak-coach${streakClaimBurst ? ' dash-streak-coach--claim' : ''}`}
+            expression={streak > 0 || streakClaimBurst ? 'streak' : 'welcome'}
             size={40}
             placement="compact"
             bubble={false}
-            idle
-            celebrate={streak > 0}
+            idle={!streakClaimBurst}
+            celebrate={streakClaimBurst}
           />
           <p className="dash-welcome-msg">{welcomeMessage}</p>
           <span
-            className={`dash-streak-badge${streak > 0 ? ' dash-streak-badge--lit' : ''}`}
+            className={`dash-streak-badge${streak > 0 ? ' dash-streak-badge--lit' : ''}${streakClaimBurst ? ' dash-streak-badge--claim' : ''}`}
             title={t('dashStreakTitle', locale)}
           >
-            <StreakFlame lit={streak > 0} size={16} />
+            <StreakFlame lit={streak > 0 || streakClaimBurst} size={16} />
             <span className="dash-streak-badge-val">{streak}</span>
           </span>
         </div>

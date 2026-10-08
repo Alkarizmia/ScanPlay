@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { LogoWordmark } from '../Logo';
 import { ScanPlayChest } from '../ScanPlayChest';
@@ -40,8 +40,27 @@ interface Testimonial {
   quote: string;
   author: string;
   context: string;
-  rating?: number;
+  rating: number;
 }
+
+const PROOF_ITEMS: {
+  id: string;
+  quote: LandingCopyKey;
+  author: LandingCopyKey;
+  role: LandingCopyKey;
+}[] = [
+  { id: '1', quote: 'lpProof1Quote', author: 'lpProof1Author', role: 'lpProof1Role' },
+  { id: '2', quote: 'lpProof2Quote', author: 'lpProof2Author', role: 'lpProof2Role' },
+  { id: '3', quote: 'lpProof3Quote', author: 'lpProof3Author', role: 'lpProof3Role' },
+  { id: '4', quote: 'lpProof4Quote', author: 'lpProof4Author', role: 'lpProof4Role' },
+  { id: '5', quote: 'lpProof5Quote', author: 'lpProof5Author', role: 'lpProof5Role' },
+  { id: '6', quote: 'lpProof6Quote', author: 'lpProof6Author', role: 'lpProof6Role' },
+  { id: '7', quote: 'lpProof7Quote', author: 'lpProof7Author', role: 'lpProof7Role' },
+  { id: '8', quote: 'lpProof8Quote', author: 'lpProof8Author', role: 'lpProof8Role' },
+  { id: '9', quote: 'lpProof9Quote', author: 'lpProof9Author', role: 'lpProof9Role' },
+  { id: '10', quote: 'lpProof10Quote', author: 'lpProof10Author', role: 'lpProof10Role' },
+  { id: '11', quote: 'lpProof11Quote', author: 'lpProof11Author', role: 'lpProof11Role' },
+];
 
 function ProofStars({ rating }: { rating: number }) {
   return (
@@ -132,7 +151,16 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   const [lang, setLang] = useState<LandingLang>(initialLandingLang);
   const locale: Locale = lang;
   const { ref: heroCtaRef, outOfView: heroCtaHidden } = useOutOfView<HTMLDivElement>();
-  const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
+  const proofMarqueeRef = useRef<HTMLDivElement>(null);
+  const [proofPaused, setProofPaused] = useState(false);
+
+  const testimonials: Testimonial[] = PROOF_ITEMS.map((item) => ({
+    id: item.id,
+    quote: lt(item.quote, lang),
+    author: lt(item.author, lang),
+    context: lt(item.role, lang),
+    rating: 5,
+  }));
 
   // The guest app shell locks html/body scrolling for the in-app screens.
   // The landing needs the document to scroll, so flag it only while mounted.
@@ -144,42 +172,18 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
     };
   }, [lang]);
 
+  // Keep the CSS marquee cheap: pause the transform layer while off-screen.
   useEffect(() => {
-    let cancelled = false;
-    void (async () => {
-      try {
-        const res = await fetch(
-          import.meta.env.DEV ? 'https://scanplay.org/api/testimonial' : '/api/testimonial',
-        );
-        if (!res.ok) return;
-        const data = (await res.json()) as {
-          items?: {
-            id?: string;
-            author_name?: string;
-            role?: string;
-            quote?: string;
-            rating?: number;
-          }[];
-        };
-        if (cancelled) return;
-        setTestimonials(
-          (data.items ?? [])
-            .filter((item) => item.quote && item.author_name)
-            .map((item, index) => ({
-              id: item.id || `${item.author_name}-${index}`,
-              quote: String(item.quote),
-              author: String(item.author_name),
-              context: String(item.role || ''),
-              rating: Number(item.rating) || undefined,
-            })),
-        );
-      } catch {
-        /* landing stays without proof */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
+    const el = proofMarqueeRef.current;
+    if (!el || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setProofPaused(!entry.isIntersecting);
+      },
+      { rootMargin: '80px 0px', threshold: 0 },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const changeLang = (next: LandingLang) => {
@@ -351,21 +355,22 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           </div>
         </Section>
 
-        {/* ---------- SOCIAL PROOF (after steps — only when approved) ---------- */}
-        {testimonials.length > 0 && (
-          <Section className="lp-section--proof" labelledBy="lp-proof-title">
-            <header className="lp-section-head">
-              <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
-            </header>
-            <div
-              className="lp-proof-marquee"
-              style={{ ['--lp-proof-n' as string]: String(testimonials.length) }}
-            >
-              <ul className="lp-proof-track">
-                {[0, 1, 2].flatMap((copy) =>
-                  testimonials.map((item) => (
-                    <li key={`${item.id}-${copy}`} className="lp-proof-card" aria-hidden={copy > 0}>
-                      {item.rating ? <ProofStars rating={item.rating} /> : null}
+        {/* ---------- SOCIAL PROOF (i18n — follows selected landing language) ---------- */}
+        <Section className="lp-section--proof" labelledBy="lp-proof-title">
+          <header className="lp-section-head">
+            <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
+          </header>
+          <div
+            ref={proofMarqueeRef}
+            className={`lp-proof-marquee${proofPaused ? ' is-paused' : ''}`}
+            style={{ ['--lp-proof-n' as string]: String(testimonials.length) }}
+          >
+            <div className="lp-proof-track">
+              {[0, 1].map((copy) => (
+                <ul key={copy} className="lp-proof-strip" aria-hidden={copy > 0}>
+                  {testimonials.map((item) => (
+                    <li key={`${item.id}-${copy}`} className="lp-proof-card">
+                      <ProofStars rating={item.rating} />
                       <blockquote>{item.quote}</blockquote>
                       <p className="lp-proof-author">
                         <span className="lp-proof-avatar" aria-hidden="true">
@@ -377,12 +382,12 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                         </span>
                       </p>
                     </li>
-                  )),
-                )}
-              </ul>
+                  ))}
+                </ul>
+              ))}
             </div>
-          </Section>
-        )}
+          </div>
+        </Section>
 
         {/* ---------- PRODUCT ---------- */}
         <Section id="le-produit" className="lp-section--product" labelledBy="lp-product-title">

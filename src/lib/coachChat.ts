@@ -32,10 +32,20 @@ function normalizeQuota(row: Partial<CoachQuota> | null | undefined): CoachQuota
   const used = Number(row?.used);
   const remaining = Number(row?.remaining);
   const safeLimit = Number.isFinite(limit) && limit > 0 ? limit : fallback.limit;
-  const safeUsed = Number.isFinite(used) && used >= 0 ? used : 0;
-  const safeRemaining = Number.isFinite(remaining)
-    ? Math.max(remaining, 0)
-    : Math.max(safeLimit - safeUsed, 0);
+  const safeUsed = Number.isFinite(used) && used >= 0 ? Math.min(used, safeLimit) : 0;
+  // Prefer limit − used. A lone remaining:0 with used:0 is a bad payload / stale row.
+  let safeRemaining = Math.max(safeLimit - safeUsed, 0);
+  if (
+    Number.isFinite(remaining) &&
+    remaining >= 0 &&
+    remaining <= safeLimit &&
+    !(safeUsed === 0 && remaining === 0 && safeLimit > 0)
+  ) {
+    safeRemaining = Math.max(remaining, 0);
+  }
+  if (safeUsed === 0 && safeLimit > 0) {
+    safeRemaining = safeLimit;
+  }
   return {
     ...fallback,
     ...row,
@@ -46,6 +56,15 @@ function normalizeQuota(row: Partial<CoachQuota> | null | undefined): CoachQuota
     maxChars: Number(row?.maxChars) || fallback.maxChars,
     historyWindow: Number(row?.historyWindow) || fallback.historyWindow,
   };
+}
+
+export async function fetchCoachQuota(): Promise<CoachQuota | null> {
+  const supabase = getSupabase();
+  if (!supabase || !isSupabaseConfigured) return fallbackQuota();
+  const { data, error } = await supabase.rpc('get_coach_chat_quota');
+  if (error || data == null) return fallbackQuota();
+  const row = (Array.isArray(data) ? data[0] : data) as Partial<CoachQuota> | null;
+  return normalizeQuota(row);
 }
 
 export function buildCoachContext(locale: Locale) {
@@ -93,14 +112,6 @@ function fallbackQuota(): CoachQuota {
     voiceEnabled: true,
     voiceProvider: 'groq',
   };
-}
-
-export async function fetchCoachQuota(): Promise<CoachQuota | null> {
-  const supabase = getSupabase();
-  if (!supabase || !isSupabaseConfigured) return fallbackQuota();
-  const { data, error } = await supabase.rpc('get_coach_chat_quota');
-  if (error || !data) return fallbackQuota();
-  return normalizeQuota(data as Partial<CoachQuota>);
 }
 
 export async function loadCoachMessages(): Promise<CoachMessage[]> {

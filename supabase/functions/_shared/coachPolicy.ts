@@ -123,6 +123,12 @@ export function looksLikeBoost(message: string): boolean {
   return /\b(encourage[- ]moi|cheer me|moedig me|anímame|boost)\b/i.test(message);
 }
 
+export function looksLikeSettingsHelp(message: string): boolean {
+  return /\b(param[eè]tres?|settings?|instellingen|ajustes|notifications?|langue|language|mot de passe|password)\b/i.test(
+    message,
+  );
+}
+
 /** Réponse locale : pas d'IA, pas de crédit. Null = vrai appel coach (fiches + question). */
 export function localCoachReply(
   message: string,
@@ -156,30 +162,43 @@ export function localCoachReply(
       : "Avec plaisir. Dis-moi ce que tu veux réviser sur tes dernières fiches.";
   }
 
-  if (looksLikeScanHelp(message)) {
+  if (looksLikeSettingsHelp(message)) {
     if (lang === 'en') {
-      return "Open Home, tap scan, photograph a page. When it shows up in History, come back and I can quiz you.";
+      return "Open Settings from the gear on Home (top left of the bell). Language, notifications and account are there.\n\n[[action:settings]]";
     }
     if (lang === 'nl') {
-      return "Ga naar Home, tik op scannen, fotografeer een blad. Als het in je geschiedenis staat, kan ik je overhoren.";
+      return "Open Instellingen via het tandwiel op Home (links van het belletje). Taal, meldingen en account staan daar.\n\n[[action:settings]]";
     }
     if (lang === 'es') {
-      return "Abre Inicio, pulsa escanear, fotografía una hoja. Cuando esté en el historial, te hago un test.";
+      return "Abre Ajustes con el engranaje en Inicio (a la izquierda de la campana). Idioma, notificaciones y cuenta están ahí.\n\n[[action:settings]]";
     }
-    return "Va sur Accueil, appuie sur scanner, prends une photo de ta page. Quand elle est dans l'historique, reviens, je pourrai te tester.";
+    return "Ouvre les paramètres via l'engrenage sur Accueil (à gauche de la cloche). Langue, notifications et compte sont là.\n\n[[action:settings]]";
+  }
+
+  if (looksLikeScanHelp(message)) {
+    if (lang === 'en') {
+      return "Open Home, tap scan, photograph a page. When it shows up in History, come back and I can quiz you.\n\nTap here to scan 👇\n[[action:scan]]";
+    }
+    if (lang === 'nl') {
+      return "Ga naar Home, tik op scannen, fotografeer een blad. Als het in je geschiedenis staat, kan ik je overhoren.\n\nTik hier om te scannen 👇\n[[action:scan]]";
+    }
+    if (lang === 'es') {
+      return "Abre Inicio, pulsa escanear, fotografía una hoja. Cuando esté en el historial, te hago un test.\n\nPulsa aquí para escanear 👇\n[[action:scan]]";
+    }
+    return "Va sur Accueil, appuie sur scanner, prends une photo de ta page. Quand elle est dans l'historique, reviens, je pourrai te tester.\n\nAppuie ici pour scanner 👇\n[[action:scan]]";
   }
 
   if (looksLikeNewUserAsk(message)) {
     if (lang === 'en') {
-      return "Welcome. Photo of a lesson from Home, we turn it into a game, then I help you. Nothing scanned yet, start there.";
+      return "Welcome. Photo of a lesson from Home, we turn it into a game, then I help you. Nothing scanned yet, start there.\n\n[[action:scan]]";
     }
     if (lang === 'nl') {
-      return "Welkom. Foto van je les via Home, wij maken er een spel van, daarna help ik je. Nog niets gescand, begin daar.";
+      return "Welkom. Foto van je les via Home, wij maken er een spel van, daarna help ik je. Nog niets gescand, begin daar.\n\n[[action:scan]]";
     }
     if (lang === 'es') {
-      return "Bienvenido. Foto de tu clase desde Inicio, lo convertimos en juego, luego te ayudo. Aún no hay escaneo, empieza por ahí.";
+      return "Bienvenido. Foto de tu clase desde Inicio, lo convertimos en juego, luego te ayudo. Aún no hay escaneo, empieza por ahí.\n\n[[action:scan]]";
     }
-    return "Bienvenue. Photo d'un cours depuis Accueil, on en fait un jeu, ensuite je t'aide. Tu n'as encore rien scanné, commence par là.";
+    return "Bienvenue. Photo d'un cours depuis Accueil, on en fait un jeu, ensuite je t'aide. Tu n'as encore rien scanné, commence par là.\n\n[[action:scan]]";
   }
 
   if (looksLikeBoost(message)) {
@@ -194,15 +213,15 @@ export function localCoachReply(
 
   if (empty) {
     if (lang === 'en') {
-      return "I can talk, but I have no sheet to quiz you on. Scan a lesson from Home first.";
+      return "I can talk, but I have no sheet to quiz you on. Scan a lesson from Home first.\n\n[[action:scan]]";
     }
     if (lang === 'nl') {
-      return "Ik kan praten, maar ik heb nog geen blad voor een quiz. Scan eerst een les via Home.";
+      return "Ik kan praten, maar ik heb nog geen blad voor een quiz. Scan eerst een les via Home.\n\n[[action:scan]]";
     }
     if (lang === 'es') {
-      return "Puedo hablar, pero no tengo ficha para un test. Escanea una lección desde Inicio.";
+      return "Puedo hablar, pero no tengo ficha para un test. Escanea una lección desde Inicio.\n\n[[action:scan]]";
     }
-    return "Je peux te parler, mais je n'ai pas de fiche pour un quiz. Scanne un cours depuis Accueil d'abord.";
+    return "Je peux te parler, mais je n'ai pas de fiche pour un quiz. Scanne un cours depuis Accueil d'abord.\n\n[[action:scan]]";
   }
 
   return null;

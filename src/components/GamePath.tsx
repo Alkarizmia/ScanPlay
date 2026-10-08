@@ -1,22 +1,14 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
-import { DailyChestOverlay } from './DailyChestOverlay';
 import { Logo } from './Logo';
 import { LockIcon } from './icons/LockIcon';
 import { PathGameKindIcon, pathGameKind } from './icons/PathGameIcons';
-import { ScanPlayChest } from './ScanPlayChest';
 
 import { buildPathD, buildPathSteps, pathAreaHeight } from '../lib/pathSteps';
 import {
   getNextGameForStep,
   getNodeGamesDone,
 } from '../lib/pathGamePlan';
-import {
-  claimPathTestChest,
-  healPathTestChestIfPastGate,
-  isPathTestChestOpened,
-  PATH_TEST_CHEST_AFTER_STEP,
-} from '../lib/pathChest';
 import type { WordPair } from '../types';
 import {
   canPlayStep,
@@ -63,31 +55,20 @@ export function GamePath({
   historyReplay = false,
   examMode = false,
   sheetThumbnail,
-  deckId = null,
-  onReward,
-  onNewUnlocks,
+  onReward: _onReward,
+  onNewUnlocks: _onNewUnlocks,
 }: GamePathProps) {
+  void _onReward;
+  void _onNewUnlocks;
+
   const pathSteps = useMemo(
-    () => buildPathSteps(pathStepCount, pairs, { testChest: !examMode }),
-    [pathStepCount, pairs, examMode],
+    () => buildPathSteps(pathStepCount, pairs),
+    [pathStepCount, pairs],
   );
   const pathD = useMemo(() => buildPathD(pathSteps), [pathSteps]);
   const areaHeight = pathAreaHeight(pathSteps.length);
 
   const firstActiveIdx = getFirstActiveStep(stepProgress, pathStepCount, examMode, pairs);
-  const [chestOpened, setChestOpened] = useState(
-    () => healPathTestChestIfPastGate(deckId, firstActiveIdx) || isPathTestChestOpened(deckId),
-  );
-  const [chestOverlayOpen, setChestOverlayOpen] = useState(false);
-
-  useEffect(() => {
-    const opened =
-      healPathTestChestIfPastGate(deckId, firstActiveIdx) || isPathTestChestOpened(deckId);
-    setChestOpened(opened);
-  }, [deckId, firstActiveIdx]);
-
-  const chestPending = !examMode && firstActiveIdx > PATH_TEST_CHEST_AFTER_STEP && !chestOpened;
-  const chestBlocksLater = chestPending;
 
   const activeNode = pathSteps.find((step) => step.kind === 'game' && step.id === firstActiveIdx);
   const activeGames = activeNode && activeNode.kind === 'game'
@@ -99,7 +80,7 @@ export function GamePath({
   const pathRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (firstActiveIdx > prevActiveRef.current && firstActiveIdx < pathStepCount && !chestPending) {
+    if (firstActiveIdx > prevActiveRef.current && firstActiveIdx < pathStepCount) {
       setUnlockIdx(firstActiveIdx);
       playSound('pop');
       const timer = window.setTimeout(() => setUnlockIdx(null), 750);
@@ -107,12 +88,12 @@ export function GamePath({
       return () => window.clearTimeout(timer);
     }
     prevActiveRef.current = firstActiveIdx;
-  }, [firstActiveIdx, pathStepCount, chestPending]);
+  }, [firstActiveIdx, pathStepCount]);
 
   useEffect(() => {
     const node = pathRef.current?.querySelector('.scanplay-node.active');
     node?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [firstActiveIdx, chestPending]);
+  }, [firstActiveIdx]);
 
   return (
     <div className="scanplay-path">
@@ -165,40 +146,12 @@ export function GamePath({
         </svg>
 
         {pathSteps.map((step) => {
-          if (step.kind === 'chest') {
-            const locked = firstActiveIdx <= PATH_TEST_CHEST_AFTER_STEP;
-            const active = chestPending && !locked;
-            return (
-              <div
-                key={step.chestId}
-                className={`scanplay-path-step${step.x > 50 ? ' scanplay-path-step--right' : ''}`}
-                style={{ left: `${step.x}%`, top: `${step.y}%` } as CSSProperties}
-              >
-                <button
-                  type="button"
-                  className={`scanplay-node chest${active ? ' active' : ''}${locked ? ' locked' : ''}${chestOpened ? ' chest-opened' : ''}`}
-                  onClick={() => {
-                    if (locked || chestOpened) return;
-                    setChestOverlayOpen(true);
-                  }}
-                  disabled={locked || chestOpened}
-                  aria-label={t('shopDailyChest', locale)}
-                >
-                  <span className="scanplay-node-icon" aria-hidden="true">
-                    {locked ? <LockIcon size={30} /> : <ScanPlayChest open={chestOpened} size={44} idle={active && !chestOpened} />}
-                  </span>
-                </button>
-              </div>
-            );
-          }
+          if (step.kind !== 'game') return null;
 
           const result = getStepResult(step.id, stepProgress);
           const displayTier = getDisplayTierFromResult(result);
-          const blockedByChest = chestBlocksLater && step.id > PATH_TEST_CHEST_AFTER_STEP;
-          const active =
-            !blockedByChest && isStepActive(step.id, stepProgress, pathStepCount, examMode, pairs);
-          const locked =
-            blockedByChest || isStepLocked(step.id, stepProgress, pathStepCount, examMode, pairs);
+          const active = isStepActive(step.id, stepProgress, pathStepCount, examMode, pairs);
+          const locked = isStepLocked(step.id, stepProgress, pathStepCount, examMode, pairs);
           const unlocking = unlockIdx === step.id;
           const tierClass = displayTier ? TIER_CLASS[displayTier] : '';
           const { done, total } = getNodeGamesDone(step.id, stepProgress, pairs);
@@ -213,7 +166,6 @@ export function GamePath({
           const examCleared = examMode && result && result.pct >= EXAM_PASS_PCT;
           const canOpen =
             (historyReplay || !complete) &&
-            !blockedByChest &&
             canPlayStep(step.id, stepProgress, {
               historyReplay,
               examMode,
@@ -264,21 +216,6 @@ export function GamePath({
           );
         })}
       </div>
-
-      <DailyChestOverlay
-        open={chestOverlayOpen}
-        locale={locale}
-        onClose={() => setChestOverlayOpen(false)}
-        claim={(rarity) => claimPathTestChest(deckId, rarity)}
-        onOpened={() => {
-          setChestOpened(true);
-          setUnlockIdx(PATH_TEST_CHEST_AFTER_STEP + 1);
-          playSound('pop');
-          window.setTimeout(() => setUnlockIdx(null), 750);
-          onReward?.();
-        }}
-        onNewUnlocks={onNewUnlocks}
-      />
     </div>
   );
 }

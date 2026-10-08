@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeCoachSpacing, parseCoachSegments } from './coachMessageFormat';
+import {
+  enrichCoachActions,
+  extractCoachActions,
+  normalizeCoachSpacing,
+  parseCoachSegments,
+} from './coachMessageFormat';
 
 describe('coachMessageFormat', () => {
   it('splits glued numbered items onto new lines', () => {
@@ -20,5 +25,22 @@ describe('coachMessageFormat', () => {
       { type: 'bold', value: 'Maths' },
       { type: 'text', value: '.' },
     ]);
+  });
+
+  it('extracts action shortcuts and strips markers', () => {
+    const out = extractCoachActions('Appuie ici 👇\n[[action:scan]]\n[[action:settings]]');
+    expect(out.actions).toEqual(['scan', 'settings']);
+    expect(out.text).toContain('Appuie ici');
+    expect(out.text).not.toContain('[[action:');
+  });
+
+  it('adds a scan button when the reply invites scanning without a tag', () => {
+    const raw =
+      "Pour bien commencer, tu peux scanner directement ta fiche ! Appuie sur le bouton **Accueil** dans l'application.";
+    const out = enrichCoachActions(raw);
+    expect(out).toContain('[[action:scan]]');
+    const parsed = extractCoachActions(out);
+    expect(parsed.actions).toEqual(['scan']);
+    expect(parsed.text).toContain('scanner directement');
   });
 });

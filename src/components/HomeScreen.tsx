@@ -15,6 +15,7 @@ import { GuestScanBanner } from './GuestScanBanner';
 import { usePwaInstall } from '../hooks/usePwaInstall';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { AchievementGlyph } from './icons/AchievementGlyph';
+import { NavIcon } from './icons/NavIcon';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
 import { getHistory, peekLastHomeDeck } from '../lib/history';
@@ -56,6 +57,7 @@ interface HomeScreenProps {
   onOpenDeck?: (entry: HistoryEntry) => void;
   onOpenAchievements?: () => void;
   onOpenShop?: () => void;
+  onOpenSettings?: () => void;
   onNewUnlocks?: (unlocks: import('../lib/achievements').AchievementDef[]) => void;
 }
 
@@ -75,9 +77,9 @@ export function HomeScreen({
   onOpenDeck,
   onOpenAchievements,
   onOpenShop,
+  onOpenSettings,
   onNewUnlocks,
 }: HomeScreenProps) {
-  void streakPulseKey;
   const plan = usePlan(refreshKey);
   const scansLeft = getScansRemaining();
   const isDesktop = device.kind === 'desktop';
@@ -171,6 +173,17 @@ export function HomeScreen({
           <LogoWordmark />
         </div>
         <div className="top-bar-actions">
+          {loggedIn && onOpenSettings && (
+            <button
+              type="button"
+              className="notification-bell top-bar-settings-btn"
+              onClick={onOpenSettings}
+              aria-label={t('settings', locale)}
+              title={t('settings', locale)}
+            >
+              <NavIcon tab="settings" className="notification-bell-svg" />
+            </button>
+          )}
           {loggedIn && (
             <NotificationCenter locale={locale} refreshKey={refreshKey} onSocialChange={onSocialChange} />
           )}
@@ -257,6 +270,7 @@ export function HomeScreen({
           <HomeDashboard
             locale={locale}
             refreshKey={refreshKey}
+            streakPulseKey={streakPulseKey}
             welcomeMessage={welcomeMessage}
             onRefresh={onRefresh}
             onOpenShop={onOpenShop}

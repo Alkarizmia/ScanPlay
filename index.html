@@ -56,12 +56,15 @@
     <meta name="apple-mobile-web-app-title" content="ScanPlay" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <title>ScanPlay - Transforme tes cours en jeu pour réviser</title>
+
+    <title>Fiche de révision : transforme-la en jeu | ScanPlay</title>
     <meta
       name="description"
-      content="Scanne ta fiche de révision, ScanPlay la transforme en jeu. 1er scan gratuit, sans carte bancaire. 2 scans par jour offerts. Essaie maintenant."
+      content="Scanne ta fiche de révision : ScanPlay la transforme en jeu avec flashcards, quiz, écoute et dictée. Gratuit, sans carte bancaire."
     />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
     <link rel="canonical" href="https://scanplay.org/" />
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="ScanPlay" />
     <meta property="og:locale" content="fr_FR" />
@@ -69,7 +72,7 @@
     <meta property="og:title" content="ScanPlay : prends ton cours en photo, il devient un jeu" />
     <meta
       property="og:description"
-      content="Ta fiche devient un parcours de jeux : flashcards, quiz, oral, dictée. Premier scan gratuit, sans compte."
+      content="Ta fiche devient un parcours de jeux : flashcards, quiz, oral, dictée. Scan gratuit, sans carte bancaire."
     />
     <meta property="og:image" content="https://scanplay.org/icon-512.png?v=9" />
     <meta property="og:image:width" content="512" />
@@ -79,9 +82,51 @@
     <meta name="twitter:title" content="ScanPlay : prends ton cours en photo, il devient un jeu" />
     <meta
       name="twitter:description"
-      content="Ta fiche de cours devient des flashcards, des quiz et des mini-jeux. Premier scan gratuit, sans compte."
+      content="Ta fiche de cours devient des flashcards, des quiz et des mini-jeux. Scan gratuit, sans carte bancaire."
     />
     <meta name="twitter:image" content="https://scanplay.org/icon-512.png?v=9" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "Organization",
+            "@id": "https://scanplay.org/#organization",
+            "name": "ScanPlay",
+            "url": "https://scanplay.org/",
+            "logo": "https://scanplay.org/icon-512.png?v=9"
+          },
+          {
+            "@type": "WebSite",
+            "@id": "https://scanplay.org/#website",
+            "url": "https://scanplay.org/",
+            "name": "ScanPlay",
+            "inLanguage": "fr",
+            "publisher": { "@id": "https://scanplay.org/#organization" }
+          },
+          {
+            "@type": "WebApplication",
+            "@id": "https://scanplay.org/#app",
+            "name": "ScanPlay",
+            "url": "https://scanplay.org/",
+            "applicationCategory": "EducationalApplication",
+            "operatingSystem": "Web",
+            "inLanguage": ["fr", "en"],
+            "description": "Prends ta fiche de révision en photo : ScanPlay la transforme en jeu avec flashcards, quiz, écoute, écriture et dictée.",
+            "audience": { "@type": "EducationalAudience", "educationalRole": "student" },
+            "featureList": [
+              "Scan de fiches de révision et de notes de cours par photo",
+              "Jeux générés automatiquement : flashcards, quiz, écoute, écriture, dictée",
+              "XP, niveaux, séries de jours et succès"
+            ],
+            "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
+            "publisher": { "@id": "https://scanplay.org/#organization" }
+          }
+        ]
+      }
+    </script>
+
     <meta name="google-adsense-account" content="ca-pub-6135402548418867" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -95,6 +140,18 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width:720px;margin:0 auto;padding:24px;color:#f8fafc;font-family:Inter,Arial,sans-serif">
+        <h1>ScanPlay : transforme ta fiche de révision en jeu</h1>
+        <p>Prends ton cours en photo : ScanPlay le transforme en parcours de jeux pour réviser, avec flashcards, quiz, écoute, écriture et dictée.</p>
+        <ul>
+          <li>Scanne ta fiche de révision ou tes notes de cours</li>
+          <li>Ton jeu est généré automatiquement à partir de ton cours</li>
+          <li>Crée un compte gratuit pour y jouer et suivre ta progression (XP, séries, succès)</li>
+        </ul>
+        <p>Gratuit, sans carte bancaire. Active JavaScript pour utiliser ScanPlay.</p>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

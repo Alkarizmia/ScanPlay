@@ -14,7 +14,12 @@ import { speakText } from '../lib/speech';
 import { canRecordCoachVoice, recordSpeechWithVAD, transcribeViaServer } from '../lib/speechServer';
 import { MicIcon } from './icons/MicIcon';
 import type { Locale } from '../types';
-import { parseCoachSegments } from '../lib/coachMessageFormat';
+import {
+  enrichCoachActions,
+  extractCoachActions,
+  parseCoachSegments,
+  type CoachActionId,
+} from '../lib/coachMessageFormat';
 
 interface ChatScreenProps {
   locale: Locale;
@@ -22,14 +27,59 @@ interface ChatScreenProps {
   isLoggedIn: boolean;
   onAuth: () => void;
   onUpgrade: () => void;
+  onOpenScan?: () => void;
+  onOpenSettings?: () => void;
+  onOpenHome?: () => void;
 }
 
-function CoachBubbleBody({ content, role }: { content: string; role: CoachMessage['role'] }) {
+function CoachTyping() {
+  return (
+    <p className="chat-bubble chat-bubble--assistant chat-bubble--typing" aria-live="polite">
+      <span className="chat-typing" aria-hidden="true">
+        <span />
+        <span />
+        <span />
+      </span>
+      <span className="sr-only">…</span>
+    </p>
+  );
+}
+
+function CoachBubbleBody({
+  content,
+  role,
+  locale,
+  onAction,
+}: {
+  content: string;
+  role: CoachMessage['role'];
+  locale: Locale;
+  onAction?: (action: CoachActionId) => void;
+}) {
   if (role === 'user') return <>{content}</>;
+  const { text, actions } = extractCoachActions(content);
   return (
     <>
-      {parseCoachSegments(content).map((part, i) =>
+      {parseCoachSegments(text).map((part, i) =>
         part.type === 'bold' ? <strong key={i}>{part.value}</strong> : <span key={i}>{part.value}</span>,
+      )}
+      {actions.length > 0 && onAction && (
+        <span className="chat-action-row">
+          {actions.map((action) => (
+            <button
+              key={action}
+              type="button"
+              className="chat-action-btn"
+              onClick={() => onAction(action)}
+            >
+              {action === 'scan'
+                ? t('chatActionScan', locale)
+                : action === 'settings'
+                  ? t('chatActionSettings', locale)
+                  : t('chatActionHome', locale)}
+            </button>
+          ))}
+        </span>
       )}
     </>
   );
@@ -57,7 +107,16 @@ export function ChatScreen(props: ChatScreenProps) {
   return <ChatScreenLive {...props} />;
 }
 
-function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: ChatScreenProps) {
+function ChatScreenLive({
+  locale,
+  refreshKey,
+  isLoggedIn,
+  onAuth,
+  onUpgrade,
+  onOpenScan,
+  onOpenSettings,
+  onOpenHome,
+}: ChatScreenProps) {
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
@@ -85,7 +144,11 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
       const [nextQuota, history] = await Promise.all([fetchCoachQuota(), loadCoachMessages()]);
       if (cancelled) return;
       if (nextQuota) setQuota(nextQuota);
-      setMessages(history);
+      setMessages(
+        history.map((row) =>
+          row.role === 'assistant' ? { ...row, content: enrichCoachActions(row.content) } : row,
+        ),
+      );
     })();
     return () => {
       cancelled = true;
@@ -98,13 +161,31 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
 
   useEffect(() => () => stopVoiceRef.current?.(), []);
 
-  const remaining = Math.max(Number(quota.remaining) || 0, 0);
-  const used = Number.isFinite(Number(quota.used)) ? Number(quota.used) : 0;
   const limit = Number(quota.limit) || getDailyChatLimit();
+  const used = Math.max(0, Number.isFinite(Number(quota.used)) ? Number(quota.used) : 0);
+  // Display from used/limit so a bad remaining:0 never shows as empty day.
+  const remaining =
+    used === 0 && limit > 0
+      ? limit
+      : Math.max(
+          0,
+          Math.min(
+            limit,
+            Number.isFinite(Number(quota.remaining))
+              ? Number(quota.remaining)
+              : limit - used,
+          ),
+        );
   const noSheets = getHistory().length === 0;
   const freeLocked = getPlan() === 'free' || getDailyChatLimit() <= 0;
   // Free can write; paid only blocks when daily quota is exhausted.
   const blocked = !freeLocked && !noSheets && remaining <= 0 && used >= limit;
+
+  const runAction = (action: CoachActionId) => {
+    if (action === 'scan') onOpenScan?.();
+    else if (action === 'settings') onOpenSettings?.();
+    else onOpenHome?.();
+  };
 
   const send = async (text: string, speakReply = false) => {
     const message = text.trim();
@@ -123,7 +204,11 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
       setMessages((prev) => [
         ...prev.filter((row) => row.id !== localId),
         { id: `${localId}-user`, role: 'user', content: message },
-        { id: `${localId}-bot`, role: 'assistant', content: t('chatFreeLockedReply', locale) },
+        {
+          id: `${localId}-bot`,
+          role: 'assistant',
+          content: enrichCoachActions(t('chatFreeLockedReply', locale)),
+        },
       ]);
       setBusy(false);
       return;
@@ -138,7 +223,11 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
         setMessages((prev) => [
           ...prev,
           { id: `${localId}-user`, role: 'user', content: message },
-          { id: `${localId}-bot`, role: 'assistant', content: t('chatFreeLockedReply', locale) },
+          {
+            id: `${localId}-bot`,
+            role: 'assistant',
+            content: enrichCoachActions(t('chatFreeLockedReply', locale)),
+          },
         ]);
         setBusy(false);
         return;
@@ -152,12 +241,13 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
     }
 
     if (result.quota) setQuota(result.quota);
+    const reply = enrichCoachActions(result.reply);
     setMessages((prev) => [
       ...prev.filter((row) => row.id !== localId),
       { id: `${localId}-user`, role: 'user', content: message },
-      { id: `${localId}-bot`, role: 'assistant', content: result.reply },
+      { id: `${localId}-bot`, role: 'assistant', content: reply },
     ]);
-    if (speakReply) void speakText(result.reply, locale);
+    if (speakReply) void speakText(reply.replace(/\[\[action:[^\]]+\]\]/gi, '').trim(), locale);
     setBusy(false);
   };
 
@@ -208,7 +298,18 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
     <div className="screen tab-screen chat-screen">
       <header className="top-bar">
         <h2 className="screen-title">{t('chatTitle', locale)}</h2>
-        <p className="chat-quota">
+        <p
+          className="chat-quota"
+          title={
+            freeLocked
+              ? t('chatFreeQuotaHint', locale)
+              : noSheets
+                ? t('chatQuotaIdle', locale).replace('{limit}', String(limit))
+                : t('chatQuota', locale)
+                    .replace('{remaining}', String(remaining))
+                    .replace('{limit}', String(limit))
+          }
+        >
           {freeLocked
             ? t('chatFreeQuotaHint', locale)
             : noSheets
@@ -225,11 +326,16 @@ function ChatScreenLive({ locale, refreshKey, isLoggedIn, onAuth, onUpgrade }: C
             <p className="chat-empty">{t(noSheets ? 'chatEmptyNew' : 'chatEmpty', locale)}</p>
           )}
           {messages.map((row) => (
-            <p key={row.id} className={`chat-bubble chat-bubble--${row.role}`}>
-              <CoachBubbleBody content={row.content} role={row.role} />
-            </p>
+            <div key={row.id} className={`chat-bubble chat-bubble--${row.role}`}>
+              <CoachBubbleBody
+                content={row.content}
+                role={row.role}
+                locale={locale}
+                onAction={runAction}
+              />
+            </div>
           ))}
-          {busy && <p className="chat-bubble chat-bubble--assistant chat-bubble--pending">…</p>}
+          {busy && <CoachTyping />}
         </div>
 
         <div className="chat-chips">
