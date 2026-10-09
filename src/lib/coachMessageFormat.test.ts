@@ -43,4 +43,16 @@ describe('coachMessageFormat', () => {
     expect(parsed.actions).toEqual(['scan']);
     expect(parsed.text).toContain('scanner directement');
   });
+
+  it('extracts universe shortcut', () => {
+    const out = extractCoachActions('Ouvre Univers 👇\n[[action:universe]]');
+    expect(out.actions).toEqual(['universe']);
+    expect(out.text).not.toContain('[[action:');
+  });
+
+  it('adds universe button when the reply invites opening Univers', () => {
+    const raw = 'Dans ScanPlay, Univers est le store Pix. Ouvre-le ici pour apprendre l’anglais.';
+    const out = enrichCoachActions(raw);
+    expect(out).toContain('[[action:universe]]');
+  });
 });

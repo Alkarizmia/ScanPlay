@@ -1,6 +1,6 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import type { UserProfile } from '../types';
-import { clearLocalUserData } from './localData';
+import { clearLocalUserData, clearUniverseLocalProgress } from './localData';
 import { ensureUserProfile, loadProfileRaw } from './profile';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { flushSync, syncAfterLogin, syncOnSessionRestore } from './sync';
@@ -219,7 +219,11 @@ export async function initAuth(onChange?: () => void): Promise<void> {
     supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       setCache(session);
       if (event === 'SIGNED_OUT') {
+        void import('./universeProgressSync')
+          .then((m) => m.cancelUniverseProgressSync())
+          .catch(() => {});
         clearLocalUserData();
+        // Univers cache cleared only from signOut() after a successful flush.
         passwordRecoveryPending = false;
       }
       if (event === 'PASSWORD_RECOVERY' && session) {
@@ -417,8 +421,21 @@ async function ensureProfileDb(userId: string): Promise<void> {
 }
 
 export async function signOut(): Promise<void> {
+  // Flush Univers while session is still valid; clear local only if flush succeeded.
+  let universeFlushed = false;
+  await import('./universeProgressSync')
+    .then(async (m) => {
+      universeFlushed = await m.flushUniverseEnglishPush();
+      m.cancelUniverseProgressSync();
+    })
+    .catch(() => {
+      universeFlushed = false;
+    });
   setCache(null);
   clearLocalUserData();
+  if (universeFlushed) {
+    clearUniverseLocalProgress();
+  }
   authChangeListeners.forEach((fn) => fn());
   const { clearPlanState } = await import('./planLimits');
   clearPlanState();

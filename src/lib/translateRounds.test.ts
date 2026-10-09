@@ -243,6 +243,33 @@ describe('translateRounds', () => {
     expect(parseAiTranslateRounds({ rounds: [{ term: 'auto', source: 'Hallo', target: 'Salut' }] }, pairs)).toBeNull();
   });
 
+  it('never wraps greetings as "I have a bye"', () => {
+    expect(wrapVocabSentence('bye', 'en')).not.toMatch(/I have/i);
+    expect(wrapVocabSentence('bye', 'en')).toMatch(/bye/i);
+    expect(wrapVocabSentence('hello', 'en')).not.toMatch(/I have/i);
+    expect(wrapVocabSentence('congratulations', 'en')).not.toMatch(/I have/i);
+    expect(wrapVocabSentence('salut', 'fr')).not.toMatch(/J'ai/i);
+  });
+
+  it('prefers curated face sentences for Universe English pairs', () => {
+    const bye: WordPair = {
+      term: 'bye',
+      definition: 'salut',
+      faces: ['Bye! Take care.'],
+      termLang: 'en',
+      defLang: 'fr',
+    };
+    const round = buildLocalTranslateRound(bye, 0, [bye]);
+    expect(round).toBeTruthy();
+    expect(round!.source).toBe('Bye! Take care.');
+    expect(round!.source).not.toMatch(/I have/i);
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/salut/);
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/prends soin de toi|soin/);
+    expect(
+      round!.bank.some((tile) => /prends soin de toi/i.test(tile.text) || /soin/i.test(tile.text)),
+    ).toBe(true);
+  });
+
   it('pairs Here is with Voici, not I have, and keeps all answer tiles', () => {
     const pen: WordPair = { term: 'Pen', definition: 'stylo', termLang: 'en', defLang: 'fr' };
     const round = buildLocalTranslateRound(pen, 0, [pen]);

@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { clearAccountLocalData, clearLocalUserData } from './localData';
+import { clearAccountLocalData, clearLocalUserData, clearUniverseLocalProgress } from './localData';
 
 function stubWebStorage() {
   const make = () => {
@@ -37,9 +37,20 @@ describe('localData', () => {
   it('clearLocalUserData removes known user keys', () => {
     localStorage.setItem('scanplay-history', '[]');
     localStorage.setItem('scanplay-theme', 'dark');
+    localStorage.setItem('scanplay-universe-english', '{}');
     clearLocalUserData();
     expect(localStorage.getItem('scanplay-history')).toBeNull();
     expect(localStorage.getItem('scanplay-theme')).toBe('dark');
+    // Guest Univers progress survives generic user-data wipe (cleared only on sign-out).
+    expect(localStorage.getItem('scanplay-universe-english')).toBe('{}');
+  });
+
+  it('clearUniverseLocalProgress removes Univers progress keys', () => {
+    localStorage.setItem('scanplay-universe-english', '{}');
+    localStorage.setItem('scanplay-universe-driving', '{}');
+    clearUniverseLocalProgress();
+    expect(localStorage.getItem('scanplay-universe-english')).toBeNull();
+    expect(localStorage.getItem('scanplay-universe-driving')).toBeNull();
   });
 
   it('clearAccountLocalData removes scanplay keys except device prefs', () => {

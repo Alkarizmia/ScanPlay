@@ -43,6 +43,7 @@ interface ChatScreenProps {
   onOpenScan?: () => void;
   onOpenSettings?: () => void;
   onOpenHome?: () => void;
+  onOpenUniverse?: () => void;
   onContinueInGame?: (pairs: WordPair[], thumbnail?: string) => void;
 }
 
@@ -54,6 +55,8 @@ function actionLabel(action: CoachActionId, locale: Locale): string {
       return t('chatActionSettings', locale);
     case 'home':
       return t('chatActionHome', locale);
+    case 'universe':
+      return t('chatActionUniverse', locale);
     case 'continue_chat':
       return t('chatContinueHere', locale);
     case 'continue_game':
@@ -156,6 +159,7 @@ function ChatScreenLive({
   onOpenScan,
   onOpenSettings,
   onOpenHome,
+  onOpenUniverse,
   onContinueInGame,
 }: ChatScreenProps) {
   const [messages, setMessages] = useState<CoachMessage[]>([]);
@@ -331,6 +335,7 @@ function ChatScreenLive({
     if (action === 'scan') onOpenScan?.();
     else if (action === 'settings') onOpenSettings?.();
     else if (action === 'home') onOpenHome?.();
+    else if (action === 'universe') onOpenUniverse?.();
     else if (action === 'continue_chat') {
       pushAssistant(t('chatContinueHereAck', locale));
     } else if (action === 'continue_game') {
@@ -428,7 +433,10 @@ function ChatScreenLive({
       { id: `${localId}-user`, role: 'user', content: message },
       { id: `${localId}-bot`, role: 'assistant', content: reply },
     ]);
-    if (speakReply) void speakText(reply.replace(/\[\[action:[^\]]+\]\]/gi, '').trim(), locale);
+    if (speakReply) {
+      const speechLang = locale === 'ar' ? undefined : locale;
+      void speakText(reply.replace(/\[\[action:[^\]]+\]\]/gi, '').trim(), speechLang);
+    }
     setBusy(false);
   };
 
@@ -455,7 +463,7 @@ function ChatScreenLive({
       setError(t('chatVoiceError', locale));
       return;
     }
-    const transcribed = await transcribeViaServer(blob, locale);
+    const transcribed = await transcribeViaServer(blob, locale === 'ar' ? undefined : locale);
     if (!transcribed.text) {
       setError(t('chatVoiceError', locale));
       return;

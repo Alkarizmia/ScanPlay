@@ -19,6 +19,8 @@ interface FlashcardsGameProps extends EmbeddedGameProps {
   examMode?: boolean;
   deckId?: string | null;
   stepIndex?: number | null;
+  /** Fires for each card (known = swipe right / got it). */
+  onMark?: (pair: WordPair, known: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
 }
@@ -31,6 +33,7 @@ export function FlashcardsGame({
   examMode,
   deckId,
   stepIndex,
+  onMark,
   onComplete,
   onExit,
   embedded = false,
@@ -91,6 +94,7 @@ export function FlashcardsGame({
     (gotIt: boolean) => {
       if (!current || busyRef.current) return;
       busyRef.current = true;
+      onMark?.(current, gotIt);
       if (gotIt) {
         registerAnswer('correct', { pathStep: stepIndex != null });
         markCorrected(current);
@@ -113,7 +117,7 @@ export function FlashcardsGame({
         busyRef.current = false;
       }, 180);
     },
-    [current, deckId, finish, index, known, stepIndex, total],
+    [current, deckId, finish, index, known, onMark, stepIndex, total],
   );
 
   const commitSwipe = (gotIt: boolean) => {

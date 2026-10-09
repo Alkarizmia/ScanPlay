@@ -810,3 +810,31 @@ html[data-device='desktop']:has(.auth-screen) #root {
 [data-device='desktop'] .import-main {
   max-width: var(--content-max);
 }
+
+/* Arabic RTL — keep game boards LTR for playability */
+html[dir='rtl'] body {
+  text-align: start;
+}
+html[dir='rtl'] .top-bar,
+html[dir='rtl'] .sp-profile-top,
+html[dir='rtl'] .sp-profile-block-head,
+html[dir='rtl'] .nav-more-item,
+html[dir='rtl'] .profile-edit-action {
+  direction: rtl;
+}
+html[dir='rtl'] .bottom-nav-items {
+  direction: rtl;
+}
+html[dir='rtl'] .game-screen,
+html[dir='rtl'] .match-board,
+html[dir='rtl'] .quiz-options,
+html[dir='rtl'] .flashcard-face,
+html[dir='rtl'] .path-board,
+html[dir='rtl'] .lesson-runner {
+  direction: ltr;
+  text-align: center;
+}
+html[dir='rtl'] input,
+html[dir='rtl'] textarea {
+  text-align: start;
+}

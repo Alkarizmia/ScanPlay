@@ -27,6 +27,18 @@ export const USER_DATA_KEYS = [
   'scanplay-last-home-deck',
 ] as const;
 
+/** Cleared on sign-out only (not on guest cold start — guests keep local Univers progress). */
+export const UNIVERSE_USER_DATA_KEYS = [
+  'scanplay-universe-english',
+  'scanplay-universe-driving',
+] as const;
+
+export function clearUniverseLocalProgress(): void {
+  for (const key of UNIVERSE_USER_DATA_KEYS) {
+    localStorage.removeItem(key);
+  }
+}
+
 /** Device-level ScanPlay keys kept after account deletion. */
 const ACCOUNT_DELETE_KEEP = new Set(['scanplay-theme', 'scanplay-preferences', 'scanplay-ads-consent']);
 

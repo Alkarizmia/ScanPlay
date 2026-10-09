@@ -1,0 +1,612 @@
+# en|fr|nl|es|ar|sentence|cefr|theme
+# === GREETINGS & IDENTITY (A1) ===
+hello|bonjour|hallo|hola|مرحبا|Hello! How are you today?|A1|greetings
+hi|salut|hoi|hola|أهلا|Hi, nice to see you.|A1|greetings
+goodbye|au revoir|tot ziens|adiós|وداعا|Goodbye, see you tomorrow.|A1|greetings
+bye|à plus|doei|chao|باي|Bye! Take care.|A1|greetings
+please|s'il te plaît|alsjeblieft|por favor|من فضلك|Could you help me, please?|A1|greetings
+thank you|merci|dank je|gracias|شكرا|Thank you for your help.|A1|greetings
+thanks|merci|bedankt|gracias|شكرا|Thanks a lot!|A1|greetings
+you're welcome|de rien|graag gedaan|de nada|عفوا|You're welcome.|A1|greetings
+sorry|désolé|sorry|lo siento|آسف|Sorry, I am late.|A1|greetings
+excuse me|excusez-moi|pardon|disculpe|عذرا|Excuse me, where is the exit?|A1|greetings
+yes|oui|ja|sí|نعم|Yes, I understand.|A1|greetings
+no|non|nee|no|لا|No, thank you.|A1|greetings
+maybe|peut-être|misschien|quizá|ربما|Maybe we can meet later.|A1|greetings
+of course|bien sûr|natuurlijk|por supuesto|بالطبع|Of course I can help.|A1|greetings
+good morning|bonjour|goedemorgen|buenos días|صباح الخير|Good morning, everyone.|A1|greetings
+good afternoon|bon après-midi|goedemiddag|buenas tardes|مساء الخير|Good afternoon, sir.|A1|greetings
+good evening|bonsoir|goedenavond|buenas noches|مساء الخير|Good evening and welcome.|A1|greetings
+good night|bonne nuit|goedenacht|buenas noches|تصبح على خير|Good night, sleep well.|A1|greetings
+how are you?|comment ça va ?|hoe gaat het?|¿cómo estás?|كيف حالك؟|How are you feeling today?|A1|greetings
+I am fine|je vais bien|het gaat goed|estoy bien|أنا بخير|I am fine, thank you.|A1|greetings
+nice to meet you|enchanté|aangenaam|encantado|تشرفت بمقابلتك|Nice to meet you.|A1|greetings
+what is your name?|comment tu t'appelles ?|hoe heet je?|¿cómo te llamas?|ما اسمك؟|What is your name?|A1|greetings
+my name is|je m'appelle|ik heet|me llamo|اسمي|My name is Alex.|A1|greetings
+I am from|je viens de|ik kom uit|soy de|أنا من|I am from Belgium.|A1|greetings
+I live in|j'habite à|ik woon in|vivo en|أسكن في|I live in Brussels.|A1|greetings
+see you later|à plus tard|tot later|hasta luego|أراك لاحقا|See you later at the café.|A1|greetings
+see you soon|à bientôt|tot gauw|hasta pronto|أراك قريبا|See you soon!|A1|greetings
+take care|prends soin de toi|pas op jezelf|cuídate|اعتن بنفسك|Take care on the way home.|A1|greetings
+congratulations|félicitations|gefeliciteerd|enhorabuena|مبروك|Congratulations on your success!|A1|greetings
+happy birthday|joyeux anniversaire|gefeliciteerd|feliz cumpleaños|عيد ميلاد سعيد|Happy birthday to you!|A1|greetings
+welcome|bienvenue|welkom|bienvenido|أهلا بك|Welcome to our school.|A1|greetings
+how old are you?|quel âge as-tu ?|hoe oud ben je?|¿cuántos años tienes?|كم عمرك؟|How old are you?|A1|greetings
+friend|ami|vriend|amigo|صديق|She is a close friend.|A1|people
+family|famille|familie|familia|عائلة|My family lives nearby.|A1|people
+brother|frère|broer|hermano|أخ|My brother works in London.|A1|people
+sister|sœur|zus|hermana|أخت|My sister studies medicine.|A1|people
+mother|mère|moeder|madre|أم|My mother cooks every Sunday.|A1|people
+father|père|vader|padre|أب|My father speaks English well.|A1|people
+child|enfant|kind|niño|طفل|The child is learning English.|A1|people
+man|homme|man|hombre|رجل|That man is waiting outside.|A1|people
+woman|femme|vrouw|mujer|امرأة|The woman ordered a coffee.|A1|people
+people|gens|mensen|gente|ناس|Many people visit this city.|A1|people
+neighbour|voisin|buur|vecino|جار|Our neighbour is very kind.|A1|people
+colleague|collègue|collega|colega|زميل|I work with a new colleague.|A2|people
+partner|partenaire|partner|pareja|شريك|She is my business partner.|B1|people
+stranger|inconnu|vreemde|desconocido|غريب|Never open the door to a stranger.|A2|people
+guest|invité|gast|invitado|ضيف|We have a guest tonight.|A2|people
+host|hôte|gastheer|anfitrión|مضيف|The host welcomed us warmly.|B1|people
+# === NUMBERS TIME COLOURS DAILY (A1-A2) ===
+one|un|een|uno|واحد|I need one ticket, please.|A1|basics
+two|deux|twee|dos|اثنان|There are two rooms left.|A1|basics
+three|trois|drie|tres|ثلاثة|We leave in three minutes.|A1|basics
+four|quatre|vier|cuatro|أربعة|The meeting is on floor four.|A1|basics
+five|cinq|vijf|cinco|خمسة|I wake up at five o'clock.|A1|basics
+ten|dix|tien|diez|عشرة|It costs ten euros.|A1|basics
+twenty|vingt|twintig|veinte|عشرون|The train leaves in twenty minutes.|A1|basics
+hundred|cent|honderd|cien|مائة|One hundred people came.|A2|basics
+red|rouge|rood|rojo|أحمر|She wears a red jacket.|A1|basics
+blue|bleu|blauw|azul|أزرق|The sky is blue today.|A1|basics
+green|vert|groen|verde|أخضر|Go when the light is green.|A1|basics
+black|noir|zwart|negro|أسود|I need a black pen.|A1|basics
+white|blanc|wit|blanco|أبيض|The walls are white.|A1|basics
+today|aujourd'hui|vandaag|hoy|اليوم|Today we start a new lesson.|A1|time
+tomorrow|demain|morgen|mañana|غدا|Tomorrow I fly to Paris.|A1|time
+yesterday|hier|gisteren|ayer|أمس|Yesterday was very busy.|A1|time
+now|maintenant|nu|ahora|الآن|I need help now.|A1|time
+later|plus tard|later|más tarde|لاحقا|I will call you later.|A1|time
+morning|matin|ochtend|mañana|صباح|I run every morning.|A1|time
+evening|soir|avond|tarde|مساء|We meet in the evening.|A1|time
+night|nuit|nacht|noche|ليل|The city is quiet at night.|A1|time
+week|semaine|week|semana|أسبوع|I travel next week.|A1|time
+month|mois|maand|mes|شهر|This month is important.|A1|time
+year|année|jaar|año|سنة|This year I learn English.|A1|time
+hour|heure|uur|hora|ساعة|Wait one hour, please.|A1|time
+minute|minute|minuut|minuto|دقيقة|Give me one minute.|A1|time
+early|tôt|vroeg|temprano|مبكرا|I arrived early.|A2|time
+late|en retard|laat|tarde|متأخر|Sorry I am late.|A1|time
+on time|à l'heure|op tijd|a tiempo|في الوقت|The train arrived on time.|A2|time
+always|toujours|altijd|siempre|دائما|I always drink water.|A2|time
+often|souvent|vaak|a menudo|غالبا|I often practise English.|A2|time
+sometimes|parfois|soms|a veces|أحيانا|Sometimes I work from home.|A2|time
+never|jamais|nooit|nunca|أبدا|I never skip breakfast.|A2|time
+water|eau|water|agua|ماء|Could I have some water?|A1|daily
+food|nourriture|eten|comida|طعام|The food smells great.|A1|daily
+bread|pain|brood|pan|خبز|I bought fresh bread.|A1|daily
+coffee|café|koffie|café|قهوة|I would like a coffee.|A1|daily
+tea|thé|thee|té|شاي|Do you prefer tea or coffee?|A1|daily
+milk|lait|melk|leche|حليب|There is no milk left.|A1|daily
+breakfast|petit-déjeuner|ontbijt|desayuno|فطور|Breakfast is ready.|A1|daily
+lunch|déjeuner|lunch|almuerzo|غداء|Let's have lunch together.|A1|daily
+dinner|dîner|avondeten|cena|عشاء|Dinner is at seven.|A1|daily
+hungry|affamé|hongerig|hambriento|جائع|I am hungry after class.|A1|daily
+thirsty|assoiffé|dorstig|sediento|عطشان|I am thirsty; I need water.|A1|daily
+tired|fatigué|moe|cansado|متعب|I feel tired tonight.|A1|daily
+happy|heureux|blij|feliz|سعيد|I am happy to help.|A1|daily
+sad|triste|verdrietig|triste|حزين|Why do you look sad?|A1|daily
+hot|chaud|heet|caliente|حار|It is hot outside.|A1|daily
+cold|froid|koud|frío|بارد|The water is cold.|A1|daily
+open|ouvert|open|abierto|مفتوح|The shop is open until six.|A1|daily
+closed|fermé|gesloten|cerrado|مغلق|The museum is closed today.|A1|daily
+big|grand|groot|grande|كبير|This is a big city.|A1|daily
+small|petit|klein|pequeño|صغير|I need a small bag.|A1|daily
+new|nouveau|nieuw|nuevo|جديد|I bought a new phone.|A1|daily
+old|vieux|oud|viejo|قديم|This is an old building.|A1|daily
+good|bon|goed|bueno|جيد|That is a good idea.|A1|daily
+bad|mauvais|slecht|malo|سيء|This is a bad password.|A1|daily
+easy|facile|makkelijk|fácil|سهل|This exercise is easy.|A1|daily
+difficult|difficile|moeilijk|difícil|صعب|The question is difficult.|A1|daily
+important|important|belangrijk|importante|مهم|This meeting is important.|A2|daily
+useful|utile|nuttig|útil|مفيد|This app is very useful.|A2|daily
+# === TRAVEL AIRPORT (A2-B1) ===
+airport|aéroport|luchthaven|aeropuerto|مطار|We arrive at the airport early.|A2|airport
+flight|vol|vlucht|vuelo|رحلة|My flight is delayed.|A2|airport
+boarding pass|carte d'embarquement|boardingpass|tarjeta de embarque|بطاقة الصعود|Show your boarding pass at the gate.|A2|airport
+gate|porte d'embarquement|gate|puerta|بوابة|The gate number is twelve.|A2|airport
+passport|passeport|paspoort|pasaporte|جواز سفر|Keep your passport safe.|A2|airport
+passport control|contrôle des passeports|paspoortcontrole|control de pasaportes|مراقبة الجوازات|Passport control is this way.|A2|airport
+luggage|bagages|bagage|equipaje|أمتعة|Where can I collect my luggage?|A2|airport
+suitcase|valise|koffer|maleta|حقيبة سفر|My suitcase is heavy.|A2|airport
+backpack|sac à dos|rugzak|mochila|حقيبة ظهر|I travel with a backpack.|A2|airport
+delay|retard|vertraging|retraso|تأخير|There is a one-hour delay.|A2|airport
+cancelled|annulé|geannuleerd|cancelado|ملغى|The flight was cancelled.|A2|airport
+departure|départ|vertrek|salida|مغادرة|Departure is at 9:40.|A2|airport
+arrival|arrivée|aankomst|llegada|وصول|Arrival time is 14:20.|A2|airport
+ticket|billet|kaartje|billete|تذكرة|I booked a return ticket.|A2|airport
+check-in|enregistrement|inchecken|facturación|تسجيل الوصول|Online check-in opens 24 hours before.|A2|airport
+security|sécurité|veiligheid|seguridad|أمن|Remove your laptop at security.|A2|airport
+customs|douane|douane|aduana|جمارك|Anything to declare at customs?|B1|airport
+visa|visa|visum|visa|تأشيرة|Do I need a visa for this trip?|B1|airport
+layover|escale|tussenstop|escala|توقف|We have a two-hour layover in Dubai.|B1|airport
+window seat|place côté hublot|raamstoel|asiento de ventanilla|مقعد نافذة|I prefer a window seat.|A2|airport
+aisle seat|place côté couloir|gangpadstoel|asiento de pasillo|مقعد ممر|Can I have an aisle seat?|A2|airport
+overhead bin|compartiment supérieur|bagagevak|compartimento superior|خزانة علوية|Put your bag in the overhead bin.|B1|airport
+turbulence|turbulences|turbulentie|turbulencia|اضطراب جوي|We may experience turbulence.|B1|airport
+pilot|pilote|piloot|piloto|طيار|The pilot made an announcement.|A2|airport
+cabin crew|personnel de cabine|cabinepersoneel|tripulación|طاقم المقصورة|Ask the cabin crew for water.|B1|airport
+landing|atterrissage|landing|aterrizaje|هبوط|Please prepare for landing.|A2|airport
+take-off|décollage|opstijgen|despegue|إقلاع|Fasten your seatbelt for take-off.|A2|airport
+baggage claim|récupération des bagages|bagageband|recogida de equipaje|استلام الأمتعة|Baggage claim is downstairs.|B1|airport
+lost luggage|bagages perdus|verloren bagage|equipaje perdido|أمتعة مفقودة|I need to report lost luggage.|B1|airport
+travel insurance|assurance voyage|reisverzekering|seguro de viaje|تأمين سفر|Buy travel insurance before you leave.|B1|airport
+# === HOTEL (A2-B1) ===
+hotel|hôtel|hotel|hotel|فندق|We booked a quiet hotel.|A2|hotel
+reservation|réservation|reservering|reserva|حجز|I have a reservation under Smith.|A2|hotel
+check-in|arrivée à l'hôtel|inchecken|entrada|تسجيل الدخول|Check-in starts at 3 p.m.|A2|hotel
+check-out|départ de l'hôtel|uitchecken|salida|مغادرة الفندق|Check-out is before 11 a.m.|A2|hotel
+room|chambre|kamer|habitación|غرفة|I would like a quiet room.|A2|hotel
+key card|carte magnétique|sleutelkaart|tarjeta llave|بطاقة المفتاح|Your key card opens room 214.|A2|hotel
+reception|réception|receptie|recepción|استقبال|Ask at reception for a map.|A2|hotel
+single room|chambre simple|eenpersoonskamer|habitación individual|غرفة فردية|Do you have a single room?|A2|hotel
+double room|chambre double|tweepersoonskamer|habitación doble|غرفة مزدوجة|We need a double room for two nights.|A2|hotel
+breakfast included|petit-déjeuner inclus|ontbijt inbegrepen|desayuno incluido|الفطور مشمول|Is breakfast included?|A2|hotel
+wifi|wifi|wifi|wifi|واي فاي|What is the wifi password?|A2|hotel
+elevator|ascenseur|lift|ascensor|مصعد|The elevator is out of order.|A2|hotel
+stairs|escaliers|trap|escaleras|سلالم|Use the stairs in an emergency.|A2|hotel
+towel|serviette|handdoek|toalla|منشفة|Could I have an extra towel?|A2|hotel
+pillow|oreiller|kussen|almohada|وسادة|I need another pillow.|A2|hotel
+blanket|couverture|deken|manta|بطانية|It is cold; I need a blanket.|A2|hotel
+air conditioning|climatisation|airconditioning|aire acondicionado|تكييف|Please turn on the air conditioning.|A2|hotel
+heating|chauffage|verwarming|calefacción|تدفئة|The heating does not work.|A2|hotel
+noise|bruit|lawaai|ruido|ضوضاء|There is too much noise outside.|A2|hotel
+quiet|calme|stil|tranquilo|هادئ|I prefer a quiet street.|A2|hotel
+view|vue|uitzicht|vista|إطلالة|This room has a sea view.|A2|hotel
+balcony|balcon|balkon|balcón|شرفة|Our room has a small balcony.|A2|hotel
+booking|réservation|boeking|reserva|حجز|I made the booking online.|A2|hotel
+cancel a booking|annuler une réservation|een boeking annuleren|cancelar una reserva|إلغاء حجز|How can I cancel a booking?|B1|hotel
+deposit|acompte|borg|depósito|عربون|They asked for a deposit.|B1|hotel
+invoice|facture|factuur|factura|فاتورة|Could you email the invoice?|B1|hotel
+housekeeping|ménage|huishouding|limpieza|تنظيف الغرف|Housekeeping cleaned the room.|B1|hotel
+do not disturb|ne pas déranger|niet storen|no molestar|لا تزعج|Hang the do not disturb sign.|A2|hotel
+late check-out|départ tardif|laat uitchecken|salida tardía|مغادرة متأخرة|Can I request a late check-out?|B1|hotel
+# === DIRECTIONS TRANSPORT (A2-B1) ===
+turn left|tourne à gauche|linksaf|gira a la izquierda|انعطف يسارا|Turn left at the lights.|A2|directions
+turn right|tourne à droite|rechtsaf|gira a la derecha|انعطف يمينا|Turn right after the bridge.|A2|directions
+straight ahead|tout droit|rechtdoor|todo recto|مباشرة|Go straight ahead for 200 metres.|A2|directions
+train station|gare|station|estación|محطة القطار|The train station is nearby.|A2|directions
+bus stop|arrêt de bus|bushalte|parada de autobús|موقف الحافلة|Wait at the bus stop.|A2|directions
+metro|métro|metro|metro|مترو|Take the metro to the centre.|A2|directions
+taxi|taxi|taxi|taxi|سيارة أجرة|Call a taxi to the hotel.|A2|directions
+map|carte|kaart|mapa|خريطة|I need a city map.|A2|directions
+near|près de|dicht bij|cerca de|قرب|The café is near the park.|A2|directions
+far|loin|ver|lejos|بعيد|Is the museum far from here?|A2|directions
+how far is it?|c'est loin ?|hoe ver is het?|¿qué tan lejos está?|كم يبعد؟|How far is it to the beach?|A2|directions
+cross the street|traverse la rue|steek de straat over|cruza la calle|اعبر الشارع|Cross the street carefully.|A2|directions
+traffic light|feu de circulation|verkeerslicht|semáforo|إشارة مرور|Stop at the traffic light.|A2|directions
+roundabout|rond-point|rotonde|rotonda|دوار|Take the second exit at the roundabout.|B1|directions
+platform|quai|perron|andén|رصيف|The train leaves from platform 3.|A2|directions
+timetable|horaire|dienstregeling|horario|جدول المواعيد|Check the timetable for delays.|A2|directions
+ticket machine|borne de billetterie|kaartjesautomaat|máquina de billetes|آلة تذاكر|Buy a ticket at the ticket machine.|A2|directions
+return ticket|aller-retour|retourkaartje|billete de ida y vuelta|تذكرة ذهاب وإياب|I need a return ticket to Lyon.|A2|directions
+single ticket|aller simple|enkelkaartje|billete de ida|تذكرة ذهاب|A single ticket is cheaper today.|A2|directions
+miss the train|rater le train|de trein missen|perder el tren|يفوت القطار|Hurry or you will miss the train.|A2|directions
+pedestrian|piéton|voetganger|peatón|مشاة|This path is for pedestrians only.|B1|directions
+crossing|passage piéton|zebrapad|paso de peatones|ممر مشاة|Use the pedestrian crossing.|A2|directions
+north|nord|noorden|norte|شمال|Drive north for ten kilometres.|A2|directions
+south|sud|zuiden|sur|جنوب|The airport is south of the city.|A2|directions
+east|est|oosten|este|شرق|The sun rises in the east.|A2|directions
+west|ouest|westen|oeste|غرب|Our hotel is in the west.|A2|directions
+entrance|entrée|ingang|entrada|مدخل|The main entrance is on the left.|A2|directions
+exit|sortie|uitgang|salida|مخرج|Follow the signs to the exit.|A2|directions
+lost|perdu|verdwaald|perdido|ضائع|I am lost; can you help me?|A2|directions
+address|adresse|adres|dirección|عنوان|What is the hotel address?|A2|directions
+# === FOOD RESTAURANT (A2-B1) ===
+I'd like a coffee|je voudrais un café|ik wil graag een koffie|quisiera un café|أريد قهوة|I'd like a coffee, please.|A2|food
+the bill please|l'addition s'il vous plaît|de rekening alstublieft|la cuenta por favor|الحساب من فضلك|Could we have the bill please?|A2|food
+menu|carte|menu|menú|قائمة|May I see the menu?|A2|food
+delicious|délicieux|heerlijk|delicioso|لذيذ|This soup is delicious.|A2|food
+waiter|serveur|ober|camarero|نادل|The waiter took our order.|A2|food
+order|commander|bestellen|pedir|يطلب|I would like to order now.|A2|food
+starter|entrée|voorgerecht|entrante|مقبلات|We share a starter.|A2|food
+main course|plat principal|hoofdgerecht|plato principal|طبق رئيسي|The main course is fish.|A2|food
+dessert|dessert|nagerecht|postre|حلوى|What desserts do you have?|A2|food
+vegetarian|végétarien|vegetarisch|vegetariano|نباتي|Is there a vegetarian option?|A2|food
+spicy|épicé|pittig|picante|حار|I prefer food that is not spicy.|A2|food
+allergy|allergie|allergie|alergia|حساسية|I have a nut allergy.|B1|food
+gluten-free|sans gluten|glutenvrij|sin gluten|خالي من الغلوتين|Do you have gluten-free bread?|B1|food
+reservation for two|réservation pour deux|reservering voor twee|reserva para dos|حجز لشخصين|I have a reservation for two.|A2|food
+table|table|tafel|mesa|طاولة|A table by the window, please.|A2|food
+tip|pourboire|fooi|propina|بقشيش|Is the tip included?|A2|food
+cash|espèces|contant|efectivo|نقدا|Do you accept cash?|A2|food
+card|carte bancaire|kaart|tarjeta|بطاقة|I will pay by card.|A2|food
+receipt|reçu|bonnetje|recibo|إيصال|Could I have a receipt?|A2|food
+still water|eau plate|plat water|agua sin gas|ماء عادي|Still water for me, please.|A2|food
+sparkling water|eau gazeuse|bruisend water|agua con gas|ماء فوار|Sparkling water, please.|A2|food
+wine|vin|wijn|vino|نبيذ|A glass of red wine, please.|A2|food
+beer|bière|bier|cerveza|بيرة|One beer and one water.|A2|food
+juice|jus|sap|zumo|عصير|Orange juice for breakfast.|A2|food
+salt|sel|zout|sal|ملح|Could you pass the salt?|A2|food
+pepper|poivre|peper|pimienta|فلفل|I do not need pepper.|A2|food
+sugar|sucre|suiker|azúcar|سكر|No sugar in my tea, please.|A2|food
+knife|couteau|mes|cuchillo|سكين|I need a clean knife.|A2|food
+fork|fourchette|vork|tenedor|شوكة|There is no fork on the table.|A2|food
+spoon|cuillère|lepel|cuchara|ملعقة|May I have a spoon?|A2|food
+plate|assiette|bord|plato|صحن|Clear the empty plates, please.|A2|food
+glass|verre|glas|vaso|كأس|Fill my glass with water.|A2|food
+rare|saignant|rood|poco hecho|نيء قليلا|I like my steak rare.|B1|food
+well done|bien cuit|door bakken|muy hecho|ناضج جيدا|Make the steak well done.|B1|food
+takeaway|à emporter|afhalen|para llevar|للأخذ|Is takeaway available?|A2|food
+service charge|frais de service|bedieningsgeld|cargo por servicio|رسوم خدمة|Is there a service charge?|B1|food
+# === SHOPPING (A2-B1) ===
+how much is it?|ça coûte combien ?|hoeveel kost het?|¿cuánto cuesta?|كم السعر؟|How much is it?|A2|shopping
+expensive|cher|duur|caro|غالي|That jacket is too expensive.|A2|shopping
+cheap|bon marché|goedkoop|barato|رخيص|I am looking for a cheap hotel.|A2|shopping
+discount|réduction|korting|descuento|خصم|Is there a student discount?|A2|shopping
+sale|soldes|uitverkoop|rebajas|تخفيضات|Everything is on sale.|A2|shopping
+size|taille|maat|talla|مقاس|Do you have this in size M?|A2|shopping
+fit|aller (vêtement)|passen|quedar|يناسب|Does this shirt fit me?|A2|shopping
+try on|essayer|passen|probarse|يجرب|Can I try on these shoes?|A2|shopping
+receipt|ticket de caisse|kassabon|ticket|إيصال|Keep the receipt for returns.|A2|shopping
+refund|remboursement|terugbetaling|reembolso|استرداد|I would like a refund.|B1|shopping
+exchange|échanger|ruilen|cambiar|استبدال|Can I exchange this for another size?|B1|shopping
+cashier|caissier|kassier|cajero|أمين الصندوق|Pay at the cashier.|A2|shopping
+shopping bag|sac de courses|tas|bolsa|كيس تسوق|I need a shopping bag.|A2|shopping
+price|prix|prijs|precio|سعر|The price includes tax.|A2|shopping
+bargain|bonne affaire|koopje|ganga|صفقة|This phone is a bargain.|B1|shopping
+brand|marque|merk|marca|علامة تجارية|Which brand do you prefer?|A2|shopping
+quality|qualité|kwaliteit|calidad|جودة|The quality is excellent.|A2|shopping
+customer|client|klant|cliente|زبون|The customer asked for help.|A2|shopping
+queue|file d'attente|rij|cola|طابور|There is a long queue.|A2|shopping
+open hours|horaires d'ouverture|openingstijden|horario de apertura|ساعات العمل|What are the open hours?|A2|shopping
+# === HELP HEALTH EMERGENCY (A2-B1) ===
+help|aide|hulp|ayuda|مساعدة|I need help, please.|A2|help
+emergency|urgence|noodgeval|emergencia|طوارئ|Call this number in an emergency.|A2|help
+police|police|politie|policía|شرطة|Where is the nearest police station?|A2|help
+hospital|hôpital|ziekenhuis|hospital|مستشفى|Take him to the hospital.|A2|help
+pharmacy|pharmacie|apotheek|farmacia|صيدلية|Is there a pharmacy nearby?|A2|help
+doctor|médecin|dokter|médico|طبيب|I need to see a doctor.|A2|help
+pain|douleur|pijn|dolor|ألم|I have pain in my back.|A2|help
+headache|mal de tête|hoofdpijn|dolor de cabeza|صداع|I have a bad headache.|A2|help
+fever|fièvre|koorts|fiebre|حمى|She has a high fever.|A2|help
+medicine|médicament|medicijn|medicina|دواء|Take this medicine twice a day.|A2|help
+appointment|rendez-vous|afspraak|cita|موعد|I booked a doctor's appointment.|A2|help
+insurance|assurance|verzekering|seguro|تأمين|Do you accept travel insurance?|B1|help
+ambulance|ambulance|ambulance|ambulancia|سيارة إسعاف|Call an ambulance immediately.|A2|help
+injured|blessé|gewond|herido|مصاب|Is anyone injured?|A2|help
+lost my phone|j'ai perdu mon téléphone|ik ben mijn telefoon kwijt|perdí mi teléfono|فقدت هاتفي|I lost my phone at the station.|A2|help
+stolen|volé|gestolen|robado|مسروق|My bag was stolen.|B1|help
+I don't understand|je ne comprends pas|ik begrijp het niet|no entiendo|لا أفهم|I don't understand; can you repeat?|A2|help
+speak slowly|parlez lentement|spreek langzaam|hable despacio|تحدث ببطء|Please speak slowly.|A2|help
+can you repeat?|pouvez-vous répéter ?|kunt u herhalen?|¿puede repetir?|هل يمكنك الإعادة؟|Can you repeat that, please?|A2|help
+where is...?|où est... ?|waar is...?|¿dónde está...?|أين...؟|Where is the bathroom?|A2|help
+bathroom|toilettes|toilet|baño|حمام|Where is the bathroom?|A1|help
+# === WORK (B1-B2) ===
+deadline|échéance|deadline|fecha límite|موعد نهائي|The deadline is Friday.|B1|work
+meeting|réunion|vergadering|reunión|اجتماع|We have a meeting at ten.|B1|work
+to negotiate|négocier|onderhandelen|negociar|يتفاوض|We need to negotiate the price.|B2|work
+remote work|télétravail|thuiswerken|teletrabajo|عمل عن بعد|I prefer remote work twice a week.|B1|work
+feedback|retours|feedback|comentarios|ملاحظات|Please send your feedback today.|B1|work
+colleague|collègue|collega|colega|زميل|My colleague prepared the slides.|A2|work
+manager|responsable|manager|gerente|مدير|Ask your manager for approval.|B1|work
+team|équipe|team|equipo|فريق|Our team finished the project.|B1|work
+project|projet|project|proyecto|مشروع|This project takes three months.|B1|work
+task|tâche|taak|tarea|مهمة|Complete this task before noon.|B1|work
+email|e-mail|e-mail|correo|بريد إلكتروني|I sent you an email yesterday.|A2|work
+attachment|pièce jointe|bijlage|adjunto|مرفق|Please open the attachment.|B1|work
+agenda|ordre du jour|agenda|orden del día|جدول الأعمال|The agenda is in your inbox.|B1|work
+presentation|présentation|presentatie|presentación|عرض تقديمي|Her presentation was clear.|B1|work
+to postpone|reporter|uitstellen|aplazar|يؤجل|Can we postpone the call?|B2|work
+to cancel|annuler|annuleren|cancelar|يلغي|We had to cancel the meeting.|B1|work
+budget|budget|budget|presupuesto|ميزانية|We are over budget this month.|B1|work
+client|client|klant|cliente|عميل|The client asked for changes.|B1|work
+contract|contrat|contract|contrato|عقد|Please sign the contract.|B1|work
+salary|salaire|salaris|salario|راتب|They offered a higher salary.|B1|work
+interview|entretien|sollicitatiegesprek|entrevista|مقابلة|I have a job interview tomorrow.|B1|work
+resume|CV|cv|currículum|سيرة ذاتية|Update your resume before applying.|B1|work
+skill|compétence|vaardigheid|habilidad|مهارة|Communication is a key skill.|B1|work
+experience|expérience|ervaring|experiencia|خبرة|I have five years of experience.|B1|work
+promotion|promotion|promotie|ascenso|ترقية|She received a promotion.|B2|work
+overtime|heures supplémentaires|overuren|horas extra|ساعات إضافية|I worked overtime last week.|B1|work
+shift|quart de travail|dienst|turno|وردية|I work the night shift.|B1|work
+office|bureau|kantoor|oficina|مكتب|The office opens at nine.|A2|work
+laptop|ordinateur portable|laptop|portátil|حاسوب محمول|Bring your laptop to the meeting.|A2|work
+password|mot de passe|wachtwoord|contraseña|كلمة المرور|Never share your password.|A2|work
+to schedule|planifier|inplannen|programar|يجدول|Let's schedule a call for Monday.|B1|work
+follow-up|suivi|opvolging|seguimiento|متابعة|Send a follow-up email tomorrow.|B1|work
+priority|priorité|prioriteit|prioridad|أولوية|This task is our top priority.|B1|work
+goal|objectif|doel|objetivo|هدف|Our goal is to improve quality.|B1|work
+result|résultat|resultaat|resultado|نتيجة|The results look promising.|B1|work
+problem|problème|probleem|problema|مشكلة|We need to solve this problem.|A2|work
+solution|solution|oplossing|solución|حل|I have a simple solution.|B1|work
+to improve|améliorer|verbeteren|mejorar|يحسن|We want to improve our service.|B1|work
+efficient|efficace|efficiënt|eficiente|فعّال|This method is more efficient.|B2|work
+reliable|fiable|betrouwbaar|fiable|موثوق|We need a reliable partner.|B2|work
+# === SCHOOL STUDY (A2-B2) ===
+classroom|salle de classe|klas|aula|فصل دراسي|Meet me outside the classroom.|A2|school
+teacher|professeur|leraar|profesor|معلم|The teacher explains clearly.|A2|school
+student|élève|student|estudiante|طالب|Every student needs a notebook.|A2|school
+homework|devoirs|huiswerk|deberes|واجب منزلي|I finished my homework.|A2|school
+exam|examen|examen|examen|امتحان|The exam starts at nine.|A2|school
+test|contrôle|toets|prueba|اختبار|We have a vocabulary test.|A2|school
+grade|note|cijfer|nota|درجة|I got a good grade.|A2|school
+subject|matière|vak|asignatura|مادة|Math is my favourite subject.|A2|school
+lesson|leçon|les|lección|درس|Today's lesson is about travel.|A1|school
+to study|étudier|studeren|estudiar|يدرس|I study English every day.|A2|school
+to learn|apprendre|leren|aprender|يتعلم|I want to learn useful phrases.|A1|school
+to practise|s'entraîner|oefenen|practicar|يتدرب|Practise speaking out loud.|A2|school
+dictionary|dictionnaire|woordenboek|diccionario|قاموس|Look it up in a dictionary.|A2|school
+notebook|cahier|schrift|cuaderno|دفتر|Write the sentence in your notebook.|A1|school
+pen|stylo|pen|bolígrafo|قلم|I need a blue pen.|A1|school
+library|bibliothèque|bibliotheek|biblioteca|مكتبة|I study in the library.|A2|school
+university|université|universiteit|universidad|جامعة|She studies at university.|A2|school
+degree|diplôme|diploma|título|شهادة|He earned a degree in law.|B1|school
+essay|dissertation|essay|ensayo|مقال|Write a short essay about travel.|B1|school
+research|recherche|onderzoek|investigación|بحث|My research focuses on climate.|B2|school
+deadline (school)|date limite|inleverdatum|fecha de entrega|موعد التسليم|The essay deadline is Monday.|B1|school
+presentation (school)|exposé|presentatie|exposición|عرض|Prepare a five-minute presentation.|B1|school
+group work|travail de groupe|groepswerk|trabajo en grupo|عمل جماعي|We did group work in class.|A2|school
+to fail|échouer|zakken|suspender|يرسب|I do not want to fail the exam.|B1|school
+to pass|réussir|slagen|aprobar|ينجح|I hope to pass the test.|B1|school
+scholarship|bourse|beurs|beca|منحة|She won a scholarship.|B2|school
+lecture|cours magistral|college|conferencia|محاضرة|The lecture was interesting.|B1|school
+semester|semestre|semester|semestre|فصل دراسي|Exams are at the end of the semester.|B1|school
+assignment|devoir|opdracht|tarea|مهمة|Submit the assignment online.|B1|school
+notes|notes|aantekeningen|apuntes|ملاحظات|Review your notes before the quiz.|A2|school
+# === EXAM ACADEMIC (B1-C1) ===
+instructions|consignes|instructies|instrucciones|تعليمات|Read the instructions carefully.|B1|exam
+multiple choice|choix multiple|meerkeuze|opción múltiple|اختيار من متعدد|This is a multiple choice question.|B1|exam
+true or false|vrai ou faux|waar of onwaar|verdadero o falso|صح أو خطأ|Answer true or false.|B1|exam
+fill in the blank|compléter le blanc|invullen|rellenar el espacio|املأ الفراغ|Fill in the blank with one word.|B1|exam
+essay question|question de rédaction|open vraag|pregunta de desarrollo|سؤال مقالي|Answer the essay question in 200 words.|B1|exam
+time limit|limite de temps|tijdslimiet|límite de tiempo|حد زمني|There is a 40-minute time limit.|B1|exam
+to submit|rendre|indienen|entregar|يسلم|Submit your answers before the bell.|B1|exam
+rough draft|brouillon|kladversie|borrador|مسودة|Write a rough draft first.|B1|exam
+to revise|réviser|herzien|revisar|يراجع|Revise your text for mistakes.|B1|exam
+criterion|critère|criterium|criterio|معيار|Clarity is an important criterion.|B2|exam
+argument|argument|argument|argumento|حجة|Support your argument with examples.|B2|exam
+evidence|preuve|bewijs|evidencia|دليل|Provide evidence for your claim.|B2|exam
+summary|résumé|samenvatting|resumen|ملخص|Write a short summary of the text.|B1|exam
+paragraph|paragraphe|alinea|párrafo|فقرة|Start a new paragraph here.|B1|exam
+introduction|introduction|inleiding|introducción|مقدمة|The introduction should be clear.|B1|exam
+conclusion|conclusion|conclusie|conclusión|خاتمة|End with a strong conclusion.|B1|exam
+to paraphrase|paraphraser|parafraseren|parafrasear|يعيد صياغة|Paraphrase the sentence in your own words.|B2|exam
+plagiarism|plagiat|plagiaat|plagio|انتحال|Avoid plagiarism; cite your sources.|B2|exam
+source|source|bron|fuente|مصدر|Always mention your source.|B1|exam
+accurate|précis|nauwkeurig|preciso|دقيق|Your answer must be accurate.|B2|exam
+# === FUN SOCIAL (A2-B1) ===
+hobby|passe-temps|hobby|pasatiempo|هواية|Reading is my favourite hobby.|A2|fun
+music|musique|muziek|música|موسيقى|I listen to music every day.|A1|fun
+film|film|film|película|فيلم|We watched a great film.|A2|fun
+to watch|regarder|kijken|ver|يشاهد|I watch series on weekends.|A2|fun
+to play|jouer|spelen|jugar|يلعب|They play football after school.|A1|fun
+sport|sport|sport|deporte|رياضة|Which sport do you like?|A2|fun
+to dance|danser|dansen|bailar|يرقص|Do you want to dance?|A2|fun
+party|fête|feest|fiesta|حفلة|Are you coming to the party?|A2|fun
+weekend|week-end|weekend|fin de semana|عطلة نهاية الأسبوع|What are your weekend plans?|A2|fun
+to travel|voyager|reizen|viajar|يسافر|I love to travel in summer.|A2|fun
+beach|plage|strand|playa|شاطئ|We spent the day at the beach.|A2|fun
+park|parc|park|parque|حديقة|Let's walk in the park.|A1|fun
+museum|musée|museum|museo|متحف|The museum opens at ten.|A2|fun
+concert|concert|concert|concierto|حفل موسيقي|We bought tickets for a concert.|A2|fun
+to invite|inviter|uitnodigen|invitar|يدعو|Can I invite you to dinner?|A2|fun
+funny|drôle|grappig|gracioso|مضحك|That joke was funny.|A2|fun
+boring|ennuyeux|saai|aburrido|ممل|The film was a bit boring.|A2|fun
+interesting|intéressant|interessant|interesante|ممتع|This podcast is interesting.|A2|fun
+favourite|préféré|favoriet|favorito|المفضل|What is your favourite book?|A2|fun
+to relax|se détendre|ontspannen|relajarse|يسترخي|I relax with a good book.|A2|fun
+# === OPINIONS CONNECTORS (B1-C1) ===
+I think that|je pense que|ik denk dat|creo que|أعتقد أن|I think that this idea works.|B1|opinions
+in my opinion|à mon avis|naar mijn mening|en mi opinión|في رأيي|In my opinion, we should wait.|B1|opinions
+I agree|je suis d'accord|ik ben het eens|estoy de acuerdo|أوافق|I agree with your point.|B1|opinions
+I disagree|je ne suis pas d'accord|ik ben het oneens|no estoy de acuerdo|لا أوافق|I disagree, but I respect you.|B1|opinions
+it depends|ça dépend|het hangt ervan af|depende|يعتمد|It depends on the weather.|B1|opinions
+for example|par exemple|bijvoorbeeld|por ejemplo|على سبيل المثال|For example, try this phrase.|B1|opinions
+however|cependant|echter|sin embargo|ومع ذلك|However, we need more time.|B1|opinions
+therefore|par conséquent|daarom|por lo tanto|لذلك|Therefore, we must prepare.|B1|opinions
+although|bien que|hoewel|aunque|رغم أن|Although it rained, we went out.|B1|opinions
+because|parce que|omdat|porque|لأن|I stayed home because I was tired.|A2|opinions
+so that|afin que|zodat|para que|لكي|Speak clearly so that everyone hears.|B1|opinions
+on the one hand|d'une part|enerzijds|por un lado|من جهة|On the one hand, it is cheaper.|B2|opinions
+on the other hand|d'autre part|anderzijds|por otro lado|من جهة أخرى|On the other hand, it takes longer.|B2|opinions
+as a result|en conséquence|als gevolg|como resultado|نتيجة لذلك|As a result, sales increased.|B2|opinions
+in addition|de plus|bovendien|además|بالإضافة إلى ذلك|In addition, the service is free.|B1|opinions
+in conclusion|en conclusion|tot slot|en conclusión|في الختام|In conclusion, practice every day.|B1|opinions
+# === ADVANCED (C1-C2) ===
+nevertheless|néanmoins|niettemin|no obstante|مع ذلك|Nevertheless, we continued.|C1|advanced
+whereas|alors que|terwijl|mientras que|في حين أن|I prefer tea, whereas she likes coffee.|C1|advanced
+to convey|transmettre|overbrengen|transmitir|ينقل|His words convey deep respect.|C1|advanced
+subtle|subtil|subtiel|sutil|دقيق|There is a subtle difference.|C1|advanced
+compelling|convaincant|overtuigend|convincente|مقنع|She made a compelling argument.|C1|advanced
+to underscore|souligner|benadrukken|subrayar|يؤكد|These results underscore the need for change.|C2|advanced
+albeit|bien que|hoewel|aunque|رغم أن|The plan is simple, albeit ambitious.|C2|advanced
+nuanced|nuancé|genuanceerd|matizado|متعدد الجوانب|Give a nuanced answer.|C2|advanced
+eloquent|éloquent|welsprekend|elocuente|بليغ|He gave an eloquent speech.|C2|advanced
+to distill|synthétiser|destilleren|destilar|يستخلص|Can you distill the main idea?|C2|advanced
+to mitigate|atténuer|mitigeren|mitigar|يخفف|We must mitigate the risks.|C1|advanced
+to jeopardise|mettre en péril|in gevaar brengen|poner en peligro|يعرض للخطر|Delay could jeopardise the deal.|C2|advanced
+inevitable|inévitable|onvermijdelijk|inevitable|حتمي|Change is inevitable.|C1|advanced
+comprehensive|complet|uitgebreid|exhaustivo|شامل|We need a comprehensive plan.|C1|advanced
+feasible|réalisable|haalbaar|viable|قابل للتنفيذ|Is this timeline feasible?|C1|advanced
+substantial|considérable|aanzienlijk|sustancial|كبير|There was a substantial improvement.|C1|advanced
+scarce|rare|schaars|escaso|نادر|Clean water is scarce here.|C1|advanced
+to advocate|défendre|pleiten voor|abogar|يدافع عن|She advocates for equal access.|C1|advanced
+to escalate|s'intensifier|escaleren|intensificarse|يتصاعد|Do not escalate the conflict.|C1|advanced
+to prioritise|prioriser|prioriteren|priorizar|يرتب الأولويات|We must prioritise safety.|C1|advanced
+ambiguous|ambigu|ambigu|ambiguo|غامض|The instruction is ambiguous.|C1|advanced
+precise|précis|precies|preciso|دقيق|Be precise in your wording.|B2|advanced
+to elaborate|développer|uitwerken|elaborar|يفصّل|Could you elaborate on that point?|C1|advanced
+to clarify|clarifier|verduidelijken|aclarar|يوضح|Let me clarify what I meant.|B2|advanced
+to summarise|résumer|samenvatten|resumir|يلخص|Summarise the article in three lines.|B2|advanced
+hypothesis|hypothèse|hypothese|hipótesis|فرضية|Test your hypothesis carefully.|C1|advanced
+implication|implication|implicatie|implicación|تبعية|What is the implication of this rule?|C1|advanced
+framework|cadre|kader|marco|إطار|We work within a clear framework.|C1|advanced
+outcome|résultat|uitkomst|resultado|نتيجة|The outcome surprised everyone.|B2|advanced
+to assess|évaluer|beoordelen|evaluar|يقيّم|Assess the situation before acting.|B2|advanced
+to enhance|améliorer|verbeteren|mejorar|يعزز|This tool can enhance your writing.|B2|advanced
+to sustain|maintenir|volhouden|sostener|يحافظ على|Can we sustain this pace?|C1|advanced
+robust|solide|robuust|robusto|متين|We need a robust solution.|C1|advanced
+transparent|transparent|transparant|transparente|شفاف|Be transparent about the costs.|B2|advanced
+accountable|responsable|verantwoordelijk|responsable|خاضع للمساءلة|Leaders must be accountable.|C1|advanced
+# === MORE USEFUL TRAVEL/WORK FILLERS to reach 500+ ===
+currency|devise|valuta|moneda|عملة|What currency do you accept?|A2|travel
+exchange rate|taux de change|wisselkoers|tipo de cambio|سعر الصرف|Check the exchange rate first.|B1|travel
+ATM|distributeur|geldautomaat|cajero automático|صراف آلي|Is there an ATM nearby?|A2|travel
+to withdraw money|retirer de l'argent|geld opnemen|sacar dinero|يسحب مالا|I need to withdraw money.|A2|travel
+SIM card|carte SIM|simkaart|tarjeta SIM|شريحة|Buy a local SIM card.|A2|travel
+charger|chargeur|oplader|cargador|شاحن|I forgot my phone charger.|A2|travel
+adapter|adaptateur|adapter|adaptador|محول|Do I need a power adapter?|A2|travel
+socket|prise|stopcontact|enchufe|مقبس|Where is the power socket?|A2|travel
+luggage tag|étiquette de bagage|bagagelabel|etiqueta de equipaje|ملصق أمتعة|Attach a luggage tag.|A2|travel
+to pack|faire ses valises|inpakken|hacer la maleta|يحزم|I need to pack tonight.|A2|travel
+souvenir|souvenir|souvenir|souvenir|تذكار|I bought a small souvenir.|A2|travel
+guidebook|guide de voyage|reisgids|guía|دليل سياحي|This guidebook is useful.|A2|travel
+tourist|touriste|toerist|turista|سائح|Many tourists visit in summer.|A2|travel
+local|local|lokaal|local|محلي|Ask a local for advice.|A2|travel
+crowded|bondé|druk|lleno|مزدحم|The metro is crowded at rush hour.|B1|travel
+rush hour|heure de pointe|spitsuur|hora punta|ساعة الذروة|Avoid the roads at rush hour.|B1|travel
+itinerary|itinéraire|reisroute|itinerario|مسار الرحلة|Share your itinerary with family.|B1|travel
+to book|réserver|boeken|reservar|يحجز|Book your tickets early.|A2|travel
+confirmation|confirmation|bevestiging|confirmación|تأكيد|I received a booking confirmation.|B1|travel
+available|disponible|beschikbaar|disponible|متاح|Is a table available at eight?|A2|travel
+unavailable|indisponible|niet beschikbaar|no disponible|غير متاح|That date is unavailable.|A2|travel
+fully booked|complet|volgeboekt|completo|محجوز بالكامل|The hotel is fully booked.|B1|travel
+to recommend|recommander|aanbevelen|recomendar|يوصي|Can you recommend a restaurant?|A2|travel
+suggestion|suggestion|suggestie|sugerencia|اقتراح|Do you have a suggestion?|A2|travel
+to complain|se plaindre|klagen|quejarse|يشكو|I need to complain about the noise.|B1|travel
+complaint|plainte|klacht|queja|شكوى|I want to make a complaint.|B1|travel
+manager (hotel)|responsable|manager|gerente|مدير|May I speak to the manager?|B1|travel
+to replace|remplacer|vervangen|reemplazar|يستبدل|Please replace this broken lamp.|B1|travel
+broken|cassé|kapot|roto|معطل|The shower is broken.|A2|travel
+to fix|réparer|repareren|arreglar|يصلح|Can you fix it today?|A2|travel
+clean|propre|schoon|limpio|نظيف|Is the room clean?|A1|travel
+dirty|sale|vies|sucio|وسخ|These towels are dirty.|A2|travel
+comfortable|confortable|comfortabel|cómodo|مريح|The bed is comfortable.|A2|travel
+uncomfortable|inconfortable|ongemakkelijk|incómodo|غير مريح|This chair is uncomfortable.|A2|travel
+safe|sûr|veilig|seguro|آمن|Is this neighbourhood safe?|A2|travel
+dangerous|dangereux|gevaarlijk|peligroso|خطير|That road is dangerous at night.|A2|travel
+to warn|avertir|waarschuwen|advertir|يحذر|They warn tourists about pickpockets.|B1|travel
+pickpocket|pickpocket|zakkenroller|carterista|نشال|Watch your bag; there are pickpockets.|B1|travel
+to lock|verrouiller|op slot doen|cerrar con llave|يقفل|Lock the door when you leave.|A2|travel
+key|clé|sleutel|llave|مفتاح|I lost my room key.|A1|travel
+to unlock|déverrouiller|ontsluiten|abrir|يفتح القفل|Unlock your phone carefully.|A2|travel
+screen|écran|scherm|pantalla|شاشة|The screen is cracked.|A2|travel
+to charge|charger|opladen|cargar|يشحن|I need to charge my phone.|A2|travel
+battery|batterie|batterij|batería|بطارية|My battery is almost empty.|A2|travel
+signal|signal|signaal|señal|إشارة|There is no signal here.|A2|travel
+to download|télécharger|downloaden|descargar|يحمّل|Download the map offline.|A2|travel
+offline|hors ligne|offline|sin conexión|دون اتصال|Save the file for offline use.|B1|travel
+online|en ligne|online|en línea|عبر الإنترنت|Book online to save money.|A2|travel
+account|compte|account|cuenta|حساب|Create an account to continue.|A2|work
+to log in|se connecter|inloggen|iniciar sesión|يسجل الدخول|Log in with your email.|A2|work
+to log out|se déconnecter|uitloggen|cerrar sesión|يسجل الخروج|Remember to log out on shared computers.|A2|work
+to upload|téléverser|uploaden|subir|يرفع|Upload the document before noon.|B1|work
+to download (file)|télécharger|downloaden|descargar|ينزّل|Download the report as a PDF.|B1|work
+folder|dossier|map|carpeta|مجلد|Put the files in this folder.|A2|work
+to share|partager|delen|compartir|يشارك|Share the link with the team.|A2|work
+update|mise à jour|update|actualización|تحديث|Install the latest update.|B1|work
+bug|bug|bug|error|خلل|We found a bug in the app.|B1|work
+to report|signaler|melden|informar|يبلّغ|Report the issue to support.|B1|work
+support|assistance|ondersteuning|soporte|دعم|Contact support if you need help.|B1|work
+customer service|service client|klantenservice|atención al cliente|خدمة العملاء|Call customer service for a refund.|B1|work
+invoice number|numéro de facture|factuurnummer|número de factura|رقم الفاتورة|Quote your invoice number.|B1|work
+payment|paiement|betaling|pago|دفع|Payment is due on Monday.|B1|work
+refund (money)|remboursement|terugbetaling|reembolso|استرداد|Your refund will arrive in 5 days.|B1|work
+to confirm|confirmer|bevestigen|confirmar|يؤكد|Please confirm your attendance.|A2|work
+to decline|refuser|afwijzen|rechazar|يرفض|I have to decline this invitation.|B1|work
+available (person)|disponible|beschikbaar|disponible|متاح|Are you available at three?|A2|work
+busy|occupé|bezet|ocupado|مشغول|I am busy until Friday.|A2|work
+urgent|urgent|dringend|urgente|عاجل|This message is urgent.|B1|work
+asap|dès que possible|zo snel mogelijk|lo antes posible|في أقرب وقت|Please reply asap.|B1|work
+to forward|transférer|doorsturen|reenviar|يعيد التوجيه|Forward this email to finance.|B1|work
+cc|copie carbone|cc|cc|نسخة|Please cc your manager.|B1|work
+subject line|objet|onderwerp|asunto|موضوع|Write a clear subject line.|B1|work
+out of office|absent du bureau|afwezig|fuera de la oficina|خارج المكتب|I set an out of office reply.|B1|work
+to brainstorm|faire un brainstorming|brainstormen|hacer una lluvia de ideas|يعصف ذهنيا|Let's brainstorm new ideas.|B2|work
+milestone|jalon|mijlpaal|hito|معلم|We reached an important milestone.|B2|work
+stakeholder|partie prenante|belanghebbende|interesado|صاحب مصلحة|Update every stakeholder.|B2|work
+deliverable|livrable|oplevering|entregable|مخرج|The deliverable is due Friday.|B2|work
+scope|périmètre|scope|alcance|نطاق|Do not expand the project scope.|B2|work
+risk|risque|risico|riesgo|مخاطرة|We must reduce this risk.|B1|work
+opportunity|opportunité|kans|oportunidad|فرصة|This is a great opportunity.|B1|work
+challenge|défi|uitdaging|reto|تحدٍ|The main challenge is time.|B1|work
+strength|force|sterkte|fortaleza|قوة|Teamwork is our strength.|B1|work
+weakness|faible|zwakte|debilidad|ضعف|Honesty about a weakness helps.|B1|work
+to apply|postuler|solliciteren|solicitar|يتقدم|I want to apply for this job.|B1|work
+application|candidature|sollicitatie|solicitud|طلب|Submit your application online.|B1|work
+reference|référence|referentie|referencia|مرجع|Can you be my reference?|B1|work
+cover letter|lettre de motivation|motivatiebrief|carta de presentación|خطاب تغطية|Write a short cover letter.|B1|work
+to hire|embaucher|aannemen|contratar|يوظف|They will hire two people.|B1|work
+to resign|démissionner|ontslag nemen|dimitir|يستقيل|He decided to resign.|B2|work
+notice period|préavis|opzegtermijn|periodo de preaviso|فترة إشعار|My notice period is one month.|B2|work
+workplace|lieu de travail|werkplek|lugar de trabajo|مكان العمل|Safety at the workplace matters.|B1|work
+hybrid|hybride|hybride|híbrido|هجين|We use a hybrid work model.|B2|work
+to commute|faire la navette|pendelen|desplazarse|يتنقل|I commute by train.|B1|work
+# === EXTRA HIGH-FREQUENCY USEFUL (A1-B2) ===
+I need|j'ai besoin de|ik heb nodig|necesito|أحتاج|I need more practice.|A1|core
+I want|je veux|ik wil|quiero|أريد|I want to improve my English.|A1|core
+I can|je peux|ik kan|puedo|أستطيع|I can help you with that.|A1|core
+I can't|je ne peux pas|ik kan niet|no puedo|لا أستطيع|I can't come tomorrow.|A1|core
+I must|je dois|ik moet|debo|يجب أن|I must leave now.|A2|core
+I should|je devrais|ik zou moeten|debería|ينبغي أن|I should revise these words.|A2|core
+would like|voudrais|zou graag willen|quisiera|أود|I would like more information.|A2|core
+could you...?|pourriez-vous... ?|kunt u...?|¿podría...?|هل يمكنك...؟|Could you open the window?|A2|core
+would you mind...?|cela vous dérangerait-il... ?|zou het erg zijn...?|¿le importaría...?|هل تمانع...؟|Would you mind repeating that?|B1|core
+how do you say...?|comment dit-on... ?|hoe zeg je...?|¿cómo se dice...?|كيف تقول...؟|How do you say this in English?|A2|core
+what does ... mean?|que signifie... ?|wat betekent...?|¿qué significa...?|ماذا يعني...؟|What does this word mean?|A2|core
+I mean|je veux dire|ik bedoel|quiero decir|أقصد|I mean the second option.|B1|core
+in other words|en d'autres termes|met andere woorden|en otras palabras|بعبارة أخرى|In other words, start sooner.|B1|core
+by the way|au fait|trouwens|por cierto|بالمناسبة|By the way, are you free later?|B1|core
+actually|en fait|eigenlijk|en realidad|في الواقع|Actually, I already booked.|B1|core
+especially|surtout|vooral|especialmente|خاصة|I like languages, especially English.|B1|core
+at least|au moins|ten minste|al menos|على الأقل|Arrive at least ten minutes early.|B1|core
+at most|au plus|hoogstens|como máximo|على الأكثر|It takes at most fifteen minutes.|B1|core
+instead|à la place|in plaats daarvan|en su lugar|بدلا من ذلك|Take the bus instead of the taxi.|B1|core
+already|déjà|al|ya|بالفعل|I already finished the lesson.|A2|core
+still|encore|nog|todavía|ما زال|Are you still learning?|A2|core
+yet|encore (négatif)|nog|todavía|بعد|I have not practised yet.|A2|core
+enough|assez|genoeg|suficiente|كافٍ|Is there enough time?|A2|core
+too much|trop|te veel|demasiado|كثير جدا|That is too much sugar.|A2|core
+too many|trop de|te veel|demasiados|كثيرون جدا|There are too many people.|A2|core
+a few|quelques|een paar|unos pocos|بعض|I need a few minutes.|A2|core
+a lot of|beaucoup de|veel|mucho|الكثير من|I have a lot of questions.|A1|core
+each|chaque|elk|cada|كل|Read each sentence carefully.|A2|core
+both|les deux|beide|ambos|كلا|Both answers can be correct.|A2|core
+neither|ni l'un ni l'autre|geen van beide|ninguno|لا هذا ولا ذاك|Neither option works for me.|B1|core
+either|l'un ou l'autre|een van beide|cualquiera|إما|You can choose either seat.|B1|core
+whoever|quiconque|wie dan ook|quienquiera|أي شخص|Whoever arrives first can start.|B2|core
+whenever|chaque fois que|wanneer ook|siempre que|متى ما|Call me whenever you need help.|B1|core
+wherever|où que|waar ook|dondequiera|أينما|Take your passport wherever you go.|B1|core
+whatever|quoi que|wat dan ook|lo que sea|مهما|Whatever happens, stay calm.|B1|core
+to succeed|réussir|slagen|tener éxito|ينجح|Practice helps you succeed.|B1|core
+to fail (general)|échouer|mislukken|fracasar|يفشل|Do not fear to fail; learn from it.|B1|core
+progress|progrès|vooruitgang|progreso|تقدم|I can see real progress.|B1|core
+confidence|confiance|zelfvertrouwen|confianza|ثقة|Speaking daily builds confidence.|B1|core
+mistake|faute|fout|error|خطأ|A mistake helps you learn.|A2|core
+to correct|corriger|corrigeren|corregir|يصحح|Correct the sentence carefully.|A2|core
+to remember|se souvenir|onthouden|recordar|يتذكر|Try to remember this phrase.|A2|core
+to forget|oublier|vergeten|olvidar|ينسى|Do not forget your passport.|A2|core
+to explain|expliquer|uitleggen|explicar|يشرح|Can you explain again?|A2|core
+to understand|comprendre|begrijpen|entender|يفهم|Now I understand the rule.|A1|core
+to listen|écouter|luisteren|escuchar|يستمع|Listen carefully to the audio.|A1|core
+to speak|parler|spreken|hablar|يتحدث|Speak a little every day.|A1|core
+to read|lire|lezen|leer|يقرأ|Read the text out loud.|A1|core
+to write|écrire|schrijven|escribir|يكتب|Write a short sentence.|A1|core
+to ask|demander|vragen|preguntar|يسأل|Ask if you need help.|A1|core
+to answer|répondre|antwoorden|responder|يجيب|Answer in full sentences.|A1|core
+to wait|attendre|wachten|esperar|ينتظر|Please wait a moment.|A1|core
+to start|commencer|beginnen|empezar|يبدأ|Let's start the next lesson.|A1|core
+to finish|finir|afmaken|terminar|ينهي|Finish the exercise carefully.|A1|core
+to continue|continuer|doorgaan|continuar|يتابع|Continue with the next chapter.|A1|core
+to stop|arrêter|stoppen|parar|يتوقف|Stop if you feel unsure.|A1|core
+to try|essayer|proberen|intentar|يحاول|Try again without fear.|A1|core
+to choose|choisir|kiezen|elegir|يختار|Choose the best answer.|A1|core
+to change|changer|veranderen|cambiar|يغيّر|I want to change my booking.|A2|core
+to check|vérifier|controleren|comprobar|يتحقق|Check your spelling.|A2|core
+to prepare|préparer|voorbereiden|preparar|يحضّر|Prepare useful phrases for travel.|A2|core
+to decide|décider|beslissen|decidir|يقرر|Decide which goal matters most.|A2|core
+to prefer|préférer|liever hebben|preferir|يفضّل|I prefer short, useful sentences.|A2|core
+to avoid|éviter|vermijden|evitar|يتجنب|Avoid translating word by word.|B1|core
+to focus|se concentrer|focussen|concentrarse|يركز|Focus on meaning, not fear.|B1|core
+to improve (self)|s'améliorer|verbeteren|mejorar|يتحسن|You improve by reviewing mistakes.|B1|core

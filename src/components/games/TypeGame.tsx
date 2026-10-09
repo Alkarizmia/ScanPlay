@@ -31,6 +31,7 @@ interface TypeGameProps extends EmbeddedGameProps {
   deckId?: string | null;
   stepIndex?: number | null;
   sheetType?: SheetType;
+  onAnswer?: (pair: WordPair, correct: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
   onToast?: (message: string) => void;
@@ -45,6 +46,7 @@ export function TypeGame({
   deckId,
   stepIndex,
   sheetType = 'vocab',
+  onAnswer,
   onComplete,
   onExit,
   onToast,
@@ -129,6 +131,7 @@ export function TypeGame({
     setGrade(g);
     setRevealed(true);
     setLastXp(registerAnswer(g, { pathStep: stepIndex != null }));
+    if (current) onAnswer?.(current, g === 'correct' || g === 'near');
 
     if (g === 'correct') {
       const newScore = score + 1;

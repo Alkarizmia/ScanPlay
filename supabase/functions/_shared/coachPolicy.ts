@@ -129,6 +129,15 @@ export function looksLikeSettingsHelp(message: string): boolean {
   );
 }
 
+/** Univers / Univer / Universe in ScanPlay (not "université"). */
+export function looksLikeUniverseAsk(message: string): boolean {
+  const text = message.trim();
+  if (/\buniversit[eé]|university|universidad|universiteit\b/i.test(text)) return false;
+  return /\b(univers|univer|universe|pix univers|apprendre l['']anglais|learn english|c[oœ]urs? univers|hearts? univers)\b/i.test(
+    text,
+  );
+}
+
 /** Réponse locale : pas d'IA, pas de crédit. Null = vrai appel coach (fiches + question). */
 export function localCoachReply(
   message: string,
@@ -173,6 +182,19 @@ export function localCoachReply(
       return "Abre Ajustes con el engranaje en Inicio (a la izquierda de la campana). Idioma, notificaciones y cuenta están ahí.\n\n[[action:settings]]";
     }
     return "Ouvre les paramètres via l'engrenage sur Accueil (à gauche de la cloche). Langue, notifications et compte sont là.\n\n[[action:settings]]";
+  }
+
+  if (looksLikeUniverseAsk(message)) {
+    if (lang === 'en') {
+      return "In ScanPlay, **Universe** is Pix’s ready-made course store. No scan needed.\n\nRight now you can learn English (A1 to C2), with chapters based on your goal. You get 3 hearts; a quiz mistake costs one, and each heart comes back in about 8 hours (or buy one in the Shop).\n\nOpen it here 👇\n[[action:universe]]";
+    }
+    if (lang === 'nl') {
+      return "In ScanPlay is **Univers** de store met kant-en-klare Pix-cursussen. Geen scan nodig.\n\nNu kun je Engels leren (A1 tot C2), met hoofdstukken volgens jouw doel. Je hebt 3 harten; een fout in de quiz kost er één, en elk hart komt terug in ongeveer 8 uur (of koop er één in de Shop).\n\nOpen hier 👇\n[[action:universe]]";
+    }
+    if (lang === 'es') {
+      return "En ScanPlay, **Universo** es la tienda de cursos listos de Pix. Sin escanear.\n\nAhora puedes aprender inglés (A1 a C2), con capítulos según tu objetivo. Tienes 3 corazones; un fallo en el quiz quita uno, y cada corazón vuelve en unas 8 h (o cómpralo en la Tienda).\n\nÁbrelo aquí 👇\n[[action:universe]]";
+    }
+    return "Dans ScanPlay, **Univers** c'est le store de cours prêts par Pix. Pas besoin de scanner.\n\nTu peux y apprendre l'anglais (A1 à C2), avec des chapitres selon ton objectif. Tu as 3 cœurs : une faute au quiz en enlève un, et chaque cœur revient en environ 8 h (ou tu en rachètes un dans la Boutique).\n\nOuvre-le ici 👇\n[[action:universe]]";
   }
 
   if (looksLikeScanHelp(message)) {

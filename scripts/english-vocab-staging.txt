@@ -1,0 +1,27 @@
+# STAGING — not loaded by the app.
+# Theme batch: money (new entries only; duplicates already in english-vocab-raw.txt are omitted).
+# Translation fields are DRAFT and marked with a leading † (= à relire). Do not merge into raw until reviewed.
+# Format: en|fr|nl|es|ar|sentence|cefr|theme|type|goals
+#
+# SKIPPED DUPLICATES (already in raw): ATM, exchange rate, currency, deposit, refund
+#
+to withdraw|†retirer|†opnemen|†retirar|†يسحب|I need to withdraw some cash before the trip.|B1|money|verb|travel
+PIN|†code PIN|†pincode|†PIN|†الرقم السري|Please enter your PIN and press OK.|A2|money|noun|travel,other
+coin|†pièce|†munt|†moneda|†عملة معدنية|I only have a few coins in my pocket.|A2|money|noun|travel
+banknote|†billet|†bankbiljet|†billete|†ورقة نقدية|This banknote is torn. Can you change it?|B1|money|noun|travel
+to convert|†convertir|†omrekenen|†convertir|†يحول|Can I convert these dollars into pounds here?|B1|money|verb|travel
+commission|†commission|†commissie|†comisión|†عمولة|The bank charges a small commission on each exchange.|B2|money|noun|travel,work
+fee|†frais|†kosten|†tarifa|†رسوم|Is there a fee for using my card abroad?|B1|money|noun|travel,work
+contactless|†sans contact|†contactloos|†sin contacto|†بدون لمس|You can pay contactless with your phone.|B1|money|adjective|travel
+to be overcharged|†se faire surfacturer|†te veel aangerekend worden|†que te cobren de más|†يُحاسب بزيادة|I think we were overcharged for the taxi.|B2|money|verb phrase|travel
+to split the bill|†partager l'addition|†de rekening delen|†dividir la cuenta|†تقسيم الفاتورة|Shall we split the bill between the four of us?|B1|money|verb phrase|travel,fun
+instalment|†mensualité|†termijn|†plazo|†قسط|I would like to pay in three instalments.|B2|money|noun|other
+to be charged|†être facturé|†in rekening gebracht worden|†que te cobren|†يُحصّل منك|You will be charged when you check out.|B1|money|verb phrase|travel
+declined|†refusé|†geweigerd|†rechazado|†مرفوض|My card was declined. Do you take another one?|B2|money|adjective|travel
+to run out of cash|†ne plus avoir d'espèces|†geen contant geld meer hebben|†quedarse sin efectivo|†ينفد النقد|We ran out of cash on the last day.|B1|money|verb phrase|travel
+counterfeit|†contrefait|†vals|†falsificado|†مزيف|The cashier checked that the note was not counterfeit.|C1|money|adjective|travel
+balance|†solde|†saldo|†saldo|†رصيد|I checked the balance on my account this morning.|B1|money|noun|other,work
+bank transfer|†virement|†overschrijving|†transferencia|†تحويل بنكي|I paid the rent by bank transfer.|B1|money|noun|other,work
+to owe|†devoir (argent)|†schuldig zijn|†deber|†يدين|I owe you ten euros for lunch.|B1|money|verb|other,fun
+to lend|†prêter|†uitlenen|†prestar|†يُقرض|Could you lend me some money until Friday?|B1|money|verb|other
+to borrow|†emprunter|†lenen|†pedir prestado|†يستعير|I had to borrow a charger from my neighbour.|A2|money|verb|other

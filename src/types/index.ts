@@ -66,13 +66,14 @@ export type TabId =
   | 'settings'
   | 'chat';
 
-export type Locale = 'fr' | 'en' | 'nl' | 'es';
+export type Locale = 'fr' | 'en' | 'nl' | 'es' | 'ar';
 
 export const LOCALES: { code: Locale; label: string }[] = [
   { code: 'fr', label: 'Français' },
   { code: 'en', label: 'English' },
   { code: 'nl', label: 'Nederlands' },
   { code: 'es', label: 'Español' },
+  { code: 'ar', label: 'العربية' },
 ];
 
 export interface WordPair {

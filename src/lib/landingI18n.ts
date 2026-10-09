@@ -4,7 +4,8 @@ import es from '../i18n/landing/es.json';
 import fr from '../i18n/landing/fr.json';
 import nl from '../i18n/landing/nl.json';
 
-export type LandingLang = Locale;
+/** Landing stays on the four marketing languages; app UI also supports Arabic. */
+export type LandingLang = Exclude<Locale, 'ar'>;
 export type LandingCopyKey = keyof typeof fr;
 
 const copies: Record<LandingLang, Record<LandingCopyKey, string>> = { fr, en, nl, es };
@@ -59,6 +60,7 @@ export function persistLandingLang(lang: LandingLang): void {
   }
 }
 
-export function lt(key: LandingCopyKey, lang: LandingLang): string {
-  return copies[lang]?.[key] ?? copies.en[key] ?? key;
+export function lt(key: LandingCopyKey, lang: LandingLang | Locale): string {
+  const resolved: LandingLang = lang === 'ar' ? 'en' : lang;
+  return copies[resolved]?.[key] ?? copies.en[key] ?? key;
 }

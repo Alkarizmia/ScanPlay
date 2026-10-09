@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { ScanPlayMascot } from '../mascot/ScanPlayMascot';
 import { HintIcon } from '../icons/HintIcon';
@@ -150,13 +150,18 @@ export function TranslateGame({
     setHintTick((n) => n + 1);
   };
 
-  if (pool.length < 1) {
-    onNotEnoughPairs?.();
-    return null;
-  }
+  const emptySkipRef = useRef(false);
+  useEffect(() => {
+    if ((pool.length >= 1 && rounds.length > 0) || emptySkipRef.current) return;
+    emptySkipRef.current = true;
+    if (onNotEnoughPairs) {
+      onNotEnoughPairs();
+      return;
+    }
+    onComplete(1, 1);
+  }, [pool.length, rounds.length, onNotEnoughPairs, onComplete]);
 
-  if (!round) {
-    onComplete(0, 1);
+  if (pool.length < 1 || !round) {
     return null;
   }
 

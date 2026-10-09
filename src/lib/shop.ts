@@ -32,6 +32,11 @@ import type { ChestRarity } from './chestRarity';
 import { scaleRewardAmount } from './chestRarity';
 import type { AchievementDef } from './achievements';
 import type { TranslationKey } from './i18n';
+import {
+  getUniverseHearts,
+  refillUniverseHeart,
+  UNIVERSE_MAX_HEARTS,
+} from './universeHearts';
 
 export const SHOP_XP_POTION_PRICE = 80;
 export const SHOP_XP_POTION_MINUTES = 15;
@@ -43,6 +48,7 @@ export const SHOP_SYNTHESIS_CREDIT_PRICE = 90;
 export const SHOP_STREAK_FREEZE_PRICE = 100;
 export const SHOP_STREAK_FREEZE_MAX = 3;
 export const SHOP_TRANSLATE_HINT_PRICE = 50;
+export const SHOP_UNIVERSE_HEART_PRICE = 70;
 export const GEM_COIN_RATE = 200;
 
 export type ShopPurchaseResult =
@@ -147,6 +153,20 @@ export function buyTranslateHint(): ShopPurchaseResult {
   const spent = spendCoins(SHOP_TRANSLATE_HINT_PRICE);
   if (!spent.ok) return fromSpend(spent);
   grantTranslateHints(1);
+  return { ok: true };
+}
+
+export function buyUniverseHeart(): ShopPurchaseResult {
+  if (getUniverseHearts().hearts >= UNIVERSE_MAX_HEARTS) {
+    return { ok: false, reason: 'limit_reached' };
+  }
+  const spent = spendCoins(SHOP_UNIVERSE_HEART_PRICE);
+  if (!spent.ok) return fromSpend(spent);
+  const filled = refillUniverseHeart();
+  if (!filled.ok) {
+    addCoins(SHOP_UNIVERSE_HEART_PRICE);
+    return { ok: false, reason: 'limit_reached' };
+  }
   return { ok: true };
 }
 

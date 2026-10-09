@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { buildImagePickRounds } from '../../lib/imagePickRounds';
@@ -60,6 +60,14 @@ export function ImagePickGame({
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
+
+  const emptySkipRef = useRef(false);
+  useEffect(() => {
+    if (rounds.length > 0 || emptySkipRef.current) return;
+    emptySkipRef.current = true;
+    // Technical skip: score === total so hosts don't mark a wrong answer / lose a heart.
+    onComplete(1, 1);
+  }, [rounds.length, onComplete]);
 
   useEffect(() => {
     const srcs = [...new Set(rounds.flatMap((item) => item.options.map((art) => art.src)))];

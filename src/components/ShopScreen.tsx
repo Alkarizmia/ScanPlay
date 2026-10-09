@@ -22,6 +22,7 @@ import {
   buySynthesisCredit,
   buyTranslateHint,
   buyXpPack,
+  buyUniverseHeart,
   buyXpPotion,
   canBuyExtraScanInShop,
   convertGemToCoins,
@@ -45,10 +46,12 @@ import {
   SHOP_STREAK_FREEZE_PRICE,
   SHOP_STREAK_FREEZE_MAX,
   SHOP_TRANSLATE_HINT_PRICE,
+  SHOP_UNIVERSE_HEART_PRICE,
   EXTRA_SCAN_PRICE,
   type ChestReward,
   type ShopPurchaseResult,
 } from '../lib/shop';
+import { getUniverseHearts, UNIVERSE_MAX_HEARTS } from '../lib/universeHearts';
 import {
   getTranslateHints,
   getXpBoostMinutesLeft,
@@ -176,6 +179,7 @@ const SHOP_NOTIF_ICON: Record<string, string> = {
   synthesis: 'synthesis',
   hint: 'hint',
   freeze: 'freeze',
+  heart: 'path',
   ad: 'coin',
 };
 
@@ -217,6 +221,8 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
   const translateHints = getTranslateHints();
   const synthesisBonus = getSynthesisBonusCredits();
   const extraScanOk = canBuyExtraScanInShop();
+  const universeHearts = getUniverseHearts().hearts;
+  const universeHeartsFull = universeHearts >= UNIVERSE_MAX_HEARTS;
 
   const run = async (id: string, fn: () => ShopPurchaseResult | Promise<ShopPurchaseResult>, successKey?: TranslationKey) => {
     setError(null);
@@ -225,7 +231,13 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
     try {
       const result = await fn();
       if (!result.ok) {
-        setError(t(id === 'gems' && result.reason === 'insufficient' ? 'shopNotEnoughGems' : mapReason(result.reason), locale));
+        const errKey =
+          id === 'gems' && result.reason === 'insufficient'
+            ? 'shopNotEnoughGems'
+            : id === 'heart' && result.reason === 'limit_reached'
+              ? 'shopUniverseHeartFull'
+              : mapReason(result.reason);
+        setError(t(errKey, locale));
         playSound('wrong');
         return;
       }
@@ -528,6 +540,26 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
                   {t('shopStreakFreezeOwned', locale).replace('{n}', String(freezeCharges))}
                 </p>
               ) : undefined
+            }
+          />
+
+          <ShopItemRow
+            locale={locale}
+            icon={<span className="shop-heart-icon" aria-hidden="true">❤</span>}
+            nameKey="shopUniverseHeart"
+            desc={t('shopUniverseHeartDesc', locale)}
+            price={SHOP_UNIVERSE_HEART_PRICE}
+            buyId="heart"
+            busy={busy}
+            popping={popId === 'heart'}
+            tone="heart"
+            highlight={!universeHeartsFull && universeHearts === 0}
+            disabled={universeHeartsFull}
+            onBuy={() => void run('heart', () => buyUniverseHeart(), 'shopUniverseHeartOk')}
+            extra={
+              <p className="shop-item-active">
+                {t('shopUniverseHeartOwned', locale).replace('{n}', String(universeHearts))}
+              </p>
             }
           />
           </div>

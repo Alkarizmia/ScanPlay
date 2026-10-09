@@ -31,6 +31,7 @@ interface QuizGameProps extends EmbeddedGameProps {
   deckId?: string | null;
   stepIndex?: number | null;
   sheetType?: SheetType;
+  onAnswer?: (pair: WordPair, correct: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
   onNotEnoughPairs?: () => void;
@@ -53,6 +54,7 @@ export function QuizGame({
   deckId,
   stepIndex,
   sheetType = 'vocab',
+  onAnswer,
   onComplete,
   onExit,
   onNotEnoughPairs,
@@ -142,6 +144,7 @@ export function QuizGame({
     const newScore = score + (correct ? 1 : 0);
     setScore(newScore);
     scoreRef.current = newScore;
+    onAnswer?.(q, correct);
     setLastXp(registerAnswer(correct ? 'correct' : 'wrong', { pathStep: stepIndex != null }));
 
     if (correct) {

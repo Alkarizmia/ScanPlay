@@ -40,8 +40,9 @@ export function pickSpeakCueKey(seed: string): SpeakCueKey {
 }
 
 function ensureSentencePunctuation(text: string): string {
-  const trimmed = text.trim().replace(/[.!?…]+$/u, '');
-  if (!trimmed) return text.trim();
+  const trimmed = text.trim();
+  if (!trimmed) return '';
+  if (/[.!?…]$/u.test(trimmed)) return trimmed;
   return `${trimmed}.`;
 }
 
@@ -91,7 +92,8 @@ export function buildSpeakSentence(rawTerm: string, lang: LangCode, objectLemma?
 
   const wrapLang = lang === 'unknown' ? 'en' : lang;
   const wrapped = wrapVocabSentence(cleaned, wrapLang, undefined, undefined, objectLemma);
-  if (wrapped && alreadyCompleteSentence(wrapped) && !/[–—]/.test(wrapped)) {
+  // Accept short utterances ("Bye!") as well as full frames — never "Today we are learning about bye."
+  if (wrapped && !/[–—]/.test(wrapped)) {
     return ensureSentencePunctuation(wrapped);
   }
 
@@ -118,6 +120,12 @@ export function withAiSpeakSentence(
   };
 }
 
+/** Curated example sentence on the pair (Universe / multi-face cards). */
+export function curatedPairSentence(pair: WordPair): string | null {
+  const face = pair.faces?.find((f) => f.trim().length >= 3)?.trim();
+  return face || null;
+}
+
 export function buildSpeakChallenge(
   pair: WordPair,
   locale?: Locale,
@@ -130,7 +138,10 @@ export function buildSpeakChallenge(
   const target = pickSpeakTarget(rawSpeak, rawMeaning);
   const objectLemma = pickSheetObjectLemma(pool, pair, side, lang);
   const seed = `${target}|${rawMeaning}`;
-  const phraseSpeech = buildSpeakSentence(rawSpeak, lang, objectLemma);
+  const curated = side === 'term' || lang === 'en' ? curatedPairSentence(pair) : null;
+  const phraseSpeech = curated
+    ? ensureSentencePunctuation(curated)
+    : buildSpeakSentence(rawSpeak, lang, objectLemma);
   const focus = phraseForSentence(target) || target;
   const phraseDisplay = markFocusInSentence(phraseSpeech, focus);
 

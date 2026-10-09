@@ -49,4 +49,17 @@ export default defineConfig({
     host: true,
     port: 4173,
   },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+          if (id.includes('@supabase')) return 'vendor-supabase'
+          if (id.includes('tesseract')) return 'vendor-ocr'
+          if (id.includes('katex')) return 'vendor-katex'
+          if (id.includes('heic2any')) return 'vendor-heic'
+        },
+      },
+    },
+  },
 })

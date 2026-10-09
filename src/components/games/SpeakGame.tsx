@@ -411,8 +411,9 @@ export function SpeakGame({
     stopRef.current = null;
     busyRef.current = false;
     setVoicePhase('idle');
+    // Technical skip (mic/voice issue) — never counts as a mistake / heart loss upstream
     if (index >= total - 1) {
-      finish(scoreRef.current);
+      finish(scoreRef.current, { technical: true });
       return;
     }
     setIndex((i) => i + 1);

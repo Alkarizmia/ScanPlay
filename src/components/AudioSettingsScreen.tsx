@@ -1,8 +1,7 @@
-import { useCallback } from 'react';
 import { BackIcon } from './icons/BackIcon';
-import { t, type TranslationKey } from '../lib/i18n';
+import { t } from '../lib/i18n';
 import { setPreference } from '../lib/preferences';
-import { playSound, SOUND_PREVIEW_IDS, type SoundId } from '../lib/sounds';
+import { playSound } from '../lib/sounds';
 import { hapticTap } from '../lib/haptics';
 import { usePreferences } from '../hooks/usePreferences';
 import type { Locale } from '../types';
@@ -14,11 +13,6 @@ interface AudioSettingsScreenProps {
 
 export function AudioSettingsScreen({ locale, onBack }: AudioSettingsScreenProps) {
   const prefs = usePreferences();
-
-  const preview = useCallback((id: SoundId) => {
-    playSound(id);
-    hapticTap();
-  }, []);
 
   const updatePref = <K extends keyof typeof prefs>(key: K, value: (typeof prefs)[K]) => {
     const prev = prefs[key];
@@ -101,23 +95,6 @@ export function AudioSettingsScreen({ locale, onBack }: AudioSettingsScreenProps
               role="switch"
               aria-checked={prefs.vibration}
             />
-          </div>
-        </section>
-
-        <section className="settings-section audio-preview-section">
-          <h3 className="settings-label">{t('audioPreviewTitle', locale)}</h3>
-          <p className="settings-hint">{t('audioPreviewHint', locale)}</p>
-          <div className="audio-preview-grid">
-            {SOUND_PREVIEW_IDS.map(({ id, labelKey }) => (
-              <button
-                key={id}
-                type="button"
-                className="audio-preview-chip"
-                onClick={() => preview(id)}
-              >
-                {t(labelKey as TranslationKey, locale)}
-              </button>
-            ))}
           </div>
         </section>
       </main>

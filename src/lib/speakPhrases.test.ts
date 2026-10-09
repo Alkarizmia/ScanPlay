@@ -79,6 +79,25 @@ describe('speak phrases', () => {
     expect(fromDef.context.toLowerCase()).toMatch(/trouver/);
   });
 
+  it('uses curated greeting sentences instead of "I have a bye"', () => {
+    const withFace: WordPair = {
+      term: 'bye',
+      definition: 'salut',
+      faces: ['Bye! Take care.'],
+      termLang: 'en',
+      defLang: 'fr',
+    };
+    const curated = buildSpeakChallenge(withFace, 'fr');
+    expect(curated.phraseSpeech).toMatch(/Bye! Take care/i);
+    expect(curated.phraseSpeech).not.toMatch(/I have/i);
+    expect(curated.phraseSpeech).not.toMatch(/learning about bye/i);
+
+    const bare = buildSpeakSentence('bye', 'en');
+    expect(bare).toMatch(/bye/i);
+    expect(bare).not.toMatch(/I have/i);
+    expect(bare).not.toMatch(/learning about bye/i);
+  });
+
   it('uses an AI sentence when it still contains the target word', () => {
     const pair: WordPair = {
       term: 'beetje',

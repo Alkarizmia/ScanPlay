@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, startTransition, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
 import { consumeBootIntent, consumePendingScanAfterAuth, setPendingScanAfterAuth } from './lib/bootIntent';
@@ -11,14 +11,12 @@ import './styles/mascot.css';
 import './styles/landing.css';
 import { AchievementUnlockModal } from './components/AchievementUnlockModal';
 import { AdConsentBanner } from './components/AdConsentBanner';
-import { AchievementsScreen } from './components/AchievementsScreen';
 import { AuthScreen } from './components/AuthScreen';
 import { BottomNav } from './components/BottomNav';
 import { Confetti } from './components/Confetti';
 import { HomeScreen } from './components/HomeScreen';
 import { HistoryScreen } from './components/HistoryScreen';
 import { ImportScreen } from './components/ImportScreen';
-import { PixUniverseScreen } from './components/PixUniverseScreen';
 import { useDeviceProfile } from './hooks/useDeviceProfile';
 import { useGlobalTapSound } from './hooks/useGlobalTapSound';
 import { startPresenceHeartbeat } from './lib/social/presence';
@@ -29,35 +27,18 @@ import {
   useAppNavigationHistory,
   type AppNavSnapshot,
 } from './hooks/useAppNavigationHistory';
-import { DailyMissionRewardScreen } from './components/DailyMissionRewardScreen';
-import { ExamOffConfirmModal } from './components/ExamOffConfirmModal';
-import { GoldReplayConfirmModal } from './components/GoldReplayConfirmModal';
-import { GuestPlayReadyModal } from './components/GuestPlayReadyModal';
-import { FriendsScreen } from './components/FriendsScreen';
-import { MistakesScreen } from './components/MistakesScreen';
-import { MultiplayerLobby } from './components/MultiplayerLobby';
-import { MultiplayerResults } from './components/MultiplayerResults';
 import { ModeSelect } from './components/ModeSelect';
-import { PricingScreen } from './components/PricingScreen';
 import { ResultsScreen } from './components/ResultsScreen';
 import { ScanningScreen } from './components/ScanningScreen';
 import { ReviewCardsScreen } from './components/ReviewCardsScreen';
-import { ProfileScreen } from './components/ProfileScreen';
-import { ChatScreen } from './components/ChatScreen';
 import { isCoachChatEnabled } from './lib/coachFlag';
-import { LessonRunner } from './components/games/LessonRunner';
 import {
   checkpointMatches,
   clearLessonCheckpoint,
   loadLessonCheckpoint,
   saveLessonCheckpoint,
 } from './lib/lessonCheckpoint';
-import { LessonCompleteScreen } from './components/LessonCompleteScreen';
-import { SettingsScreen } from './components/SettingsScreen';
 import { NavMoreSheet } from './components/NavMoreSheet';
-import { StreakClaimFlyby } from './components/StreakClaimFlyby';
-import { StreakLostModal } from './components/StreakLostModal';
-import { ShopScreen } from './components/ShopScreen';
 import { Toast } from './components/Toast';
 import { UpgradeModal } from './components/UpgradeModal';
 import { CoachFab } from './components/CoachFab';
@@ -70,19 +51,6 @@ import {
   mascotReactStreak,
   mascotReactWelcomeBack,
 } from './lib/mascot/reactions';
-import { FlashcardsGame } from './components/games/FlashcardsGame';
-import { MatchGame } from './components/games/MatchGame';
-import { QuizGame } from './components/games/QuizGame';
-import { ListenGame } from './components/games/ListenGame';
-import { SpeakGame } from './components/games/SpeakGame';
-import { TrueFalseGame } from './components/games/TrueFalseGame';
-import { ClozeGame } from './components/games/ClozeGame';
-import { TranslateGame } from './components/games/TranslateGame';
-import { TypeGame } from './components/games/TypeGame';
-import { DictationGame } from './components/games/DictationGame';
-import { ListenPickGame } from './components/games/ListenPickGame';
-import { ReorderGame } from './components/games/ReorderGame';
-import { ImagePickGame } from './components/games/ImagePickGame';
 import { resetGameHud } from './lib/gameFeedback';
 import {
   getMistakePairs,
@@ -188,6 +156,109 @@ import type {
   UpgradeReason,
   WordPair,
 } from './types';
+
+const ChatScreen = lazy(() =>
+  import('./components/ChatScreen').then((m) => ({ default: m.ChatScreen })),
+);
+const PixUniverseScreen = lazy(() =>
+  import('./components/PixUniverseScreen').then((m) => ({ default: m.PixUniverseScreen })),
+);
+const ProfileScreen = lazy(() =>
+  import('./components/ProfileScreen').then((m) => ({ default: m.ProfileScreen })),
+);
+const AchievementsScreen = lazy(() =>
+  import('./components/AchievementsScreen').then((m) => ({ default: m.AchievementsScreen })),
+);
+const ShopScreen = lazy(() =>
+  import('./components/ShopScreen').then((m) => ({ default: m.ShopScreen })),
+);
+const FriendsScreen = lazy(() =>
+  import('./components/FriendsScreen').then((m) => ({ default: m.FriendsScreen })),
+);
+const SettingsScreen = lazy(() =>
+  import('./components/SettingsScreen').then((m) => ({ default: m.SettingsScreen })),
+);
+const PricingScreen = lazy(() =>
+  import('./components/PricingScreen').then((m) => ({ default: m.PricingScreen })),
+);
+const MistakesScreen = lazy(() =>
+  import('./components/MistakesScreen').then((m) => ({ default: m.MistakesScreen })),
+);
+const MultiplayerLobby = lazy(() =>
+  import('./components/MultiplayerLobby').then((m) => ({ default: m.MultiplayerLobby })),
+);
+const MultiplayerResults = lazy(() =>
+  import('./components/MultiplayerResults').then((m) => ({ default: m.MultiplayerResults })),
+);
+const DailyMissionRewardScreen = lazy(() =>
+  import('./components/DailyMissionRewardScreen').then((m) => ({
+    default: m.DailyMissionRewardScreen,
+  })),
+);
+const ExamOffConfirmModal = lazy(() =>
+  import('./components/ExamOffConfirmModal').then((m) => ({ default: m.ExamOffConfirmModal })),
+);
+const GoldReplayConfirmModal = lazy(() =>
+  import('./components/GoldReplayConfirmModal').then((m) => ({
+    default: m.GoldReplayConfirmModal,
+  })),
+);
+const GuestPlayReadyModal = lazy(() =>
+  import('./components/GuestPlayReadyModal').then((m) => ({ default: m.GuestPlayReadyModal })),
+);
+const StreakClaimFlyby = lazy(() =>
+  import('./components/StreakClaimFlyby').then((m) => ({ default: m.StreakClaimFlyby })),
+);
+const StreakLostModal = lazy(() =>
+  import('./components/StreakLostModal').then((m) => ({ default: m.StreakLostModal })),
+);
+const LessonRunner = lazy(() =>
+  import('./components/games/LessonRunner').then((m) => ({ default: m.LessonRunner })),
+);
+const LessonCompleteScreen = lazy(() =>
+  import('./components/LessonCompleteScreen').then((m) => ({ default: m.LessonCompleteScreen })),
+);
+const FlashcardsGame = lazy(() =>
+  import('./components/games/FlashcardsGame').then((m) => ({ default: m.FlashcardsGame })),
+);
+const MatchGame = lazy(() =>
+  import('./components/games/MatchGame').then((m) => ({ default: m.MatchGame })),
+);
+const QuizGame = lazy(() =>
+  import('./components/games/QuizGame').then((m) => ({ default: m.QuizGame })),
+);
+const ListenGame = lazy(() =>
+  import('./components/games/ListenGame').then((m) => ({ default: m.ListenGame })),
+);
+const SpeakGame = lazy(() =>
+  import('./components/games/SpeakGame').then((m) => ({ default: m.SpeakGame })),
+);
+const TrueFalseGame = lazy(() =>
+  import('./components/games/TrueFalseGame').then((m) => ({ default: m.TrueFalseGame })),
+);
+const ClozeGame = lazy(() =>
+  import('./components/games/ClozeGame').then((m) => ({ default: m.ClozeGame })),
+);
+const TranslateGame = lazy(() =>
+  import('./components/games/TranslateGame').then((m) => ({ default: m.TranslateGame })),
+);
+const TypeGame = lazy(() =>
+  import('./components/games/TypeGame').then((m) => ({ default: m.TypeGame })),
+);
+const DictationGame = lazy(() =>
+  import('./components/games/DictationGame').then((m) => ({ default: m.DictationGame })),
+);
+const ListenPickGame = lazy(() =>
+  import('./components/games/ListenPickGame').then((m) => ({ default: m.ListenPickGame })),
+);
+const ReorderGame = lazy(() =>
+  import('./components/games/ReorderGame').then((m) => ({ default: m.ReorderGame })),
+);
+const ImagePickGame = lazy(() =>
+  import('./components/games/ImagePickGame').then((m) => ({ default: m.ImagePickGame })),
+);
+
+const screenLoadingFallback = <div className="screen-loading" aria-busy="true" />;
 
 const BEST_KEY = 'scanplay-best';
 
@@ -1504,10 +1575,12 @@ export default function App() {
     setLocale(loc);
     setLocaleState(loc);
     document.documentElement.lang = loc;
+    document.documentElement.dir = loc === 'ar' ? 'rtl' : 'ltr';
   };
 
   useEffect(() => {
     document.documentElement.lang = locale;
+    document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
   }, [locale]);
 
   useEffect(() => {
@@ -1882,7 +1955,9 @@ export default function App() {
   return (
     <div className={`app-shell${isLoggedIn() || waitingForSession ? '' : ' app-shell--guest'}`} data-device={device.kind}>
       <Confetti active={showConfetti} />
-      <StreakClaimFlyby locale={locale} streak={streakClaimCount} pulseKey={streakClaimPulse} />
+      <Suspense fallback={null}>
+        <StreakClaimFlyby locale={locale} streak={streakClaimCount} pulseKey={streakClaimPulse} />
+      </Suspense>
       <AchievementUnlockModal
         achievement={currentUnlock}
         locale={locale}
@@ -1922,7 +1997,9 @@ export default function App() {
             open={navMoreOpen}
             locale={locale}
             activeTab={tab}
+            universeActive={flow === 'pixUniverse'}
             onSelect={handleTabChange}
+            onOpenUniverse={() => setFlow('pixUniverse')}
             onClose={() => setNavMoreOpen(false)}
           />
           <BottomNav
@@ -1937,6 +2014,7 @@ export default function App() {
       )}
 
       <div className="app-main">
+      <Suspense fallback={screenLoadingFallback}>
 
       {showStreakLost && (
         <StreakLostModal
@@ -2044,6 +2122,7 @@ export default function App() {
           onOpenScan={() => startScanFlow()}
           onOpenSettings={() => handleTabChange('settings')}
           onOpenHome={() => handleTabChange('home')}
+          onOpenUniverse={() => setFlow('pixUniverse')}
           onContinueInGame={(pairs, thumbnail) => {
             setPairs(pairs);
             setIgnoredScanPairs([]);
@@ -2563,6 +2642,7 @@ export default function App() {
         />
       )}
 
+      </Suspense>
       </div>
     </div>
   );

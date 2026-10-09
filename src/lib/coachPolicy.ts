@@ -67,6 +67,9 @@ export function refusePii(locale: string): string {
   if (locale.startsWith('es')) {
     return 'No puedo dar datos personales de otros alumnos (correo, teléfono, dirección). Pregúntame por tus propias fichas.';
   }
+  if (locale.startsWith('ar')) {
+    return 'لا يمكنني مشاركة معلومات شخصية لطالب آخر (بريد، هاتف، عنوان). اسألني عن بطاقاتك أنت.';
+  }
   return "Je ne peux pas donner les infos perso d'un autre élève (email, téléphone, adresse). Demande-moi plutôt tes propres fiches.";
 }
 
@@ -79,6 +82,9 @@ export function refuseHistory(locale: string, window: number): string {
   }
   if (locale.startsWith('es')) {
     return `En este plan solo puedo usar tus ${window} fichas más recientes. Pasa de plan para ir más atrás.`;
+  }
+  if (locale.startsWith('ar')) {
+    return `في هذه الخطة أرى فقط آخر ${window} بطاقات لك. رقِّ خطتك للعودة أبعد.`;
   }
   return `Je n'ai accès qu'à tes ${window} dernières fiches avec ce plan. Passe à Plus ou Pro pour aller plus loin.`;
 }
@@ -93,13 +99,17 @@ export function refuseSupport(locale: string): string {
   if (locale.startsWith('es')) {
     return 'Eso parece un problema real que yo no puedo resolver. Escribe a support@scanplay.org, te ayudarán.';
   }
+  if (locale.startsWith('ar')) {
+    return 'يبدو أن هذا يحتاج دعماً حقيقياً. اكتب إلى support@scanplay.org وسيساعدونك.';
+  }
   return "Là, c'est un vrai souci, je ne peux pas le régler dans le chat. Écris à support@scanplay.org, l'équipe t'aidera.";
 }
 
-function coachLang(locale: string): 'en' | 'nl' | 'es' | 'fr' {
+function coachLang(locale: string): 'en' | 'nl' | 'es' | 'fr' | 'ar' {
   if (locale.startsWith('en')) return 'en';
   if (locale.startsWith('nl')) return 'nl';
   if (locale.startsWith('es')) return 'es';
+  if (locale.startsWith('ar')) return 'ar';
   return 'fr';
 }
 
@@ -126,6 +136,15 @@ export function looksLikeBoost(message: string): boolean {
 export function looksLikeSettingsHelp(message: string): boolean {
   return /\b(param[eè]tres?|settings?|instellingen|ajustes|notifications?|langue|language|mot de passe|password)\b/i.test(
     message,
+  );
+}
+
+/** Univers / Univer / Universe in ScanPlay (not "université"). */
+export function looksLikeUniverseAsk(message: string): boolean {
+  const text = message.trim();
+  if (/\buniversit[eé]|university|universidad|universiteit\b/i.test(text)) return false;
+  return /\b(univers|univer|universe|pix univers|apprendre l['']anglais|learn english|c[oœ]urs? univers|hearts? univers)\b/i.test(
+    text,
   );
 }
 
@@ -157,6 +176,11 @@ export function localCoachReply(
         ? "De nada. Aún me falta una ficha: Inicio, luego escanea una foto de tus apuntes."
         : "De nada. Dime qué quieres repasar de tus últimas fichas.";
     }
+    if (lang === 'ar') {
+      return empty
+        ? 'على الرحب. ما زلت أحتاج بطاقة: الرئيسية، ثم امسح صورة دروسك.'
+        : 'على الرحب. قل لي ماذا تريد مراجعته من بطاقاتك الأخيرة.';
+    }
     return empty
       ? "Avec plaisir. Il me manque encore une fiche : Accueil, puis scanne une photo de ton cours."
       : "Avec plaisir. Dis-moi ce que tu veux réviser sur tes dernières fiches.";
@@ -172,7 +196,26 @@ export function localCoachReply(
     if (lang === 'es') {
       return "Abre Ajustes con el engranaje en Inicio (a la izquierda de la campana). Idioma, notificaciones y cuenta están ahí.\n\n[[action:settings]]";
     }
+    if (lang === 'ar') {
+      return 'افتح الإعدادات من الترس في الرئيسية (يسار الجرس). اللغة والإشعارات والحساب هناك.\n\n[[action:settings]]';
+    }
     return "Ouvre les paramètres via l'engrenage sur Accueil (à gauche de la cloche). Langue, notifications et compte sont là.\n\n[[action:settings]]";
+  }
+
+  if (looksLikeUniverseAsk(message)) {
+    if (lang === 'en') {
+      return "In ScanPlay, **Universe** is Pix’s ready-made course store. No scan needed.\n\nRight now you can learn English (A1 to C2), with chapters based on your goal. You get 3 hearts; a quiz mistake costs one, and each heart comes back in about 8 hours (or buy one in the Shop).\n\nOpen it here 👇\n[[action:universe]]";
+    }
+    if (lang === 'nl') {
+      return "In ScanPlay is **Univers** de store met kant-en-klare Pix-cursussen. Geen scan nodig.\n\nNu kun je Engels leren (A1 tot C2), met hoofdstukken volgens jouw doel. Je hebt 3 harten; een fout in de quiz kost er één, en elk hart komt terug in ongeveer 8 uur (of koop er één in de Shop).\n\nOpen hier 👇\n[[action:universe]]";
+    }
+    if (lang === 'es') {
+      return "En ScanPlay, **Universo** es la tienda de cursos listos de Pix. Sin escanear.\n\nAhora puedes aprender inglés (A1 a C2), con capítulos según tu objetivo. Tienes 3 corazones; un fallo en el quiz quita uno, y cada corazón vuelve en unas 8 h (o cómpralo en la Tienda).\n\nÁbrelo aquí 👇\n[[action:universe]]";
+    }
+    if (lang === 'ar') {
+      return 'في ScanPlay، **الكون (Univers)** هو متجر دورات جاهزة من Pix بلا مسح.\n\nحالياً يمكنك تعلّم الإنجليزية (A1 إلى C2) بفصول حسب هدفك. لديك 3 قلوب؛ خطأ في الاختبار يخصم قلباً، ويعود كل قلب خلال نحو 8 ساعات (أو اشترِ من المتجر).\n\nافتحه هنا 👇\n[[action:universe]]';
+    }
+    return "Dans ScanPlay, **Univers** c'est le store de cours prêts par Pix. Pas besoin de scanner.\n\nTu peux y apprendre l'anglais (A1 à C2), avec des chapitres selon ton objectif. Tu as 3 cœurs : une faute au quiz en enlève un, et chaque cœur revient en environ 8 h (ou tu en rachètes un dans la Boutique).\n\nOuvre-le ici 👇\n[[action:universe]]";
   }
 
   if (looksLikeScanHelp(message)) {
@@ -184,6 +227,9 @@ export function localCoachReply(
     }
     if (lang === 'es') {
       return "Abre Inicio, pulsa escanear, fotografía una hoja. Cuando esté en el historial, te hago un test.\n\nPulsa aquí para escanear 👇\n[[action:scan]]";
+    }
+    if (lang === 'ar') {
+      return 'افتح الرئيسية، اضغط مسح، صوّر صفحة. عندما تظهر في السجل، عد لأختبرك.\n\nاضغط هنا للمسح 👇\n[[action:scan]]';
     }
     return "Va sur Accueil, appuie sur scanner, prends une photo de ta page. Quand elle est dans l'historique, reviens, je pourrai te tester.\n\nAppuie ici pour scanner 👇\n[[action:scan]]";
   }
@@ -198,6 +244,9 @@ export function localCoachReply(
     if (lang === 'es') {
       return "Bienvenido. Foto de tu clase desde Inicio, lo convertimos en juego, luego te ayudo. Aún no hay escaneo, empieza por ahí.\n\n[[action:scan]]";
     }
+    if (lang === 'ar') {
+      return 'أهلاً. صورة درس من الرئيسية نحوّلها لعبة، ثم أساعدك. لم تمسح شيئاً بعد، ابدأ من هناك.\n\n[[action:scan]]';
+    }
     return "Bienvenue. Photo d'un cours depuis Accueil, on en fait un jeu, ensuite je t'aide. Tu n'as encore rien scanné, commence par là.\n\n[[action:scan]]";
   }
 
@@ -206,6 +255,7 @@ export function localCoachReply(
       if (lang === 'en') return "You are in. The real first win is one scan from Home. Then we play.";
       if (lang === 'nl') return "Je bent er. De echte eerste winst is één scan via Home. Daarna spelen we.";
       if (lang === 'es') return "Ya estás dentro. El primer logro de verdad es un escaneo desde Inicio. Luego jugamos.";
+      if (lang === 'ar') return 'أنت داخل. أول إنجاز حقيقي هو مسح واحد من الرئيسية. ثم نلعب.';
       return "T'es lancé. Le vrai premier succès, c'est un scan depuis Accueil. Ensuite on joue.";
     }
     return null;
@@ -220,6 +270,9 @@ export function localCoachReply(
     }
     if (lang === 'es') {
       return "Puedo hablar, pero no tengo ficha para un test. Escanea una lección desde Inicio.\n\n[[action:scan]]";
+    }
+    if (lang === 'ar') {
+      return 'يمكنني التحدث، لكن بلا بطاقة لاختبارك. امسح درساً من الرئيسية أولاً.\n\n[[action:scan]]';
     }
     return "Je peux te parler, mais je n'ai pas de fiche pour un quiz. Scanne un cours depuis Accueil d'abord.\n\n[[action:scan]]";
   }

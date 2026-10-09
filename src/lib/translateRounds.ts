@@ -2,6 +2,11 @@ import type { LangCode, WordPair } from '../types';
 import { detectLang } from './columnParser';
 import { coercePlayablePairs, isMathLikeText } from './vocabulary';
 import { inferColumnLangs, pairLooksTranslatable } from './pathSheetType';
+import {
+  englishVocabKeysLongestFirst,
+  lookupEnglishNativeGloss,
+} from './englishVocabLookup';
+import type { EnglishNativeLang } from './englishCurriculum';
 import { lookupVocabGloss } from './loanwordGlosses';
 
 export type TranslateGrade = 'correct' | 'small' | 'big';
@@ -244,6 +249,145 @@ function enNounPhrase(word: string): string {
   return `a ${word}`;
 }
 
+/** Greetings / interjections / fixed phrases — never "I have a bye". */
+const UTTERANCE_LEMMAS = new Set([
+  'bye', 'goodbye', 'hello', 'hi', 'thanks', 'thank you', "you're welcome", 'please',
+  'yes', 'no', 'maybe', 'sorry', 'excuse me', 'ok', 'okay', 'of course',
+  'good morning', 'good afternoon', 'good evening', 'good night',
+  'see you later', 'see you soon', 'take care', 'congratulations', 'happy birthday',
+  'welcome', 'i am fine', 'my name is', 'i am from', 'i live in', 'nice to meet you',
+  'how are you', 'how are you?', 'what is your name', 'what is your name?',
+  'how old are you', 'how old are you?',
+  'salut', 'bonjour', 'bonsoir', 'merci', 'au revoir', "s'il te plaît", 's’il te plaît',
+  'de rien', 'désolé', 'excusez-moi', 'bien sûr', 'à plus tard', 'à bientôt',
+  'prends soin de toi', 'félicitations', 'joyeux anniversaire', 'bienvenue',
+  'enchanté', 'je m’appelle', "je m'appelle", 'je vais bien', 'comment ça va', 'comment ça va ?',
+  'hallo', 'hoi', 'dank je', 'bedankt', 'tot ziens', 'tot later', 'tot gauw', 'graag gedaan',
+  'hola', 'gracias', 'adiós', 'de nada', 'hasta luego', 'hasta pronto', 'por favor',
+  'doei', 'chao', 'باي', 'مرحبا', 'أهلا', 'شكرا',
+]);
+
+function isUtteranceLemma(word: string): boolean {
+  const low = word.trim().toLowerCase().replace(/[’']/g, "'");
+  if (UTTERANCE_LEMMAS.has(low)) return true;
+  if (/^(good\s+|see you\b|how are you|nice to meet|my name is|i am |i live )/i.test(low)) return true;
+  if (/\?$/.test(word.trim())) return true;
+  return false;
+}
+
+function capitalizeUtterance(text: string): string {
+  const t = text.trim();
+  if (!t) return t;
+  return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+function utteranceSentence(word: string, lang: LangCode, slot: number | undefined, seed: string): string {
+  const w = capitalizeUtterance(lemmaInSentence(word) || word.trim());
+  if (!w) return '';
+  if (lang === 'en') {
+    return pickAligned([`${w}!`, `${w}.`, `Just say "${lemmaInSentence(word)}".`], slot, seed);
+  }
+  if (lang === 'fr') {
+    return pickAligned([`${w} !`, `${w}.`, `On dit « ${lemmaInSentence(word)} ».`], slot, seed);
+  }
+  if (lang === 'nl') {
+    return pickAligned([`${w}!`, `${w}.`, `Zeg gewoon "${lemmaInSentence(word)}".`], slot, seed);
+  }
+  if (lang === 'es') {
+    return pickAligned([`¡${w}!`, `${w}.`, `Se dice "${lemmaInSentence(word)}".`], slot, seed);
+  }
+  return `${w}.`;
+}
+
+/** Prefer curated example sentence stored on the pair (e.g. Universe faces). */
+export function pairExampleSentence(pair: WordPair): string | null {
+  const face = pair.faces?.map((f) => f.trim()).find((f) => f.length >= 3);
+  return face ?? null;
+}
+
+function glossAsUtterance(definition: string, sourceEn: string): string {
+  const def = definition.trim().replace(/[.…]+$/u, '');
+  if (!def) return '';
+  if (/[.!?…]/.test(definition) || def.split(/\s+/).length >= 3) {
+    return /[.!?…]$/u.test(definition.trim()) ? definition.trim() : `${def}.`;
+  }
+  const bang = /!$/.test(sourceEn.trim());
+  return bang ? `${capitalizeUtterance(def)}!` : `${capitalizeUtterance(def)}.`;
+}
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+function isNativeLang(lang: LangCode): lang is EnglishNativeLang {
+  return lang === 'fr' || lang === 'nl' || lang === 'es' || lang === 'ar';
+}
+
+/**
+ * Translate a curated EN sentence by replacing known vocab phrases (longest first)
+ * with their native glosses — so "Bye! Take care." → tiles for "Salut" + "prends soin de toi".
+ */
+export function composeNativeFromCurated(
+  sourceEn: string,
+  pool: WordPair[],
+  defLang: LangCode,
+): { target: string; expected: string[] } | null {
+  const glossary = new Map<string, string>();
+  for (const p of pool) {
+    const full = p.term.trim().toLowerCase().replace(/[’']/g, "'");
+    const gloss = p.definition.trim();
+    if (full && gloss) glossary.set(full, gloss);
+    const lemma = extractPlayableLemma(p.term).toLowerCase();
+    const glossLemma = extractPlayableLemma(p.definition);
+    if (lemma && glossLemma && !glossary.has(lemma)) glossary.set(lemma, gloss);
+  }
+  if (isNativeLang(defLang)) {
+    for (const key of englishVocabKeysLongestFirst()) {
+      if (glossary.has(key)) continue;
+      const gloss = lookupEnglishNativeGloss(key, defLang);
+      if (gloss) glossary.set(key, gloss);
+    }
+  }
+  const keys = [...glossary.keys()].filter((k) => k.length > 0).sort((a, b) => b.length - a.length);
+  if (keys.length === 0) return null;
+
+  const expected: string[] = [];
+  let i = 0;
+  const s = sourceEn;
+  while (i < s.length) {
+    const ch = s[i]!;
+    if (/\s/.test(ch) || /[.!,?;:…'"«»]/.test(ch)) {
+      i += 1;
+      continue;
+    }
+    const rest = s.slice(i);
+    let matched = false;
+    for (const key of keys) {
+      const re = new RegExp(`^${escapeRegExp(key)}(?![A-Za-zÀ-ÿ])`, 'i');
+      if (!re.test(rest)) continue;
+      const gloss = glossary.get(key)!;
+      expected.push(expected.length === 0 ? capitalizeUtterance(gloss) : gloss);
+      i += key.length;
+      matched = true;
+      break;
+    }
+    if (!matched) return null;
+  }
+  if (expected.length === 0) return null;
+
+  const bang = /!/.test(sourceEn);
+  const body = expected.join(defLang === 'fr' ? ' ' : ' ');
+  const target =
+    bang
+      ? defLang === 'fr'
+        ? `${body} !`
+        : `${body}!`
+      : /[?]$/.test(sourceEn.trim())
+        ? `${body}?`
+        : `${body}.`;
+  return { target, expected };
+}
+
 function nlNounPhrase(word: string, kind: VocabKind): string {
   if (/^(de|het|een)\s+/i.test(word)) return word;
   const low = word.toLowerCase();
@@ -381,6 +525,18 @@ export function wrapVocabSentence(
 ): string {
   const w = lemmaInSentence(word);
   if (!w) return '';
+  const seedBase = `${lang}:${w.toLowerCase()}`;
+  if (isUtteranceLemma(w) || isUtteranceLemma(word)) {
+    return utteranceSentence(word, lang, slot, seedBase);
+  }
+  // Already a natural sentence / question — keep it (never glossary "lemma – gloss" lines)
+  if (
+    !looksLikeGlossaryFragment(word) &&
+    (tokenizePhrase(word).length >= 3 || /[?]/.test(word))
+  ) {
+    const cleaned = word.trim().replace(/[.!?…]+$/u, '');
+    return cleaned ? `${cleaned}${/[?]$/.test(word.trim()) ? '?' : '.'}` : '';
+  }
   const kind = forcedKind ?? classifyVocab(w, lang);
   const seed = `${lang}:${kind}:${w.toLowerCase()}`;
   const objRaw =
@@ -690,22 +846,47 @@ export function buildLocalTranslateRound(
   const baseSlot = hashSlot(`${term}|${definition}|${termLang}|${defLang}|${kind}`, 3);
   let source = '';
   let target = '';
-  for (let offset = 0; offset < 3; offset += 1) {
-    const slot = (baseSlot + offset) % 3;
-    const src = wrapVocabSentence(pair.term, termLang, slot, kind, companion?.term);
-    const tgt = wrapVocabSentence(pair.definition, defLang, slot, kind, companion?.def);
-    if (!src || !tgt) continue;
-    source = src;
-    target = tgt;
-    if (framesMatch(src, tgt)) break;
+  let expectedOverride: string[] | null = null;
+  const curated = pairExampleSentence(pair);
+  if (curated && (termLang === 'en' || pair.termLang === 'en') && !looksLikeGlossaryFragment(curated)) {
+    const composed = composeNativeFromCurated(curated.trim(), pool, defLang);
+    if (composed && composed.expected.length > 0) {
+      source = curated.trim();
+      target = composed.target;
+      expectedOverride = composed.expected;
+    } else if (isUtteranceLemma(term) || isUtteranceLemma(definition)) {
+      // Don't show "Bye! Take care." if we can't supply every native tile.
+      source = utteranceSentence(term, termLang === 'unknown' ? 'en' : termLang, baseSlot, `${term}|utt`);
+      target = glossAsUtterance(definition, source);
+    } else {
+      source = curated.trim();
+      target = wrapVocabSentence(definition, defLang, baseSlot, kind, companion?.def);
+      if (!target) target = glossAsUtterance(definition, curated);
+    }
+  } else {
+    for (let offset = 0; offset < 3; offset += 1) {
+      const slot = (baseSlot + offset) % 3;
+      const src = wrapVocabSentence(term, termLang, slot, kind, companion?.term);
+      const tgt = wrapVocabSentence(definition, defLang, slot, kind, companion?.def);
+      if (!src || !tgt) continue;
+      source = src;
+      target = tgt;
+      if (framesMatch(src, tgt)) break;
+    }
   }
   if (!source || !target) return null;
-  const expected = tokenizePhrase(target);
+  const expected = expectedOverride ?? tokenizePhrase(target);
   if (expected.length === 0) return null;
 
   const distractors = pool
     .filter((p) => p !== pair)
-    .flatMap((p) => tokenizePhrase(extractPlayableLemma(p.definition)))
+    .flatMap((p) => {
+      const full = p.definition.trim();
+      if (!full) return [];
+      // Keep short phrases as one chip (e.g. "prends soin de toi", "je m'appelle").
+      if (full.split(/\s+/).length <= 5) return [full];
+      return tokenizePhrase(extractPlayableLemma(full));
+    })
     .filter((tok) => tok.length > 1 && !/^\d+$/.test(tok));
   const fillers = FILLERS[defLang] ?? [];
   const answerTiles = makeTiles(expected, `a${pairIndex}`);

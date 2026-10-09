@@ -7,10 +7,18 @@ export function normalizeCoachSpacing(raw: string): string {
     .trim();
 }
 
-export type CoachActionId = 'scan' | 'settings' | 'home' | 'continue_chat' | 'continue_game' | 'export_word' | 'export_pdf';
+export type CoachActionId =
+  | 'scan'
+  | 'settings'
+  | 'home'
+  | 'universe'
+  | 'continue_chat'
+  | 'continue_game'
+  | 'export_word'
+  | 'export_pdf';
 
 const ACTION_RE =
-  /\[\[action:(scan|settings|home|continue_chat|continue_game|export_word|export_pdf)\]\]/gi;
+  /\[\[action:(scan|settings|home|universe|continue_chat|continue_game|export_word|export_pdf)\]\]/gi;
 
 export function extractCoachActions(raw: string): { text: string; actions: CoachActionId[] } {
   const actions: CoachActionId[] = [];
@@ -45,10 +53,16 @@ export function enrichCoachActions(raw: string): string {
     !invitesScan &&
     /\b(retourne|reviens|va sur|go to|open|abre|ga naar)\b/i.test(hay) &&
     /\b(accueil|home|inicio)\b/i.test(hay);
+  const invitesUniverse =
+    /\b(univers|univer|universe|pix univers)\b/i.test(hay) &&
+    /\b(ouvrir|open|abre|ga naar|va sur|raccourci|bouton|button|ici|here|hier|aquí|apprendre|anglais|english|engels)\b/i.test(
+      hay,
+    );
 
   if (invitesScan && !actions.includes('scan')) add.push('scan');
   if (invitesSettings && !actions.includes('settings')) add.push('settings');
   if (invitesHome && !actions.includes('home') && !add.includes('scan')) add.push('home');
+  if (invitesUniverse && !actions.includes('universe')) add.push('universe');
   if (/\b(continuer ici|continue here|hier verder|seguir aquí)\b/i.test(hay) && !actions.includes('continue_chat')) {
     add.push('continue_chat');
   }

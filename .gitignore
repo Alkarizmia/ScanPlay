@@ -30,3 +30,13 @@ dist-ssr
 # Local credentials (never commit)
 secrets/
 **/capable-bivouac*.json
+
+# Locale extract scratch files
+scripts/_fr-locale.json
+scripts/_ar-locale.json
+scripts/_fr-keys.json
+
+# Driving sign pipeline scratch
+public/universe/signs/_raw/
+public/universe/signs/_manifest.json
+public/universe/signs/_build-report.json

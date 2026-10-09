@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { t } from '../../lib/i18n';
 import { buildListenPickRounds } from '../../lib/listenPickRounds';
@@ -17,6 +17,7 @@ interface ListenPickGameProps extends EmbeddedGameProps {
   locale: Locale;
   deckId?: string | null;
   stepIndex?: number | null;
+  onAnswer?: (pair: WordPair, correct: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
 }
@@ -27,6 +28,7 @@ export function ListenPickGame({
   locale,
   deckId,
   stepIndex,
+  onAnswer,
   onComplete,
   onExit,
   embedded = false,
@@ -59,6 +61,14 @@ export function ListenPickGame({
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
 
+  // Empty rounds (e.g. lesson has too few short bilingual words) → skip, never blank UI.
+  const emptySkipRef = useRef(false);
+  useEffect(() => {
+    if (rounds.length > 0 || emptySkipRef.current) return;
+    emptySkipRef.current = true;
+    onComplete(0, 1);
+  }, [rounds.length, onComplete]);
+
   useEffect(() => {
     if (!round) return;
     const timer = window.setTimeout(play, 350);
@@ -86,6 +96,7 @@ export function ListenPickGame({
 
     const pair = pool[round.pairIndex];
     if (pair) {
+      onAnswer?.(pair, ok);
       if (ok) markCorrected(pair);
       else recordMistake(pair, 'listenpick', deckId ?? undefined, stepIndex ?? undefined);
     }

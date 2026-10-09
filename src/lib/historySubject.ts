@@ -186,6 +186,18 @@ const SUBJECT_LABELS: Record<Locale, Record<HistorySubject, string>> = {
     economics: 'Economía',
     general: 'Repaso',
   },
+  ar: {
+    math: 'الرياضيات',
+    history: 'التاريخ',
+    science: 'العلوم',
+    physics: 'الفيزياء',
+    geography: 'الجغرافيا',
+    literature: 'الأدب',
+    languages: 'اللغات',
+    law: 'القانون',
+    economics: 'الاقتصاد',
+    general: 'مراجعة',
+  },
 };
 
 function corpusFromPairs(pairs: WordPair[]): string {
