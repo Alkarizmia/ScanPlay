@@ -1,5 +1,5 @@
-/* ScanPlay — PWA shell. Network-first for HTML/JS so deploys never leave a blank screen. */
-const CACHE = 'scanplay-shell-v8';
+/* ScanPlay — PWA shell. Network-first for HTML/JS/Univers so deploys never leave a stale UI. */
+const CACHE = 'scanplay-shell-v9';
 const STATIC = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/logo.png'];
 const NO_SPA_FALLBACK = new Set([
   '/avis',
@@ -71,8 +71,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Always fetch fresh HTML and hashed bundles after each deploy.
-  if (isDocumentRequest(request) || pathname.startsWith('/assets/')) {
+  // Always fetch fresh HTML, hashed bundles, and Univers media after each deploy.
+  if (
+    isDocumentRequest(request) ||
+    pathname.startsWith('/assets/') ||
+    pathname.startsWith('/universe/')
+  ) {
     event.respondWith(networkFirst(request, '/index.html'));
     return;
   }

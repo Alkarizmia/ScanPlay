@@ -252,8 +252,11 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
                 src="/universe/english-cover.jpg"
                 alt=""
                 className="pix-universe-card-cover"
-                loading="lazy"
+                width={1280}
+                height={720}
+                loading="eager"
                 decoding="async"
+                fetchPriority="high"
               />
             </span>
             <span className="pix-universe-card-body">
@@ -278,7 +281,9 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
                 src="/universe/driving-cover.jpg"
                 alt=""
                 className="pix-universe-card-cover"
-                loading="lazy"
+                width={1280}
+                height={720}
+                loading="eager"
                 decoding="async"
               />
             </span>
