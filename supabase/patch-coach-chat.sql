@@ -82,9 +82,13 @@ create policy "scanplay_coach_chat_messages_select_own"
   using (auth.uid() = user_id);
 
 drop policy if exists "scanplay_coach_chat_messages_insert_own_user" on public.scanplay_coach_chat_messages;
-create policy "scanplay_coach_chat_messages_insert_own_user"
+drop policy if exists "scanplay_coach_chat_messages_insert_own" on public.scanplay_coach_chat_messages;
+create policy "scanplay_coach_chat_messages_insert_own"
   on public.scanplay_coach_chat_messages for insert
-  with check (auth.uid() = user_id and role = 'user');
+  with check (
+    auth.uid() = user_id
+    and role in ('user', 'assistant')
+  );
 
 drop policy if exists "scanplay_coach_chat_messages_delete_own" on public.scanplay_coach_chat_messages;
 create policy "scanplay_coach_chat_messages_delete_own"

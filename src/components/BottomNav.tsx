@@ -19,16 +19,22 @@ const MAIN_TABS: { id: TabId; labelKey: TranslationKey }[] = [
   { id: 'history', labelKey: 'history' },
   { id: 'chat', labelKey: 'chatTitle' },
   { id: 'friends', labelKey: 'friends' },
-  { id: 'profile', labelKey: 'profileTitle' },
 ];
 
-function navHighlight(tab: TabId): TabId {
-  if (isMoreSubTab(tab) || tab === 'shop' || tab === 'more') return 'profile';
+function navHighlight(tab: TabId, moreOpen: boolean): TabId {
+  if (moreOpen || isMoreSubTab(tab) || tab === 'more') return 'more';
   return tab;
 }
 
-export function BottomNav({ active, onChange, locale, device }: BottomNavProps) {
-  const highlight = navHighlight(active);
+export function BottomNav({
+  active,
+  onChange,
+  locale,
+  device,
+  moreOpen = false,
+  onMoreToggle,
+}: BottomNavProps) {
+  const highlight = navHighlight(active, moreOpen);
 
   return (
     <nav className={`app-nav bottom-nav bottom-nav--${device}`} aria-label="Main navigation">
@@ -46,7 +52,11 @@ export function BottomNav({ active, onChange, locale, device }: BottomNavProps) 
               key={tab.id}
               type="button"
               className={`bottom-nav-item${isActive ? ' active' : ''}`}
-              onClick={() => onChange(tab.id)}
+              onClick={() => {
+                if (moreOpen) onMoreToggle?.();
+                if (isActive) return;
+                onChange(tab.id);
+              }}
               aria-current={isActive ? 'page' : undefined}
             >
               <span className="bottom-nav-icon" aria-hidden="true">
@@ -56,6 +66,20 @@ export function BottomNav({ active, onChange, locale, device }: BottomNavProps) 
             </button>
           );
         })}
+
+        <button
+          type="button"
+          className={`bottom-nav-item${highlight === 'more' ? ' active' : ''}${moreOpen ? ' bottom-nav-item--more-open' : ''}`}
+          onClick={() => onMoreToggle?.()}
+          aria-expanded={moreOpen}
+          aria-haspopup="menu"
+          aria-label={t('navMore', locale)}
+        >
+          <span className="bottom-nav-icon" aria-hidden="true">
+            <NavIcon tab="more" />
+          </span>
+          <span className="bottom-nav-label">{t('navMore', locale)}</span>
+        </button>
       </div>
     </nav>
   );

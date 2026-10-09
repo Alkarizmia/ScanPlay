@@ -22,6 +22,9 @@ interface ImportScreenProps {
   onBack: () => void;
   onSheetTypeChange: (type: SheetType) => void;
   onFile: (file: File | File[], trainingFocus: TrainingFocus[], examRequested?: boolean, sheetTypeOverride?: SheetType) => void;
+  onManualCreate?: () => void;
+  onJoinCode?: (code: string) => void;
+  onOpenUniverse?: () => void;
   onUpgrade?: (reason: 'exam') => void;
   onToast?: (message: string) => void;
   onAuth?: () => void;
@@ -41,6 +44,9 @@ export function ImportScreen({
   onBack,
   onSheetTypeChange,
   onFile,
+  onManualCreate,
+  onJoinCode,
+  onOpenUniverse,
   onUpgrade,
   onToast,
   onAuth,
@@ -48,6 +54,7 @@ export function ImportScreen({
 }: ImportScreenProps) {
   const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  const codeInputRef = useRef<HTMLInputElement>(null);
   const appendNextPickRef = useRef(false);
   const [dragOver, setDragOver] = useState(false);
   const [picked, setPicked] = useState<File[]>(initialFiles ?? []);
@@ -55,6 +62,8 @@ export function ImportScreen({
   const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
   const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
   const [examWanted, setExamWanted] = useState(false);
+  const [showJoinCode, setShowJoinCode] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
   const maxPhotos = getMaxImagesPerImport();
   const guestMode = !isLoggedIn();
   const guestTrial = guestMode && canGuestScan();
@@ -171,7 +180,23 @@ export function ImportScreen({
       setStep('pick');
       return;
     }
+    if (showJoinCode) {
+      setShowJoinCode(false);
+      setJoinCode('');
+      return;
+    }
     onBack();
+  };
+
+  const openJoinCode = () => {
+    setShowJoinCode(true);
+    window.setTimeout(() => codeInputRef.current?.focus(), 50);
+  };
+
+  const submitJoinCode = () => {
+    const code = joinCode.trim().toUpperCase();
+    if (code.length < 6) return;
+    onJoinCode?.(code);
   };
 
   const screenTitle =
@@ -251,6 +276,79 @@ export function ImportScreen({
               <span className="import-frame-hint">{t('importFrameHint', locale)}</span>
             </button>
           )}
+
+          <div className="import-pick-alt">
+            <p className="import-pick-alt-label">{t('importAltLabel', locale)}</p>
+
+            {!showJoinCode ? (
+              <div className="import-pick-alt-actions">
+                <button type="button" className="import-card import-card--alt" onClick={() => onManualCreate?.()}>
+                  <span className="import-icon" aria-hidden="true">
+                    ✏️
+                  </span>
+                  <span className="import-title">{t('importManual', locale)}</span>
+                  <span className="import-desc">{t('importManualDesc', locale)}</span>
+                </button>
+
+                <button type="button" className="import-card import-card--alt" onClick={openJoinCode}>
+                  <span className="import-icon" aria-hidden="true">
+                    🔑
+                  </span>
+                  <span className="import-title">{t('importCode', locale)}</span>
+                  <span className="import-desc">{t('importCodeDesc', locale)}</span>
+                </button>
+              </div>
+            ) : (
+              <form
+                className="import-join-panel"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  submitJoinCode();
+                }}
+              >
+                <p className="import-join-title">{t('importCode', locale)}</p>
+                <p className="import-join-hint">{t('importCodeHint', locale)}</p>
+                <div className="import-join-row">
+                  <input
+                    ref={codeInputRef}
+                    className="profile-name-input import-join-input"
+                    value={joinCode}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6))}
+                    placeholder={t('friendsCodePlaceholder', locale)}
+                    maxLength={6}
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    aria-label={t('friendsCodePlaceholder', locale)}
+                  />
+                  <button type="submit" className="btn-primary" disabled={joinCode.trim().length < 6}>
+                    {t('friendsJoinRoom', locale)}
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  className="btn-secondary import-join-cancel"
+                  onClick={() => {
+                    setShowJoinCode(false);
+                    setJoinCode('');
+                  }}
+                >
+                  {t('back', locale)}
+                </button>
+              </form>
+            )}
+          </div>
+
+          <div className="import-pick-universe">
+            <p className="import-pick-alt-label">{t('importUniverseLabel', locale)}</p>
+            <button type="button" className="import-card import-card--universe" onClick={() => onOpenUniverse?.()}>
+              <span className="import-icon" aria-hidden="true">
+                🌌
+              </span>
+              <span className="import-title">{t('importUniverse', locale)}</span>
+              <span className="import-desc">{t('importUniverseDesc', locale)}</span>
+            </button>
+          </div>
         </main>
       )}
 

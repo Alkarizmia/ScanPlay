@@ -116,6 +116,7 @@ export interface GameCompleteMeta {
 
 export type FlowScreen =
   | 'import'
+  | 'pixUniverse'
   | 'scanning'
   | 'modes'
   | 'playing'

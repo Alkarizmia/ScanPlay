@@ -1,6 +1,6 @@
 import { ProfileSection } from './ProfileSection';
 import { t } from '../lib/i18n';
-import type { Locale, TabId } from '../types';
+import type { Locale } from '../types';
 
 interface ProfileScreenProps {
   locale: Locale;
@@ -9,8 +9,8 @@ interface ProfileScreenProps {
   onRefresh: () => void;
   onUpgrade: () => void;
   onAuth: () => void;
-  onToast?: (message: string) => void;
-  onOpenTab?: (tab: TabId) => void;
+  onOpenFriends?: () => void;
+  onOpenAchievements?: () => void;
 }
 
 export function ProfileScreen({
@@ -20,14 +20,11 @@ export function ProfileScreen({
   onRefresh,
   onUpgrade,
   onAuth,
-  onToast,
-  onOpenTab,
+  onOpenFriends,
+  onOpenAchievements,
 }: ProfileScreenProps) {
   return (
     <div className="screen tab-screen profile-screen">
-      <header className="top-bar profile-top-bar">
-        <h2 className="screen-title">{t('profileTitle', locale)}</h2>
-      </header>
       <main className="profile-main scroll-natural">
         {isLoggedIn ? (
           <ProfileSection
@@ -35,9 +32,8 @@ export function ProfileScreen({
             refreshKey={refreshKey}
             onRefresh={onRefresh}
             onUpgrade={onUpgrade}
-            onToast={onToast}
-            onOpenTab={onOpenTab}
-            variant="page"
+            onOpenFriends={onOpenFriends}
+            onOpenAchievements={onOpenAchievements}
           />
         ) : (
           <div className="profile-guest-card">

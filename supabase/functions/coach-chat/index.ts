@@ -38,8 +38,8 @@ Style :
 - Pour un titre de fiche important, écris **Titre** (double étoile) : l'app l'affiche en vrai gras. N'utilise pas d'autres markdown (#, -, *, _).
 - 1 à 3 emojis encourageants par message (ex. 👇 💪 ✨), pas une pluie.
 - Pas de tiret cadratin.
-- Raccourcis cliquables : si tu invites à scanner, ouvrir les paramètres, ou revenir à l'accueil, ajoute à la FIN du message une balise seule sur sa ligne (l'app affiche un bouton) :
-  [[action:scan]] ou [[action:settings]] ou [[action:home]]
+- Raccourcis cliquables : si tu invites à scanner, ouvrir les paramètres, revenir à l'accueil, continuer ici, ou lancer le jeu, ajoute à la FIN du message une balise seule sur sa ligne (l'app affiche un bouton) :
+  [[action:scan]] ou [[action:settings]] ou [[action:home]] ou [[action:continue_chat]] ou [[action:continue_game]]
   N'invente aucune autre balise.
 
 Exemple de format (à imiter) :
@@ -56,6 +56,7 @@ Tu veux te concentrer sur une fiche ?`;
 interface CoachBody {
   message?: string;
   locale?: string;
+  conversationId?: string;
   context?: {
     streak?: number;
     level?: number;
@@ -197,12 +198,22 @@ Deno.serve(async (req) => {
       ? body.context.achievements.map((a) => trimText(a, 40)).filter(Boolean).slice(0, 6)
       : [];
 
-    const { data: historyRows } = await supabase
+    const conversationId =
+      typeof body.conversationId === 'string' && body.conversationId.length > 10
+        ? body.conversationId
+        : null;
+
+    let historyQuery = supabase
       .from('scanplay_coach_chat_messages')
       .select('role, content')
       .eq('user_id', user.id)
       .order('created_at', { ascending: false })
       .limit(8);
+    if (conversationId) {
+      historyQuery = historyQuery.eq('conversation_id', conversationId);
+    }
+
+    const { data: historyRows } = await historyQuery;
 
     const prior = (historyRows ?? [])
       .reverse()
@@ -270,15 +281,18 @@ Deno.serve(async (req) => {
       return json(502, { error: 'coach_failed' });
     }
 
-    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-    const admin = serviceKey
-      ? createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
-      : null;
-    if (admin) {
-      await admin.from('scanplay_coach_chat_messages').insert([
-        { user_id: user.id, role: 'user', content: rawMessage },
-        { user_id: user.id, role: 'assistant', content: reply },
-      ]);
+    // Persistence is done by the client (user + assistant) so canned replies
+    // and edge replies share the same path and survive leaving the Coach tab.
+    if (conversationId) {
+      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+      if (serviceKey) {
+        const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+        await admin
+          .from('scanplay_coach_conversations')
+          .update({ updated_at: new Date().toISOString() })
+          .eq('id', conversationId)
+          .eq('user_id', user.id);
+      }
     }
 
     return json(200, {

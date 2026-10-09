@@ -70,6 +70,22 @@ function AchievementArt({
       return <LootMic size={size} />;
     case 'chest':
       return <ScanPlayChest open={!locked} size={size} idle={!locked} />;
+    case 'coach':
+      return <LootMic size={size} />;
+    case 'mission':
+      return <LootFlag size={size} />;
+    case 'multi':
+      return <LootPeople size={size} />;
+    case 'type':
+      return <LootCards size={size} />;
+    case 'listen':
+      return <LootMic size={size} />;
+    case 'translate':
+      return <LootSynthesis size={size} />;
+    case 'cloze':
+      return <LootQuiz size={size} />;
+    case 'explorer':
+      return <LootTiles size={size} />;
     default:
       return <LootFlag size={size} />;
   }

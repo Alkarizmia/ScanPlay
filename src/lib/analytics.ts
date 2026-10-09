@@ -39,6 +39,7 @@ const GAME_SCREENS: Record<GameMode, AnalyticsScreen> = {
 
 const FLOW_SCREENS: Record<FlowScreen, AnalyticsScreen> = {
   import: { id: 'scanner', name: 'Scanner' },
+  pixUniverse: { id: 'univers-pix', name: 'Univers Pix' },
   scanning: { id: 'scan-en-cours', name: 'Scan en cours' },
   modes: { id: 'parcours', name: 'Parcours' },
   playing: { id: 'jeu', name: 'Jeu' },

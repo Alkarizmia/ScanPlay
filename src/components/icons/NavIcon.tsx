@@ -67,9 +67,11 @@ const paths: Record<TabId, IconPath> = {
   ),
   more: (
     <>
-      <circle cx="6" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
-      <circle cx="18" cy="12" r="1.5" fill="currentColor" stroke="none" />
+      {/* Grille 2×2 — raccourcis / hub (pas trois points) */}
+      <rect x="4.5" y="4.5" width="6" height="6" rx="1.8" />
+      <rect x="13.5" y="4.5" width="6" height="6" rx="1.8" />
+      <rect x="4.5" y="13.5" width="6" height="6" rx="1.8" />
+      <rect x="13.5" y="13.5" width="6" height="6" rx="1.8" />
     </>
   ),
 };

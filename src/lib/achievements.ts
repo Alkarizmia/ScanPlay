@@ -55,7 +55,15 @@ export type AchievementId =
   | 'friends_5'
   | 'friends_10'
   | 'first_speak'
-  | 'first_chest';
+  | 'first_chest'
+  | 'first_coach'
+  | 'first_mission'
+  | 'first_multiplayer'
+  | 'type_pro'
+  | 'listen_pro'
+  | 'translate_pro'
+  | 'cloze_pro'
+  | 'modes_explorer';
 
 export interface AchievementDef {
   id: AchievementId;
@@ -109,7 +117,85 @@ export const ACHIEVEMENTS: AchievementDef[] = [
   { id: 'friends_10', icon: 'medal-gold', nameKey: 'achFriends10', descKey: 'achFriends10Desc' },
   { id: 'first_speak', icon: 'listen', nameKey: 'achFirstSpeak', descKey: 'achFirstSpeakDesc' },
   { id: 'first_chest', icon: 'path', nameKey: 'achFirstChest', descKey: 'achFirstChestDesc' },
+  { id: 'first_coach', icon: 'listen', nameKey: 'achFirstCoach', descKey: 'achFirstCoachDesc' },
+  { id: 'first_mission', icon: 'path', nameKey: 'achFirstMission', descKey: 'achFirstMissionDesc' },
+  { id: 'first_multiplayer', icon: 'medal-silver', nameKey: 'achFirstMultiplayer', descKey: 'achFirstMultiplayerDesc' },
+  { id: 'type_pro', icon: 'write', nameKey: 'achTypePro', descKey: 'achTypeProDesc' },
+  { id: 'listen_pro', icon: 'listen', nameKey: 'achListenPro', descKey: 'achListenProDesc' },
+  { id: 'translate_pro', icon: 'write', nameKey: 'achTranslatePro', descKey: 'achTranslateProDesc' },
+  { id: 'cloze_pro', icon: 'quiz', nameKey: 'achClozePro', descKey: 'achClozeProDesc' },
+  { id: 'modes_explorer', icon: 'quiz', nameKey: 'achModesExplorer', descKey: 'achModesExplorerDesc' },
 ];
+
+const COACH_KEY = 'scanplay-coach-used';
+const MULTIPLAYER_KEY = 'scanplay-multiplayer-played';
+const MISSION_EVER_KEY = 'scanplay-mission-ever';
+
+/** Sets a one-shot flag then journals any newly unlocked achievements. */
+function markFlagAndJournal(key: string): void {
+  try {
+    if (localStorage.getItem(key) === '1') return;
+    void import('./achievementUnlocks').then((m) => {
+      const before = m.snapshotUnlockedIds();
+      localStorage.setItem(key, '1');
+      m.processNewUnlocks(before);
+      void import('./sync').then((s) => s.scheduleSync());
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+export function recordCoachUsed(): void {
+  markFlagAndJournal(COACH_KEY);
+}
+
+/** Sync flag — caller should snapshot + processNewUnlocks for celebration. */
+export function recordMultiplayerPlayed(): void {
+  try {
+    localStorage.setItem(MULTIPLAYER_KEY, '1');
+    void import('./sync').then((m) => m.scheduleSync());
+  } catch {
+    /* ignore */
+  }
+}
+
+export function recordMissionClaimedEver(): void {
+  markFlagAndJournal(MISSION_EVER_KEY);
+}
+
+function hasCoachUsed(): boolean {
+  try {
+    return localStorage.getItem(COACH_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function hasMultiplayerPlayed(): boolean {
+  try {
+    return localStorage.getItem(MULTIPLAYER_KEY) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function hasMissionClaimedEver(): boolean {
+  try {
+    if (localStorage.getItem(MISSION_EVER_KEY) === '1') return true;
+    const raw = localStorage.getItem('scanplay-mission-claims');
+    if (!raw) return false;
+    const parsed = JSON.parse(raw) as { claimed?: string[] };
+    return Array.isArray(parsed.claimed) && parsed.claimed.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+function countPlayedModes(): number {
+  const best = loadBest();
+  return Object.values(best).filter((score) => (score ?? 0) >= 1).length;
+}
 
 export function recordMultiScan(): void {
   const count = getMultiScanCount() + 1;
@@ -308,6 +394,22 @@ export function isAchievementUnlocked(id: AchievementId): boolean {
       return (best.speak ?? 0) >= 1;
     case 'first_chest':
       return hasOpenedAnyChest();
+    case 'first_coach':
+      return hasCoachUsed();
+    case 'first_mission':
+      return hasMissionClaimedEver();
+    case 'first_multiplayer':
+      return hasMultiplayerPlayed();
+    case 'type_pro':
+      return (best.type ?? 0) >= 4;
+    case 'listen_pro':
+      return (best.listen ?? 0) >= 1 || (best.listenpick ?? 0) >= 1;
+    case 'translate_pro':
+      return (best.translate ?? 0) >= 1;
+    case 'cloze_pro':
+      return (best.cloze ?? 0) >= 1;
+    case 'modes_explorer':
+      return countPlayedModes() >= 5;
     default:
       return false;
   }
@@ -382,6 +484,25 @@ export function getAchievementProgress(id: AchievementId): { current: number; ta
       return { current: Math.min(loadBest().speak ?? 0, 1), target: 1 };
     case 'first_chest':
       return { current: hasOpenedAnyChest() ? 1 : 0, target: 1 };
+    case 'first_coach':
+      return { current: hasCoachUsed() ? 1 : 0, target: 1 };
+    case 'first_mission':
+      return { current: hasMissionClaimedEver() ? 1 : 0, target: 1 };
+    case 'first_multiplayer':
+      return { current: hasMultiplayerPlayed() ? 1 : 0, target: 1 };
+    case 'type_pro':
+      return { current: Math.min(loadBest().type ?? 0, 4), target: 4 };
+    case 'listen_pro':
+      return {
+        current: Math.min(Math.max(loadBest().listen ?? 0, loadBest().listenpick ?? 0), 1),
+        target: 1,
+      };
+    case 'translate_pro':
+      return { current: Math.min(loadBest().translate ?? 0, 1), target: 1 };
+    case 'cloze_pro':
+      return { current: Math.min(loadBest().cloze ?? 0, 1), target: 1 };
+    case 'modes_explorer':
+      return { current: Math.min(countPlayedModes(), 5), target: 5 };
     default:
       return null;
   }
@@ -434,6 +555,14 @@ const UNLOCKED_FRAME: Record<AchievementId, Exclude<AchievementFrame, 'locked'>>
   friends_3: 'silver',
   friends_5: 'silver',
   friends_10: 'gold',
+  first_coach: 'bronze',
+  first_mission: 'bronze',
+  first_multiplayer: 'silver',
+  type_pro: 'silver',
+  listen_pro: 'silver',
+  translate_pro: 'silver',
+  cloze_pro: 'silver',
+  modes_explorer: 'gold',
 };
 
 export function getAchievementFrame(id: AchievementId, unlocked: boolean): AchievementFrame {
@@ -457,7 +586,15 @@ export type AchievementSkin =
   | 'exam'
   | 'social'
   | 'speak'
-  | 'chest';
+  | 'chest'
+  | 'coach'
+  | 'mission'
+  | 'multi'
+  | 'type'
+  | 'listen'
+  | 'translate'
+  | 'cloze'
+  | 'explorer';
 
 export function getAchievementSkin(id: AchievementId): AchievementSkin {
   if (id.startsWith('streak_')) return 'flame';
@@ -488,6 +625,22 @@ export function getAchievementSkin(id: AchievementId): AchievementSkin {
       return 'speak';
     case 'first_chest':
       return 'chest';
+    case 'first_coach':
+      return 'coach';
+    case 'first_mission':
+      return 'mission';
+    case 'first_multiplayer':
+      return 'multi';
+    case 'type_pro':
+      return 'type';
+    case 'listen_pro':
+      return 'listen';
+    case 'translate_pro':
+      return 'translate';
+    case 'cloze_pro':
+      return 'cloze';
+    case 'modes_explorer':
+      return 'explorer';
     default:
       return 'path';
   }

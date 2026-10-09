@@ -129,7 +129,10 @@ export function settleDailyMissionRewards(): boolean {
     claimed.add(mission.id);
     granted = true;
   }
-  if (granted) saveClaims({ date: todayKey(), claimed: [...claimed] });
+  if (granted) {
+    saveClaims({ date: todayKey(), claimed: [...claimed] });
+    void import('./achievements').then((m) => m.recordMissionClaimedEver());
+  }
   return granted;
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
 import { consumeBootIntent, consumePendingScanAfterAuth, setPendingScanAfterAuth } from './lib/bootIntent';
@@ -18,6 +18,7 @@ import { Confetti } from './components/Confetti';
 import { HomeScreen } from './components/HomeScreen';
 import { HistoryScreen } from './components/HistoryScreen';
 import { ImportScreen } from './components/ImportScreen';
+import { PixUniverseScreen } from './components/PixUniverseScreen';
 import { useDeviceProfile } from './hooks/useDeviceProfile';
 import { useGlobalTapSound } from './hooks/useGlobalTapSound';
 import { startPresenceHeartbeat } from './lib/social/presence';
@@ -216,6 +217,7 @@ export default function App() {
   const [locale, setLocaleState] = useState<Locale>(getLocale);
   const [pairs, setPairs] = useState<WordPair[]>([]);
   const [ignoredScanPairs, setIgnoredScanPairs] = useState<WordPair[]>([]);
+  const [manualDeckMode, setManualDeckMode] = useState(false);
   const [mode, setMode] = useState<GameMode | null>(null);
   const [scanProgress, setScanProgress] = useState(0);
   const [scanStatus, setScanStatus] = useState('');
@@ -266,7 +268,6 @@ export default function App() {
   const [multiplayerPlayers, setMultiplayerPlayers] = useState<RoomPlayer[]>([]);
   const [sharedPathRoom, setSharedPathRoom] = useState<MultiplayerRoom | null>(null);
   const [mpScore, setMpScore] = useState({ score: 0, total: 0 });
-  const pendingMultiplayerScanRef = useRef(false);
   const scanAbortRef = useRef<AbortController | null>(null);
   const flowRef = useRef(flow);
   const unlockQueueRef = useRef<AchievementDef[]>([]);
@@ -514,6 +515,7 @@ export default function App() {
     setPendingImportFiles(null);
     setLessonSession(null);
     setIgnoredScanPairs([]);
+    setManualDeckMode(false);
     resetTrainingFocus();
   };
 
@@ -798,11 +800,45 @@ export default function App() {
       setPairs(parsed);
       setIgnoredScanPairs(ignored);
       setDeckThumbnail(thumbnail);
+      setManualDeckMode(false);
       markNavReplace();
       setFlow('reviewCards');
     },
     [goModes, locale, failImport, sheetType],
   );
+
+  const startManualCards = useCallback(() => {
+    const guestScan = !isLoggedIn();
+    trackEvent('clic_scanner_cours', {
+      depuis: guestScan ? 'page_de_garde' : 'accueil',
+    });
+    if (guestScan) {
+      if (!canGuestScan()) {
+        showToast(t('guestScanUsed', locale));
+        trackEvent('ouverture_inscription', { etape: 'scan_deja_utilise' });
+        setFlow('auth');
+        return;
+      }
+    } else if (!requireAuth()) {
+      return;
+    }
+
+    if (!guestScan) {
+      const reason = getUpgradeReasonForScan();
+      if (reason) {
+        setUpgradeReason(reason);
+        return;
+      }
+    }
+
+    dismissImportError();
+    setPairs([]);
+    setIgnoredScanPairs([]);
+    setDeckThumbnail(undefined);
+    setManualDeckMode(true);
+    markNavReplace();
+    setFlow('reviewCards');
+  }, [dismissImportError, locale, requireAuth, showToast]);
 
   const processText = useCallback(
     (text: string, thumbnail?: string, usedSample = false) => {
@@ -1226,6 +1262,7 @@ export default function App() {
       devGuestBypass.current = true;
       setPairs(SAMPLE_PAIRS);
       setIgnoredScanPairs([]);
+      setManualDeckMode(false);
       setFlow('reviewCards');
     };
     return () => {
@@ -1252,6 +1289,11 @@ export default function App() {
         const { players } = await fetchRoomState(multiplayerSession.room.id);
         setMultiplayerPlayers(players);
         playSound(score === total ? 'perfect' : 'correct');
+        const before = snapshotUnlockedIds();
+        const { recordMultiplayerPlayed } = await import('./lib/achievements');
+        recordMultiplayerPlayed();
+        const unlocked = processNewUnlocks(before);
+        if (unlocked.length) celebrateAchievements(unlocked);
         setFlow('multiplayerResults');
       })();
       return;
@@ -1670,16 +1712,6 @@ export default function App() {
     [locale, showToast],
   );
 
-  const handleStartMultiplayerScan = useCallback(() => {
-    if (!requireAuth()) return;
-    if (!hasFeature('multiplayer')) {
-      setUpgradeReason('multiplayer');
-      return;
-    }
-    pendingMultiplayerScanRef.current = true;
-    startScanFlow();
-  }, [requireAuth]);
-
   const handleJoinPathByCode = useCallback(
     async (code: string) => {
       if (!requireAuth()) return;
@@ -1761,6 +1793,7 @@ export default function App() {
       setNavMoreOpen((open) => !open);
       return;
     }
+    if (next === tab && flow === null) return;
     setNavMoreOpen(false);
     if (flow !== null) {
       closeFlow();
@@ -1773,20 +1806,24 @@ export default function App() {
         next === 'friends' ||
         next === 'chat' ||
         next === 'profile' ||
+        next === 'shop' ||
+        next === 'settings' ||
         next === 'mistakes' ||
         next === 'achievements') &&
       !isLoggedIn()
     ) {
       if (next === 'chat' && !isCoachChatEnabled()) {
-        setTab('chat');
+        startTransition(() => setTab('chat'));
         return;
       }
-      setTab(next);
-      setAuthInitialMode('login');
-      setFlow('auth');
+      startTransition(() => {
+        setTab(next);
+        setAuthInitialMode('login');
+        setFlow('auth');
+      });
       return;
     }
-    setTab(next);
+    startTransition(() => setTab(next));
   };
 
   const navSnapshot = useMemo<AppNavSnapshot>(
@@ -2007,6 +2044,14 @@ export default function App() {
           onOpenScan={() => startScanFlow()}
           onOpenSettings={() => handleTabChange('settings')}
           onOpenHome={() => handleTabChange('home')}
+          onContinueInGame={(pairs, thumbnail) => {
+            setPairs(pairs);
+            setIgnoredScanPairs([]);
+            setDeckThumbnail(thumbnail);
+            setManualDeckMode(false);
+            markNavReplace();
+            setFlow('reviewCards');
+          }}
         />
       )}
       {flow === null && tab === 'friends' && (
@@ -2015,9 +2060,6 @@ export default function App() {
           refreshKey={refreshKey}
           isLoggedIn={isLoggedIn()}
           onAuth={() => setFlow('auth')}
-          onUpgrade={() => setUpgradeReason('multiplayer')}
-          onStartScanForGame={handleStartMultiplayerScan}
-          onJoinRoom={(code) => void handleJoinPathByCode(code)}
           onSocialChange={handleSocialChange}
         />
       )}
@@ -2039,8 +2081,8 @@ export default function App() {
           onRefresh={refresh}
           onUpgrade={() => setFlow('pricing')}
           onAuth={() => setFlow('auth')}
-          onToast={showToast}
-          onOpenTab={handleTabChange}
+          onOpenFriends={() => handleTabChange('friends')}
+          onOpenAchievements={() => handleTabChange('achievements')}
         />
       )}
       {flow === null && tab === 'mistakes' && !mistakeSession && (
@@ -2114,10 +2156,16 @@ export default function App() {
           onBack={appGoBack}
           onSheetTypeChange={setSheetType}
           onFile={processImage}
+          onManualCreate={startManualCards}
+          onJoinCode={(code) => void handleJoinPathByCode(code)}
+          onOpenUniverse={() => setFlow('pixUniverse')}
           onUpgrade={(reason) => setUpgradeReason(reason)}
           onToast={showToast}
           onAuth={() => setFlow('auth')}
         />
+      )}
+      {flow === 'pixUniverse' && (
+        <PixUniverseScreen locale={locale} onBack={appGoBack} />
       )}
       {flow === 'scanning' && (
         <ScanningScreen
@@ -2132,12 +2180,19 @@ export default function App() {
           locale={locale}
           pairs={pairs}
           ignored={ignoredScanPairs}
+          manualMode={manualDeckMode}
           onBack={appGoBack}
           onRescan={() => {
             setIgnoredScanPairs([]);
+            setManualDeckMode(false);
             startScanFlow();
           }}
           onContinue={(kept) => {
+            if (manualDeckMode) {
+              if (!isLoggedIn()) recordGuestScan();
+              else recordScan();
+              setManualDeckMode(false);
+            }
             goModes(kept, deckThumbnail, false, false);
           }}
         />

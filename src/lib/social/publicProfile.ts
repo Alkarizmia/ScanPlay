@@ -104,7 +104,7 @@ export async function isDisplayNameAvailable(name: string): Promise<boolean | nu
   const supabase = getSupabase();
   if (!supabase) return null;
   const trimmed = name.trim();
-  if (trimmed.length < 2) return false;
+  if (trimmed.length < 5) return false;
 
   const { data, error } = await supabase.rpc('check_display_name_available', { p_name: trimmed });
   if (error) return null;

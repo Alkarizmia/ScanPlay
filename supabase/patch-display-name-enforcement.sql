@@ -83,7 +83,7 @@ begin
     raise exception 'not authenticated';
   end if;
 
-  if char_length(v_name) < 2 then
+  if char_length(v_name) < 5 then
     raise exception 'display_name_invalid';
   end if;
 

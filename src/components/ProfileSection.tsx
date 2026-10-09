@@ -1,64 +1,56 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
-  DEFAULT_AVATARS,
-  completePseudoOnboarding,
-  getAvatarEmoji,
   getProfile,
   pullPseudoTutoFlag,
-  setAvatar,
   shouldShowPseudoOnboarding,
-  trySetDisplayName,
-  type AvatarId,
 } from '../lib/profile';
+import { ACHIEVEMENTS, getUnlockedCount, isAchievementUnlocked } from '../lib/achievements';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
+import { xpForNextLevel } from '../lib/gamification';
 import { countFriends } from '../lib/social/friends';
-import { isDisplayNameAvailable, isSocialAvailable } from '../lib/social/publicProfile';
-import { hasFeature } from '../lib/planLimits';
+import { isSocialAvailable } from '../lib/social/publicProfile';
 import { getAppStats } from '../lib/stats';
-import { createProfileAvatar } from '../lib/thumbnail';
+import { getMascotAssetUrl } from '../lib/mascot/catalog';
 import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
-import type { Locale, TabId } from '../types';
-import { NavIcon } from './icons/NavIcon';
-import { SubscriptionSection } from './SubscriptionSection';
-import { ProfilePseudoTuto } from './ProfilePseudoTuto';
-import { ProfileCard } from './ProfileCard';
+import type { Locale } from '../types';
+import { AchievementGlyph } from './icons/AchievementGlyph';
+import { StreakFlame } from './icons/StreakFlame';
+import { PlanBadge } from './PlanBadge';
+import { ProfileEditSheet } from './ProfileEditSheet';
 import { usePlan } from '../hooks/usePlan';
+
+type StatPanel = 'level' | 'streak' | null;
 
 interface ProfileSectionProps {
   locale: Locale;
   refreshKey: number;
   onRefresh: () => void;
   onUpgrade: () => void;
-  onToast?: (message: string) => void;
-  variant?: 'embedded' | 'page';
-  onOpenTab?: (tab: TabId) => void;
+  onOpenFriends?: () => void;
+  onOpenAchievements?: () => void;
 }
 
-export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToast, variant = 'embedded', onOpenTab }: ProfileSectionProps) {
+const DEFAULT_AVATAR_SRC = getMascotAssetUrl('happy') ?? '/mascot/emotions/happy.webp';
+
+export function ProfileSection({
+  locale,
+  refreshKey,
+  onRefresh,
+  onUpgrade,
+  onOpenFriends,
+  onOpenAchievements,
+}: ProfileSectionProps) {
   const profile = getProfile();
-  const fileRef = useRef<HTMLInputElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
-  const [nameFieldEl, setNameFieldEl] = useState<HTMLDivElement | null>(null);
-  const [nameDraft, setNameDraft] = useState(profile?.displayName ?? '');
-  const [savedHint, setSavedHint] = useState(false);
-  const [nameError, setNameError] = useState<string | null>(null);
-  const [nameTaken, setNameTaken] = useState(false);
-  const [savingName, setSavingName] = useState(false);
-  const [uploadError, setUploadError] = useState<string | null>(null);
   const [friendCount, setFriendCount] = useState(0);
-  const [pseudoCoach, setPseudoCoach] = useState(() => shouldShowPseudoOnboarding());
-  const [tutoZoom, setTutoZoom] = useState(false);
-  const closingTutoRef = useRef(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [statPanel, setStatPanel] = useState<StatPanel>(null);
   const plan = usePlan(refreshKey);
 
   useEffect(() => {
-    const p = getProfile();
-    if (p) setNameDraft(p.displayName);
-    setPseudoCoach(shouldShowPseudoOnboarding());
     if (shouldShowPseudoOnboarding()) {
       void pullPseudoTutoFlag().then(() => {
-        setPseudoCoach(shouldShowPseudoOnboarding());
+        if (shouldShowPseudoOnboarding()) setEditOpen(true);
       });
     }
   }, [refreshKey]);
@@ -71,276 +63,234 @@ export function ProfileSection({ locale, refreshKey, onRefresh, onUpgrade, onToa
     void countFriends().then(setFriendCount);
   }, [refreshKey]);
 
-  useEffect(() => {
-    if (!isSocialAvailable() || !profile) {
-      setNameTaken(false);
-      return;
-    }
-    const trimmed = nameDraft.trim();
-    if (trimmed.length < 2 || trimmed === profile.displayName) {
-      setNameTaken(false);
-      return;
-    }
-    const timer = window.setTimeout(() => {
-      void isDisplayNameAvailable(trimmed).then((available) => {
-        setNameTaken(available === false);
-      });
-    }, 350);
-    return () => window.clearTimeout(timer);
-  }, [nameDraft, profile?.displayName]);
-
   if (!profile) return null;
 
   const stats = getAppStats();
-  const unlocked = hasFeature('stats');
-  const avatarEmoji = getAvatarEmoji(profile);
-  const showCustom = profile.avatar === 'custom' && profile.customAvatarData;
-  const featuredAchievements = getRecentUnlocks(4)
+  const xpNext = xpForNextLevel(stats.xp);
+  const xpLeft = Math.max(0, xpNext.needed - xpNext.current);
+  const showCustom = profile.avatar === 'custom' && Boolean(profile.customAvatarData);
+  const recent = getRecentUnlocks(8)
     .map((rec) => getAchievementDef(rec.id))
     .filter((d): d is NonNullable<typeof d> => Boolean(d));
+  const showcase =
+    recent.length > 0
+      ? recent
+      : ACHIEVEMENTS.filter((a) => isAchievementUnlocked(a.id)).slice(0, 8);
+  const unlockedCount = getUnlockedCount();
+  const sinceYear = new Date().getFullYear();
+  const recentIds = new Set(getRecentUnlocks(4).map((r) => r.id));
 
-  const publicStats = [
-    { label: t('xp', locale), value: String(stats.xp) },
-    { label: t('streak', locale), value: String(stats.streak) },
-    { label: t('statsDecks', locale), value: String(stats.deckCount) },
-  ];
-  const extraStatItems = [
-    { label: t('totalScore', locale), value: String(stats.totalScore) },
-    { label: t('statsScans', locale), value: String(stats.totalScans) },
-    { label: t('statsSteps', locale), value: String(stats.stepsCompleted) },
-  ];
-
-  const pickAvatar = (id: AvatarId) => {
-    setAvatar(id);
-    playSound('profileUpdated');
-    onRefresh();
-  };
-
-  const handleFile = (file: File | null) => {
-    if (!file) return;
-    setUploadError(null);
-    void createProfileAvatar(file)
-      .then((data) => {
-        setAvatar('custom', data);
-        playSound('profileUpdated');
-        onRefresh();
-      })
-      .catch((err: Error) => {
-        if (err.message === 'too_large') {
-          setUploadError(t('profilePhotoTooLarge', locale));
-        } else if (err.message === 'not_image') {
-          setUploadError(t('profilePhotoInvalid', locale));
-        } else {
-          setUploadError(t('profilePhotoError', locale));
-        }
-      });
-  };
-
-  const finishPseudoTuto = () => {
-    if (!pseudoCoach || closingTutoRef.current) return;
-    closingTutoRef.current = true;
-    void completePseudoOnboarding();
-    setTutoZoom(true);
-    nameFieldEl?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    window.setTimeout(() => {
-      setPseudoCoach(false);
-      setTutoZoom(false);
-      closingTutoRef.current = false;
-    }, 420);
-  };
-
-  const skipPseudoCoach = () => {
+  const openEdit = () => {
     playSound('tap');
-    finishPseudoTuto();
+    setEditOpen(true);
   };
 
-  const saveName = () => {
-    setNameError(null);
-    if (nameTaken) {
-      setNameError(t('profileNameTaken', locale));
-      return;
-    }
-    setSavingName(true);
-    void trySetDisplayName(nameDraft).then((result) => {
-      setSavingName(false);
-      if (!result.ok) {
-        if (result.error === 'display_name_taken') {
-          setNameError(t('profileNameTaken', locale));
-        } else if (result.error === 'too_short') {
-          setNameError(t('profileNameTooShort', locale));
-        } else {
-          setNameError(t('profileNameSaveError', locale));
-        }
-        return;
-      }
-      onRefresh();
-      setSavedHint(true);
-      playSound('profileUpdated');
-      window.setTimeout(() => setSavedHint(false), 2000);
-      finishPseudoTuto();
-    });
+  const togglePanel = (panel: Exclude<StatPanel, null>) => {
+    playSound('tap');
+    setStatPanel((cur) => (cur === panel ? null : panel));
   };
 
   return (
-    <section className={`settings-section profile-section${variant === 'page' ? ' profile-section--page' : ''}`}>
-      {variant !== 'page' && <h3 className="settings-label">{t('profileSection', locale)}</h3>}
+    <section className="sp-profile">
+      <header className="sp-profile-top">
+        <h2 className="sp-profile-name">{profile.displayName}</h2>
+        <button
+          type="button"
+          className="sp-profile-edit-btn"
+          onClick={openEdit}
+          aria-label={t('profileEditTitle', locale)}
+        >
+          <svg viewBox="0 0 24 24" className="sp-profile-edit-icon" aria-hidden="true">
+            <path
+              d="M12 20h9"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+            />
+            <path
+              d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      </header>
 
-      <p className="profile-block-kicker">{t('profilePublicCard', locale)}</p>
-      <ProfileCard
-        locale={locale}
-        displayName={profile.displayName}
-        level={stats.level}
-        xp={stats.xp}
-        streak={stats.streak}
-        friendCount={isSocialAvailable() ? friendCount : undefined}
-        plan={plan}
-        featuredAchievements={featuredAchievements}
-        stats={publicStats}
-        avatar={
-          showCustom ? (
-            <img src={profile.customAvatarData} alt="" className="profile-avatar-img" />
-          ) : (
-            <span className="profile-avatar-emoji">{avatarEmoji || '🎮'}</span>
-          )
-        }
-      />
+      <div className="sp-profile-hero" aria-hidden="true">
+        <div className="sp-profile-hero-glow" />
+        <button type="button" className="sp-profile-avatar-btn" onClick={openEdit}>
+          <img
+            src={showCustom ? profile.customAvatarData! : DEFAULT_AVATAR_SRC}
+            alt=""
+            className={`sp-profile-avatar-img${showCustom ? '' : ' sp-profile-avatar-img--mascot'}`}
+          />
+        </button>
+      </div>
 
-      <p className="profile-block-kicker">{t('profileSettingsLabel', locale)}</p>
-      <div className="profile-card profile-card--settings">
-        <div className={`profile-stats-block ${unlocked ? '' : 'profile-stats-block--locked'}`}>
-          <p className="profile-stats-heading">{t('statsTitle', locale)}</p>
-          <div className="stats-grid profile-stats-grid">
-            {extraStatItems.map((item) => (
-              <div key={item.label} className={`stat-tile ${unlocked ? '' : 'stat-tile--blurred'}`}>
-                <span className="stat-tile-val">{item.value}</span>
-                <span className="stat-tile-label">{item.label}</span>
-              </div>
-            ))}
-          </div>
-          {!unlocked && (
-            <>
-              <p className="stats-lock-hint">{t('statsLockedHint', locale)}</p>
-              <button type="button" className="btn-secondary profile-stats-upgrade" onClick={onUpgrade}>
-                {t('upgradePlus', locale)}
-              </button>
-            </>
+      <div className="sp-profile-meta">
+        <p className="sp-profile-handle">
+          @{profile.displayName.replace(/\s+/g, '').slice(0, 18)} · {t('profileSince', locale).replace('{year}', String(sinceYear))}
+        </p>
+        <div className="sp-profile-plan">
+          <PlanBadge plan={plan} locale={locale} />
+          {plan === 'free' && (
+            <button type="button" className="sp-profile-upgrade-link" onClick={onUpgrade}>
+              {t('upgradePlus', locale)}
+            </button>
           )}
         </div>
+      </div>
 
-        <div className="profile-card-divider" role="presentation" />
+      <div className="sp-profile-stats-row" role="group" aria-label={t('statsTitle', locale)}>
+        <button
+          type="button"
+          className={`sp-profile-stat${statPanel === 'level' ? ' sp-profile-stat--active' : ''}`}
+          onClick={() => togglePanel('level')}
+          aria-expanded={statPanel === 'level'}
+        >
+          <span className="sp-profile-stat-val">{stats.level}</span>
+          <span className="sp-profile-stat-label">{t('level', locale)}</span>
+        </button>
+        <button
+          type="button"
+          className="sp-profile-stat"
+          onClick={() => {
+            playSound('tap');
+            onOpenFriends?.();
+          }}
+          disabled={!onOpenFriends}
+        >
+          <span className="sp-profile-stat-val">{isSocialAvailable() ? friendCount : '—'}</span>
+          <span className="sp-profile-stat-label">{t('profileStatFriends', locale)}</span>
+        </button>
+        <button
+          type="button"
+          className={`sp-profile-stat${statPanel === 'streak' ? ' sp-profile-stat--active' : ''}`}
+          onClick={() => togglePanel('streak')}
+          aria-expanded={statPanel === 'streak'}
+        >
+          <span className="sp-profile-stat-val sp-profile-stat-val--streak">
+            <StreakFlame lit={stats.streak > 0} size={16} /> {stats.streak}
+          </span>
+          <span className="sp-profile-stat-label">{t('streak', locale)}</span>
+        </button>
+      </div>
 
-        <div className="profile-avatar-picker">
-          <p className="profile-picker-label">{t('profileAvatar', locale)}</p>
-          <div className="profile-avatar-grid">
-            {DEFAULT_AVATARS.map((a) => (
-              <button
-                key={a.id}
-                type="button"
-                className={`profile-avatar-btn ${profile.avatar === a.id ? 'active' : ''}`}
-                onClick={() => pickAvatar(a.id)}
-                aria-label={a.emoji}
-              >
-                {a.emoji}
-              </button>
-            ))}
+      {statPanel === 'level' && (
+        <div className="sp-profile-stat-panel" role="region" aria-label={t('profileLevelProgress', locale)}>
+          <div className="sp-profile-xp-track" aria-hidden="true">
+            <div className="sp-profile-xp-fill" style={{ width: `${xpNext.progress}%` }} />
+          </div>
+          <p className="sp-profile-stat-panel-text">
+            {t('profileLevelProgress', locale)
+              .replace('{current}', String(Math.round(xpNext.current)))
+              .replace('{needed}', String(xpNext.needed))
+              .replace('{left}', String(Math.round(xpLeft)))
+              .replace('{next}', String(stats.level + 1))}
+          </p>
+        </div>
+      )}
+
+      {statPanel === 'streak' && (
+        <div className="sp-profile-stat-panel" role="region" aria-label={t('streak', locale)}>
+          <p className="sp-profile-stat-panel-text">
+            {stats.streak > 0
+              ? t('profileStreakTip', locale).replace('{n}', String(stats.streak))
+              : t('profileStreakEmpty', locale)}
+          </p>
+        </div>
+      )}
+
+      {onOpenFriends && (
+        <div className="sp-profile-actions">
+          <button
+            type="button"
+            className="sp-profile-add-friends"
+            onClick={() => {
+              playSound('tap');
+              onOpenFriends();
+            }}
+          >
+            + {t('profileAddFriends', locale)}
+          </button>
+        </div>
+      )}
+
+      <section className="sp-profile-block">
+        <h3 className="sp-profile-block-title">{t('profileRecap', locale)}</h3>
+        <div className="sp-profile-recap">
+          <div className="sp-profile-recap-tile">
+            <span className="sp-profile-recap-val">{stats.xp}</span>
+            <span className="sp-profile-recap-label">{t('xp', locale)}</span>
+          </div>
+          <div className="sp-profile-recap-tile">
+            <span className="sp-profile-recap-val">{stats.totalScans}</span>
+            <span className="sp-profile-recap-label">{t('statsScans', locale)}</span>
+          </div>
+          <div className="sp-profile-recap-tile">
+            <span className="sp-profile-recap-val">{stats.deckCount}</span>
+            <span className="sp-profile-recap-label">{t('statsDecks', locale)}</span>
+          </div>
+          <div className="sp-profile-recap-tile">
+            <span className="sp-profile-recap-val">{unlockedCount}</span>
+            <span className="sp-profile-recap-label">{t('achievements', locale)}</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="sp-profile-block">
+        <div className="sp-profile-block-head">
+          <h3 className="sp-profile-block-title">{t('achievements', locale)}</h3>
+          {onOpenAchievements && (
             <button
               type="button"
-              className={`profile-avatar-btn profile-avatar-btn--upload ${profile.avatar === 'custom' ? 'active' : ''}`}
-              onClick={() => fileRef.current?.click()}
+              className="sp-profile-see-all"
+              onClick={() => {
+                playSound('tap');
+                onOpenAchievements();
+              }}
             >
-              📁
+              {t('profileSeeAllAchievements', locale)} ›
             </button>
-          </div>
-          <input
-            ref={fileRef}
-            type="file"
-            accept="image/*"
-            className="profile-file-input"
-            onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
-          />
-          <p className="profile-upload-hint">{t('profileChoosePhoto', locale)}</p>
-          {uploadError && <p className="profile-upload-error">{uploadError}</p>}
+          )}
         </div>
-
-        {pseudoCoach && (
-          <ProfilePseudoTuto
-            locale={locale}
-            nameField={nameFieldEl}
-            zooming={tutoZoom}
-            onSkip={skipPseudoCoach}
-          />
-        )}
-
-        <div
-          ref={setNameFieldEl}
-          className={`profile-name-field${pseudoCoach ? ' profile-name-field--coach' : ''}${tutoZoom ? ' profile-name-field--zoom' : ''}`}
-        >
-          <label className="profile-name-label" htmlFor="profile-display-name">
-            {t('profileDisplayName', locale)}
-          </label>
-          <div className="profile-name-row">
-            <input
-              id="profile-display-name"
-              ref={nameInputRef}
-              className="profile-name-input"
-              value={nameDraft}
-              maxLength={24}
-              onChange={(e) => setNameDraft(e.target.value)}
-              placeholder={profile.displayName}
-            />
-            <button type="button" className="btn-secondary btn-sm" onClick={saveName} disabled={savingName || nameTaken}>
-              {savingName ? '…' : 'OK'}
-            </button>
-          </div>
-          <p className="profile-name-hint">{t('profileDisplayNameHint', locale)}</p>
-          {nameTaken && !nameError && <p className="profile-upload-error">{t('profileNameTaken', locale)}</p>}
-          {nameError && <p className="profile-upload-error">{nameError}</p>}
-          {savedHint && <p className="profile-saved-hint">{t('profileNameSaved', locale)}</p>}
+        <div className="sp-profile-ach-row">
+          {showcase.length === 0 ? (
+            <p className="sp-profile-ach-empty">{t('profileAchievementsEmpty', locale)}</p>
+          ) : (
+            showcase.map((ach) => {
+              const unlocked = isAchievementUnlocked(ach.id);
+              const isNew = recentIds.has(ach.id);
+              return (
+                <button
+                  key={ach.id}
+                  type="button"
+                  className={`sp-ach-emblem${unlocked ? ' sp-ach-emblem--live' : ' sp-ach-emblem--locked'}${isNew ? ' sp-ach-emblem--new' : ''}`}
+                  onClick={onOpenAchievements}
+                  title={t(ach.nameKey, locale)}
+                >
+                  {isNew && <span className="sp-ach-new">{t('profileAchNew', locale)}</span>}
+                  <span className="sp-ach-shield">
+                    <AchievementGlyph achievement={ach} size={56} locked={!unlocked} />
+                  </span>
+                  <span className="sp-ach-caption">{t(ach.nameKey, locale)}</span>
+                </button>
+              );
+            })
+          )}
         </div>
+      </section>
 
-        <div className="profile-card-divider" role="presentation" />
-
-        {onOpenTab && (
-          <nav className="profile-shortcuts" aria-label={t('profileShortcuts', locale)}>
-            <p className="profile-picker-label">{t('profileShortcuts', locale)}</p>
-            <ul className="profile-shortcut-list">
-              {(
-                [
-                  { id: 'settings' as const, labelKey: 'settings' as const, featured: true },
-                  { id: 'shop' as const, labelKey: 'shopTitle' as const, featured: false },
-                  { id: 'mistakes' as const, labelKey: 'mistakes' as const, featured: false },
-                  { id: 'achievements' as const, labelKey: 'achievements' as const, featured: false },
-                ]
-              ).map((item) => (
-                <li key={item.id}>
-                  <button
-                    type="button"
-                    className={`profile-shortcut-row${item.featured ? ' profile-shortcut-row--featured' : ''}`}
-                    onClick={() => onOpenTab(item.id)}
-                  >
-                    <span className="profile-shortcut-icon" aria-hidden="true">
-                      <NavIcon tab={item.id} />
-                    </span>
-                    <span className="profile-shortcut-label">{t(item.labelKey, locale)}</span>
-                    <span className="profile-shortcut-chevron" aria-hidden="true">
-                      ›
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
-
-        <SubscriptionSection
-          embedded
-          locale={locale}
-          isLoggedIn
-          onPricing={onUpgrade}
-          onAuth={() => {}}
-          onToast={onToast}
-        />
-      </div>
+      <ProfileEditSheet
+        open={editOpen}
+        locale={locale}
+        profile={profile}
+        onClose={() => setEditOpen(false)}
+        onRefresh={onRefresh}
+      />
     </section>
   );
 }

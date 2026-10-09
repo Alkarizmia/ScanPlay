@@ -7,9 +7,10 @@ export function normalizeCoachSpacing(raw: string): string {
     .trim();
 }
 
-export type CoachActionId = 'scan' | 'settings' | 'home';
+export type CoachActionId = 'scan' | 'settings' | 'home' | 'continue_chat' | 'continue_game' | 'export_word' | 'export_pdf';
 
-const ACTION_RE = /\[\[action:(scan|settings|home)\]\]/gi;
+const ACTION_RE =
+  /\[\[action:(scan|settings|home|continue_chat|continue_game|export_word|export_pdf)\]\]/gi;
 
 export function extractCoachActions(raw: string): { text: string; actions: CoachActionId[] } {
   const actions: CoachActionId[] = [];
@@ -48,6 +49,15 @@ export function enrichCoachActions(raw: string): string {
   if (invitesScan && !actions.includes('scan')) add.push('scan');
   if (invitesSettings && !actions.includes('settings')) add.push('settings');
   if (invitesHome && !actions.includes('home') && !add.includes('scan')) add.push('home');
+  if (/\b(continuer ici|continue here|hier verder|seguir aquí)\b/i.test(hay) && !actions.includes('continue_chat')) {
+    add.push('continue_chat');
+  }
+  if (
+    /\b(dans le jeu|in the game|in het spel|en el juego|lancer le parcours)\b/i.test(hay) &&
+    !actions.includes('continue_game')
+  ) {
+    add.push('continue_game');
+  }
 
   if (add.length === 0) {
     // Keep any tags that were already present.

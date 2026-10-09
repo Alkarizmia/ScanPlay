@@ -10,6 +10,7 @@ interface ReviewCardsScreenProps {
   locale: Locale;
   pairs: WordPair[];
   ignored: WordPair[];
+  manualMode?: boolean;
   onContinue: (pairs: WordPair[]) => void;
   onRescan: () => void;
   onBack: () => void;
@@ -60,6 +61,7 @@ function parseFacesDraft(raw: string): string[] | undefined {
 export function ReviewCardsScreen({
   locale,
   pairs,
+  manualMode = false,
   onContinue,
   onRescan,
   onBack,
@@ -93,6 +95,11 @@ export function ReviewCardsScreen({
       if (freshTimer.current) window.clearTimeout(freshTimer.current);
     };
   }, []);
+
+  useEffect(() => {
+    if (!manualMode) return;
+    window.setTimeout(() => termInputRef.current?.focus(), 80);
+  }, [manualMode]);
 
   const updateRow = (id: string, patch: Partial<WordPair>) => {
     setRows((prev) => prev.map((row) => (row.id === id ? { ...row, ...patch } : row)));
@@ -146,16 +153,20 @@ export function ReviewCardsScreen({
         <button type="button" className="icon-btn" onClick={onBack} aria-label={t('back', locale)}>
           <BackIcon />
         </button>
-        <h2 className="screen-title">{t('reviewCardsTitle', locale)}</h2>
+        <h2 className="screen-title">
+          {manualMode ? t('reviewCardsManualTitle', locale) : t('reviewCardsTitle', locale)}
+        </h2>
         <span className="top-spacer" />
       </header>
 
       <main className="review-cards-main scroll-natural">
         <p className="review-cards-status" role="status">
           <span>
-            {t('reviewCardsSub', locale).replace('{kept}', String(rows.length))}
+            {manualMode
+              ? t('reviewCardsManualSub', locale).replace('{kept}', String(rows.length))
+              : t('reviewCardsSub', locale).replace('{kept}', String(rows.length))}
           </span>
-          {rows.length > 0 && (
+          {!manualMode && rows.length > 0 && (
             <>
               <span className="review-cards-status-dot" aria-hidden>
                 ·
@@ -166,14 +177,18 @@ export function ReviewCardsScreen({
         </p>
 
         <form
-          className="review-cards-composer"
+          className={`review-cards-composer${manualMode ? ' review-cards-composer--manual' : ''}`}
           onSubmit={(e) => {
             e.preventDefault();
             addCard();
           }}
         >
-          <p className="review-cards-composer-title">{t('reviewCardsAddTitle', locale)}</p>
-          <p className="review-cards-composer-hint">{t('reviewCardsAddHint', locale)}</p>
+          <p className="review-cards-composer-title">
+            {manualMode ? t('reviewCardsManualAddTitle', locale) : t('reviewCardsAddTitle', locale)}
+          </p>
+          <p className="review-cards-composer-hint">
+            {manualMode ? t('reviewCardsManualAddHint', locale) : t('reviewCardsAddHint', locale)}
+          </p>
           <div className="review-cards-composer-fields">
             <label className="review-cards-field">
               <span className="sr-only">{t('cardTermLabel', locale)}</span>
@@ -218,7 +233,9 @@ export function ReviewCardsScreen({
         </form>
 
         {rows.length === 0 ? (
-          <p className="review-cards-empty">{t('reviewCardsEmpty', locale)}</p>
+          <p className="review-cards-empty">
+            {manualMode ? t('reviewCardsManualEmpty', locale) : t('reviewCardsEmpty', locale)}
+          </p>
         ) : (
           <ul className="review-cards-list">
             {rows.map((row) => {
@@ -334,9 +351,11 @@ export function ReviewCardsScreen({
         <button type="button" className="btn-primary btn-lg" disabled={!canContinue} onClick={() => onContinue(playable)}>
           {t('reviewCardsContinue', locale)}
         </button>
-        <button type="button" className="btn-secondary btn-lg review-cards-rescan" onClick={onRescan}>
-          {t('reviewCardsRescan', locale)}
-        </button>
+        {!manualMode && (
+          <button type="button" className="btn-secondary btn-lg review-cards-rescan" onClick={onRescan}>
+            {t('reviewCardsRescan', locale)}
+          </button>
+        )}
       </footer>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listFriends, listPendingFriendRequests, respondFriendRequest, searchPlayers, sendFriendRequest } from '../lib/social/friends';
 import { isSocialAvailable, syncPublicProfile } from '../lib/social/publicProfile';
 import { PlayerAvatar } from './PlayerAvatar';
@@ -10,18 +10,16 @@ import { FriendsLeaderboard } from './FriendsLeaderboard';
 import { MedalIcon } from './icons/EconomyIcons';
 import { MascotCoach } from './mascot/MascotCoach';
 import { refreshFriendCount } from '../lib/social/friendCountCache';
-import { hasFeature } from '../lib/planLimits';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
+
+const SEARCH_MIN = 2;
 
 interface FriendsScreenProps {
   locale: Locale;
   refreshKey: number;
   isLoggedIn: boolean;
   onAuth: () => void;
-  onUpgrade: () => void;
-  onStartScanForGame: () => void;
-  onJoinRoom: (code: string) => void;
   onSocialChange?: () => void;
 }
 
@@ -43,13 +41,9 @@ export function FriendsScreen({
   refreshKey,
   isLoggedIn,
   onAuth,
-  onUpgrade,
-  onStartScanForGame,
-  onJoinRoom,
   onSocialChange,
 }: FriendsScreenProps) {
   const [query, setQuery] = useState('');
-  const [joinCode, setJoinCode] = useState('');
   const [friends, setFriends] = useState<PublicPlayer[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingFriendRequest[]>([]);
   const [results, setResults] = useState<PublicPlayer[]>([]);
@@ -58,8 +52,8 @@ export function FriendsScreen({
   const [respondingId, setRespondingId] = useState<string | null>(null);
   const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null);
   const [previewPlayer, setPreviewPlayer] = useState<PublicPlayer | null>(null);
+  const searchTimer = useRef<number | null>(null);
   const socialOk = isSocialAvailable();
-  const canMulti = hasFeature('multiplayer');
 
   const loadFriends = useCallback(async () => {
     if (!isLoggedIn || !socialOk) return;
@@ -69,6 +63,25 @@ export function FriendsScreen({
     setPendingRequests(pending);
   }, [isLoggedIn, socialOk]);
 
+  const runSearch = useCallback(
+    async (raw: string) => {
+      const trimmed = raw.trim();
+      if (trimmed.length < SEARCH_MIN) {
+        setResults([]);
+        setError(null);
+        setLoading(false);
+        return;
+      }
+      setLoading(true);
+      setError(null);
+      const found = await searchPlayers(trimmed);
+      setResults(found);
+      setLoading(false);
+      if (found.length === 0) setError(t('friendsSearchEmpty', locale));
+    },
+    [locale],
+  );
+
   const handleRespond = async (requestId: string, accept: boolean) => {
     setRespondingId(requestId);
     const ok = await respondFriendRequest(requestId, accept);
@@ -77,7 +90,7 @@ export function FriendsScreen({
       setError(null);
       onSocialChange?.();
       await loadFriends();
-      if (query.trim().length >= 2) await runSearch();
+      if (query.trim().length >= SEARCH_MIN) await runSearch(query);
     } else {
       setError(t('friendsRequestError', locale));
     }
@@ -93,15 +106,22 @@ export function FriendsScreen({
     };
   }, [loadFriends, refreshKey, isLoggedIn, socialOk]);
 
-  const runSearch = async () => {
-    if (query.trim().length < 2) return;
+  useEffect(() => {
+    if (searchTimer.current) window.clearTimeout(searchTimer.current);
+    if (query.trim().length < SEARCH_MIN) {
+      setResults([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
-    setError(null);
-    const found = await searchPlayers(query);
-    setResults(found);
-    setLoading(false);
-    if (found.length === 0) setError(t('friendsSearchEmpty', locale));
-  };
+    searchTimer.current = window.setTimeout(() => {
+      void runSearch(query);
+    }, 320);
+    return () => {
+      if (searchTimer.current) window.clearTimeout(searchTimer.current);
+    };
+  }, [query, runSearch]);
 
   const handleAdd = async (player: PublicPlayer) => {
     if (player.friendStatus === 'friends' || player.friendStatus === 'pending_sent') return;
@@ -110,28 +130,17 @@ export function FriendsScreen({
     if (ok) {
       setError(null);
       setPreviewPlayer((cur) => (cur ? { ...cur, friendStatus: 'pending_sent' } : cur));
-      if (query.trim().length >= 2) await runSearch();
+      if (query.trim().length >= SEARCH_MIN) await runSearch(query);
     } else {
       setError(t('friendsRequestError', locale));
     }
   };
 
-  const handleCreateRoom = () => {
-    if (!canMulti) {
-      onUpgrade();
-      return;
-    }
-    onStartScanForGame();
-  };
-
-  const handleJoin = () => {
-    if (!canMulti) {
-      onUpgrade();
-      return;
-    }
-    const code = joinCode.trim().toUpperCase();
-    if (code.length < 6) return;
-    onJoinRoom(code);
+  const clearSearch = () => {
+    setQuery('');
+    setResults([]);
+    setError(null);
+    setLoading(false);
   };
 
   if (!isLoggedIn) {
@@ -172,11 +181,7 @@ export function FriendsScreen({
 
     return (
       <li key={player.userId} className="friend-row">
-        <button
-          type="button"
-          className="friend-row-main"
-          onClick={() => setPreviewPlayer(player)}
-        >
+        <button type="button" className="friend-row-main" onClick={() => setPreviewPlayer(player)}>
           <FriendPresenceAvatar
             avatarId={player.avatarId}
             avatarUrl={player.avatarUrl}
@@ -287,52 +292,50 @@ export function FriendsScreen({
     </li>
   );
 
+  const searching = query.trim().length >= SEARCH_MIN;
+
   return (
     <div className="screen tab-screen friends-screen">
       <header className="top-bar">
         <h2 className="screen-title">{t('friendsTitle', locale)}</h2>
       </header>
 
-      <main className="settings-main scroll-natural">
-        <section className="settings-section friends-block friends-block--multi">
-          <h3 className="settings-label">{t('friendsMultiTitle', locale)}</h3>
-          <p className="friends-intro">{t('friendsMultiHint', locale)}</p>
-          <p className="friends-intro friends-intro--sub">{t('friendsMultiScanHint', locale)}</p>
-          <button type="button" className="btn-primary btn-lg" onClick={handleCreateRoom}>
-            {t('friendsCreateRoom', locale)}
-          </button>
-          <div className="friends-join-row">
-            <input
-              className="profile-name-input friends-code-input"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              placeholder={t('friendsCodePlaceholder', locale)}
-              maxLength={6}
-            />
-            <button type="button" className="btn-secondary" onClick={handleJoin}>
-              {t('friendsJoinRoom', locale)}
+      <main className="settings-main scroll-natural friends-main">
+        <div className="friends-search-bar" role="search">
+          <span className="friends-search-icon" aria-hidden="true">
+            ⌕
+          </span>
+          <input
+            className="friends-search-input"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t('friendsSearchPlaceholder', locale)}
+            maxLength={24}
+            autoCapitalize="none"
+            autoComplete="off"
+            spellCheck={false}
+            enterKeyHint="search"
+            aria-label={t('friendsSearchTitle', locale)}
+          />
+          {query.length > 0 && (
+            <button
+              type="button"
+              className="friends-search-clear"
+              onClick={clearSearch}
+              aria-label={t('friendsSearchClear', locale)}
+            >
+              ✕
             </button>
-          </div>
-        </section>
+          )}
+        </div>
 
-        <section className="settings-section friends-block friends-block--social">
-          <h3 className="settings-label">{t('friendsSocialTitle', locale)}</h3>
-          <p className="friends-intro">{t('friendsSearchTitle', locale)}</p>
-          <div className="friends-search-row">
-            <input
-              className="profile-name-input"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder={t('friendsSearchPlaceholder', locale)}
-              maxLength={24}
-            />
-            <button type="button" className="btn-secondary" onClick={() => void runSearch()} disabled={loading}>
-              {t('friendsSearchBtn', locale)}
-            </button>
-          </div>
-          {error && <p className="friends-error">{error}</p>}
-          {results.length > 0 && <ul className="friend-list">{results.map(renderSearchRow)}</ul>}
-        </section>
+        {searching && (
+          <section className="settings-section friends-search-results" aria-live="polite">
+            {loading && <p className="friends-search-status">{t('friendsSearchLoading', locale)}</p>}
+            {error && !loading && <p className="friends-error">{error}</p>}
+            {!loading && results.length > 0 && <ul className="friend-list">{results.map(renderSearchRow)}</ul>}
+          </section>
+        )}
 
         {pendingRequests.length > 0 && (
           <section className="settings-section">
@@ -355,11 +358,7 @@ export function FriendsScreen({
             </div>
           ) : (
             <>
-              <FriendsLeaderboard
-                friends={friends}
-                locale={locale}
-                onOpenFriend={setSelectedFriendId}
-              />
+              <FriendsLeaderboard friends={friends} locale={locale} onOpenFriend={setSelectedFriendId} />
               <ul className="friend-list">{friends.map(renderFriendRow)}</ul>
             </>
           )}

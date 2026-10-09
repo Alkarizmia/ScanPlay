@@ -11,9 +11,15 @@ export interface UserProfileData {
   avatar: AvatarId;
   customAvatarData?: string;
   profileUpdatedAt?: number;
+  /** Timestamp of last successful custom display-name change (for 7-day cooldown). */
+  displayNameChangedAt?: number;
   /** Tuto Profil « choisis ton pseudo » déjà vu ou skippé. */
   pseudoOnboardingDone?: boolean;
 }
+
+export const DISPLAY_NAME_MIN = 5;
+export const DISPLAY_NAME_MAX = 24;
+export const DISPLAY_NAME_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const DEFAULT_AVATARS: { id: AvatarId; emoji: string }[] = [
   { id: 'avatar1', emoji: '🎮' },
@@ -77,18 +83,38 @@ export function getProfile(): UserProfileData | null {
 
 export type SetDisplayNameResult =
   | { ok: true }
-  | { ok: false; error: 'not_logged_in' | 'too_short' | 'display_name_taken' | 'sync_failed' };
+  | {
+      ok: false;
+      error: 'not_logged_in' | 'too_short' | 'display_name_taken' | 'sync_failed' | 'cooldown';
+      cooldownMsLeft?: number;
+    };
 
 export function setDisplayName(name: string): void {
   void trySetDisplayName(name);
 }
 
+/** Remaining ms before the next rename is allowed, or 0 if rename is free. */
+export function getDisplayNameCooldownMsLeft(profile?: UserProfileData | null): number {
+  const data = profile ?? getProfile();
+  if (!data) return 0;
+  const userId = getUserId();
+  if (userId && isDefaultDisplayName(data.displayName, userId)) return 0;
+  const changedAt = data.displayNameChangedAt;
+  if (!changedAt) return 0;
+  return Math.max(0, changedAt + DISPLAY_NAME_COOLDOWN_MS - Date.now());
+}
+
 export async function trySetDisplayName(name: string): Promise<SetDisplayNameResult> {
   const profile = getProfile();
   if (!profile) return { ok: false, error: 'not_logged_in' };
-  const trimmed = name.trim().slice(0, 24);
-  if (trimmed.length < 2) return { ok: false, error: 'too_short' };
+  const trimmed = name.trim().slice(0, DISPLAY_NAME_MAX);
+  if (trimmed.length < DISPLAY_NAME_MIN) return { ok: false, error: 'too_short' };
   if (trimmed === profile.displayName) return { ok: true };
+
+  const cooldownLeft = getDisplayNameCooldownMsLeft(profile);
+  if (cooldownLeft > 0) {
+    return { ok: false, error: 'cooldown', cooldownMsLeft: cooldownLeft };
+  }
 
   if (isSupabaseConfigured && isLoggedIn()) {
     const available = await isDisplayNameAvailable(trimmed);
@@ -105,8 +131,15 @@ export async function trySetDisplayName(name: string): Promise<SetDisplayNameRes
     }
   }
 
-  saveProfileRaw({ ...profile, displayName: trimmed, profileUpdatedAt: Date.now() });
+  const now = Date.now();
   const userId = getUserId();
+  const becomingCustom = !userId || !isDefaultDisplayName(trimmed, userId);
+  saveProfileRaw({
+    ...profile,
+    displayName: trimmed,
+    profileUpdatedAt: now,
+    displayNameChangedAt: becomingCustom ? now : profile.displayNameChangedAt,
+  });
   if (userId && !isDefaultDisplayName(trimmed, userId)) {
     markPseudoOnboardingDoneLocal();
     void completePseudoOnboarding();

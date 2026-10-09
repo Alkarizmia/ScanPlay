@@ -492,6 +492,14 @@ export function mapAuthError(message: string): string {
   if (lower.includes('password') && (lower.includes('least') || lower.includes('short'))) {
     return 'authWeakPassword';
   }
+  if (
+    (lower.includes('password') && lower.includes('different')) ||
+    lower.includes('same password') ||
+    lower.includes('identical') ||
+    lower.includes('should be different from the old')
+  ) {
+    return 'authPasswordSameAsOld';
+  }
   if (lower.includes('valid email') || lower.includes('invalid email')) return 'authInvalidEmail';
   if (lower.includes('signup') && lower.includes('disabled')) return 'authSignupDisabled';
   if (lower.includes('rate limit') || lower.includes('too many')) return 'authRateLimit';
