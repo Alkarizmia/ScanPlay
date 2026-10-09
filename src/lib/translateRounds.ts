@@ -6,7 +6,6 @@ import {
   englishVocabKeysLongestFirst,
   lookupEnglishNativeGloss,
 } from './englishVocabLookup';
-import type { EnglishNativeLang } from './englishCurriculum';
 import { lookupVocabGloss } from './loanwordGlosses';
 
 export type TranslateGrade = 'correct' | 'small' | 'big';
@@ -319,8 +318,8 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function isNativeLang(lang: LangCode): lang is EnglishNativeLang {
-  return lang === 'fr' || lang === 'nl' || lang === 'es' || lang === 'ar';
+function isNativeLang(lang: LangCode): lang is Exclude<LangCode, 'en' | 'unknown'> {
+  return lang === 'fr' || lang === 'nl' || lang === 'es';
 }
 
 /**
@@ -856,7 +855,7 @@ export function buildLocalTranslateRound(
       expectedOverride = composed.expected;
     } else if (isUtteranceLemma(term) || isUtteranceLemma(definition)) {
       // Don't show "Bye! Take care." if we can't supply every native tile.
-      source = utteranceSentence(term, termLang === 'unknown' ? 'en' : termLang, baseSlot, `${term}|utt`);
+      source = utteranceSentence(term, termLang, baseSlot, `${term}|utt`);
       target = glossAsUtterance(definition, source);
     } else {
       source = curated.trim();
