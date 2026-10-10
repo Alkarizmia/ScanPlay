@@ -12,6 +12,7 @@ import { DrivingCountryFlag, DrivingChevron } from './driving/DrivingCountryFlag
 import { DrivingSignArt } from './driving/DrivingSignArt';
 import { DrivingLearnSigns } from './driving/DrivingLearnSigns';
 import { DrivingQuizPlay, type DrivingQuizMode } from './driving/DrivingQuizPlay';
+import { touchUniverseLastActivity } from '../lib/universeLastActivity';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -41,6 +42,7 @@ export function DrivingLicenseScreen({
 
   const enter = (next: HubMode) => {
     playSound('tap');
+    touchUniverseLastActivity('driving');
     setMode(next);
     onPlayModeChange?.(next !== 'hub');
   };
@@ -75,6 +77,7 @@ export function DrivingLicenseScreen({
     }
     playSound('tap');
     selectDrivingCountry(id);
+    touchUniverseLastActivity('driving');
     setRev((n) => n + 1);
   };
 

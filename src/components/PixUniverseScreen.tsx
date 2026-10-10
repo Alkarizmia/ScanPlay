@@ -10,6 +10,10 @@ import { isLoggedIn } from '../lib/auth';
 import { canPlayUniverse, getUniverseHearts } from '../lib/universeHearts';
 import { isUniverseEnglishOnboarded, getUniverseEnglish } from '../lib/universeEnglish';
 import { getUniverseDriving } from '../lib/universeDriving';
+import {
+  touchUniverseLastActivity,
+  type UniverseActivityKind,
+} from '../lib/universeLastActivity';
 import { listChaptersForGoal } from '../lib/englishCurriculum';
 import { syncUniverseEnglishFromCloud } from '../lib/universeProgressSync';
 import { playSound } from '../lib/sounds';
@@ -27,14 +31,36 @@ type UniverseView =
 interface PixUniverseScreenProps {
   locale: Locale;
   onBack: () => void;
+  /** Accueil shortcut: jump into the last Universe course. */
+  resumeTarget?: UniverseActivityKind | null;
+}
+
+function initialUniverseLaunch(resumeTarget: UniverseActivityKind | null): {
+  view: UniverseView;
+  playLessonId: string | null;
+} {
+  if (!resumeTarget || !canPlayUniverse()) {
+    return { view: 'store', playLessonId: null };
+  }
+  if (resumeTarget === 'driving' && getUniverseDriving().countryId != null) {
+    return { view: 'driving', playLessonId: null };
+  }
+  if (resumeTarget === 'english' && isUniverseEnglishOnboarded()) {
+    return {
+      view: 'englishPlay',
+      playLessonId: getUniverseEnglish().currentLessonId,
+    };
+  }
+  return { view: 'store', playLessonId: null };
 }
 
 /** Store for Pix courses — English + driving license catalog. */
-export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
-  const [view, setView] = useState<UniverseView>('store');
+export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUniverseScreenProps) {
+  const launch = initialUniverseLaunch(resumeTarget);
+  const [view, setView] = useState<UniverseView>(launch.view);
   const [heartsTick, setHeartsTick] = useState(0);
   const [breakKey, setBreakKey] = useState(0);
-  const [playLessonId, setPlayLessonId] = useState<string | null>(null);
+  const [playLessonId, setPlayLessonId] = useState<string | null>(launch.playLessonId);
   const [skipChapterId, setSkipChapterId] = useState<string | null>(null);
   const [drivingPlay, setDrivingPlay] = useState(false);
   const [syncTick, setSyncTick] = useState(0);
@@ -45,18 +71,39 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
   const drivingStarted = driving.countryId != null;
 
   useEffect(() => {
+    if (resumeTarget === 'driving' && canPlayUniverse() && getUniverseDriving().countryId != null) {
+      touchUniverseLastActivity('driving');
+    }
+    if (resumeTarget === 'english' && canPlayUniverse() && isUniverseEnglishOnboarded()) {
+      touchUniverseLastActivity('english');
+    }
+  }, [resumeTarget]);
+
+  useEffect(() => {
     let cancelled = false;
     void syncUniverseEnglishFromCloud().then(() => {
-      if (!cancelled) setSyncTick((n) => n + 1);
+      if (cancelled) return;
+      setSyncTick((n) => n + 1);
+      // After cloud sync, keep English deep-link on the (possibly updated) current lesson.
+      if (
+        resumeTarget === 'english' &&
+        isUniverseEnglishOnboarded() &&
+        canPlayUniverse()
+      ) {
+        const id = getUniverseEnglish().currentLessonId;
+        setPlayLessonId(id);
+        setView('englishPlay');
+      }
     });
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [resumeTarget]);
 
   const openEnglish = () => {
     playSound('tap');
     if (locked) return;
+    touchUniverseLastActivity('english');
     void syncUniverseEnglishFromCloud().then(() => setSyncTick((n) => n + 1));
     setView(isUniverseEnglishOnboarded() ? 'englishHub' : 'englishOnboard');
   };
@@ -64,6 +111,7 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
   const openDriving = () => {
     playSound('tap');
     if (locked) return;
+    touchUniverseLastActivity('driving');
     setView('driving');
   };
 
@@ -104,6 +152,7 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
               setHeartsTick((k) => k + 1);
             }}
             onPlay={(lessonId) => {
+              touchUniverseLastActivity('english');
               setPlayLessonId(lessonId);
               setView('englishPlay');
             }}
@@ -151,6 +200,7 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
     return (
       <div className="screen flow-screen pix-universe-screen pix-universe-screen--play">
         <EnglishLessonPlay
+          key={playLessonId}
           locale={locale}
           lessonId={playLessonId}
           onHeartLost={() => {
@@ -158,11 +208,12 @@ export function PixUniverseScreen({ locale, onBack }: PixUniverseScreenProps) {
             setHeartsTick((k) => k + 1);
           }}
           onExit={() => {
+            setPlayLessonId(null);
             setView('englishHub');
             setHeartsTick((k) => k + 1);
           }}
-          onComplete={() => {
-            setView('englishHub');
+          onPlayNext={(nextId) => {
+            setPlayLessonId(nextId);
             setHeartsTick((k) => k + 1);
           }}
         />

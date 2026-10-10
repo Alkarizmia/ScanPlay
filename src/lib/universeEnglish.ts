@@ -45,6 +45,8 @@ export interface UniverseEnglishProfile {
   nativeLang: EnglishNativeLang;
   /** Lesson currently in progress (resume target). */
   currentLessonId: string;
+  /** Step index inside the current lesson (resume after quit). */
+  lessonStepIndex: number;
   completedLessonIds: string[];
   /** Chapters unlocked via hard skip exam (all lessons marked done). */
   skippedChapterIds: string[];
@@ -61,6 +63,7 @@ const DEFAULT: UniverseEnglishProfile = {
   goal: 'travel',
   nativeLang: 'fr',
   currentLessonId: 'travel-greet-l01',
+  lessonStepIndex: 0,
   completedLessonIds: [],
   skippedChapterIds: [],
   weakWords: [],
@@ -161,6 +164,10 @@ export function coerceUniverseEnglishProfile(raw: unknown): UniverseEnglishProfi
       typeof parsed.currentLessonId === 'string' && parsed.currentLessonId
         ? parsed.currentLessonId
         : DEFAULT.currentLessonId,
+    lessonStepIndex: (() => {
+      const n = Number(parsed.lessonStepIndex);
+      return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+    })(),
     completedLessonIds: Array.isArray(parsed.completedLessonIds)
       ? parsed.completedLessonIds.filter((id): id is string => typeof id === 'string')
       : [],
@@ -200,6 +207,7 @@ export function mergeUniverseEnglishProfiles(
     goal: newer.goal,
     nativeLang: newer.nativeLang,
     currentLessonId: newer.currentLessonId,
+    lessonStepIndex: Math.max(0, Math.floor(Number(newer.lessonStepIndex) || 0)),
     updatedAt: Math.max(local.updatedAt || 0, remoteUpdatedAtMs || 0, Date.now()),
   };
 }
@@ -282,6 +290,7 @@ export function getUniverseEnglish(): UniverseEnglishProfile {
     const migrated: UniverseEnglishProfile = {
       ...profile,
       currentLessonId: firstLessonId(profile.goal, profile.level),
+      lessonStepIndex: 0,
       completedLessonIds: [],
       skippedChapterIds: [],
       updatedAt: Date.now(),
@@ -308,6 +317,7 @@ export function saveUniverseEnglishOnboarding(input: {
     goal: input.goal,
     nativeLang: input.nativeLang,
     currentLessonId: firstLessonId(input.goal, level),
+    lessonStepIndex: 0,
     completedLessonIds: [],
     skippedChapterIds: [],
     weakWords: [],
@@ -323,10 +333,18 @@ function pairFromEnglishTerm(en: string, nativeLang: EnglishNativeLang): WordPai
     ? item[nativeLang]
     : lookupEnglishNativeGloss(en, nativeLang === 'ar' ? 'fr' : nativeLang);
   if (!gloss) return null;
+  const enSentence = item?.sentence?.trim();
+  const nativeSentence = item ? nativeExampleSentence(item, nativeLang) : undefined;
+  const faces =
+    enSentence && nativeSentence
+      ? [enSentence, nativeSentence]
+      : enSentence
+        ? [enSentence]
+        : undefined;
   return {
     term: item?.en ?? en,
     definition: gloss,
-    faces: item?.sentence ? [item.sentence] : undefined,
+    faces,
     termLang: 'en',
     defLang: nativeLang === 'ar' ? 'unknown' : nativeLang,
   };
@@ -359,16 +377,40 @@ export function injectWeakWordsIntoPairs(
   return out;
 }
 
+function nativeExampleSentence(
+  item: { sentence?: string; sentenceFr?: string; sentenceNl?: string; sentenceEs?: string; sentenceAr?: string },
+  nativeLang: EnglishNativeLang,
+): string | undefined {
+  const map = {
+    fr: item.sentenceFr,
+    nl: item.sentenceNl,
+    es: item.sentenceEs,
+    ar: item.sentenceAr,
+  } as const;
+  const native = map[nativeLang]?.trim();
+  return native || undefined;
+}
+
 export function getEnglishLessonPairs(lessonId: string, nativeLang: EnglishNativeLang): WordPair[] {
   const lesson = ENGLISH_LESSONS.find((l) => l.id === lessonId);
   if (!lesson) return [];
-  const base = lesson.items.map((item) => ({
-    term: item.en,
-    definition: item[nativeLang],
-    faces: item.sentence ? [item.sentence] : undefined,
-    termLang: 'en' as const,
-    defLang: (nativeLang === 'ar' ? 'unknown' : nativeLang) as WordPair['defLang'],
-  }));
+  const base = lesson.items.map((item) => {
+    const enSentence = item.sentence?.trim();
+    const nativeSentence = nativeExampleSentence(item, nativeLang);
+    const faces =
+      enSentence && nativeSentence
+        ? [enSentence, nativeSentence]
+        : enSentence
+          ? [enSentence]
+          : undefined;
+    return {
+      term: item.en,
+      definition: item[nativeLang],
+      faces,
+      termLang: 'en' as const,
+      defLang: (nativeLang === 'ar' ? 'unknown' : nativeLang) as WordPair['defLang'],
+    };
+  });
   const profile = loadRaw();
   if (profile.goal !== lesson.goal) return base;
   return injectWeakWordsIntoPairs(base, profile.weakWords, nativeLang);
@@ -442,6 +484,7 @@ export function completeEnglishLesson(lessonId: string): UniverseEnglishProfile 
     ...profile,
     completedLessonIds: completed,
     currentLessonId: nextLesson.id,
+    lessonStepIndex: 0,
     level: nextLesson.level,
     updatedAt: Date.now(),
   };
@@ -452,7 +495,26 @@ export function completeEnglishLesson(lessonId: string): UniverseEnglishProfile 
 export function setEnglishCurrentLesson(lessonId: string): void {
   const profile = loadRaw();
   if (!ENGLISH_LESSONS.some((l) => l.id === lessonId)) return;
-  save({ ...profile, currentLessonId: lessonId, updatedAt: Date.now() });
+  const same = profile.currentLessonId === lessonId;
+  save({
+    ...profile,
+    currentLessonId: lessonId,
+    lessonStepIndex: same ? profile.lessonStepIndex : 0,
+    updatedAt: Date.now(),
+  });
+}
+
+/** Persist in-lesson cursor so quit → reopen resumes the same exercise. */
+export function setEnglishLessonStep(lessonId: string, stepIndex: number): void {
+  const profile = loadRaw();
+  if (!ENGLISH_LESSONS.some((l) => l.id === lessonId)) return;
+  const step = Math.max(0, Math.floor(stepIndex));
+  save({
+    ...profile,
+    currentLessonId: lessonId,
+    lessonStepIndex: step,
+    updatedAt: Date.now(),
+  });
 }
 
 /** Manual correction of level and/or goal. Resumes at first lesson for that level on the goal path. */
@@ -469,6 +531,7 @@ export function updateUniverseEnglishProfile(input: {
     level,
     goal,
     currentLessonId: pathChanged ? firstLessonId(goal, level) : profile.currentLessonId,
+    lessonStepIndex: pathChanged ? 0 : profile.lessonStepIndex,
     completedLessonIds: pathChanged && goal !== profile.goal ? [] : profile.completedLessonIds,
     skippedChapterIds: pathChanged && goal !== profile.goal ? [] : profile.skippedChapterIds,
     weakWords: pathChanged && goal !== profile.goal ? [] : profile.weakWords,
@@ -548,13 +611,23 @@ export function getChapterExamPairs(
       scored.push({
         score,
         easy: SKIP_EXAM_TOO_EASY.has(key),
-        pair: {
-          term: item.en,
-          definition: item[nativeLang],
-          faces: item.sentence ? [item.sentence] : undefined,
-          termLang: 'en',
-          defLang: nativeLang === 'ar' ? 'unknown' : nativeLang,
-        },
+        pair: (() => {
+          const enSentence = item.sentence?.trim();
+          const nativeSentence = nativeExampleSentence(item, nativeLang);
+          const faces =
+            enSentence && nativeSentence
+              ? [enSentence, nativeSentence]
+              : enSentence
+                ? [enSentence]
+                : undefined;
+          return {
+            term: item.en,
+            definition: item[nativeLang],
+            faces,
+            termLang: 'en' as const,
+            defLang: (nativeLang === 'ar' ? 'unknown' : nativeLang) as WordPair['defLang'],
+          };
+        })(),
       });
     }
   });
@@ -592,6 +665,7 @@ export function skipEnglishChapter(chapterId: string): UniverseEnglishProfile {
     completedLessonIds: [...completed],
     skippedChapterIds: skipped,
     currentLessonId: nextLessonId,
+    lessonStepIndex: 0,
     updatedAt: Date.now(),
   };
   save(next);

@@ -1130,6 +1130,60 @@ body {
   font-size: 0.92rem;
 }
 
+/* Secondary resume into Universe — looks tappable, quieter than Continuer */
+.home-universe-resume {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 2px;
+  padding: 11px 14px;
+  border: 1.5px solid var(--surface-border);
+  border-radius: 14px;
+  background: var(--bg-elevated, var(--bg-card));
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 650;
+  cursor: pointer;
+  box-shadow: 0 1px 0 color-mix(in srgb, #000 4%, transparent);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.home-universe-resume:hover,
+.home-universe-resume:focus-visible {
+  border-color: color-mix(in srgb, var(--brand, #16a34a) 55%, var(--surface-border));
+  color: var(--brand, #16a34a);
+  outline: none;
+}
+
+.home-universe-resume:active {
+  transform: scale(0.985);
+}
+
+.home-universe-resume-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--brand, #16a34a);
+}
+
+.home-universe-resume-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.home-universe-resume-chevron {
+  flex-shrink: 0;
+  margin-left: auto;
+  font-size: 1.15rem;
+  line-height: 1;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
 .home-dropzone--compact {
   min-height: 88px;
   margin-top: 4px;

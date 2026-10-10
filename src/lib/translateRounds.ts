@@ -298,10 +298,19 @@ function utteranceSentence(word: string, lang: LangCode, slot: number | undefine
   return `${w}.`;
 }
 
-/** Prefer curated example sentence stored on the pair (e.g. Universe faces). */
+/** Prefer curated EN example sentence stored on the pair (Universe faces[0]). */
 export function pairExampleSentence(pair: WordPair): string | null {
-  const face = pair.faces?.map((f) => f.trim()).find((f) => f.length >= 3);
-  return face ?? null;
+  const faces = pair.faces?.map((f) => f.trim()).filter((f) => f.length >= 3) ?? [];
+  return faces[0] ?? null;
+}
+
+/**
+ * Curated native translation of the EN example (Universe faces[1]).
+ * When present, translate rounds must use this — never invent a mismatched gloss wrap.
+ */
+export function pairNativeExampleSentence(pair: WordPair): string | null {
+  const faces = pair.faces?.map((f) => f.trim()).filter((f) => f.length >= 3) ?? [];
+  return faces[1] ?? null;
 }
 
 function glossAsUtterance(definition: string, sourceEn: string): string {
@@ -847,20 +856,35 @@ export function buildLocalTranslateRound(
   let target = '';
   let expectedOverride: string[] | null = null;
   const curated = pairExampleSentence(pair);
+  const curatedNative = pairNativeExampleSentence(pair);
   if (curated && (termLang === 'en' || pair.termLang === 'en') && !looksLikeGlossaryFragment(curated)) {
-    const composed = composeNativeFromCurated(curated.trim(), pool, defLang);
-    if (composed && composed.expected.length > 0) {
+    if (curatedNative && !looksLikeGlossaryFragment(curatedNative)) {
+      // Authoritative pair: EN sentence + matching native sentence (no Google/AI at runtime).
       source = curated.trim();
-      target = composed.target;
-      expectedOverride = composed.expected;
-    } else if (isUtteranceLemma(term) || isUtteranceLemma(definition)) {
-      // Don't show "Bye! Take care." if we can't supply every native tile.
-      source = utteranceSentence(term, termLang, baseSlot, `${term}|utt`);
-      target = glossAsUtterance(definition, source);
+      target = curatedNative.trim();
+      expectedOverride = tokenizePhrase(target);
     } else {
-      source = curated.trim();
-      target = wrapVocabSentence(definition, defLang, baseSlot, kind, companion?.def);
-      if (!target) target = glossAsUtterance(definition, curated);
+      const composed = composeNativeFromCurated(curated.trim(), pool, defLang);
+      if (composed && composed.expected.length > 0) {
+        source = curated.trim();
+        target = composed.target;
+        expectedOverride = composed.expected;
+      } else if (isUtteranceLemma(term) || isUtteranceLemma(definition)) {
+        // Don't show "Bye! Take care." if we can't supply every native tile.
+        source = utteranceSentence(term, termLang, baseSlot, `${term}|utt`);
+        target = glossAsUtterance(definition, source);
+      } else {
+        // Never keep a long EN example with a one-word native wrap (looks "wrong").
+        for (let offset = 0; offset < 3; offset += 1) {
+          const slot = (baseSlot + offset) % 3;
+          const src = wrapVocabSentence(term, termLang, slot, kind, companion?.term);
+          const tgt = wrapVocabSentence(definition, defLang, slot, kind, companion?.def);
+          if (!src || !tgt) continue;
+          source = src;
+          target = tgt;
+          if (framesMatch(src, tgt)) break;
+        }
+      }
     }
   } else {
     for (let offset = 0; offset < 3; offset += 1) {

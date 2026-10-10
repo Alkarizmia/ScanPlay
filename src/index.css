@@ -10648,32 +10648,30 @@ html[data-device="desktop"] .flashcard.flipped .back {
   gap: 8px;
 }
 
+/* Stack term → meaning so neither side is squeezed into a vertical letter column. */
 .review-card-pair {
   flex: 1;
   min-width: 0;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 4px;
 }
 .review-card-pair--multi {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 6px;
+  gap: 4px;
 }
 .review-card-side-wrap {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
   min-width: 0;
+  max-width: 100%;
 }
 .review-card-face {
   font-weight: 600;
   color: var(--text-muted);
 }
 .review-card-faces-tag {
-  flex-basis: 100%;
   margin-top: 2px;
   font-size: 0.7rem;
   font-weight: 700;
@@ -10683,26 +10681,37 @@ html[data-device="desktop"] .flashcard.flipped .back {
 }
 
 .review-card-pair--edit {
-  grid-template-columns: 1fr;
   gap: 8px;
 }
 
 .review-card-arrow {
+  flex-shrink: 0;
+  margin-top: 0.12em;
   color: var(--text-muted);
   font-weight: 800;
   font-size: 0.9rem;
+  line-height: 1.35;
 }
 
 .review-card-term,
-.review-card-def {
+.review-card-def,
+.review-card-face {
+  flex: 1;
+  min-width: 0;
   font-weight: 800;
   font-size: 0.98rem;
-  word-break: break-word;
-  line-height: 1.25;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.review-card-term {
+  font-size: 1.05rem;
 }
 
 .review-card-def {
-  color: var(--text);
+  font-weight: 650;
+  color: var(--text-muted);
 }
 
 .review-card-input {
@@ -10957,6 +10966,177 @@ html[data-device="desktop"] .flashcard.flipped .back {
   font-size: 0.88rem;
   font-weight: 750;
   line-height: 1.35;
+}
+
+/* Univers — out of hearts (game beat, not a system error) */
+.universe-out-of-hearts {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px calc(20px + env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+.universe-out-of-hearts-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 20%, rgba(248, 113, 113, 0.55), transparent 55%),
+    radial-gradient(ellipse 80% 60% at 15% 85%, rgba(220, 38, 38, 0.35), transparent 50%),
+    radial-gradient(ellipse 70% 50% at 90% 70%, rgba(239, 68, 68, 0.28), transparent 45%),
+    linear-gradient(165deg, #fff5f5 0%, #fecaca 42%, #f87171 100%);
+  animation: universe-out-pulse 4.5s ease-in-out infinite;
+}
+.universe-out-of-hearts-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.45), transparent 70%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+.universe-out-of-hearts-orb--a {
+  width: 180px;
+  height: 180px;
+  top: 8%;
+  left: -8%;
+  animation: universe-out-drift 7s ease-in-out infinite;
+}
+.universe-out-of-hearts-orb--b {
+  width: 220px;
+  height: 220px;
+  bottom: 12%;
+  right: -12%;
+  animation: universe-out-drift 9s ease-in-out infinite reverse;
+}
+.universe-out-of-hearts-orb--c {
+  width: 120px;
+  height: 120px;
+  top: 42%;
+  left: 55%;
+  opacity: 0.7;
+  animation: universe-out-drift 6s ease-in-out infinite 0.8s;
+}
+@keyframes universe-out-pulse {
+  0%,
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+  50% {
+    filter: saturate(1.15) brightness(1.04);
+  }
+}
+@keyframes universe-out-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(12px, -18px) scale(1.08);
+  }
+}
+.universe-out-of-hearts-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 10px;
+  padding: 22px 18px 20px;
+  border-radius: 28px;
+  background: color-mix(in srgb, #fff 88%, transparent);
+  border: 1.5px solid color-mix(in srgb, #ef4444 28%, #fff);
+  box-shadow:
+    0 18px 40px rgba(185, 28, 28, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  animation: universe-out-rise 0.45s ease-out both;
+}
+@keyframes universe-out-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.universe-out-of-hearts-mascot {
+  margin-top: -4px;
+  animation: universe-out-sad-bob 2.8s ease-in-out infinite;
+}
+@keyframes universe-out-sad-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(5px);
+  }
+}
+.universe-out-of-hearts-lives {
+  display: flex;
+  gap: 12px;
+  margin: 2px 0 4px;
+}
+.universe-out-of-hearts-heart {
+  font-size: 1.75rem;
+  line-height: 1;
+  color: #f87171;
+  opacity: 0.85;
+  filter: drop-shadow(0 2px 4px rgba(185, 28, 28, 0.2));
+  animation: universe-out-heart-fade 1.8s ease-in-out infinite;
+}
+.universe-out-of-hearts-heart:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.universe-out-of-hearts-heart:nth-child(3) {
+  animation-delay: 0.4s;
+}
+@keyframes universe-out-heart-fade {
+  0%,
+  100% {
+    opacity: 0.45;
+    transform: scale(0.92);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1);
+  }
+}
+.universe-out-of-hearts-title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #7f1d1d;
+  line-height: 1.15;
+}
+.universe-out-of-hearts-sub {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  line-height: 1.4;
+  color: #991b1b;
+}
+.universe-out-of-hearts-hint {
+  margin: 0 0 6px;
+  font-size: 0.84rem;
+  font-weight: 650;
+  line-height: 1.4;
+  color: color-mix(in srgb, #7f1d1d 72%, #64748b);
+}
+.universe-out-of-hearts-cta {
+  width: 100%;
+  margin-top: 4px;
+  background: linear-gradient(180deg, #f87171, #ef4444) !important;
+  border-bottom-color: #b91c1c !important;
+  color: #fff !important;
+  box-shadow: 0 3px 0 #b91c1c !important;
 }
 .universe-hearts {
   margin-top: 14px;
@@ -11266,9 +11446,13 @@ html[data-device="desktop"] .flashcard.flipped .back {
   padding: 2px 4px;
 }
 .english-play--game {
+  display: flex;
+  flex-direction: column;
   padding: 0;
   gap: 0;
-  min-height: 100%;
+  min-height: 0;
+  flex: 1;
+  overflow: hidden;
 }
 .english-play-xp {
   margin: 0;
@@ -12116,4 +12300,183 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .english-play--done {
   padding: 24px 16px;
   align-items: stretch;
+}
+
+/* Univers English — lesson complete (game beat) */
+.english-lesson-done {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 18px calc(20px + env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+.english-lesson-done-bg {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 18%, rgba(134, 239, 172, 0.65), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 10% 80%, rgba(74, 222, 128, 0.35), transparent 50%),
+    radial-gradient(ellipse 60% 45% at 92% 65%, rgba(34, 197, 94, 0.28), transparent 45%),
+    linear-gradient(165deg, #f0fdf4 0%, #bbf7d0 45%, #86efac 100%);
+  animation: english-done-pulse 4.2s ease-in-out infinite;
+}
+.english-lesson-done-orb {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.55), transparent 70%);
+  pointer-events: none;
+}
+.english-lesson-done-orb--a {
+  width: 160px;
+  height: 160px;
+  top: 10%;
+  left: -6%;
+  animation: english-done-drift 7s ease-in-out infinite;
+}
+.english-lesson-done-orb--b {
+  width: 200px;
+  height: 200px;
+  bottom: 8%;
+  right: -10%;
+  animation: english-done-drift 8.5s ease-in-out infinite reverse;
+}
+.english-lesson-done-burst {
+  position: absolute;
+  inset: 18% 20% auto;
+  height: 40%;
+  background:
+    radial-gradient(circle at 30% 40%, rgba(250, 204, 21, 0.35), transparent 40%),
+    radial-gradient(circle at 70% 35%, rgba(252, 165, 165, 0.28), transparent 38%),
+    radial-gradient(circle at 50% 60%, rgba(147, 197, 253, 0.25), transparent 42%);
+  animation: english-done-burst 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes english-done-pulse {
+  0%,
+  100% {
+    filter: saturate(1) brightness(1);
+  }
+  50% {
+    filter: saturate(1.12) brightness(1.05);
+  }
+}
+@keyframes english-done-drift {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(10px, -14px) scale(1.06);
+  }
+}
+@keyframes english-done-burst {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+.english-lesson-done-panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 360px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 22px 18px 18px;
+  border-radius: 28px;
+  background: color-mix(in srgb, #fff 90%, transparent);
+  border: 1.5px solid color-mix(in srgb, #22c55e 32%, #fff);
+  box-shadow:
+    0 18px 40px rgba(21, 128, 61, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  animation: english-done-rise 0.45s ease-out both;
+}
+@keyframes english-done-rise {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.english-lesson-done-mascot {
+  animation: english-done-hop 1.8s ease-in-out infinite;
+}
+@keyframes english-done-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-8px);
+  }
+  55% {
+    transform: translateY(0);
+  }
+}
+.english-lesson-done-xp {
+  margin: 0;
+  font-size: 1.85rem;
+  font-weight: 900;
+  color: #16a34a;
+  letter-spacing: -0.02em;
+  text-shadow: 0 2px 0 rgba(134, 239, 172, 0.8);
+}
+.english-lesson-done-title {
+  margin: 0;
+  font-size: 1.55rem;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: #14532d;
+  line-height: 1.15;
+}
+.english-lesson-done-sub {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: color-mix(in srgb, #14532d 70%, #64748b);
+  line-height: 1.35;
+}
+.english-lesson-done-next-label {
+  margin: 4px 0 2px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: #15803d;
+  line-height: 1.35;
+}
+.english-lesson-done-cta {
+  width: 100%;
+  margin-top: 4px;
+  min-height: 52px;
+  font-size: 1.02rem;
+}
+.english-lesson-done-exit {
+  margin-top: 6px;
+  border: none;
+  background: transparent;
+  color: color-mix(in srgb, #14532d 55%, #64748b);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  padding: 8px 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+.english-lesson-done-exit:active {
+  opacity: 0.7;
 }

@@ -178,7 +178,7 @@ export function TranslateGame({
       examMode={examMode}
       className="translate-game"
     >
-      <main className="game-main translate-main">
+      <main className="game-main translate-main scroll-natural">
         <div className="translate-toolbar">
           <p className="game-instruction">{t('translateInstruction', locale)}</p>
           {!examMode && (

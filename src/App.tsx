@@ -94,6 +94,10 @@ import { getExamPathBudgetSeconds } from './lib/examTimer';
 import { getPathStepCount } from './lib/planLimits';
 import { resolveAnalyticsScreen, trackEvent, trackScreen } from './lib/analytics';
 import { getLocale, setLocale, t } from './lib/i18n';
+import {
+  resolveUniverseHomeResume,
+  type UniverseActivityKind,
+} from './lib/universeLastActivity';
 import { isAbortError } from './lib/abort';
 import { extractPairsFromImage, isAiScanEnabled } from './lib/sheetAnalysis';
 import {
@@ -285,6 +289,7 @@ function saveBest(mode: GameMode, score: number) {
 export default function App() {
   const [tab, setTab] = useState<TabId>('home');
   const [flow, setFlow] = useState<FlowScreen | null>(null);
+  const [universeResumeTarget, setUniverseResumeTarget] = useState<UniverseActivityKind | null>(null);
   const [locale, setLocaleState] = useState<Locale>(getLocale);
   const [pairs, setPairs] = useState<WordPair[]>([]);
   const [ignoredScanPairs, setIgnoredScanPairs] = useState<WordPair[]>([]);
@@ -1999,7 +2004,10 @@ export default function App() {
             activeTab={tab}
             universeActive={flow === 'pixUniverse'}
             onSelect={handleTabChange}
-            onOpenUniverse={() => setFlow('pixUniverse')}
+            onOpenUniverse={() => {
+              setUniverseResumeTarget(null);
+              setFlow('pixUniverse');
+            }}
             onClose={() => setNavMoreOpen(false)}
           />
           <BottomNav
@@ -2092,6 +2100,10 @@ export default function App() {
             const last = getHistory()[0] ?? (peek ? getHistoryEntry(peek.id) : undefined);
             if (last) openHistoryDeck(last);
           }}
+          onContinueUniverse={() => {
+            setUniverseResumeTarget(resolveUniverseHomeResume());
+            setFlow('pixUniverse');
+          }}
           onOpenDeck={openHistoryDeck}
           onOpenAchievements={() => handleTabChange('achievements')}
           onOpenShop={() => handleTabChange('shop')}
@@ -2122,7 +2134,10 @@ export default function App() {
           onOpenScan={() => startScanFlow()}
           onOpenSettings={() => handleTabChange('settings')}
           onOpenHome={() => handleTabChange('home')}
-          onOpenUniverse={() => setFlow('pixUniverse')}
+          onOpenUniverse={() => {
+            setUniverseResumeTarget(null);
+            setFlow('pixUniverse');
+          }}
           onContinueInGame={(pairs, thumbnail) => {
             setPairs(pairs);
             setIgnoredScanPairs([]);
@@ -2237,14 +2252,24 @@ export default function App() {
           onFile={processImage}
           onManualCreate={startManualCards}
           onJoinCode={(code) => void handleJoinPathByCode(code)}
-          onOpenUniverse={() => setFlow('pixUniverse')}
+          onOpenUniverse={() => {
+            setUniverseResumeTarget(null);
+            setFlow('pixUniverse');
+          }}
           onUpgrade={(reason) => setUpgradeReason(reason)}
           onToast={showToast}
           onAuth={() => setFlow('auth')}
         />
       )}
       {flow === 'pixUniverse' && (
-        <PixUniverseScreen locale={locale} onBack={appGoBack} />
+        <PixUniverseScreen
+          locale={locale}
+          resumeTarget={universeResumeTarget}
+          onBack={() => {
+            setUniverseResumeTarget(null);
+            appGoBack();
+          }}
+        />
       )}
       {flow === 'scanning' && (
         <ScanningScreen

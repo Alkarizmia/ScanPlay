@@ -9,6 +9,7 @@ import { canPlayUniverse, loseUniverseHeart } from '../lib/universeHearts';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { Locale, WordPair } from '../types';
+import { UniverseOutOfHearts } from './UniverseOutOfHearts';
 
 const QuizGame = lazy(() => import('./games/QuizGame').then((m) => ({ default: m.QuizGame })));
 const TypeGame = lazy(() => import('./games/TypeGame').then((m) => ({ default: m.TypeGame })));
@@ -63,14 +64,7 @@ export function EnglishChapterSkip({
   };
 
   if (!canPlayUniverse() && phase !== 'fail' && phase !== 'pass' && phase !== 'intro') {
-    return (
-      <div className="english-skip">
-        <p className="pix-universe-locked-banner">{t('universeHeartsComeBack', locale)}</p>
-        <button type="button" className="btn-secondary" onClick={onClose}>
-          {t('back', locale)}
-        </button>
-      </div>
-    );
+    return <UniverseOutOfHearts locale={locale} onBack={onClose} />;
   }
 
   if (pairs.length < 4) {

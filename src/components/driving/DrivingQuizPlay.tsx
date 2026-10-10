@@ -16,6 +16,7 @@ import { DrivingSignArt } from './DrivingSignArt';
 import { playSound } from '../../lib/sounds';
 import { t } from '../../lib/i18n';
 import type { Locale } from '../../types';
+import { UniverseOutOfHearts } from '../UniverseOutOfHearts';
 
 export type DrivingQuizMode = 'exercise' | 'exam';
 
@@ -103,14 +104,7 @@ export function DrivingQuizPlay({
   };
 
   if (phase === 'locked') {
-    return (
-      <div className="driving-play driving-play--end">
-        <p className="driving-end-title">{t('universeHeartsComeBack', locale)}</p>
-        <button type="button" className="btn-primary" onClick={onExit}>
-          {t('back', locale)}
-        </button>
-      </div>
-    );
+    return <UniverseOutOfHearts locale={locale} onBack={onExit} />;
   }
 
   if (phase === 'pass' || phase === 'fail') {

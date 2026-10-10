@@ -23,8 +23,20 @@ import { trackEvent } from '../lib/analytics';
 import { getDateLocale, t } from '../lib/i18n';
 import { collectDroppedImageFiles } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining, PLAN_LIMITS } from '../lib/planLimits';
+import { getCurrentEnglishLesson } from '../lib/universeEnglish';
+import { resolveUniverseHomeResume } from '../lib/universeLastActivity';
 import type { DeviceProfile } from '../lib/device';
 import type { HistoryEntry, Locale } from '../types';
+
+function lessonTitleForLocale(
+  title: { fr: string; en: string; nl: string; es: string; ar: string },
+  locale: Locale,
+): string {
+  if (locale === 'en' || locale === 'nl' || locale === 'es' || locale === 'ar') {
+    return title[locale];
+  }
+  return title.fr;
+}
 
 const INSTALL_SNOOZE_KEY = 'scanplay-install-snooze';
 const INSTALL_AUTO_KEY = 'scanplay-install-auto-at';
@@ -54,6 +66,8 @@ interface HomeScreenProps {
   onAuth?: () => void;
   onRefresh?: () => void;
   onContinueLast?: () => void;
+  /** Jump into the last Universe course (English lesson or driving hub). */
+  onContinueUniverse?: () => void;
   onOpenDeck?: (entry: HistoryEntry) => void;
   onOpenAchievements?: () => void;
   onOpenShop?: () => void;
@@ -74,6 +88,7 @@ export function HomeScreen({
   onAuth,
   onRefresh,
   onContinueLast,
+  onContinueUniverse,
   onOpenDeck,
   onOpenAchievements,
   onOpenShop,
@@ -95,6 +110,37 @@ export function HomeScreen({
   const recentUnlocks = loggedIn ? getRecentUnlocks(4) : [];
   const welcomeMessage =
     lastDeck ? t('mascotWelcomeBackShort', locale) : t('mascotWelcomeReady', locale);
+  const universeResumeKind =
+    loggedIn && onContinueUniverse ? resolveUniverseHomeResume() : null;
+  const universeResumeLabel = (() => {
+    if (universeResumeKind === 'driving') return t('driveCourseTitle', locale);
+    if (universeResumeKind === 'english') {
+      return lessonTitleForLocale(getCurrentEnglishLesson().title, locale);
+    }
+    return '';
+  })();
+  const universeResumeChip = universeResumeKind ? (
+    <button
+      type="button"
+      className="home-universe-resume"
+      onClick={onContinueUniverse}
+      aria-label={t('homeUniverseResumeAria', locale).replace('{lesson}', universeResumeLabel)}
+    >
+      <span className="home-universe-resume-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+          <ellipse cx="12" cy="12" rx="8.5" ry="3.2" fill="none" stroke="currentColor" strokeWidth="1.4" />
+          <path d="M12 3.5v17" fill="none" stroke="currentColor" strokeWidth="1.4" />
+        </svg>
+      </span>
+      <span className="home-universe-resume-label">
+        {t('homeUniverseResume', locale).replace('{lesson}', universeResumeLabel)}
+      </span>
+      <span className="home-universe-resume-chevron" aria-hidden="true">
+        ›
+      </span>
+    </button>
+  ) : null;
 
   const handleFiles = (list: FileList | File[] | null) => {
     if (!list) return;
@@ -218,6 +264,7 @@ export function HomeScreen({
             <button type="button" className="btn-secondary home-continue-scan" onClick={() => onScanPlay()}>
               {t('homeScanAnother', locale)}
             </button>
+            {universeResumeChip}
           </section>
         )}
 
@@ -250,6 +297,7 @@ export function HomeScreen({
                 <span className="home-dropzone-title">{t('importDrop', locale)}</span>
               </div>
             )}
+            {universeResumeChip}
           </section>
         )}
 

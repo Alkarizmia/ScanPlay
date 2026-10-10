@@ -254,8 +254,8 @@ describe('translateRounds', () => {
   it('prefers curated face sentences for Universe English pairs', () => {
     const bye: WordPair = {
       term: 'bye',
-      definition: 'salut',
-      faces: ['Bye! Take care.'],
+      definition: 'à plus',
+      faces: ['Bye! Take care.', 'À plus ! Prends soin de toi.'],
       termLang: 'en',
       defLang: 'fr',
     };
@@ -263,11 +263,41 @@ describe('translateRounds', () => {
     expect(round).toBeTruthy();
     expect(round!.source).toBe('Bye! Take care.');
     expect(round!.source).not.toMatch(/I have/i);
-    expect(round!.expected.join(' ').toLowerCase()).toMatch(/salut/);
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/à plus|plus/);
     expect(round!.expected.join(' ').toLowerCase()).toMatch(/prends soin de toi|soin/);
     expect(
       round!.bank.some((tile) => /prends soin de toi/i.test(tile.text) || /soin/i.test(tile.text)),
     ).toBe(true);
+  });
+
+  it('uses curated native face for bread (not a one-word wrap)', () => {
+    const bread: WordPair = {
+      term: 'bread',
+      definition: 'pain',
+      faces: ['I bought fresh bread.', "J'ai acheté du pain frais."],
+      termLang: 'en',
+      defLang: 'fr',
+    };
+    const round = buildLocalTranslateRound(bread, 0, [bread]);
+    expect(round).toBeTruthy();
+    expect(round!.source).toBe('I bought fresh bread.');
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/acheté/);
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/pain/);
+  });
+
+  it('drops EN curated sentence when no native face and compose fails', () => {
+    const bread: WordPair = {
+      term: 'bread',
+      definition: 'pain',
+      faces: ['I bought fresh bread.'],
+      termLang: 'en',
+      defLang: 'fr',
+    };
+    const round = buildLocalTranslateRound(bread, 0, [bread]);
+    expect(round).toBeTruthy();
+    expect(round!.source).not.toBe('I bought fresh bread.');
+    expect(round!.source.toLowerCase()).toMatch(/bread/);
+    expect(round!.expected.join(' ').toLowerCase()).toMatch(/pain/);
   });
 
   it('pairs Here is with Voici, not I have, and keeps all answer tiles', () => {

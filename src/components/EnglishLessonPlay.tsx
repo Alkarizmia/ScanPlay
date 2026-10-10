@@ -1,4 +1,4 @@
-import { lazy, Suspense, useMemo, useRef, useState } from 'react';
+import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 import {
   completeEnglishLesson,
   getEnglishLessonPairs,
@@ -6,6 +6,7 @@ import {
   recordUniverseWeakSuccess,
   recordUniverseWeakWord,
   setEnglishCurrentLesson,
+  setEnglishLessonStep,
 } from '../lib/universeEnglish';
 import { ENGLISH_LESSONS } from '../lib/englishCurriculum';
 import { hasEnoughImagePickPairs } from '../lib/imagePickRounds';
@@ -16,6 +17,8 @@ import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { GameCompleteMeta, Locale, WordPair } from '../types';
 import { gameProgressPct, GameHeader } from './games/GameHeader';
+import { UniverseOutOfHearts } from './UniverseOutOfHearts';
+import { ScanPlayMascot } from './mascot/ScanPlayMascot';
 
 const ListenPickGame = lazy(() =>
   import('./games/ListenPickGame').then((m) => ({ default: m.ListenPickGame })),
@@ -42,7 +45,8 @@ interface EnglishLessonPlayProps {
   lessonId: string;
   onExit: () => void;
   onHeartLost: () => void;
-  onComplete: () => void;
+  /** Jump straight into the next Universe lesson. */
+  onPlayNext: (lessonId: string) => void;
 }
 
 function uniqPairs(list: WordPair[]): WordPair[] {
@@ -121,7 +125,7 @@ export function EnglishLessonPlay({
   lessonId,
   onExit,
   onHeartLost,
-  onComplete,
+  onPlayNext,
 }: EnglishLessonPlayProps) {
   const profile = getUniverseEnglish();
   const lesson = ENGLISH_LESSONS.find((l) => l.id === lessonId);
@@ -130,11 +134,28 @@ export function EnglishLessonPlay({
     [lessonId, profile.nativeLang],
   );
   const steps = useMemo(() => buildMixedSteps(pairs, lessonId), [pairs, lessonId]);
-  const [stepIndex, setStepIndex] = useState(0);
+  const [stepIndex, setStepIndex] = useState(() => {
+    const saved = getUniverseEnglish();
+    if (saved.currentLessonId !== lessonId) return 0;
+    return Math.max(0, saved.lessonStepIndex || 0);
+  });
   const [phase, setPhase] = useState<'play' | 'review' | 'done'>('play');
   const [reviewPairs, setReviewPairs] = useState<WordPair[]>([]);
+  const [nextLessonId, setNextLessonId] = useState<string | null>(null);
+  const [nextLessonTitle, setNextLessonTitle] = useState('');
   const weakRef = useRef<WordPair[]>([]);
   const titleLang = locale === 'en' ? 'en' : locale === 'nl' || locale === 'es' || locale === 'ar' ? locale : 'fr';
+
+  useEffect(() => {
+    const saved = getUniverseEnglish();
+    let start = 0;
+    if (saved.currentLessonId === lessonId) {
+      start = Math.max(0, saved.lessonStepIndex || 0);
+    }
+    if (steps.length > 0 && start >= steps.length) start = 0;
+    setStepIndex(start);
+    setEnglishLessonStep(lessonId, start);
+  }, [lessonId, steps.length]);
 
   const loseHeart = () => {
     const { lost } = loseUniverseHeart();
@@ -153,7 +174,11 @@ export function EnglishLessonPlay({
 
   const finishLesson = () => {
     setEnglishCurrentLesson(lessonId);
-    completeEnglishLesson(lessonId);
+    const after = completeEnglishLesson(lessonId);
+    const nextId = after.currentLessonId !== lessonId ? after.currentLessonId : null;
+    const nextLesson = nextId ? ENGLISH_LESSONS.find((l) => l.id === nextId) : undefined;
+    setNextLessonId(nextId);
+    setNextLessonTitle(nextLesson?.title[titleLang] ?? '');
     playSound('perfect');
     setPhase('done');
   };
@@ -170,7 +195,9 @@ export function EnglishLessonPlay({
       return;
     }
     playSound('correct');
-    setStepIndex((i) => i + 1);
+    const next = stepIndex + 1;
+    setStepIndex(next);
+    setEnglishLessonStep(lessonId, next);
   };
 
   const onStepScored = (focus: WordPair, score: number, total: number, meta?: GameCompleteMeta) => {
@@ -196,31 +223,59 @@ export function EnglishLessonPlay({
 
   if (!canPlayUniverse() && phase !== 'done') {
     return (
-      <div className="english-play">
-        <p className="pix-universe-locked-banner">{t('universeHeartsComeBack', locale)}</p>
-        <button type="button" className="btn-secondary" onClick={onExit}>
-          {t('back', locale)}
-        </button>
+      <div className="english-play english-play--game">
+        <UniverseOutOfHearts locale={locale} onBack={onExit} />
       </div>
     );
   }
 
   if (phase === 'done') {
     return (
-      <div className="english-play english-play--done">
-        <p className="english-play-xp">+25 XP</p>
-        <h3 className="english-onboard-title">{t('engLessonComplete', locale)}</h3>
-        <p className="english-onboard-sub">{lesson.title[titleLang]}</p>
-        <button
-          type="button"
-          className="btn-primary english-onboard-cta"
-          onClick={() => {
-            playSound('tap');
-            onComplete();
-          }}
-        >
-          {t('engNext', locale)}
-        </button>
+      <div className="english-play english-play--game">
+        <div className="english-lesson-done" role="status">
+          <div className="english-lesson-done-bg" aria-hidden="true">
+            <span className="english-lesson-done-orb english-lesson-done-orb--a" />
+            <span className="english-lesson-done-orb english-lesson-done-orb--b" />
+            <span className="english-lesson-done-burst" />
+          </div>
+          <div className="english-lesson-done-panel">
+            <div className="english-lesson-done-mascot" aria-hidden="true">
+              <ScanPlayMascot expression="celebrating" size={132} idle celebrate preferAsset />
+            </div>
+            <p className="english-lesson-done-xp">+25 XP</p>
+            <h3 className="english-lesson-done-title">{t('engLessonComplete', locale)}</h3>
+            <p className="english-lesson-done-sub">{lesson.title[titleLang]}</p>
+            {nextLessonId ? (
+              <>
+                {nextLessonTitle ? (
+                  <p className="english-lesson-done-next-label">{nextLessonTitle}</p>
+                ) : null}
+                <button
+                  type="button"
+                  className="btn-primary btn-lg english-lesson-done-cta"
+                  onClick={() => {
+                    playSound('tap');
+                    onPlayNext(nextLessonId);
+                  }}
+                >
+                  {t('engContinueNextLesson', locale)}
+                </button>
+              </>
+            ) : (
+              <p className="english-lesson-done-next-label">{t('engPathCaughtUp', locale)}</p>
+            )}
+            <button
+              type="button"
+              className="english-lesson-done-exit"
+              onClick={() => {
+                playSound('tap');
+                onExit();
+              }}
+            >
+              {t('engBackToUniverse', locale)}
+            </button>
+          </div>
+        </div>
       </div>
     );
   }

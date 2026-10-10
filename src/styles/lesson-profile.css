@@ -539,7 +539,14 @@
   text-align: center;
 }
 
-.lesson-embedded-pane.translate-game,
+/* Embedded: respect parent flex height so the footer stays on-screen. */
+.lesson-embedded-pane.translate-game {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
 .translate-game.game-screen {
   display: flex;
   flex-direction: column;
@@ -551,6 +558,8 @@
   gap: 12px;
   padding-bottom: 8px;
   flex: 1;
+  min-height: 0;
+  overflow-y: auto;
 }
 .translate-badge {
   display: none;
@@ -737,7 +746,9 @@
 }
 .translate-footer {
   margin-top: auto;
+  flex-shrink: 0;
   padding: 12px 0 calc(8px + env(safe-area-inset-bottom));
+  background: var(--bg);
 }
 .translate-footer--almost {
   background: transparent;

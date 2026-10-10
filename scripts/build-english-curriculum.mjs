@@ -13,7 +13,14 @@ const outPath = path.join(__dirname, '..', 'src', 'lib', 'englishCurriculum.ts')
 const CEFR = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 const CEFR_RANK = Object.fromEntries(CEFR.map((l, i) => [l, i]));
 
-/** @typedef {{ en: string, fr: string, nl: string, es: string, ar: string, sentence: string, cefr: string, theme: string }} Vocab */
+/**
+ * @typedef {{
+ *   en: string, fr: string, nl: string, es: string, ar: string,
+ *   sentence: string,
+ *   sentenceFr?: string, sentenceNl?: string, sentenceEs?: string, sentenceAr?: string,
+ *   cefr: string, theme: string
+ * }} Vocab
+ */
 
 function parseRaw(text) {
   /** @type {Vocab[]} */
@@ -22,12 +29,31 @@ function parseRaw(text) {
   for (const line of text.split(/\r?\n/)) {
     const trimmed = line.trim();
     if (!trimmed || trimmed.startsWith('#')) continue;
-    const parts = trimmed.split('|');
+    const parts = trimmed.split('|').map((p) => p.trim());
+    // Legacy: en|fr|nl|es|ar|sentenceEn|cefr|theme
+    // Full:    en|fr|nl|es|ar|sentenceEn|sentenceFr|sentenceNl|sentenceEs|sentenceAr|cefr|theme
     if (parts.length < 8) {
       console.warn('skip bad line:', trimmed.slice(0, 80));
       continue;
     }
-    const [en, fr, nl, es, ar, sentence, cefr, theme] = parts.map((p) => p.trim());
+    let en;
+    let fr;
+    let nl;
+    let es;
+    let ar;
+    let sentence;
+    let sentenceFr;
+    let sentenceNl;
+    let sentenceEs;
+    let sentenceAr;
+    let cefr;
+    let theme;
+    if (parts.length >= 12) {
+      [en, fr, nl, es, ar, sentence, sentenceFr, sentenceNl, sentenceEs, sentenceAr, cefr, theme] =
+        parts;
+    } else {
+      [en, fr, nl, es, ar, sentence, cefr, theme] = parts;
+    }
     if (!en || !fr || !sentence || !CEFR.includes(cefr)) {
       console.warn('skip invalid:', en);
       continue;
@@ -35,7 +61,20 @@ function parseRaw(text) {
     const key = en.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
-    items.push({ en, fr, nl, es, ar, sentence, cefr, theme });
+    items.push({
+      en,
+      fr,
+      nl,
+      es,
+      ar,
+      sentence,
+      sentenceFr: sentenceFr || undefined,
+      sentenceNl: sentenceNl || undefined,
+      sentenceEs: sentenceEs || undefined,
+      sentenceAr: sentenceAr || undefined,
+      cefr,
+      theme,
+    });
   }
   return items;
 }
@@ -167,6 +206,10 @@ function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel) {
         es: v.es,
         ar: v.ar,
         sentence: v.sentence,
+        sentenceFr: v.sentenceFr,
+        sentenceNl: v.sentenceNl,
+        sentenceEs: v.sentenceEs,
+        sentenceAr: v.sentenceAr,
       })),
     });
   }
@@ -233,7 +276,15 @@ function esc(s) {
 }
 
 function emitVocabItem(v) {
-  return `{ en: '${esc(v.en)}', fr: '${esc(v.fr)}', nl: '${esc(v.nl)}', es: '${esc(v.es)}', ar: '${esc(v.ar)}', sentence: '${esc(v.sentence)}' }`;
+  const extras = [
+    v.sentenceFr ? `sentenceFr: '${esc(v.sentenceFr)}'` : '',
+    v.sentenceNl ? `sentenceNl: '${esc(v.sentenceNl)}'` : '',
+    v.sentenceEs ? `sentenceEs: '${esc(v.sentenceEs)}'` : '',
+    v.sentenceAr ? `sentenceAr: '${esc(v.sentenceAr)}'` : '',
+  ]
+    .filter(Boolean)
+    .join(', ');
+  return `{ en: '${esc(v.en)}', fr: '${esc(v.fr)}', nl: '${esc(v.nl)}', es: '${esc(v.es)}', ar: '${esc(v.ar)}', sentence: '${esc(v.sentence)}'${extras ? `, ${extras}` : ''} }`;
 }
 
 function emitLesson(l) {
@@ -267,9 +318,30 @@ function emitPlacement(p) {
   }`;
 }
 
+/** Optional map: English sentence → { fr, nl, es, ar } */
+function applySentenceI18n(items) {
+  const i18nPath = path.join(__dirname, 'english-sentence-i18n.json');
+  if (!fs.existsSync(i18nPath)) return items;
+  /** @type {Record<string, { fr?: string, nl?: string, es?: string, ar?: string }>} */
+  const map = JSON.parse(fs.readFileSync(i18nPath, 'utf8'));
+  return items.map((v) => {
+    const row = map[v.sentence];
+    if (!row) return v;
+    return {
+      ...v,
+      sentenceFr: v.sentenceFr || row.fr || undefined,
+      sentenceNl: v.sentenceNl || row.nl || undefined,
+      sentenceEs: v.sentenceEs || row.es || undefined,
+      sentenceAr: v.sentenceAr || row.ar || undefined,
+    };
+  });
+}
+
 const raw = fs.readFileSync(rawPath, 'utf8');
-const vocab = parseRaw(raw);
+const vocab = applySentenceI18n(parseRaw(raw));
+const withNative = vocab.filter((v) => v.sentenceFr && v.sentenceNl && v.sentenceEs && v.sentenceAr).length;
 console.log('Unique vocab entries:', vocab.length);
+console.log('With full native example sentences:', withNative);
 if (vocab.length < 500) {
   console.error('Need at least 500 unique entries, got', vocab.length);
   process.exit(1);
@@ -296,6 +368,11 @@ export interface EnglishVocabItem {
   ar: string;
   /** Natural English sentence using the word/phrase. */
   sentence: string;
+  /** Matching native translations of \`sentence\` (required for accurate translate rounds). */
+  sentenceFr?: string;
+  sentenceNl?: string;
+  sentenceEs?: string;
+  sentenceAr?: string;
 }
 
 export interface EnglishLessonDef {

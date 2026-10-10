@@ -1,4 +1,10 @@
-# en|fr|nl|es|ar|sentence|cefr|theme
+# Format (legacy 8 cols):
+#   en|fr|nl|es|ar|sentenceEn|cefr|theme
+# Format (full 12 cols — preferred, no translate faults):
+#   en|fr|nl|es|ar|sentenceEn|sentenceFr|sentenceNl|sentenceEs|sentenceAr|cefr|theme
+# Native example sentences can also live in english-sentence-i18n.json (merged at build).
+# Themes drive chapter placement (greetings, food, work, …). CEFR drives level.
+# After edits: node scripts/build-english-curriculum.mjs
 # === GREETINGS & IDENTITY (A1) ===
 hello|bonjour|hallo|hola|مرحبا|Hello! How are you today?|A1|greetings
 hi|salut|hoi|hola|أهلا|Hi, nice to see you.|A1|greetings
@@ -84,7 +90,7 @@ sometimes|parfois|soms|a veces|أحيانا|Sometimes I work from home.|A2|time
 never|jamais|nooit|nunca|أبدا|I never skip breakfast.|A2|time
 water|eau|water|agua|ماء|Could I have some water?|A1|daily
 food|nourriture|eten|comida|طعام|The food smells great.|A1|daily
-bread|pain|brood|pan|خبز|I bought fresh bread.|A1|daily
+bread|pain|brood|pan|خبز|I bought fresh bread.|J'ai acheté du pain frais.|Ik heb vers brood gekocht.|Compré pan fresco.|اشتريت خبزاً طازجاً.|A1|daily
 coffee|café|koffie|café|قهوة|I would like a coffee.|A1|daily
 tea|thé|thee|té|شاي|Do you prefer tea or coffee?|A1|daily
 milk|lait|melk|leche|حليب|There is no milk left.|A1|daily
