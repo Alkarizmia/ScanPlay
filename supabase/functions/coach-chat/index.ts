@@ -208,10 +208,10 @@ Deno.serve(async (req) => {
       return json(200, { reply: canned, blocked: 'local', quota: q ?? null });
     }
 
+    // Soft daily counter only — AI envelope (assertCanUseAiBudget) is the hard gate.
+    // Older DBs still have Free messages_per_day = 0; never block the turn for that.
     const { data: quota, error: quotaError } = await supabase.rpc('consume_coach_chat_credit');
-    if (quotaError) return json(400, { error: 'quota_rpc_failed', detail: quotaError.message });
-
-    const quotaRow = (quota ?? {}) as {
+    let quotaRow = (quota ?? {}) as {
       ok?: boolean;
       used?: number;
       limit?: number;
@@ -219,8 +219,24 @@ Deno.serve(async (req) => {
       plan?: string;
       maxChars?: number;
       historyWindow?: number;
+      voiceEnabled?: boolean;
+      voiceProvider?: string;
     };
-    if (!quotaRow.ok) return json(429, { error: 'quota_exceeded', quota: quotaRow });
+    if (quotaError || quotaRow.ok === false) {
+      const { data: q } = await supabase.rpc('get_coach_chat_quota');
+      const fallback = (q ?? {}) as typeof quotaRow;
+      quotaRow = {
+        ok: true,
+        plan: fallback.plan ?? plan,
+        used: Number(fallback.used) || 0,
+        limit: Math.max(Number(fallback.limit) || 0, caps.chatPerDay || 9999),
+        remaining: Math.max(Number(fallback.remaining) || 0, 1),
+        maxChars: Number(fallback.maxChars) || caps.maxChars,
+        historyWindow: Number(fallback.historyWindow) || caps.historyWindow,
+        voiceEnabled: fallback.voiceEnabled,
+        voiceProvider: fallback.voiceProvider,
+      };
+    }
 
     const streak = Math.max(0, Number(body.context?.streak ?? 0));
     const level = Math.max(1, Number(body.context?.level ?? 1));

@@ -461,16 +461,27 @@ export async function sendCoachMessage(
   }
 
   if (payload?.error === 'plan_required' || status === 403) {
-    return { error: 'quota' };
+    return { error: 'plan' };
   }
-  if (payload?.error === 'ai_budget_exhausted' || payload?.error === 'quota_exceeded') {
+  // Only the AI envelope hard-stop maps to 'quota' (Settings / 100% UX).
+  // Legacy daily Free=0 "quota_exceeded" must not look like an empty AI bar.
+  if (payload?.error === 'ai_budget_exhausted') {
     return { error: 'quota', quota: normalizeQuota(payload.quota ?? undefined) };
+  }
+  if (payload?.error === 'quota_exceeded') {
+    return { error: 'generic', quota: normalizeQuota(payload.quota ?? undefined) };
   }
   if (payload?.error === 'quota_rpc_failed') {
     return { error: 'rpc' };
   }
 
-  if (status === 429) return { error: 'quota', quota: normalizeQuota(payload?.quota ?? undefined) };
+  if (status === 429) {
+    // Prefer explicit AI-envelope signal; bare 429 without it is treated as soft failure.
+    if (payload?.error === 'ai_budget_exhausted') {
+      return { error: 'quota', quota: normalizeQuota(payload?.quota ?? undefined) };
+    }
+    return { error: 'generic', quota: normalizeQuota(payload?.quota ?? undefined) };
+  }
   if (status === 401) return { error: 'auth' };
   if (status === 502 || status === 503) return { error: 'ai' };
   if (status === 400 || status === 404) return { error: 'rpc' };

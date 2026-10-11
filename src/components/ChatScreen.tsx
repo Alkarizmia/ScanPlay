@@ -371,7 +371,7 @@ function ChatScreenLive({
         },
       ]);
       setBusy(false);
-      onOpenSettings?.();
+      // Stay in chat — user can open Settings via [[action:settings]] if they want.
       return;
     }
 
@@ -393,16 +393,21 @@ function ChatScreenLive({
       }
       if (result.quota) setQuota(result.quota);
       if (result.error === 'quota' || result.error === 'plan') {
-        setMessages((prev) => [
-          ...prev,
-          { id: `${localId}-user`, role: 'user', content: message },
-          {
-            id: `${localId}-bot`,
-            role: 'assistant',
-            content: enrichCoachActions(t('chatAiBudgetReply', locale)),
-          },
-        ]);
-        onOpenSettings?.();
+        // Only treat as AI-envelope block when the local bar is actually full.
+        // Legacy Free daily=0 RPC must not kick users to Settings at 0% usage.
+        if (!canSpendAiBudget()) {
+          setMessages((prev) => [
+            ...prev,
+            { id: `${localId}-user`, role: 'user', content: message },
+            {
+              id: `${localId}-bot`,
+              role: 'assistant',
+              content: enrichCoachActions(t('chatAiBudgetReply', locale)),
+            },
+          ]);
+        } else {
+          setError(t('chatError', locale));
+        }
         setBusy(false);
         return;
       } else if (result.error === 'rpc') setError(t('chatErrorSql', locale));
