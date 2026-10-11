@@ -1,39 +1,40 @@
 import type { Locale } from '../types';
+import ar from '../i18n/landing/ar.json';
 import en from '../i18n/landing/en.json';
 import es from '../i18n/landing/es.json';
 import fr from '../i18n/landing/fr.json';
 import nl from '../i18n/landing/nl.json';
 
-/** Landing stays on the four marketing languages; app UI also supports Arabic. */
-export type LandingLang = Exclude<Locale, 'ar'>;
+/** Landing languages (includes Arabic; app UI already had ar strings). */
+export type LandingLang = Locale;
 export type LandingCopyKey = keyof typeof fr;
 
-const copies: Record<LandingLang, Record<LandingCopyKey, string>> = { fr, en, nl, es };
+const copies: Record<LandingLang, Record<string, string>> = { fr, en, nl, es, ar };
 
 export const LANDING_LANGS: { id: LandingLang; label: string; short: string }[] = [
   { id: 'fr', label: 'Français', short: 'FR' },
   { id: 'en', label: 'English', short: 'EN' },
   { id: 'nl', label: 'Nederlands', short: 'NL' },
   { id: 'es', label: 'Español', short: 'ES' },
+  { id: 'ar', label: 'العربية', short: 'AR' },
 ];
 
-/** Same key as `src/lib/i18n.ts` — not imported from there to keep the landing bundle small. */
+/** Same key as `src/lib/i18n.ts` (keep landing bundle free of i18n.ts). */
 const LOCALE_KEY = 'scanplay-locale';
 
 function isLandingLang(value: unknown): value is LandingLang {
-  return value === 'fr' || value === 'en' || value === 'nl' || value === 'es';
+  return value === 'fr' || value === 'en' || value === 'nl' || value === 'es' || value === 'ar';
 }
 
-/** French landing only for fr, fr-FR, fr-BE, fr-CH; Dutch and Spanish by prefix; English otherwise. */
+/** Match browser language; any fr-* is French, any ar-* is Arabic. */
 export function landingLangFromNavigator(
   language = typeof navigator === 'undefined' ? 'en' : navigator.language,
 ): LandingLang {
   const tag = language.trim().toLowerCase().replace(/_/g, '-');
-  if (tag === 'fr' || tag.startsWith('fr-fr') || tag.startsWith('fr-be') || tag.startsWith('fr-ch')) {
-    return 'fr';
-  }
+  if (tag === 'fr' || tag.startsWith('fr-')) return 'fr';
   if (tag === 'nl' || tag.startsWith('nl-')) return 'nl';
   if (tag === 'es' || tag.startsWith('es-')) return 'es';
+  if (tag === 'ar' || tag.startsWith('ar-')) return 'ar';
   return 'en';
 }
 
@@ -61,6 +62,6 @@ export function persistLandingLang(lang: LandingLang): void {
 }
 
 export function lt(key: LandingCopyKey, lang: LandingLang | Locale): string {
-  const resolved: LandingLang = lang === 'ar' ? 'en' : lang;
-  return copies[resolved]?.[key] ?? copies.en[key] ?? key;
+  const table = copies[lang] ?? copies.en;
+  return table[key] ?? copies.en[key] ?? copies.fr[key] ?? key;
 }

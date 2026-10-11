@@ -64,6 +64,7 @@ interface HomeScreenProps {
   onSocialChange?: () => void;
   onToast?: (message: string) => void;
   onAuth?: () => void;
+  onLocaleChange?: (locale: Locale) => void;
   onRefresh?: () => void;
   onContinueLast?: () => void;
   /** Jump into the last Universe course (English lesson or driving hub). */
@@ -86,6 +87,7 @@ export function HomeScreen({
   onSocialChange,
   onToast,
   onAuth,
+  onLocaleChange,
   onRefresh,
   onContinueLast,
   onContinueUniverse,
@@ -201,8 +203,15 @@ export function HomeScreen({
       <LandingPage
         locale={locale}
         device={device}
-        onScanPlay={() => onScanPlay()}
-        onAuth={() => onAuth?.()}
+        onScanPlay={(lang) => {
+          onLocaleChange?.(lang);
+          onScanPlay();
+        }}
+        onAuth={(lang) => {
+          onLocaleChange?.(lang);
+          onAuth?.();
+        }}
+        onLangChange={(lang) => onLocaleChange?.(lang)}
       />
     );
   }

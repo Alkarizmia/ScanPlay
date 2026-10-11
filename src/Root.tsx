@@ -1,9 +1,10 @@
-import { lazy, Suspense, useCallback, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
 import { LandingPage } from './components/landing/LandingPage';
 import { applyDeviceAttributes, detectDeviceProfile } from './lib/device';
 import { hasStoredAuthSession } from './lib/authSessionHint';
 import { applyUrlBootIntent, setBootIntent, setBootLocale } from './lib/bootIntent';
 import { initialLandingLang, persistLandingLang, type LandingLang } from './lib/landingI18n';
+import type { Locale } from './types';
 
 const App = lazy(() => import('./App'));
 
@@ -13,7 +14,8 @@ export function Root() {
     return Boolean(fromUrl) || hasStoredAuthSession();
   });
   const [device, setDevice] = useState(() => detectDeviceProfile());
-  const locale = useMemo(() => initialLandingLang(), []);
+  /** Locale chosen on the landing; passed into App so Strict Mode cannot drop it. */
+  const [appLocale, setAppLocale] = useState<Locale>(() => initialLandingLang());
 
   useEffect(() => {
     applyDeviceAttributes(device);
@@ -29,6 +31,7 @@ export function Root() {
     const chosen = lang ?? initialLandingLang();
     persistLandingLang(chosen);
     setBootLocale(chosen);
+    setAppLocale(chosen);
     setBootIntent(intent);
     setShowApp(true);
   }, []);
@@ -36,17 +39,21 @@ export function Root() {
   if (showApp) {
     return (
       <Suspense fallback={<div className="auth-session-boot" aria-busy="true" />}>
-        <App />
+        <App initialLocale={appLocale} />
       </Suspense>
     );
   }
 
   return (
     <LandingPage
-      locale={locale}
+      locale={appLocale}
       device={device}
       onScanPlay={(lang) => openApp('scan', lang)}
       onAuth={(lang) => openApp('auth', lang)}
+      onLangChange={(lang) => {
+        persistLandingLang(lang);
+        setAppLocale(lang);
+      }}
     />
   );
 }

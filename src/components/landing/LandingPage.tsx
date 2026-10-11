@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { LogoWordmark } from '../Logo';
 import { ScanPlayChest } from '../ScanPlayChest';
@@ -45,6 +45,7 @@ interface LandingPageProps {
   device: DeviceProfile;
   onScanPlay: (lang: LandingLang) => void;
   onAuth: (lang: LandingLang) => void;
+  onLangChange?: (lang: LandingLang) => void;
 }
 
 interface Testimonial {
@@ -175,14 +176,26 @@ function Section({
 
 const LANDING_PLANS: Plan[] = ['free', 'plus', 'pro', 'max'];
 
-export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: LandingPageProps) {
+export function LandingPage({
+  locale: initialLocale,
+  device,
+  onScanPlay,
+  onAuth,
+  onLangChange,
+}: LandingPageProps) {
   const isDesktop = device.kind === 'desktop';
-  const [lang, setLang] = useState<LandingLang>(initialLandingLang);
+  const [lang, setLang] = useState<LandingLang>(() =>
+    initialLocale === 'fr' ||
+    initialLocale === 'en' ||
+    initialLocale === 'nl' ||
+    initialLocale === 'es' ||
+    initialLocale === 'ar'
+      ? initialLocale
+      : initialLandingLang(),
+  );
   const locale: Locale = lang;
   const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const { ref: heroCtaRef, outOfView: heroCtaHidden } = useOutOfView<HTMLDivElement>();
-  const proofMarqueeRef = useRef<HTMLDivElement>(null);
-  const [proofPaused, setProofPaused] = useState(false);
 
   const testimonials: Testimonial[] = PROOF_ITEMS.map((item) => {
     const author = lt(item.author, lang);
@@ -200,30 +213,38 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   // The landing needs the document to scroll, so flag it only while mounted.
   useEffect(() => {
     document.documentElement.dataset.landing = 'true';
-    document.documentElement.lang = lang;
     return () => {
       delete document.documentElement.dataset.landing;
     };
+  }, []);
+
+  // Keep document dir in sync with the landing language (AR = rtl, others = ltr).
+  // Separate from mount flag so switching AR → FR/EN always clears rtl.
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
   }, [lang]);
 
-  // Keep the CSS marquee cheap: pause the transform layer while off-screen.
+  // Parent locale (App / Root) wins when it changes from outside the menu.
   useEffect(() => {
-    const el = proofMarqueeRef.current;
-    if (!el || typeof IntersectionObserver === 'undefined') return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setProofPaused(!entry.isIntersecting);
-      },
-      { rootMargin: '80px 0px', threshold: 0 },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, []);
+    if (
+      initialLocale === 'fr' ||
+      initialLocale === 'en' ||
+      initialLocale === 'nl' ||
+      initialLocale === 'es' ||
+      initialLocale === 'ar'
+    ) {
+      setLang(initialLocale);
+    }
+  }, [initialLocale]);
 
   const changeLang = (next: LandingLang) => {
     trackEvent('changement_langue_landing', { langue: next });
     persistLandingLang(next);
     setLang(next);
+    document.documentElement.lang = next;
+    document.documentElement.dir = next === 'ar' ? 'rtl' : 'ltr';
+    onLangChange?.(next);
   };
 
   const scan = (placement: string) => {
@@ -246,7 +267,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   );
 
   return (
-    <div className="screen sp-landing" lang={lang}>
+    <div className="screen sp-landing" lang={lang} dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <a className="lp-skip" href="#lp-main">
         {lt('lpSkipToContent', locale)}
       </a>
@@ -397,11 +418,10 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <h2 id="lp-proof-title">{lt('lpProofTitle', locale)}</h2>
           </header>
           <div
-            ref={proofMarqueeRef}
-            className={`lp-proof-marquee${proofPaused ? ' is-paused' : ''}`}
+            className="lp-proof-marquee"
             style={{ ['--lp-proof-n' as string]: String(testimonials.length) }}
           >
-            <div className="lp-proof-track">
+            <div key={lang} className="lp-proof-track">
               {[0, 1].map((copy) => (
                 <ul key={copy} className="lp-proof-strip" aria-hidden={copy > 0}>
                   {testimonials.map((item) => (
@@ -456,7 +476,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                   style={{ ['--lp-tags-n' as string]: String(GAME_TAGS.length) }}
                   aria-label={lt('lpProduct2Title', locale)}
                 >
-                  <div className="lp-tags-track">
+                  <div key={lang} className="lp-tags-track">
                     {[0, 1].map((copy) => (
                       <ul key={copy} className="lp-tags-strip" aria-hidden={copy > 0}>
                         {GAME_TAGS.map((key) => (

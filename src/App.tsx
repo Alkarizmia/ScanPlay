@@ -2,6 +2,7 @@ import { lazy, startTransition, Suspense, useCallback, useEffect, useMemo, useRe
 import { applyGuestLightTheme, applyTheme, getInitialTheme, initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
 import {
+  clearBootLocale,
   consumeBootIntent,
   consumeBootLocale,
   consumePendingScanAfterAuth,
@@ -289,20 +290,29 @@ function saveBest(mode: GameMode, score: number) {
   }
 }
 
-function readBootLocale(): Locale {
-  const boot = consumeBootLocale();
-  if (boot === 'fr' || boot === 'en' || boot === 'nl' || boot === 'es' || boot === 'ar') {
-    setLocale(boot);
-    return boot;
-  }
-  return getLocale();
+function isLocale(value: unknown): value is Locale {
+  return value === 'fr' || value === 'en' || value === 'nl' || value === 'es' || value === 'ar';
 }
 
-export default function App() {
+function resolveInitialLocale(preferred?: Locale): Locale {
+  // Boot (set in the same click as openApp) wins over a stale React prop.
+  // Then preferred prop, then localStorage already written by persistLandingLang.
+  const boot = consumeBootLocale();
+  const persisted = getLocale();
+  const chosen = isLocale(boot)
+    ? boot
+    : isLocale(preferred)
+      ? preferred
+      : persisted;
+  setLocale(chosen);
+  return chosen;
+}
+
+export default function App({ initialLocale }: { initialLocale?: Locale } = {}) {
   const [tab, setTab] = useState<TabId>('home');
   const [flow, setFlow] = useState<FlowScreen | null>(null);
   const [universeResumeTarget, setUniverseResumeTarget] = useState<UniverseActivityKind | null>(null);
-  const [locale, setLocaleState] = useState<Locale>(readBootLocale);
+  const [locale, setLocaleState] = useState<Locale>(() => resolveInitialLocale(initialLocale));
   const [pairs, setPairs] = useState<WordPair[]>([]);
   const [ignoredScanPairs, setIgnoredScanPairs] = useState<WordPair[]>([]);
   const [manualDeckMode, setManualDeckMode] = useState(false);
@@ -1584,6 +1594,21 @@ export default function App() {
     document.documentElement.dir = locale === 'ar' ? 'rtl' : 'ltr';
   }, [locale]);
 
+  // Apply locale from Root/openApp only when the parent prop changes.
+  // Do not depend on `locale`: otherwise picking FR after AR snaps back to the
+  // stale Root appLocale (still ar) and leaves dir=rtl with French copy.
+  useEffect(() => {
+    if (!isLocale(initialLocale)) return;
+    setLocale(initialLocale);
+    setLocaleState(initialLocale);
+    document.documentElement.lang = initialLocale;
+    document.documentElement.dir = initialLocale === 'ar' ? 'rtl' : 'ltr';
+  }, [initialLocale]);
+
+  useEffect(() => {
+    clearBootLocale();
+  }, []);
+
   useEffect(() => {
     setPathSheetType(sheetType);
   }, [sheetType]);
@@ -2124,6 +2149,7 @@ export default function App() {
           onSocialChange={handleSocialChange}
           onToast={showToast}
           onAuth={() => openAuth('login')}
+          onLocaleChange={handleLocaleChange}
           onRefresh={refresh}
           onContinueLast={() => {
             const peek = peekLastHomeDeck();

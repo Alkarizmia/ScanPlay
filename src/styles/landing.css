@@ -597,6 +597,13 @@ html[data-landing='true'] .screen.sp-landing {
   scroll-margin-top: calc(var(--lp-header-h) + 16px);
 }
 
+/* Infinite marquees must stay painted: content-visibility pauses CSS animations in Chromium. */
+.lp-section--proof,
+.lp-section--product {
+  content-visibility: visible;
+  contain-intrinsic-size: auto;
+}
+
 .lp-section-head {
   max-width: 40rem;
   margin-bottom: clamp(28px, 4.5vw, 48px);
@@ -2787,11 +2794,20 @@ html[data-landing='true'] .screen.sp-landing {
 .lp-product-list > li {
   min-width: 0;
   max-width: 100%;
-  padding-left: 18px;
-  border-left: 2px solid rgba(34, 197, 94, 0.4);
+  padding-inline-start: 18px;
+  border-inline-start: 2px solid rgba(34, 197, 94, 0.4);
+  overflow: visible;
+}
+
+.lp-product-list h3,
+.lp-product-list p {
+  overflow-wrap: anywhere;
+  word-break: normal;
 }
 
 .lp-tags-marquee {
+  /* Keep track math LTR so the loop works in FR/EN/NL/ES and Arabic RTL. */
+  direction: ltr;
   margin: 14px -4px 0;
   width: calc(100% + 8px);
   max-width: calc(100% + 8px);
@@ -2804,6 +2820,7 @@ html[data-landing='true'] .screen.sp-landing {
   display: flex;
   width: max-content;
   animation: lp-tags-scroll calc(var(--lp-tags-n, 13) * 2.4s) linear infinite;
+  animation-play-state: running;
   will-change: transform;
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
@@ -2828,6 +2845,7 @@ html[data-landing='true'] .screen.sp-landing {
   font-size: 0.82rem;
   font-weight: 700;
   white-space: nowrap;
+  unicode-bidi: plaintext;
 }
 
 @media (hover: hover) and (pointer: fine) {
@@ -3084,12 +3102,13 @@ html[data-landing='true'] .screen.sp-landing {
 
 .lp-proof-marquee {
   /* Full-bleed past the section container gutters. */
+  /* Track math stays LTR in every language (including Arabic RTL pages). */
+  direction: ltr;
   margin-inline: calc(-1 * var(--lp-gutter));
   width: calc(100% + 2 * var(--lp-gutter));
   overflow: hidden;
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
-  /* Pause the GPU layer when the section is off-screen (toggled in JS). */
 }
 
 .lp-proof-marquee.is-paused .lp-proof-track {
@@ -3103,6 +3122,7 @@ html[data-landing='true'] .screen.sp-landing {
   padding: 4px 0;
   /* Two identical strips; duration scales with count (~constant px/s). */
   animation: lp-proof-scroll calc(var(--lp-proof-n, 3) * 7s) linear infinite;
+  animation-play-state: running;
   will-change: transform;
   backface-visibility: hidden;
   transform: translate3d(0, 0, 0);
@@ -3144,6 +3164,8 @@ html[data-landing='true'] .screen.sp-landing {
   border: 1px solid var(--lp-border);
   border-radius: 20px;
   background: var(--lp-surface);
+  unicode-bidi: plaintext;
+  text-align: start;
 }
 
 .lp-proof-stars {

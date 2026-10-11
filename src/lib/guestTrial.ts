@@ -12,7 +12,7 @@ function guestScansUsed(): number {
 
 /**
  * 1 free guest scan per browser/device (persists across refresh / close / re-open).
- * Does not bill the AI envelope — after signup usage starts at 0%.
+ * Does not bill the AI envelope. After signup usage starts at 0%.
  */
 export function canGuestScan(): boolean {
   if (isLoggedIn()) return false;

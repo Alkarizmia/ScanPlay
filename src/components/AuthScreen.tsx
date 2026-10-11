@@ -230,7 +230,12 @@ export function AuthScreen({
   }, []);
 
   return (
-    <div className="screen flow-screen auth-screen" data-theme="light">
+    <div
+      className="screen flow-screen auth-screen"
+      data-theme="light"
+      lang={locale}
+      dir={locale === 'ar' ? 'rtl' : 'ltr'}
+    >
       <aside className="auth-aside" aria-hidden="true">
         <LogoWordmark />
         <p className="auth-aside-tagline">{t('tagline', locale)}</p>
