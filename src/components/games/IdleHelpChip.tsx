@@ -9,8 +9,9 @@ interface IdleHelpChipProps {
 
 /** Soft countdown → “help is here” so waiting 9s feels intentional, not failing. */
 export function IdleHelpChip({ locale, helped, secondsLeft }: IdleHelpChipProps) {
-  if (!helped && secondsLeft == null) return null;
-  if (!helped && secondsLeft > 9) return null;
+  if (!helped) {
+    if (secondsLeft == null || secondsLeft > 9) return null;
+  }
 
   return (
     <div
@@ -20,7 +21,7 @@ export function IdleHelpChip({ locale, helped, secondsLeft }: IdleHelpChipProps)
       <span className="idle-help-chip-ring" aria-hidden="true" />
       {helped
         ? t('idleHelpReady', locale)
-        : t('idleHelpSoon', locale).replace('{n}', String(Math.max(1, secondsLeft)))}
+        : t('idleHelpSoon', locale).replace('{n}', String(Math.max(1, secondsLeft ?? 1)))}
     </div>
   );
 }

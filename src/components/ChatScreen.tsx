@@ -156,13 +156,14 @@ function ChatScreenLive({
   refreshKey,
   isLoggedIn,
   onAuth,
-  onUpgrade,
+  onUpgrade: _onUpgrade,
   onOpenScan,
   onOpenSettings,
   onOpenHome,
   onOpenUniverse,
   onContinueInGame,
 }: ChatScreenProps) {
+  void _onUpgrade;
   const [messages, setMessages] = useState<CoachMessage[]>([]);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);

@@ -158,15 +158,6 @@ function todayKey(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function getScansToday(): number {
-  try {
-    const data = JSON.parse(localStorage.getItem(SCANS_KEY) ?? '{}') as Record<string, number>;
-    return data[todayKey()] ?? 0;
-  } catch {
-    return 0;
-  }
-}
-
 function incrementScansToday(): void {
   const data = JSON.parse(localStorage.getItem(SCANS_KEY) ?? '{}') as Record<string, number>;
   const key = todayKey();
