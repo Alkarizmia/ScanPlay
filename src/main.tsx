@@ -22,13 +22,12 @@ createRoot(document.getElementById('root')!).render(
 );
 
 // SW after first paint so it never races the landing critical path.
-if (typeof window !== 'undefined') {
-  const bootSw = () => {
-    void registerServiceWorker();
-  };
-  if ('requestIdleCallback' in window) {
-    window.requestIdleCallback(bootSw, { timeout: 4000 });
-  } else {
-    window.addEventListener('load', bootSw, { once: true });
-  }
+const bootSw = () => {
+  void registerServiceWorker();
+};
+const ric = window.requestIdleCallback?.bind(window);
+if (ric) {
+  ric(bootSw, { timeout: 4000 });
+} else {
+  window.setTimeout(bootSw, 1);
 }
