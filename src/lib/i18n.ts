@@ -7404,10 +7404,22 @@ export type TranslationKey = keyof typeof strings.fr;
 
 const VALID_LOCALES: Locale[] = ['fr', 'en', 'nl', 'es', 'ar'];
 
+/** Same rule as landing: fr* → fr, nl* → nl, es* → es, else en (never force French). */
+function localeFromNavigator(
+  language = typeof navigator === 'undefined' ? 'en' : navigator.language,
+): Locale {
+  const tag = language.trim().toLowerCase().replace(/_/g, '-');
+  if (tag === 'fr' || tag.startsWith('fr-')) return 'fr';
+  if (tag === 'nl' || tag.startsWith('nl-')) return 'nl';
+  if (tag === 'es' || tag.startsWith('es-')) return 'es';
+  if (tag === 'ar' || tag.startsWith('ar-')) return 'ar';
+  return 'en';
+}
+
 export function getLocale(): Locale {
   const stored = localStorage.getItem(LOCALE_KEY);
   if (VALID_LOCALES.includes(stored as Locale)) return stored as Locale;
-  return 'fr';
+  return localeFromNavigator();
 }
 
 export function setLocale(locale: Locale): void {

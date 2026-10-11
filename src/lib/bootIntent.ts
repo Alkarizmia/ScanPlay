@@ -2,12 +2,32 @@ export type BootIntent = 'scan' | 'auth';
 
 const KEY = 'scanplay-boot-intent';
 const PENDING_SCAN_KEY = 'scanplay-pending-scan-after-auth';
+const LOCALE_BOOT_KEY = 'scanplay-boot-locale';
 
 export function setBootIntent(intent: BootIntent): void {
   try {
     sessionStorage.setItem(KEY, intent);
   } catch {
     /* private mode */
+  }
+}
+
+/** Landing language chosen before App mounts — App must open in the same locale. */
+export function setBootLocale(locale: string): void {
+  try {
+    sessionStorage.setItem(LOCALE_BOOT_KEY, locale);
+  } catch {
+    /* private mode */
+  }
+}
+
+export function consumeBootLocale(): string | null {
+  try {
+    const value = sessionStorage.getItem(LOCALE_BOOT_KEY);
+    sessionStorage.removeItem(LOCALE_BOOT_KEY);
+    return value;
+  } catch {
+    return null;
   }
 }
 

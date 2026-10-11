@@ -43,8 +43,8 @@ import type { BillingCycle, Locale, Plan } from '../../types';
 interface LandingPageProps {
   locale: Locale;
   device: DeviceProfile;
-  onScanPlay: () => void;
-  onAuth: () => void;
+  onScanPlay: (lang: LandingLang) => void;
+  onAuth: (lang: LandingLang) => void;
 }
 
 interface Testimonial {
@@ -229,13 +229,13 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
   const scan = (placement: string) => {
     trackEvent('clic_cta_landing', { emplacement: placement });
     persistLandingLang(lang);
-    onScanPlay();
+    onScanPlay(lang);
   };
 
   const login = () => {
     trackEvent('ouverture_inscription', { etape: 'page_de_garde' });
     persistLandingLang(lang);
-    onAuth();
+    onAuth(lang);
   };
 
   const ctaNote = (

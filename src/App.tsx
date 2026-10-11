@@ -1,7 +1,11 @@
 import { lazy, startTransition, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { applyGuestLightTheme, applyTheme, getInitialTheme, initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
-import { consumeBootIntent, consumePendingScanAfterAuth, setPendingScanAfterAuth } from './lib/bootIntent';
+import {
+  consumeBootIntent,
+  consumeBootLocale,
+  consumePendingScanAfterAuth,
+} from './lib/bootIntent';
 import './index.css';
 import './styles/design-system.css';
 import './styles/responsive.css';
@@ -285,11 +289,20 @@ function saveBest(mode: GameMode, score: number) {
   }
 }
 
+function readBootLocale(): Locale {
+  const boot = consumeBootLocale();
+  if (boot === 'fr' || boot === 'en' || boot === 'nl' || boot === 'es' || boot === 'ar') {
+    setLocale(boot);
+    return boot;
+  }
+  return getLocale();
+}
+
 export default function App() {
   const [tab, setTab] = useState<TabId>('home');
   const [flow, setFlow] = useState<FlowScreen | null>(null);
   const [universeResumeTarget, setUniverseResumeTarget] = useState<UniverseActivityKind | null>(null);
-  const [locale, setLocaleState] = useState<Locale>(getLocale);
+  const [locale, setLocaleState] = useState<Locale>(readBootLocale);
   const [pairs, setPairs] = useState<WordPair[]>([]);
   const [ignoredScanPairs, setIgnoredScanPairs] = useState<WordPair[]>([]);
   const [manualDeckMode, setManualDeckMode] = useState(false);
@@ -490,12 +503,8 @@ export default function App() {
     const bootIntent = consumeBootIntent();
     if (bootIntent === 'auth') openAuth('login');
     if (bootIntent === 'scan') {
-      if (isLoggedIn()) {
-        startScanFlow();
-      } else {
-        setPendingScanAfterAuth();
-        openAuth('login');
-      }
+      // Guest + logged-in: open the scan funnel in the landing language (no forced login).
+      startScanFlow();
     }
     void initAuth(refresh);
     const unsubRecovery = onPasswordRecovery(() => {
