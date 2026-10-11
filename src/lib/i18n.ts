@@ -84,10 +84,10 @@ const strings = {
     lpFaqSub: 'Si la réponse n\'y est pas, écris-nous.',
     lpFaq1Q: 'C\'est vraiment gratuit ?',
     lpFaq1A:
-      'Oui. Tu peux scanner une première fiche sans compte. Avec un compte gratuit, ton historique est sauvegardé et tu as une enveloppe IA ScanPlay (0,15 €/semaine) : scans, coach et synthèses partagent le même %. Le scan fait avant de créer le compte compte déjà dans cette enveloppe. Ce n\'est pas un crédit offert en plus. Les formules payantes agrandissent l\'enveloppe, mais rien ne t\'y oblige.',
+      'Oui. Tu peux scanner une première fiche sans compte : ce scan d\'essai est gratuit et n\'utilise pas ton enveloppe IA (tu restes à 0 % après création du compte). Avec un compte gratuit, ton historique est sauvegardé et tu as une enveloppe IA ScanPlay (0,15 €/semaine) : scans, coach et synthèses partagent le même %. Un seul essai sans compte par appareil (pas en rafraîchissant la page). Les formules payantes agrandissent l\'enveloppe, mais rien ne t\'y oblige.',
     lpFaq2Q: 'Je dois créer un compte ?',
     lpFaq2A:
-      'Pas pour scanner ta première fiche. Le compte gratuit est demandé pour lancer les jeux et sauvegarder ta progression. Si tu as déjà scanné en invité, tu vois tout de suite le % d\'usage IA dans Paramètres : il part de ce scan demandé.',
+      'Pas pour scanner ta première fiche. Le compte gratuit est demandé pour lancer les jeux et sauvegarder ta progression. L\'essai sans compte est limité à 1 scan par appareil : ensuite il faut un compte. Ce premier scan ne consomme pas ton % d\'usage IA.',
     lpFaq3Q: 'Ça marche avec quels documents ?',
     lpFaq3A:
       'Avec des images : photo d\'une fiche, d\'une page de manuel, ou capture d\'écran. Le texte imprimé ou écrit proprement est le mieux reconnu. Les PDF ne sont pas encore pris en charge.',
@@ -605,7 +605,7 @@ const strings = {
     guestAhaLogin: 'J\'ai déjà un compte',
     guestAhaLater: 'Regarder encore',
     guestAhaLoginSubtitle: 'Connecte-toi pour récupérer ton jeu et commencer à jouer.',
-    planPerkGuestTrial: '1 scan sans compte (l’usage IA part de ce scan)',
+    planPerkGuestTrial: '1 scan sans compte (gratuit, enveloppe IA à 0 %)',
     planPerkFreeAccountScans: 'Enveloppe IA 0,15 €/sem (pas de quota scans/jour)',
     authEmailPlaceholder: 'exemple@mail.com',
     settingsTitle: 'Paramètres',
@@ -1600,10 +1600,10 @@ const strings = {
     lpFaqSub: 'If the answer is not here, write to us.',
     lpFaq1Q: 'Is it really free?',
     lpFaq1A:
-      'Yes. You can scan a first sheet without an account. With a free account, your history is saved and you get a ScanPlay AI envelope (€0.15/week): scans, coach and summaries share the same %. The scan you did before signing up already counts in that envelope. It is not an extra free credit. Paid plans grow the envelope, but nothing forces you into them.',
+      'Yes. You can scan a first sheet without an account: that trial scan is free and does not use your AI envelope (you stay at 0% after creating an account). With a free account, your history is saved and you get a ScanPlay AI envelope (€0.15/week): scans, coach and summaries share the same %. One trial scan per device (refreshing the page does not grant another). Paid plans grow the envelope, but nothing forces you into them.',
     lpFaq2Q: 'Do I have to create an account?',
     lpFaq2A:
-      'Not to scan your first sheet. A free account is asked when you start the games, to save your progress. If you already scanned as a guest, you immediately see the AI usage % in Settings. It starts from that requested scan.',
+      'Not to scan your first sheet. A free account is asked when you start the games, to save your progress. The no-account trial is limited to 1 scan per device — then you need an account. That first scan does not consume your AI usage %.',
     lpFaq3Q: 'Which documents does it work with?',
     lpFaq3A:
       'Images: a photo of your sheet, a textbook page, or a screenshot. Printed or neatly written text is recognised best. PDFs are not supported yet.',
@@ -2124,7 +2124,7 @@ const strings = {
     guestAhaLogin: 'I already have an account',
     guestAhaLater: 'Keep looking',
     guestAhaLoginSubtitle: 'Sign in to recover your game and start playing.',
-    planPerkGuestTrial: '1 scan without an account (AI usage starts then)',
+    planPerkGuestTrial: '1 scan without an account (free, AI envelope stays at 0%)',
     planPerkFreeAccountScans: 'AI envelope €0.15/wk (no daily scan quota)',
     authEmailPlaceholder: 'you@example.com',
     settingsTitle: 'Settings',
@@ -3086,10 +3086,10 @@ const strings = {
     lpFaqSub: 'Staat het antwoord er niet bij? Schrijf ons.',
     lpFaq1Q: 'Is het echt gratis?',
     lpFaq1A:
-      'Ja. Je kunt een eerste blad scannen zonder account. Met een gratis account wordt je geschiedenis bewaard en krijg je een ScanPlay AI-enveloppe (€0,15/week): scans, coach en samenvattingen delen hetzelfde %. De scan vóór je account telt al mee. Het is geen extra gratis tegoed. Betaalde abonnementen vergroten de enveloppe, maar niets verplicht je.',
+      'Ja. Je kunt een eerste blad scannen zonder account: die proefscan is gratis en gebruikt je AI-enveloppe niet (je blijft op 0% na het aanmaken van een account). Met een gratis account wordt je geschiedenis bewaard en krijg je een ScanPlay AI-enveloppe (€0,15/week): scans, coach en samenvattingen delen hetzelfde %. Eén proefscan per apparaat (pagina vernieuwen geeft geen nieuwe). Betaalde abonnementen vergroten de enveloppe, maar niets verplicht je.',
     lpFaq2Q: 'Moet ik een account maken?',
     lpFaq2A:
-      'Niet om je eerste blad te scannen. Een gratis account wordt gevraagd om de spellen te starten en je voortgang te bewaren. Als je al als gast hebt gescand, zie je meteen het AI-gebruik % in Instellingen. Het start vanaf die gevraagde scan.',
+      'Niet om je eerste blad te scannen. Een gratis account wordt gevraagd om de spellen te starten en je voortgang te bewaren. De proef zonder account is beperkt tot 1 scan per apparaat — daarna heb je een account nodig. Die eerste scan verbruikt je AI-gebruik % niet.',
     lpFaq3Q: 'Met welke documenten werkt het?',
     lpFaq3A:
       'Met afbeeldingen: een foto van je blad, een pagina uit een handboek, of een schermafbeelding. Gedrukte of netjes geschreven tekst wordt het best herkend. PDF wordt nog niet ondersteund.',
@@ -3595,7 +3595,7 @@ const strings = {
     guestAhaLogin: 'Ik heb al een account',
     guestAhaLater: 'Nog even kijken',
     guestAhaLoginSubtitle: 'Log in om je spel terug te vinden en te beginnen spelen.',
-    planPerkGuestTrial: '1 scan zonder account (AI-gebruik start dan)',
+    planPerkGuestTrial: '1 scan zonder account (gratis, AI-enveloppe blijft 0%)',
     planPerkFreeAccountScans: 'AI-enveloppe €0,15/wk (geen scans/dag-quota)',
     authEmailPlaceholder: 'jij@voorbeeld.nl',
     settingsTitle: 'Instellingen',
@@ -4541,10 +4541,10 @@ const strings = {
     lpFaqSub: 'Si la respuesta no está aquí, escríbenos.',
     lpFaq1Q: '¿Es realmente gratis?',
     lpFaq1A:
-      'Sí. Puedes escanear una primera hoja sin cuenta. Con una cuenta gratuita se guarda tu historial y tienes una envolvente IA ScanPlay (0,15 €/semana): escaneos, coach y síntesis comparten el mismo %. El escaneo hecho antes de crear la cuenta ya cuenta. No es un crédito extra regalado. Los planes de pago amplían la envolvente, pero nada te obliga.',
+      'Sí. Puedes escanear una primera hoja sin cuenta: ese escaneo de prueba es gratis y no usa tu envolvente IA (te quedas en 0% tras crear la cuenta). Con una cuenta gratuita se guarda tu historial y tienes una envolvente IA ScanPlay (0,15 €/semana): escaneos, coach y síntesis comparten el mismo %. Un solo ensayo sin cuenta por dispositivo (recargar la página no da otro). Los planes de pago amplían la envolvente, pero nada te obliga.',
     lpFaq2Q: '¿Tengo que crear una cuenta?',
     lpFaq2A:
-      'No para escanear tu primera hoja. La cuenta gratuita se pide para lanzar los juegos y guardar tu progreso. Si ya escaneaste como invitado, ves enseguida el % de uso de IA en Ajustes: parte de ese escaneo pedido.',
+      'No para escanear tu primera hoja. La cuenta gratuita se pide para lanzar los juegos y guardar tu progreso. La prueba sin cuenta se limita a 1 escaneo por dispositivo: después hace falta una cuenta. Ese primer escaneo no consume tu % de uso de IA.',
     lpFaq3Q: '¿Con qué documentos funciona?',
     lpFaq3A:
       'Con imágenes: foto de tu ficha, de una página del libro o una captura de pantalla. El texto impreso o bien escrito se reconoce mejor. Los PDF todavía no son compatibles.',
@@ -5050,7 +5050,7 @@ const strings = {
     guestAhaLogin: 'Ya tengo una cuenta',
     guestAhaLater: 'Seguir mirando',
     guestAhaLoginSubtitle: 'Inicia sesión para recuperar tu juego y empezar a jugar.',
-    planPerkGuestTrial: '1 escaneo sin cuenta (el uso de IA empieza ahí)',
+    planPerkGuestTrial: '1 escaneo sin cuenta (gratis, envolvente IA al 0%)',
     planPerkFreeAccountScans: 'Envolvente IA 0,15 €/sem (sin cuota diaria)',
     authEmailPlaceholder: 'tu@ejemplo.com',
     settingsTitle: 'Ajustes',
@@ -5985,9 +5985,9 @@ const strings = {
     lpFaqTitle: "الأسئلة التي تخطر ببالك",
     lpFaqSub: "إن لم تجد الجواب هنا، راسلنا.",
     lpFaq1Q: "هل هو مجاني فعلاً؟",
-    lpFaq1A: "نعم. يمكنك مسح ورقة أولى بدون حساب. وبحساب مجاني يُحفظ سجلّك وتحصل على غلاف ذكاء اصطناعي لـ ScanPlay (0,15 €/أسبوع): المسح والمدرّب والملخّصات تشترك في نفس النسبة %. المسح قبل إنشاء الحساب يُحتسب بالفعل. ليس رصيداً إضافياً مجانياً. الباقات المدفوعة توسّع الغلاف، لكن لا شيء يُجبرك عليها.",
+    lpFaq1A: "نعم. يمكنك مسح ورقة أولى بدون حساب: مسح التجربة مجاني ولا يستخدم غلاف الذكاء الاصطناعي (تبقى عند 0% بعد إنشاء الحساب). وبحساب مجاني يُحفظ سجلّك وتحصل على غلاف ذكاء اصطناعي لـ ScanPlay (0,15 €/أسبوع). تجربة واحدة فقط لكل جهاز (تحديث الصفحة لا يمنح أخرى). الباقات المدفوعة توسّع الغلاف، لكن لا شيء يُجبرك عليها.",
     lpFaq2Q: "هل يجب أن أنشئ حساباً؟",
-    lpFaq2A: "ليس لمسح ورقتك الأولى. يُطلب الحساب المجاني لبدء الألعاب وحفظ تقدّمك. إذا مسحت كضيف، ترى فوراً نسبة استخدام الذكاء الاصطناعي في الإعدادات: تبدأ من ذلك المسح المطلوب.",
+    lpFaq2A: "ليس لمسح ورقتك الأولى. يُطلب الحساب المجاني لبدء الألعاب وحفظ تقدّمك. التجربة بدون حساب محدودة بمسح واحد لكل جهاز — ثم تحتاج حساباً. ذلك المسح الأول لا يستهلك نسبة استخدام الذكاء الاصطناعي.",
     lpFaq3Q: "مع أي مستندات يعمل؟",
     lpFaq3A: "مع الصور: صورة لورقة، أو لصفحة من كتاب، أو لقطة شاشة. النص المطبوع أو المكتوب بوضوح هو الأفضل في التعرّف. ملفات PDF غير مدعومة بعد.",
     lpFaq4Q: "وماذا لو أخطأ المسح؟",
@@ -6496,7 +6496,7 @@ const strings = {
     guestAhaLogin: "لدي حساب بالفعل",
     guestAhaLater: "ألقِ نظرة أخرى",
     guestAhaLoginSubtitle: "سجّل الدخول لاستعادة لعبتك وبدء اللعب.",
-    planPerkGuestTrial: "مسح واحد بدون حساب (يبدأ استخدام الذكاء الاصطناعي منه)",
+    planPerkGuestTrial: "مسح واحد بدون حساب (مجاني، غلاف الذكاء يبقى 0%)",
     planPerkFreeAccountScans: "غلاف ذكاء اصطناعي 0,15 €/أسبوع (بدون حصّة يومية)",
     authEmailPlaceholder: "example@mail.com",
     settingsTitle: "الإعدادات",

@@ -10,7 +10,10 @@ function guestScansUsed(): number {
   return Number.isFinite(n) && n > 0 ? n : 0;
 }
 
-/** 1 scan gratuit sans compte (par appareil). */
+/**
+ * 1 free guest scan per browser/device (persists across refresh / close / re-open).
+ * Does not bill the AI envelope — after signup usage starts at 0%.
+ */
 export function canGuestScan(): boolean {
   if (isLoggedIn()) return false;
   return guestScansUsed() < GUEST_SCAN_LIMIT;
@@ -21,8 +24,10 @@ export function getGuestScansRemaining(): number {
   return Math.max(0, GUEST_SCAN_LIMIT - guestScansUsed());
 }
 
+/** Burn the single free guest slot (idempotent once used). Survives login + logout. */
 export function recordGuestScan(): void {
-  localStorage.setItem(KEY, String(guestScansUsed() + 1));
+  if (guestScansUsed() >= GUEST_SCAN_LIMIT) return;
+  localStorage.setItem(KEY, String(GUEST_SCAN_LIMIT));
 }
 
 /** Parcours en cours après le scan invité (session navigateur). */
@@ -40,7 +45,10 @@ export function clearGuestPlaySession(): void {
   sessionStorage.removeItem(SESSION_KEY);
 }
 
+/**
+ * Clear only the in-flight play session after signup.
+ * Never wipe KEY — otherwise logout + refresh would grant another free scan.
+ */
 export function clearGuestTrial(): void {
-  localStorage.removeItem(KEY);
   clearGuestPlaySession();
 }

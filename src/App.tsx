@@ -1010,6 +1010,9 @@ export default function App() {
         return;
       }
 
+      // Burn the free guest slot as soon as a photo is submitted (survives refresh / quit).
+      if (guestScan) recordGuestScan();
+
       setTrainingFocus(focus);
       if (examRequested && hasFeature('exam')) {
         setExamMode(true);
@@ -1111,9 +1114,11 @@ export default function App() {
         const mathOpts = isFormulaScan ? { mathSheet: true } : undefined;
         const playable = coercePlayablePairs(allPairs, mathOpts);
         if (canOpenGamePath(playable, mathOpts)) {
-          // Guest trial still consumes AI envelope usage (same % bar after signup).
-          for (let s = 0; s < scanFiles.length; s += 1) recordScan();
-          if (guestScan) recordGuestScan();
+          // Guest trial scan is free: does NOT bill the AI envelope (0% after signup).
+          // Only logged-in scans increment usage. Guest slot was already burned at start.
+          if (!guestScan) {
+            for (let s = 0; s < scanFiles.length; s += 1) recordScan();
+          }
         }
         finished = true;
         setScanProgress(95);

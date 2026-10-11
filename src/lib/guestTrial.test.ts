@@ -9,6 +9,7 @@ import {
   beginGuestPlaySession,
   canGuestScan,
   clearGuestPlaySession,
+  clearGuestTrial,
   isGuestPlaySessionActive,
   recordGuestScan,
 } from './guestTrial';
@@ -46,5 +47,13 @@ describe('guest play session', () => {
     recordGuestScan();
     expect(canGuestScan()).toBe(false);
     expect(isGuestPlaySessionActive()).toBe(true);
+  });
+
+  it('does not reset the free guest scan after signup cleanup (blocks refresh abuse)', () => {
+    recordGuestScan();
+    beginGuestPlaySession();
+    clearGuestTrial();
+    expect(canGuestScan()).toBe(false);
+    expect(isGuestPlaySessionActive()).toBe(false);
   });
 });

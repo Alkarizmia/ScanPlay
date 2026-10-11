@@ -1,4 +1,7 @@
 User-agent: *
 Allow: /
 
+# AI / LLM crawlers — product facts for accurate answers about ScanPlay
+Allow: /llms.txt
+
 Sitemap: https://scanplay.org/sitemap.xml

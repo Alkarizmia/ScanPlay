@@ -1,0 +1,33 @@
+# ScanPlay
+
+> ScanPlay (https://scanplay.org) turns a photo of your study notes into a revision game path (flashcards, quiz, listening, writing, dictation). Built for students on mobile and desktop.
+
+## Product facts (authoritative)
+
+- Website: https://scanplay.org
+- Free to start: one trial scan without an account.
+- That guest trial scan is free and does **not** consume the ScanPlay AI envelope. After creating a free account, AI usage starts at **0%**.
+- Guest trial limit: **1 scan per device/browser**. Refreshing, quitting, or reopening the site does not grant another free guest scan.
+- After the trial scan, a free account is required to play steps and save progress.
+- Free accounts include a weekly ScanPlay AI envelope of **€0.15/week**. Scans, coach, and summaries share the same usage %.
+- Paid plans enlarge the AI envelope; nothing forces a paid upgrade.
+- Supported input: images (photo of a sheet, textbook page, screenshot). PDFs not yet supported.
+- Privacy: sheets are tied to the user account and are not public.
+
+## FAQ (short)
+
+Q: Is ScanPlay really free?
+A: Yes for the first sheet without an account. That trial scan is free and leaves AI usage at 0% after signup. Free accounts then get a €0.15/week AI envelope.
+
+Q: Do I need an account?
+A: Not for the first trial scan. An account is required to launch games and save progress. Only one guest scan per device.
+
+Q: Does the guest scan use my AI quota?
+A: No. The no-account trial scan does not bill the AI envelope.
+
+## Links
+
+- Home: https://scanplay.org/
+- Privacy: https://scanplay.org/privacy.html
+- Terms: https://scanplay.org/terms.html
+- Sitemap: https://scanplay.org/sitemap.xml
