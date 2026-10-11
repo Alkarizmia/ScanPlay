@@ -32,7 +32,7 @@ export async function pullPublicProfileFromCloud(): Promise<void> {
 
   const { data } = await supabase
     .from('scanplay_public_profiles')
-    .select('display_name, avatar_id, avatar_url, updated_at')
+    .select('display_name, avatar_id, avatar_url, banner_theme, updated_at')
     .eq('user_id', userId)
     .maybeSingle();
 
@@ -42,6 +42,7 @@ export async function pullPublicProfileFromCloud(): Promise<void> {
     displayName: data.display_name as string | null,
     avatarId: data.avatar_id as string | null,
     avatarUrl: data.avatar_url as string | null,
+    bannerTheme: (data as { banner_theme?: string | null }).banner_theme ?? null,
     updatedAt: data.updated_at as string | null,
   });
 }
@@ -56,6 +57,11 @@ export async function syncPublicProfileWithDisplayName(displayName: string): Pro
   const deckCount = getHistory().length;
   const trimmed = displayName.trim().slice(0, 24);
 
+  const bannerTheme =
+    typeof profile.bannerTheme === 'string' && profile.bannerTheme.trim()
+      ? profile.bannerTheme.trim()
+      : 'green';
+
   const { error } = await supabase.rpc('sync_public_profile_stats', {
     p_display_name: trimmed,
     p_avatar_id: profile.avatar,
@@ -64,9 +70,29 @@ export async function syncPublicProfileWithDisplayName(displayName: string): Pro
     p_deck_count: deckCount,
     p_plan: getPlan(),
     p_avatar_url: profileAvatarUrl(profile),
+    p_banner_theme: bannerTheme,
   });
 
-  if (error) return mapSyncError(error.message);
+  if (error) {
+    // Fallback if RPC not yet patched with p_banner_theme
+    const retry = await supabase.rpc('sync_public_profile_stats', {
+      p_display_name: trimmed,
+      p_avatar_id: profile.avatar,
+      p_xp: xp,
+      p_streak: streak,
+      p_deck_count: deckCount,
+      p_plan: getPlan(),
+      p_avatar_url: profileAvatarUrl(profile),
+    });
+    if (retry.error) return mapSyncError(retry.error.message);
+    const userId = getUserId();
+    if (userId) {
+      await supabase
+        .from('scanplay_public_profiles')
+        .update({ banner_theme: bannerTheme })
+        .eq('user_id', userId);
+    }
+  }
 
   const { syncPublicAchievements } = await import('./publicAchievements');
   await syncPublicAchievements();

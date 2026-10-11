@@ -1,5 +1,9 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { fetchUserPlan } from '../_shared/planQuotas.ts';
+import {
+  fetchUserPlan,
+  fetchUserStatsData,
+  isAiSaverFromStats,
+} from '../_shared/planQuotas.ts';
 import { isReasoningVisionModel, resolveExerciseModel } from '../_shared/openaiModels.ts';
 import { TRANSLATE_EXERCISE_SYSTEM_PROMPT } from '../_shared/translateExercisePrompt.ts';
 
@@ -52,7 +56,12 @@ Deno.serve(async (req) => {
     }
 
     const plan = await fetchUserPlan(supabase, user.id);
-    const model = resolveExerciseModel(plan);
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const admin = serviceKey
+      ? createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
+      : null;
+    const statsData = admin ? await fetchUserStatsData(admin, user.id) : {};
+    const model = resolveExerciseModel(plan, { saver: isAiSaverFromStats(plan, statsData) });
     const reasoning = isReasoningVisionModel(model);
 
     const body = (await req.json()) as Body;

@@ -1,6 +1,7 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 import {
   assertCanSynthesize,
+  isAiSaverFromStats,
   fetchUserPlan,
   fetchUserStatsData,
   incrementSynthesisCount,
@@ -154,10 +155,10 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: resolveSynthesisModel(),
+        model: resolveSynthesisModel({ saver: isAiSaverFromStats(plan, statsData) }),
         response_format: { type: 'json_object' },
-        temperature: 0.35,
-        max_tokens: 3500,
+        temperature: isAiSaverFromStats(plan, statsData) ? 0.25 : 0.35,
+        max_tokens: isAiSaverFromStats(plan, statsData) ? 2200 : 3500,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'user', content: userContent },

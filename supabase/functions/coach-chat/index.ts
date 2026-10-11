@@ -1,5 +1,12 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-import { fetchUserPlan } from '../_shared/planQuotas.ts';
+import {
+  assertCanUseAiBudget,
+  fetchUserPlan,
+  fetchUserStatsData,
+  getAiUsageRatioFromStats,
+  isAiSaverFromStats,
+  planTokenEnvelopeEur,
+} from '../_shared/planQuotas.ts';
 import { resolveCoachModel } from '../_shared/openaiModels.ts';
 import {
   asksLockedHistory,
@@ -25,17 +32,20 @@ Tu réponds à LA question, selon LA situation. Tu n'inventes pas de fiche.
 
 Produit ScanPlay (à connaître) :
 - Scan : photo d'un cours → fiches / jeux dans l'Historique.
+- **IA ScanPlay** : une seule barre d'usage (en % dans Paramètres). Free ≈ 0,15 €/semaine ; Plus/Pro/Max = 65 % du prix payé / mois. Scans, coach et synthèses partagent cette barre. Vers 90 % la qualité baisse un peu ; à 100 % les actions IA attendent le prochain cycle. Ce n'est PAS un quota de fiches ni de messages/jour.
 - **Univers** (aussi écrit Univer / Universe / Pix Univers) : store de cours prêts créés par Pix, SANS scanner. Accès : Accueil → Importer / Avec Pix → Univers. Première offre : **Apprendre l'anglais** (A1–C2), parcours selon l'objectif (voyage, travail…). Progression privée (pas dans l'Historique). **3 cœurs** : une faute système (quiz/type) enlève 1 cœur ; regen ~8 h ; refill possible dans la Boutique (~70 pièces). Les flashcards ne retirent pas de cœur (auto-éval). Ce n'est PAS "université".
 - Boutique : pièces, potions, boucliers, cœurs Univers, etc.
 
 Situations :
 - Compte neuf (pseudo du type ID-1234, 0 fiche, peu de succès, XP bas, ou il dit qu'il est nouveau) : accueille-le, explique en 3 phrases : photo d'un cours, ScanPlay en fait un jeu, tu l'aides ensuite. Pousse-le vers le bouton Accueil pour scanner. Ne fais pas un quiz. Tu peux aussi mentionner Univers s'il veut apprendre l'anglais sans scanner.
 - 0 fiche, mais il n'est pas forcément nouveau : dis clairement qu'il n'a encore rien scanné, et que le plus utile c'est de prendre une photo de sa fiche. Tu peux quand même l'encourager ou expliquer l'app / Univers.
-- Il a des fiches autorisées : tu peux quiz / réviser / encourager à partir de CES fiches seulement.
+- Il a des fiches en mémoire coach : tu peux quiz / réviser / encourager à partir de CES fiches seulement (fenêtre de contexte, PAS la limite IA).
+- Il demande sa limite IA / enveloppe / % (ex. "j'ai utilisé 4 % ?", "en %", "limite AI") : réponds avec UNIQUEMENT le champ "Usage IA ScanPlay" du contexte. Si le contexte dit 4 %, dis 4 %. N'invente JAMAIS un % avec fiches_autorisées / total_fiches (ex. 7/19 ≈ 37 % est FAUX). Corrige-toi si un ancien message s'est trompé. Oriente vers Paramètres.
 - Il parle d'Univers / anglais Pix / cœurs Univers : explique correctement (pas université) et propose le raccourci si utile.
 - Vrai problème technique, paiement, compte bloqué, bug : donne support@scanplay.org. Tu ne fais pas le SAV toi-même.
 - INTERDIT : email, téléphone, adresse ou données perso d'un AUTRE élève.
-- INTERDIT : une fiche hors liste autorisée (plan gratuit = 2 plus récentes seulement).
+- INTERDIT : inventer une limite scans/jour, messages coach/jour, synthèses/mois ou mots/scan — ces plafonds n'existent plus.
+- INTERDIT : une fiche hors liste en mémoire coach.
 
 Style :
 - Langue de locale, ton chaleureux, phrases courtes.
@@ -73,6 +83,9 @@ interface CoachBody {
     defaultName?: boolean;
     displayName?: string;
     achievements?: string[];
+    plan?: string;
+    aiUsagePercent?: number;
+    aiEnvelopeLabel?: string;
     allowedSheets?: { title: string; pairs: { term: string; definition: string }[] }[];
     lockedTitles?: string[];
     yesterdaySheets?: { title: string; pairs: { term: string; definition: string }[] }[];
@@ -119,9 +132,16 @@ Deno.serve(async (req) => {
     const locale = trimText(body.locale, 8) || 'fr';
     const plan = (await fetchUserPlan(supabase, user.id)) as CoachPlan;
     const caps = COACH_LIMITS[plan] ?? COACH_LIMITS.free;
-    if (plan === 'free' || caps.chatPerDay <= 0) {
-      return json(403, { error: 'plan_required' });
+    const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    const admin = serviceKey
+      ? createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } })
+      : null;
+    const statsData = admin ? await fetchUserStatsData(admin, user.id) : {};
+    const aiBudgetError = assertCanUseAiBudget(plan, statsData);
+    if (aiBudgetError) {
+      return json(429, { error: 'ai_budget_exhausted' });
     }
+    const saver = isAiSaverFromStats(plan, statsData);
     const rawMessage = typeof body.message === 'string' ? body.message.replace(/\s+/g, ' ').trim() : '';
 
     if (rawMessage.length < 2) return json(400, { error: 'empty_message' });
@@ -171,9 +191,17 @@ Deno.serve(async (req) => {
     const isNewAccountEarly = Boolean(
       body.context?.isNewAccount || (sheetCount === 0 && (defaultName || achievementCountEarly <= 1 || xpEarly < 50)),
     );
+    const aiUsagePercent = Math.max(
+      0,
+      Math.min(100, Math.round(Number(body.context?.aiUsagePercent ?? getAiUsageRatioFromStats(plan, statsData) * 100))),
+    );
+    const aiEnvelopeLabel = trimText(body.context?.aiEnvelopeLabel, 40);
     const canned = localCoachReply(rawMessage, locale, {
       sheetCount,
       isNewAccount: isNewAccountEarly,
+      aiUsagePercent,
+      aiEnvelopeLabel: aiEnvelopeLabel || undefined,
+      plan,
     });
     if (canned) {
       const { data: q } = await supabase.rpc('get_coach_chat_quota');
@@ -229,16 +257,18 @@ Deno.serve(async (req) => {
         content: trimText(row.content, 800),
       }));
 
+    const envelopeEur = planTokenEnvelopeEur(plan);
     const contextBlock = [
       `Locale: ${locale}`,
       `Plan: ${plan}`,
+      `Usage IA ScanPlay: ${aiUsagePercent}% (enveloppe ~${envelopeEur.toFixed(2)} € — ${plan === 'free' ? 'semaine' : 'mois'}). RÉPONSE OBLIGATOIRE si on parle de limite/% : ${aiUsagePercent}%. Interdit d'inventer 36% ou tout ratio fiches/total.`,
       `Compte neuf: ${isNewAccount ? 'oui' : 'non'}`,
       `Pseudo auto ID-xxxx: ${defaultName ? 'oui' : 'non'}`,
       displayName ? `Pseudo (le sien seulement): ${displayName}` : '',
-      `Nombre de fiches: ${sheetCount}`,
+      `Nombre de fiches (historique total, PAS la limite IA): ${sheetCount}`,
       `XP: ${xp}`,
       `Succès débloqués: ${achievementCount}`,
-      `Fiches autorisées (les ${caps.historyWindow} plus récentes seulement):`,
+      `Fiches en mémoire coach (fenêtre contexte ${caps.historyWindow}, PAS quota IA):`,
       sheets.length
         ? sheets
             .map(
@@ -247,7 +277,9 @@ Deno.serve(async (req) => {
             )
             .join('\n')
         : '(aucune fiche — parle quand même, oriente vers un scan depuis Accueil, pas de quiz)',
-      lockedTitles.length ? `Fiches hors quota, INTERDIT d'en parler: ${lockedTitles.join(', ')}` : '',
+      lockedTitles.length
+        ? `Fiches hors mémoire coach (pas de quiz dessus, ce n'est PAS un plafond IA): ${lockedTitles.join(', ')}`
+        : '',
       `Série (flamme): ${streak} jour(s)`,
       `Niveau: ${level}`,
       `Succès récents: ${achievements.join(', ') || 'aucun'}`,
@@ -262,9 +294,9 @@ Deno.serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: resolveCoachModel(plan),
-        temperature: 0.4,
-        max_tokens: 500,
+        model: resolveCoachModel(plan, { saver }),
+        temperature: saver ? 0.3 : 0.4,
+        max_tokens: saver ? 320 : 500,
         messages: [
           { role: 'system', content: SYSTEM_PROMPT },
           { role: 'system', content: contextBlock },
@@ -289,16 +321,12 @@ Deno.serve(async (req) => {
 
     // Persistence is done by the client (user + assistant) so canned replies
     // and edge replies share the same path and survive leaving the Coach tab.
-    if (conversationId) {
-      const serviceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
-      if (serviceKey) {
-        const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
-        await admin
-          .from('scanplay_coach_conversations')
-          .update({ updated_at: new Date().toISOString() })
-          .eq('id', conversationId)
-          .eq('user_id', user.id);
-      }
+    if (conversationId && admin) {
+      await admin
+        .from('scanplay_coach_conversations')
+        .update({ updated_at: new Date().toISOString() })
+        .eq('id', conversationId)
+        .eq('user_id', user.id);
     }
 
     return json(200, {

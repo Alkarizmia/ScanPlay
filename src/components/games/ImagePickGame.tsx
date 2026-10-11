@@ -10,11 +10,14 @@ import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
+import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import { ChoiceCard, type ChoiceState } from './ChoiceCard';
+import { IdleHelpChip } from './IdleHelpChip';
 
 interface ImagePickGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
   locale: Locale;
+  examMode?: boolean;
   deckId?: string | null;
   stepIndex?: number | null;
   pairDirection?: PairDirection;
@@ -25,6 +28,7 @@ interface ImagePickGameProps extends EmbeddedGameProps {
 export function ImagePickGame({
   pairs,
   locale,
+  examMode,
   deckId,
   stepIndex,
   pairDirection = 'auto',
@@ -103,8 +107,15 @@ export function ImagePickGame({
     [index, onComplete, rounds.length, total],
   );
 
+  const idleEnabled = !examMode && picked == null;
+  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+    enabled: idleEnabled,
+    resetKey: `${index}-${round?.targetId ?? ''}`,
+  });
+
   const pick = (artId: string) => {
     if (!round || picked) return;
+    bumpActivity();
     setPicked(artId);
     const ok = artId === round.targetId;
     const nextScore = score + (ok ? 1 : 0);
@@ -153,6 +164,9 @@ export function ImagePickGame({
       <div className="game-body imagepick-body">
         <p className="game-instruction">{t('imagePickInstruction', locale)}</p>
         <h2 className="game-question imagepick-prompt">{round.prompt}</h2>
+        {idleEnabled && (
+          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+        )}
         <div className={`imagepick-grid${artsReady ? ' is-ready' : ''}`} aria-busy={!artsReady}>
           {artsReady
             ? round.options.map((art) => (
@@ -162,6 +176,7 @@ export function ImagePickGame({
                   className="imagepick-card"
                   state={optionState(art.id)}
                   disabled={picked != null}
+                  nudge={picked == null && idleHelped && art.id === round.targetId}
                   onSelect={() => pick(art.id)}
                   ariaLabel={art.id}
                 >

@@ -108,7 +108,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         let fields = subscriptionToProfileFields(subscription, customerId);
         const sessionPlan = session.metadata?.plan;
-        if (fields.plan === 'free' && (sessionPlan === 'plus' || sessionPlan === 'pro')) {
+        if (
+          fields.plan === 'free' &&
+          (sessionPlan === 'plus' || sessionPlan === 'pro' || sessionPlan === 'max')
+        ) {
           fields = {
             ...fields,
             plan: sessionPlan,

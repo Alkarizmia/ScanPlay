@@ -2,6 +2,7 @@ import type { BillingCycle, Locale, Plan, UpgradeReason } from '../types';
 import { isLoggedIn } from './auth';
 import { isLikelyImageFile } from './droppedFiles';
 import { canGuestScan } from './guestTrial';
+import { canSpendAiBudget } from './planUsage';
 import { getExtraScanAllowance } from './wallet';
 
 const PLAN_KEY = 'scanplay-plan';
@@ -39,21 +40,75 @@ function notifyPlanChanged(): void {
 }
 
 export const PLAN_PRICES = {
-  plus: { monthly: 12.99, annual: 129 },
-  pro: { monthly: 19.99, annual: 199 },
+  plus: { monthly: 4.99, annual: 49 },
+  pro: { monthly: 9.99, annual: 99 },
+  max: { monthly: 14.99, annual: 149 },
 } as const;
 
+/**
+ * Soft technical ceilings only — subscription hard caps (scans/day, synth, coach, chars)
+ * are removed. The real AI ceiling is the token envelope in planUsage (100% block, 90% saver).
+ * maxWords is a shared OCR safety cap, identical for every plan.
+ */
+export const SCAN_SOFT_MAX_WORDS = 500;
+export const CHAT_SOFT_MAX_CHARS = 4000;
+
 export const PLAN_LIMITS = {
-  free: { scansPerDay: 2, maxWords: 25, historyMax: 7, historyReplay: 2, pathSteps: 10, synthesesPerMonth: 2, chatPerDay: 0, chatMaxChars: 150, chatHistoryWindow: 0 },
-  plus: { scansPerDay: 10, maxWords: 100, historyMax: Infinity, historyReplay: 4, pathSteps: 20, synthesesPerMonth: 15, chatPerDay: 15, chatMaxChars: 200, chatHistoryWindow: 4 },
-  pro: { scansPerDay: 15, maxWords: 250, historyMax: Infinity, historyReplay: 7, pathSteps: 30, synthesesPerMonth: 40, chatPerDay: 40, chatMaxChars: 250, chatHistoryWindow: 7 },
+  free: {
+    scansPerDay: Infinity,
+    maxWords: SCAN_SOFT_MAX_WORDS,
+    historyMax: 7,
+    historyReplay: 2,
+    pathSteps: 10,
+    synthesesPerMonth: Infinity,
+    chatPerDay: Infinity,
+    chatMaxChars: CHAT_SOFT_MAX_CHARS,
+    chatHistoryWindow: 7,
+    universeHearts: 3,
+  },
+  plus: {
+    scansPerDay: Infinity,
+    maxWords: SCAN_SOFT_MAX_WORDS,
+    historyMax: Infinity,
+    historyReplay: 4,
+    pathSteps: 20,
+    synthesesPerMonth: Infinity,
+    chatPerDay: Infinity,
+    chatMaxChars: CHAT_SOFT_MAX_CHARS,
+    chatHistoryWindow: 15,
+    universeHearts: 5,
+  },
+  pro: {
+    scansPerDay: Infinity,
+    maxWords: SCAN_SOFT_MAX_WORDS,
+    historyMax: Infinity,
+    historyReplay: 7,
+    pathSteps: 30,
+    synthesesPerMonth: Infinity,
+    chatPerDay: Infinity,
+    chatMaxChars: CHAT_SOFT_MAX_CHARS,
+    chatHistoryWindow: 25,
+    universeHearts: Infinity,
+  },
+  max: {
+    scansPerDay: Infinity,
+    maxWords: SCAN_SOFT_MAX_WORDS,
+    historyMax: Infinity,
+    historyReplay: 12,
+    pathSteps: 40,
+    synthesesPerMonth: Infinity,
+    chatPerDay: Infinity,
+    chatMaxChars: CHAT_SOFT_MAX_CHARS,
+    chatHistoryWindow: 40,
+    universeHearts: Infinity,
+  },
 } as const;
 
 export const DEFAULT_PATH_STEP_COUNT = PLAN_LIMITS.free.pathSteps;
 
 function readStoredPlan(): Plan {
   const stored = localStorage.getItem(PLAN_KEY);
-  if (stored === 'plus' || stored === 'pro' || stored === 'free') return stored;
+  if (stored === 'plus' || stored === 'pro' || stored === 'max' || stored === 'free') return stored;
   return 'free';
 }
 
@@ -69,6 +124,10 @@ function planBelongsToSession(): boolean {
 export function getPlan(): Plan {
   if (!planBelongsToSession()) return 'free';
   return readStoredPlan();
+}
+
+export function isPaidPlan(plan: Plan): boolean {
+  return plan === 'plus' || plan === 'pro' || plan === 'max';
 }
 
 export function setPlan(plan: Plan): void {
@@ -136,26 +195,24 @@ export function getScansRemaining(): number | typeof Infinity {
   if (!isLoggedIn()) {
     return canGuestScan() ? 1 : 0;
   }
-  const limit = getDailyScanLimit();
-  const extra = getExtraScanAllowance();
-  return Math.max(0, limit + extra - getScansToday());
+  // Daily scan caps removed — AI envelope is the only ceiling.
+  void getExtraScanAllowance;
+  return canSpendAiBudget() ? Infinity : 0;
 }
 
-/** Used / daily scan quota for the current plan. */
+/** @deprecated Daily scan quotas removed; kept for older UI call sites. */
 export function formatScansQuota(): string {
   if (!isLoggedIn()) {
     return canGuestScan() ? '0/1' : '1/1';
   }
-  const limit = getDailyScanLimit();
-  const used = Math.min(getScansToday(), limit);
-  return `${used}/${limit}`;
+  return '∞';
 }
 
 export function canScan(): boolean {
   if (!isLoggedIn()) {
     return canGuestScan();
   }
-  return getScansToday() < getDailyScanLimit() + getExtraScanAllowance();
+  return canSpendAiBudget();
 }
 
 export function recordScan(): void {
@@ -180,12 +237,11 @@ export function clampImagesForImport(files: File[]): { files: File[]; dropped: n
 }
 
 export function truncatePairs<T>(pairs: T[]): T[] {
-  const max = PLAN_LIMITS[getPlan()].maxWords;
-  return pairs.slice(0, max);
+  return pairs.slice(0, SCAN_SOFT_MAX_WORDS);
 }
 
 export function getMaxWords(): number {
-  return PLAN_LIMITS[getPlan()].maxWords;
+  return SCAN_SOFT_MAX_WORDS;
 }
 
 export function getHistoryMax(): number {
@@ -203,29 +259,29 @@ export function hasFeature(
   plan?: Plan,
 ): boolean {
   const p = plan ?? getPlan();
-  if (feature === 'synthesis') return PLAN_LIMITS[p].synthesesPerMonth > 0;
-  if (feature === 'share' || feature === 'exam') return p === 'pro';
+  if (feature === 'synthesis') return true;
+  if (feature === 'share' || feature === 'exam') return p === 'pro' || p === 'max';
   if (feature === 'spaced' || feature === 'export' || feature === 'stats' || feature === 'multiplayer') {
     return p !== 'free';
   }
   return false;
 }
 
+export function getUniverseHeartCap(plan?: Plan): number {
+  return PLAN_LIMITS[plan ?? getPlan()].universeHearts;
+}
+
 export function getUpgradeReasonForScan(): UpgradeReason | null {
   if (!isLoggedIn()) {
     return canGuestScan() ? null : 'scans';
   }
-  if (!canScan()) return 'scans';
+  if (!canScan()) return 'aiBudget';
   return null;
 }
 
-/** How much Plus/Pro multiply Free quotas (shown on the pricing cards). */
-export function planGapVsFree(plan: Plan): { scanFactor: number; wordFactor: number } | null {
-  if (plan === 'free') return null;
-  return {
-    scanFactor: PLAN_LIMITS[plan].scansPerDay / PLAN_LIMITS.free.scansPerDay,
-    wordFactor: PLAN_LIMITS[plan].maxWords / PLAN_LIMITS.free.maxWords,
-  };
+/** @deprecated Hard scan/word multipliers removed — AI envelope is the differentiator. */
+export function planGapVsFree(_plan: Plan): { scanFactor: number; wordFactor: number } | null {
+  return null;
 }
 
 export function formatGapFactor(n: number, locale: Locale): string {
@@ -236,7 +292,7 @@ export function formatGapFactor(n: number, locale: Locale): string {
 }
 
 export function planLabel(plan: Plan): string {
-  const labels: Record<Plan, string> = { free: 'ScanPlay', plus: 'Plus', pro: 'Pro' };
+  const labels: Record<Plan, string> = { free: 'ScanPlay', plus: 'Plus', pro: 'Pro', max: 'Max' };
   return labels[plan];
 }
 

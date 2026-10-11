@@ -15,10 +15,14 @@ import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
 import type { Locale } from '../types';
 import { AchievementGlyph } from './icons/AchievementGlyph';
+import { AchievementShieldFrame } from './icons/AchievementShieldFrame';
+import { NavIcon } from './icons/NavIcon';
 import { StreakFlame } from './icons/StreakFlame';
 import { PlanBadge } from './PlanBadge';
 import { ProfileEditSheet } from './ProfileEditSheet';
+import { VerifiedBadge } from './icons/VerifiedBadge';
 import { usePlan } from '../hooks/usePlan';
+import { getProfileBanner, hasVerifiedBadge } from '../lib/profileBanner';
 
 type StatPanel = 'level' | 'streak' | null;
 
@@ -29,6 +33,7 @@ interface ProfileSectionProps {
   onUpgrade: () => void;
   onOpenFriends?: () => void;
   onOpenAchievements?: () => void;
+  onOpenSettings?: () => void;
 }
 
 const DEFAULT_AVATAR_SRC = getMascotAssetUrl('happy') ?? '/mascot/emotions/happy.webp';
@@ -40,12 +45,15 @@ export function ProfileSection({
   onUpgrade,
   onOpenFriends,
   onOpenAchievements,
+  onOpenSettings,
 }: ProfileSectionProps) {
   const profile = getProfile();
   const [friendCount, setFriendCount] = useState(0);
   const [editOpen, setEditOpen] = useState(false);
   const [statPanel, setStatPanel] = useState<StatPanel>(null);
   const plan = usePlan(refreshKey);
+  const banner = getProfileBanner(plan);
+  const verified = hasVerifiedBadge(plan);
 
   useEffect(() => {
     if (shouldShowPseudoOnboarding()) {
@@ -94,32 +102,48 @@ export function ProfileSection({
     <section className="sp-profile">
       <header className="sp-profile-top">
         <h2 className="sp-profile-name">{profile.displayName}</h2>
-        <button
-          type="button"
-          className="sp-profile-edit-btn"
-          onClick={openEdit}
-          aria-label={t('profileEditTitle', locale)}
-        >
-          <svg viewBox="0 0 24 24" className="sp-profile-edit-icon" aria-hidden="true">
-            <path
-              d="M12 20h9"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-            <path
-              d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </button>
+        <div className="sp-profile-top-actions">
+          {onOpenSettings && (
+            <button
+              type="button"
+              className="sp-profile-edit-btn"
+              onClick={() => {
+                playSound('tap');
+                onOpenSettings();
+              }}
+              aria-label={t('settings', locale)}
+              title={t('settings', locale)}
+            >
+              <NavIcon tab="settings" className="sp-profile-edit-icon" />
+            </button>
+          )}
+          <button
+            type="button"
+            className="sp-profile-edit-btn"
+            onClick={openEdit}
+            aria-label={t('profileEditTitle', locale)}
+          >
+            <svg viewBox="0 0 24 24" className="sp-profile-edit-icon" aria-hidden="true">
+              <path
+                d="M12 20h9"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              <path
+                d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </header>
 
-      <div className="sp-profile-hero" aria-hidden="true">
+      <div className={`sp-profile-hero sp-profile-hero--${banner}`} aria-hidden="true">
         <div className="sp-profile-hero-glow" />
         <button type="button" className="sp-profile-avatar-btn" onClick={openEdit}>
           <img
@@ -132,7 +156,14 @@ export function ProfileSection({
 
       <div className="sp-profile-meta">
         <p className="sp-profile-handle">
-          @{profile.displayName.replace(/\s+/g, '').slice(0, 18)} · {t('profileSince', locale).replace('{year}', String(sinceYear))}
+          <span className="sp-profile-handle-name">
+            @{profile.displayName.replace(/\s+/g, '').slice(0, 18)}
+            {verified && (
+              <VerifiedBadge size={15} className="sp-profile-verified" title={t('verifiedMax', locale)} />
+            )}
+          </span>
+          {' · '}
+          {t('profileSince', locale).replace('{year}', String(sinceYear))}
         </p>
         <div className="sp-profile-plan">
           <PlanBadge plan={plan} locale={locale} />
@@ -274,7 +305,9 @@ export function ProfileSection({
                 >
                   {isNew && <span className="sp-ach-new">{t('profileAchNew', locale)}</span>}
                   <span className="sp-ach-shield">
-                    <AchievementGlyph achievement={ach} size={56} locked={!unlocked} />
+                    <AchievementShieldFrame locked={!unlocked} size={72}>
+                      <AchievementGlyph achievement={ach} size={40} locked={!unlocked} />
+                    </AchievementShieldFrame>
                   </span>
                   <span className="sp-ach-caption">{t(ach.nameKey, locale)}</span>
                 </button>
@@ -290,6 +323,7 @@ export function ProfileSection({
         profile={profile}
         onClose={() => setEditOpen(false)}
         onRefresh={onRefresh}
+        onUpgrade={onUpgrade}
       />
     </section>
   );

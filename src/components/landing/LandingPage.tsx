@@ -3,19 +3,24 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { LogoWordmark } from '../Logo';
 import { ScanPlayChest } from '../ScanPlayChest';
 import {
+  AiUsageBarMock,
   CameraIcon,
   FlameIcon,
   LevelRing,
   PathPhoneMock,
   PathRanksMock,
+  PixIntroMock,
+  ProfileBannerMock,
   QuizPhoneMock,
   ProgressCardMock,
   SheetMock,
   SparkIcon,
   TrophyIcon,
+  UniverseMock,
 } from './LandingVisuals';
 import { LanguageMenu } from './LanguageMenu';
 import { StepsSwipeDeck } from './StepsSwipeDeck';
+import { BillingCycleToggle } from '../BillingCycleToggle';
 import { useOutOfView, useReveal } from './useReveal';
 import { trackEvent } from '../../lib/analytics';
 import {
@@ -25,8 +30,15 @@ import {
   type LandingCopyKey,
   type LandingLang,
 } from '../../lib/landingI18n';
+import {
+  PLAN_PRICES,
+  formatPrice,
+  planAnnualSavingsPercent,
+  planMonthlyEquivalent,
+  planPrice,
+} from '../../lib/planLimits';
 import type { DeviceProfile } from '../../lib/device';
-import type { Locale } from '../../types';
+import type { BillingCycle, Locale, Plan } from '../../types';
 
 interface LandingPageProps {
   locale: Locale;
@@ -41,6 +53,15 @@ interface Testimonial {
   author: string;
   context: string;
   rating: number;
+  avatarUrl: string;
+}
+
+function proofAvatarUrl(seed: string): string {
+  const params = new URLSearchParams({
+    seed,
+    backgroundColor: 'b6e3f4,c0aede,d1f4d1,ffd5dc,ffdfbf',
+  });
+  return `https://api.dicebear.com/9.x/notionists/svg?${params.toString()}`;
 }
 
 const PROOF_ITEMS: {
@@ -146,21 +167,28 @@ function Section({
   );
 }
 
+const LANDING_PLANS: Plan[] = ['free', 'plus', 'pro', 'max'];
+
 export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: LandingPageProps) {
   const isDesktop = device.kind === 'desktop';
   const [lang, setLang] = useState<LandingLang>(initialLandingLang);
   const locale: Locale = lang;
+  const [billingCycle, setBillingCycle] = useState<BillingCycle>('monthly');
   const { ref: heroCtaRef, outOfView: heroCtaHidden } = useOutOfView<HTMLDivElement>();
   const proofMarqueeRef = useRef<HTMLDivElement>(null);
   const [proofPaused, setProofPaused] = useState(false);
 
-  const testimonials: Testimonial[] = PROOF_ITEMS.map((item) => ({
-    id: item.id,
-    quote: lt(item.quote, lang),
-    author: lt(item.author, lang),
-    context: lt(item.role, lang),
-    rating: 5,
-  }));
+  const testimonials: Testimonial[] = PROOF_ITEMS.map((item) => {
+    const author = lt(item.author, lang);
+    return {
+      id: item.id,
+      quote: lt(item.quote, lang),
+      author,
+      context: lt(item.role, lang),
+      rating: 5,
+      avatarUrl: proofAvatarUrl(`${item.id}-${author}`),
+    };
+  });
 
   // The guest app shell locks html/body scrolling for the in-app screens.
   // The landing needs the document to scroll, so flag it only while mounted.
@@ -227,6 +255,8 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
             <nav className="lp-nav" aria-label={lt('lpNavLabel', locale)}>
               <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
               <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#dans-lapp">{lt('lpNavMore', locale)}</a>
+              <a href="#tarifs">{lt('lpNavPlans', locale)}</a>
               <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </nav>
           )}
@@ -373,9 +403,15 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                       <ProofStars rating={item.rating} />
                       <blockquote>{item.quote}</blockquote>
                       <p className="lp-proof-author">
-                        <span className="lp-proof-avatar" aria-hidden="true">
-                          {item.author.slice(0, 1).toUpperCase()}
-                        </span>
+                        <img
+                          className="lp-proof-avatar"
+                          src={item.avatarUrl}
+                          alt=""
+                          width={40}
+                          height={40}
+                          loading="lazy"
+                          decoding="async"
+                        />
                         <span>
                           <strong>{item.author}</strong>
                           <span>{item.context}</span>
@@ -409,11 +445,21 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <li>
                 <h3>{lt('lpProduct2Title', locale)}</h3>
                 <p>{lt('lpProduct2Body', locale)}</p>
-                <ul className="lp-tags">
-                  {GAME_TAGS.map((key) => (
-                    <li key={key}>{lt(key, locale)}</li>
-                  ))}
-                </ul>
+                <div
+                  className="lp-tags-marquee"
+                  style={{ ['--lp-tags-n' as string]: String(GAME_TAGS.length) }}
+                  aria-label={lt('lpProduct2Title', locale)}
+                >
+                  <div className="lp-tags-track">
+                    {[0, 1].map((copy) => (
+                      <ul key={copy} className="lp-tags-strip" aria-hidden={copy > 0}>
+                        {GAME_TAGS.map((key) => (
+                          <li key={`${key}-${copy}`}>{lt(key, locale)}</li>
+                        ))}
+                      </ul>
+                    ))}
+                  </div>
+                </div>
               </li>
               <li>
                 <h3>{lt('lpProduct3Title', locale)}</h3>
@@ -495,6 +541,123 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
           </div>
         </Section>
 
+        {/* ---------- PIX ---------- */}
+        <Section id="pix" className="lp-section--pix" labelledBy="lp-pix-title">
+          <div className="lp-pix">
+            <PixIntroMock />
+            <div className="lp-pix-copy">
+              <p className="lp-kicker lp-kicker--accent">{lt('lpPixKicker', locale)}</p>
+              <h2 id="lp-pix-title">{lt('lpPixTitle', locale)}</h2>
+              <p>{lt('lpPixBody', locale)}</p>
+            </div>
+          </div>
+        </Section>
+
+        {/* ---------- MORE IN THE APP ---------- */}
+        <Section id="dans-lapp" className="lp-section--more" labelledBy="lp-more-title">
+          <header className="lp-section-head">
+            <h2 id="lp-more-title">{lt('lpMoreTitle', locale)}</h2>
+            <p>{lt('lpMoreSub', locale)}</p>
+          </header>
+          <ul className="lp-more-grid">
+            <li className="lp-more-card">
+              <AiUsageBarMock label={lt('lpMoreAiLabel', locale)} percent={42} />
+              <h3>{lt('lpMoreAiTitle', locale)}</h3>
+              <p>{lt('lpMoreAiBody', locale)}</p>
+            </li>
+            <li className="lp-more-card">
+              <UniverseMock
+                heartsLabel={lt('lpMoreUniverseHearts', locale)}
+                courseLabel={lt('lpMoreUniverseCourse', locale)}
+              />
+              <h3>{lt('lpMoreUniverseTitle', locale)}</h3>
+              <p>{lt('lpMoreUniverseBody', locale)}</p>
+            </li>
+            <li className="lp-more-card">
+              <ProfileBannerMock handle={lt('lpMoreProfileHandle', locale)} />
+              <h3>{lt('lpMoreProfileTitle', locale)}</h3>
+              <p>{lt('lpMoreProfileBody', locale)}</p>
+            </li>
+          </ul>
+        </Section>
+
+        {/* ---------- PLANS ---------- */}
+        <Section id="tarifs" className="lp-section--plans" labelledBy="lp-plans-title">
+          <header className="lp-section-head lp-section-head--center">
+            <h2 id="lp-plans-title">{lt('lpPlansTitle', locale)}</h2>
+            <p>{lt('lpPlansSub', locale)}</p>
+            <div className="lp-plans-toggle">
+              <BillingCycleToggle
+                locale={locale}
+                value={billingCycle}
+                onChange={setBillingCycle}
+                showSavings
+              />
+            </div>
+          </header>
+          <ul className="lp-plans-grid">
+            {LANDING_PLANS.map((plan) => {
+              const isFree = plan === 'free';
+              const perkKey =
+                plan === 'free'
+                  ? 'lpPlanFreePerk'
+                  : plan === 'plus'
+                    ? 'lpPlanPlusPerk'
+                    : plan === 'pro'
+                      ? 'lpPlanProPerk'
+                      : 'lpPlanMaxPerk';
+              const annual = !isFree && billingCycle === 'annual';
+              const monthlyEq = !isFree ? planMonthlyEquivalent(plan) : null;
+              const yearPrice = !isFree ? formatPrice(PLAN_PRICES[plan].annual) : null;
+              const mainPrice = isFree
+                ? lt('lpPlanFreePrice', locale)
+                : annual
+                  ? (monthlyEq ?? planPrice(plan, 'monthly'))
+                  : planPrice(plan, 'monthly');
+              const name =
+                plan === 'free'
+                  ? lt('lpPlanFreeName', locale)
+                  : plan === 'plus'
+                    ? 'Plus'
+                    : plan === 'pro'
+                      ? 'Pro'
+                      : 'Max';
+              return (
+                <li key={plan} className={`lp-plan-card lp-plan-card--${plan}`}>
+                  <p className="lp-plan-name">{name}</p>
+                  <p className="lp-plan-price">
+                    <strong>{mainPrice}</strong>
+                    {!isFree && <span>{lt('lpPlanPerMonth', locale)}</span>}
+                  </p>
+                  {annual && yearPrice && (
+                    <p className="lp-plan-year">
+                      {lt('lpPlanBilledYear', locale).replace('{price}', yearPrice)}
+                    </p>
+                  )}
+                  {!isFree && !annual && yearPrice && (
+                    <p className="lp-plan-year lp-plan-year--soft">
+                      {lt('lpPlanBilledYear', locale).replace('{price}', yearPrice)} (−
+                      {planAnnualSavingsPercent(plan)}%)
+                    </p>
+                  )}
+                  <p className="lp-plan-perk">{lt(perkKey, locale)}</p>
+                  <button
+                    type="button"
+                    className={`lp-btn ${plan === 'pro' ? 'lp-btn--primary' : 'lp-btn--ghost'} lp-btn--sm lp-btn--block`}
+                    onClick={() => {
+                      trackEvent('clic_plan_landing', { plan, cycle: billingCycle });
+                      if (isFree) scan('plan_free');
+                      else login();
+                    }}
+                  >
+                    {lt(isFree ? 'lpPlanCtaFree' : 'lpPlanCtaPaid', locale)}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </Section>
+
         {/* ---------- FAQ ---------- */}
         <Section id="questions" className="lp-section--faq" labelledBy="lp-faq-title">
           <header className="lp-section-head">
@@ -560,6 +723,8 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
               <p className="lp-footer-nav-title">{lt('lpFooterProduct', locale)}</p>
               <a href="#comment-ca-marche">{lt('lpNavHow', locale)}</a>
               <a href="#le-produit">{lt('lpNavProduct', locale)}</a>
+              <a href="#dans-lapp">{lt('lpNavMore', locale)}</a>
+              <a href="#tarifs">{lt('lpNavPlans', locale)}</a>
               <a href="#questions">{lt('lpNavFaq', locale)}</a>
             </div>
             <div>

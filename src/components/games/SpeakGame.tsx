@@ -449,7 +449,18 @@ export function SpeakGame({
     );
   }
 
-  if (!current || !challenge) return null;
+  if (!current || !challenge) {
+    return (
+      <LessonGameShell embedded={embedded} locale={locale} onExit={onExit} progress={0} className="speak-game">
+        <div className="game-body speak-game-body">
+          <p className="speak-game-empty">{t('speakUnsupported', locale)}</p>
+          <button type="button" className="btn-secondary btn-lg" onClick={() => finish(0, { technical: true })}>
+            {t('speakSkipAll', locale)}
+          </button>
+        </div>
+      </LessonGameShell>
+    );
+  }
 
   const micBusy = recording || voicePhase === 'analyzing';
   const phaseLabel =

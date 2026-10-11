@@ -17,12 +17,14 @@ import {
 } from '../../lib/vocabulary';
 import { resolveSideLang } from '../../lib/speakLang';
 import { seededShuffle } from '../../lib/seededRandom';
+import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import type { Locale, SheetType, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
 import { ChoiceCard, type ChoiceState } from './ChoiceCard';
+import { IdleHelpChip } from './IdleHelpChip';
 
 interface QuizGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -31,6 +33,8 @@ interface QuizGameProps extends EmbeddedGameProps {
   deckId?: string | null;
   stepIndex?: number | null;
   sheetType?: SheetType;
+  /** `term` = answer in English (Universe). Default `definition` = classic scan decks. */
+  targetSide?: 'term' | 'definition';
   onAnswer?: (pair: WordPair, correct: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
@@ -54,6 +58,7 @@ export function QuizGame({
   deckId,
   stepIndex,
   sheetType = 'vocab',
+  targetSide = 'definition',
   onAnswer,
   onComplete,
   onExit,
@@ -96,7 +101,8 @@ export function QuizGame({
   }, [pairs, onNotEnoughPairs]);
 
   const q = questions[index];
-  const reverse = sheetType !== 'vocab' && index % 2 === 1;
+  const reverse =
+    targetSide === 'term' || (sheetType !== 'vocab' && index % 2 === 1);
   const promptText = q ? (reverse ? q.definition : q.term) : '';
   const answerText = q ? (reverse ? q.term : q.definition) : '';
 
@@ -104,6 +110,12 @@ export function QuizGame({
     if (!q || quizPool.length < MIN_QUIZ_PAIRS_RELAXED) return [];
     return pickQuizOptions(q, quizPool, 3, shuffleSeed, reverse ? 'term' : 'definition');
   }, [q, quizPool, shuffleSeed, reverse]);
+
+  const idleEnabled = !examMode && !revealed;
+  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+    enabled: idleEnabled,
+    resetKey: `${index}-${answerText}`,
+  });
 
   useEffect(() => {
     if (!examMode) return;
@@ -137,6 +149,7 @@ export function QuizGame({
 
   const pick = (opt: string) => {
     if (revealed || !q) return;
+    bumpActivity();
     setSelected(opt);
     setRevealed(true);
 
@@ -205,7 +218,12 @@ export function QuizGame({
     >
       <div className="game-body quiz-body">
         <div className="game-prompt" key={index}>
-          <span className="game-eyebrow">{t(reverse ? 'quizPromptReverse' : 'quizPrompt', locale)}</span>
+          <span className="game-eyebrow">
+            {t(
+              targetSide === 'term' ? 'quizPromptTarget' : reverse ? 'quizPromptReverse' : 'quizPrompt',
+              locale,
+            )}
+          </span>
           <h2 className="game-question quiz-term">
             <FormulaText text={promptText} />
             {sheetType !== 'math' && !isMathLikeText(promptText) && (
@@ -214,6 +232,10 @@ export function QuizGame({
           </h2>
         </div>
 
+        {idleEnabled && (
+          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+        )}
+
         <div className="choice-list quiz-options">
           {options.map((opt, i) => (
             <ChoiceCard
@@ -221,6 +243,7 @@ export function QuizGame({
               index={i}
               state={optionState(opt)}
               disabled={revealed}
+              nudge={!revealed && idleHelped && opt === answerText}
               onSelect={() => pick(opt)}
             >
               <FormulaText text={opt} />

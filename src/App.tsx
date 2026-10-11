@@ -104,7 +104,6 @@ import {
   canScan,
   clampImagesForImport,
   getMaxImagesPerImport,
-  getScansRemaining,
   getUpgradeReasonForScan,
   hasFeature,
   recordScan,
@@ -545,7 +544,7 @@ export default function App() {
 
       if (hasPendingCheckout()) {
         const sub = await refreshPlanFromStripe();
-        if (sub?.plan === 'plus' || sub?.plan === 'pro') {
+        if (sub?.plan === 'plus' || sub?.plan === 'pro' || sub?.plan === 'max') {
           clearPendingCheckout();
           setRefreshKey((k) => k + 1);
           showToast(t('stripeSuccess', getLocale()));
@@ -553,7 +552,7 @@ export default function App() {
           return;
         }
         await pullUserData({ skipStripeSync: true });
-        if (getPlan() === 'plus' || getPlan() === 'pro') {
+        if (getPlan() === 'plus' || getPlan() === 'pro' || getPlan() === 'max') {
           clearPendingCheckout();
           setRefreshKey((k) => k + 1);
           showToast(t('stripeSuccess', getLocale()));
@@ -957,7 +956,7 @@ export default function App() {
           showToast(t('guestScanUsed', locale));
           setFlow('auth');
         } else {
-          setUpgradeReason('scans');
+          setUpgradeReason(getUpgradeReasonForScan() ?? 'aiBudget');
         }
         return;
       }
@@ -1006,7 +1005,7 @@ export default function App() {
           showToast(t('guestScanUsed', locale));
           setFlow('auth');
         } else {
-          setUpgradeReason('scans');
+          setUpgradeReason(getUpgradeReasonForScan() ?? 'aiBudget');
         }
         return;
       }
@@ -1023,13 +1022,8 @@ export default function App() {
       }
 
       if (!guestScan) {
-        const remaining = getScansRemaining();
-        if (remaining !== Infinity && files.length > remaining) {
-          setUpgradeReason('scans');
-          return;
-        }
         if (!canScan()) {
-          setUpgradeReason('scans');
+          setUpgradeReason(getUpgradeReasonForScan() ?? 'aiBudget');
           return;
         }
         if (dropped > 0) {
@@ -1038,9 +1032,6 @@ export default function App() {
               .replace('{max}', String(getMaxImagesPerImport()))
               .replace('{dropped}', String(dropped)),
           );
-        }
-        if (remaining !== Infinity && files.length >= remaining) {
-          showToast(t('scanLastWarning', locale));
         }
         if (files.length > 1) recordMultiScan();
       } else {
@@ -1144,15 +1135,7 @@ export default function App() {
 
   const trySample = useCallback(() => {
     if (!requireAuth()) return;
-    if (!canScan()) {
-      setUpgradeReason('scans');
-      return;
-    }
-    recordScan();
-    const remaining = getScansRemaining();
-    if (remaining === 1) {
-      showToast(t('scanLastWarning', locale));
-    }
+    // Demo deck uses local SAMPLE_PAIRS — no OpenAI, so do not bill the AI envelope.
     setFlow('scanning');
     setScanProgress(20);
     setScanStatus(t('demoLoading', locale));
@@ -1612,21 +1595,21 @@ export default function App() {
         try {
           if (stripe === 'success' && sessionId) {
             const sub = await activatePlanAfterCheckout(sessionId);
-            activated = sub?.plan === 'plus' || sub?.plan === 'pro';
+            activated = sub?.plan === 'plus' || sub?.plan === 'pro' || sub?.plan === 'max';
           } else {
             const sub = await refreshPlanFromStripe();
-            activated = sub?.plan === 'plus' || sub?.plan === 'pro';
+            activated = sub?.plan === 'plus' || sub?.plan === 'pro' || sub?.plan === 'max';
           }
 
           if (!activated) {
             await pullUserData({ skipStripeSync: true });
-            activated = getPlan() === 'plus' || getPlan() === 'pro';
+            activated = getPlan() === 'plus' || getPlan() === 'pro' || getPlan() === 'max';
           } else {
             await pullUserData({ skipStripeSync: true });
           }
         } catch {
           await pullUserData({ checkoutSessionId: sessionId, skipStripeSync: !sessionId });
-          activated = getPlan() === 'plus' || getPlan() === 'pro';
+          activated = getPlan() === 'plus' || getPlan() === 'pro' || getPlan() === 'max';
         }
 
         clearPendingCheckout();
@@ -2073,7 +2056,12 @@ export default function App() {
           locale={locale}
           onClose={() => setUpgradeReason(null)}
           onUpgrade={() => {
+            const reason = upgradeReason;
             setUpgradeReason(null);
+            if (reason === 'aiBudget') {
+              handleTabChange('settings');
+              return;
+            }
             setFlow('pricing');
           }}
         />
@@ -2130,7 +2118,7 @@ export default function App() {
           refreshKey={refreshKey}
           isLoggedIn={isLoggedIn()}
           onAuth={() => setFlow('auth')}
-          onUpgrade={() => setUpgradeReason('coach')}
+          onUpgrade={() => setUpgradeReason('aiBudget')}
           onOpenScan={() => startScanFlow()}
           onOpenSettings={() => handleTabChange('settings')}
           onOpenHome={() => handleTabChange('home')}
@@ -2177,6 +2165,7 @@ export default function App() {
           onAuth={() => setFlow('auth')}
           onOpenFriends={() => handleTabChange('friends')}
           onOpenAchievements={() => handleTabChange('achievements')}
+          onOpenSettings={() => handleTabChange('settings')}
         />
       )}
       {flow === null && tab === 'mistakes' && !mistakeSession && (
@@ -2293,8 +2282,8 @@ export default function App() {
           }}
           onContinue={(kept) => {
             if (manualDeckMode) {
+              // Manual typing — no AI scan cost.
               if (!isLoggedIn()) recordGuestScan();
-              else recordScan();
               setManualDeckMode(false);
             }
             goModes(kept, deckThumbnail, false, false);

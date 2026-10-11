@@ -7,13 +7,23 @@ export const SCANPLAY_DEFAULT_FREE_SCAN_MODEL = SCANPLAY_DEFAULT_SCAN_MODEL;
 /** Paid exercises / coach overrides may still point here. */
 export const SCANPLAY_DEFAULT_PAID_SCAN_MODEL = 'gpt-5.5';
 
-type ScanPlan = 'free' | 'plus' | 'pro';
+type ScanPlan = 'free' | 'plus' | 'pro' | 'max';
+
+const SCANPLAY_SAVER_MODEL = 'gpt-4o-mini';
+
+export interface ModelResolveOpts {
+  /** True when AI envelope ≥ 90% — cheaper models to stretch remaining budget. */
+  saver?: boolean;
+}
 
 /**
- * Scan vision: same model for free / plus / pro (default gpt-4.1).
- * Override with OPENAI_SCAN_MODEL (all plans) if needed.
+ * Scan vision: same model for free / plus / pro / max (default gpt-4.1).
+ * At ≥90% AI usage, step down to saver model to burn fewer tokens.
  */
-export function resolveScanModel(_plan: ScanPlan = 'free'): string {
+export function resolveScanModel(_plan: ScanPlan = 'free', opts: ModelResolveOpts = {}): string {
+  if (opts.saver) {
+    return Deno.env.get('OPENAI_SCAN_MODEL_SAVER') ?? SCANPLAY_SAVER_MODEL;
+  }
   return (
     Deno.env.get('OPENAI_SCAN_MODEL') ??
     Deno.env.get('OPENAI_SCAN_MODEL_FREE') ??
@@ -21,39 +31,43 @@ export function resolveScanModel(_plan: ScanPlan = 'free'): string {
   );
 }
 
-/** Text games. Free = 4.1 ; Plus/Pro can stay on paid if env set. */
-export function resolveExerciseModel(plan: ScanPlan = 'free'): string {
-  if (plan === 'pro') {
-    return (
-      Deno.env.get('OPENAI_EXERCISE_MODEL_PRO') ??
-      Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ??
-      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
-    );
+/** Translate exercise rounds: Free = mini ; Plus/Pro/Max = gpt-4.1. */
+export function resolveExerciseModel(plan: ScanPlan = 'free', opts: ModelResolveOpts = {}): string {
+  if (opts.saver) {
+    return Deno.env.get('OPENAI_EXERCISE_MODEL_SAVER') ?? SCANPLAY_SAVER_MODEL;
   }
-  if (plan === 'plus') {
+  if (plan === 'plus' || plan === 'pro' || plan === 'max') {
     return (
+      Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ??
       Deno.env.get('OPENAI_EXERCISE_MODEL_PLUS') ??
-      Deno.env.get('OPENAI_EXERCISE_MODEL_PAID') ??
-      SCANPLAY_DEFAULT_PAID_SCAN_MODEL
+      Deno.env.get('OPENAI_EXERCISE_MODEL_PRO') ??
+      SCANPLAY_DEFAULT_SCAN_MODEL
     );
   }
-  return Deno.env.get('OPENAI_EXERCISE_MODEL_FREE') ?? SCANPLAY_DEFAULT_SCAN_MODEL;
+  return Deno.env.get('OPENAI_EXERCISE_MODEL_FREE') ?? SCANPLAY_SAVER_MODEL;
 }
 
 /** Text synthesis (generate-synthesis) — keep mini for cost. */
-export function resolveSynthesisModel(): string {
+export function resolveSynthesisModel(opts: ModelResolveOpts = {}): string {
+  if (opts.saver) {
+    return Deno.env.get('OPENAI_SYNTHESIS_MODEL_SAVER') ?? SCANPLAY_SAVER_MODEL;
+  }
   return Deno.env.get('OPENAI_MODEL') ?? 'gpt-4o-mini';
 }
 
 /** Mini-coach chat — text-only, cheap model; scan stays on gpt-4.1. */
 export const SCANPLAY_DEFAULT_COACH_MODEL = 'gpt-4o-mini';
 
-/** Mini-coach chat — Free has no coach access; Plus/Pro use mini by default. */
-export function resolveCoachModel(plan: ScanPlan = 'free'): string {
-  if (plan === 'plus' || plan === 'pro') {
-    return Deno.env.get('OPENAI_COACH_MODEL_PAID') ?? SCANPLAY_DEFAULT_COACH_MODEL;
+/** Mini-coach — available on all plans within the AI envelope. */
+export function resolveCoachModel(_plan: ScanPlan = 'free', opts: ModelResolveOpts = {}): string {
+  if (opts.saver) {
+    return Deno.env.get('OPENAI_COACH_MODEL_SAVER') ?? SCANPLAY_SAVER_MODEL;
   }
-  return Deno.env.get('OPENAI_COACH_MODEL_FREE') ?? SCANPLAY_DEFAULT_COACH_MODEL;
+  return (
+    Deno.env.get('OPENAI_COACH_MODEL_PAID') ??
+    Deno.env.get('OPENAI_COACH_MODEL_FREE') ??
+    SCANPLAY_DEFAULT_COACH_MODEL
+  );
 }
 
 /** GPT-5+ / GPT-6: reasoning tokens, max_completion_tokens, image detail original. */

@@ -33,9 +33,10 @@ import { scaleRewardAmount } from './chestRarity';
 import type { AchievementDef } from './achievements';
 import type { TranslationKey } from './i18n';
 import {
+  getUniverseHeartCap,
   getUniverseHearts,
+  hasInfiniteUniverseHearts,
   refillUniverseHeart,
-  UNIVERSE_MAX_HEARTS,
 } from './universeHearts';
 
 export const SHOP_XP_POTION_PRICE = 80;
@@ -157,7 +158,7 @@ export function buyTranslateHint(): ShopPurchaseResult {
 }
 
 export function buyUniverseHeart(): ShopPurchaseResult {
-  if (getUniverseHearts().hearts >= UNIVERSE_MAX_HEARTS) {
+  if (hasInfiniteUniverseHearts() || getUniverseHearts().hearts >= getUniverseHeartCap()) {
     return { ok: false, reason: 'limit_reached' };
   }
   const spent = spendCoins(SHOP_UNIVERSE_HEART_PRICE);

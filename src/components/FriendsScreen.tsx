@@ -8,7 +8,9 @@ import type { FriendStatus, PendingFriendRequest, PublicPlayer } from '../lib/so
 import { FriendProfileSheet } from './FriendProfileSheet';
 import { FriendsLeaderboard } from './FriendsLeaderboard';
 import { MedalIcon } from './icons/EconomyIcons';
+import { VerifiedBadge } from './icons/VerifiedBadge';
 import { MascotCoach } from './mascot/MascotCoach';
+import { hasVerifiedBadge } from '../lib/profileBanner';
 import { refreshFriendCount } from '../lib/social/friendCountCache';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -189,7 +191,12 @@ export function FriendsScreen({
             locale={locale}
           />
           <div className="friend-info">
-            <span className="friend-name">{player.displayName}</span>
+            <span className="friend-name">
+              {player.displayName}
+              {player.plan && hasVerifiedBadge(player.plan) && (
+                <VerifiedBadge size={14} className="friend-verified" title={t('verifiedMax', locale)} />
+              )}
+            </span>
             <span className="friend-meta">
               {t('level', locale)} {player.level}
             </span>
@@ -274,7 +281,12 @@ export function FriendsScreen({
           locale={locale}
         />
         <div className="friend-info">
-          <span className="friend-name">{player.displayName}</span>
+          <span className="friend-name">
+            {player.displayName}
+            {player.plan && hasVerifiedBadge(player.plan) && (
+              <VerifiedBadge size={14} className="friend-verified" title={t('verifiedMax', locale)} />
+            )}
+          </span>
           <span className="friend-meta">
             {t('level', locale)} {player.level}
             {(player.achievementCount ?? 0) > 0 && (

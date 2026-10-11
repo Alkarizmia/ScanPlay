@@ -10,11 +10,16 @@ import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
+import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import { ChoiceCard, type ChoiceState } from './ChoiceCard';
+import { IdleHelpChip } from './IdleHelpChip';
 
 interface ListenPickGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
   locale: Locale;
+  examMode?: boolean;
+  /** English Universe: hear native, pick English (`term`). */
+  answerField?: 'term' | 'definition' | 'alternate';
   deckId?: string | null;
   stepIndex?: number | null;
   onAnswer?: (pair: WordPair, correct: boolean) => void;
@@ -26,6 +31,8 @@ interface ListenPickGameProps extends EmbeddedGameProps {
 export function ListenPickGame({
   pairs,
   locale,
+  examMode,
+  answerField = 'alternate',
   deckId,
   stepIndex,
   onAnswer,
@@ -40,8 +47,9 @@ export function ListenPickGame({
       buildListenPickRounds(pairs, {
         maxRounds: Math.max(1, maxItems ?? 4),
         seed: deckId ?? 'listenpick',
+        answerField,
       }),
-    [pairs, maxItems, deckId],
+    [pairs, maxItems, deckId, answerField],
   );
   const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
 
@@ -85,8 +93,15 @@ export function ListenPickGame({
     [index, onComplete, rounds.length, total],
   );
 
+  const idleEnabled = !examMode && picked == null;
+  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+    enabled: idleEnabled,
+    resetKey: `${index}-${round?.target ?? ''}`,
+  });
+
   const pick = (option: string) => {
     if (!round || picked) return;
+    bumpActivity();
     setPicked(option);
 
     const ok = option === round.target;
@@ -152,6 +167,10 @@ export function ListenPickGame({
           <p className="listen-audio-hint">{t('listenTapToReplay', locale)}</p>
         </div>
 
+        {idleEnabled && (
+          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+        )}
+
         <div className="choice-list listen-options">
           {round.options.map((option, i) => (
             <ChoiceCard
@@ -159,6 +178,7 @@ export function ListenPickGame({
               index={i}
               state={optionState(option)}
               disabled={picked != null}
+              nudge={picked == null && idleHelped && option === round.target}
               onSelect={() => pick(option)}
             >
               {option}

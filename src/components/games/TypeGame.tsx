@@ -14,7 +14,9 @@ import {
   pickTypeGameOptions,
   type AnswerGrade,
 } from '../../lib/vocabulary';
+import { resolvePairCartoon } from '../../lib/cartoonArt';
 import { resolveSideLang } from '../../lib/speakLang';
+import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import type { Locale, SheetType, WordPair } from '../../types';
 import { ReportErrorSheet } from '../ReportErrorSheet';
 import { gameProgressPct } from './GameHeader';
@@ -23,6 +25,7 @@ import { LessonGameShell } from './LessonGameShell';
 import { AnswerFeedback } from './AnswerFeedback';
 import { ChoiceCard, type ChoiceState } from './ChoiceCard';
 import { MathAnswerKeyboard } from './MathAnswerKeyboard';
+import { IdleHelpChip } from './IdleHelpChip';
 
 interface TypeGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -31,6 +34,12 @@ interface TypeGameProps extends EmbeddedGameProps {
   deckId?: string | null;
   stepIndex?: number | null;
   sheetType?: SheetType;
+  /**
+   * Which side the learner must produce.
+   * `definition` = classic scan decks (term → type translation).
+   * `term` = English Universe (see image/native → type English).
+   */
+  targetSide?: 'term' | 'definition';
   onAnswer?: (pair: WordPair, correct: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
@@ -46,6 +55,7 @@ export function TypeGame({
   deckId,
   stepIndex,
   sheetType = 'vocab',
+  targetSide = 'definition',
   onAnswer,
   onComplete,
   onExit,
@@ -76,14 +86,39 @@ export function TypeGame({
   const mathLike =
     formulaSheet ||
     Boolean(current && (isMathLikeText(current.term) || isMathLikeText(current.definition)));
-  const useVisual = sheetType === 'vocab' && Boolean(current?.visual) && !mathLike;
+  const cartoonRaw = current ? resolvePairCartoon(current.term, current.definition) : null;
+  // Desk/office table art looks like a stool — prefer the desk emoji for those words.
+  const deskLike =
+    Boolean(current) &&
+    /\b(office|desk|bureau|escritorio)\b/i.test(`${current?.term ?? ''} ${current?.definition ?? ''}`);
+  const cartoon = deskLike && cartoonRaw?.id === 'table' ? null : cartoonRaw;
+  const visualEmoji = deskLike ? (current?.visual || '🖥️') : current?.visual;
+  const useVisual =
+    sheetType === 'vocab' && !mathLike && Boolean(cartoon || visualEmoji);
   const typeKeyword = sheetType === 'definitions' || sheetType === 'notes';
-  const prompt = useVisual ? '' : typeKeyword ? (current?.definition ?? '') : (current?.term ?? '');
-  const expected = typeKeyword ? (current?.term ?? '') : (current?.definition ?? '');
+  const produceTerm = !typeKeyword && targetSide === 'term';
+  const prompt = useVisual
+    ? ''
+    : typeKeyword
+      ? (current?.definition ?? '')
+      : produceTerm
+        ? (current?.definition ?? '')
+        : (current?.term ?? '');
+  const expected = typeKeyword
+    ? (current?.term ?? '')
+    : produceTerm
+      ? (current?.term ?? '')
+      : (current?.definition ?? '');
   const choiceOptions = useMemo(() => {
     if (!current || mathLike || !isLongExpectedAnswer(expected)) return [];
-    return pickTypeGameOptions(current, pool, 3, `${deckId ?? 'type'}-${index}-${expected.slice(0, 12)}`);
-  }, [current, mathLike, expected, pool, deckId, index]);
+    return pickTypeGameOptions(
+      current,
+      pool,
+      3,
+      `${deckId ?? 'type'}-${index}-${expected.slice(0, 12)}`,
+      produceTerm ? 'term' : 'definition',
+    );
+  }, [current, mathLike, expected, pool, deckId, index, produceTerm]);
   const useChoiceMode = !mathLike && isLongExpectedAnswer(expected) && choiceOptions.length >= MIN_CHOICE_OPTIONS;
   const mathSeedTexts = useMemo(() => {
     if (!mathLike) return [];
@@ -93,9 +128,23 @@ export function TypeGame({
   const [timeLeft, setTimeLeft] = useState(timerSeconds);
   const [reportOpen, setReportOpen] = useState(false);
 
+  const idleEnabled = !examMode && !revealed && !useChoiceMode && !mathLike;
+  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+    enabled: idleEnabled,
+    resetKey: `${index}-${expected}`,
+  });
+
   useEffect(() => {
     if (embedded && onStepProgress) onStepProgress(index, total);
   }, [embedded, onStepProgress, index, total]);
+
+  // Never leave a blank embedded lesson step when the pair was filtered out.
+  const emptySkipRef = useRef(false);
+  useEffect(() => {
+    if (pool.length > 0 || emptySkipRef.current) return;
+    emptySkipRef.current = true;
+    onComplete(0, 1);
+  }, [pool.length, onComplete]);
 
   useEffect(() => {
     if (!examMode || timerSeconds <= 0) return;
@@ -154,6 +203,7 @@ export function TypeGame({
 
   const pickOption = (opt: string) => {
     if (!current || revealed) return;
+    bumpActivity();
     setSelectedOption(opt);
     applyGrade(opt === expected ? 'correct' : 'wrong');
   };
@@ -166,7 +216,30 @@ export function TypeGame({
     setIndex((i) => i + 1);
   };
 
-  if (!current) return null;
+  if (!current) {
+    return (
+      <LessonGameShell embedded={embedded} locale={locale} onExit={onExit} progress={0}>
+        <div className="game-body type-game-body">
+          <p className="quiz-empty-msg">{t('stepNeedMoreWords', locale)}</p>
+          <button type="button" className="btn-primary" onClick={() => onComplete(0, 1)}>
+            {t('typeNext', locale)}
+          </button>
+        </div>
+      </LessonGameShell>
+    );
+  }
+
+  const promptKey = useChoiceMode
+    ? 'typePromptChoice'
+    : useVisual
+      ? produceTerm
+        ? 'typeVisualPromptTarget'
+        : 'typeVisualPrompt'
+      : mathLike
+        ? 'typePromptMath'
+        : produceTerm
+          ? 'typePromptTarget'
+          : 'typePrompt';
 
   return (
     <LessonGameShell
@@ -201,18 +274,24 @@ export function TypeGame({
       }
     >
       <div className={`game-body type-game-body${mathLike && !useChoiceMode ? ' type-game-body--math' : ''}`}>
-        <p className="type-game-prompt">
-          {useChoiceMode
-            ? t('typePromptChoice', locale)
-            : useVisual
-              ? t('typeVisualPrompt', locale)
-              : mathLike
-                ? t('typePromptMath', locale)
-                : t('typePrompt', locale)}
-        </p>
+        <p className="type-game-prompt">{t(promptKey, locale)}</p>
         {useVisual ? (
-          <div className="type-game-visual" aria-hidden="true">
-            {current.visual}
+          <div className="type-game-visual-wrap">
+            <div className="type-game-visual" aria-hidden="true">
+              {cartoon ? (
+                <img src={cartoon.src} alt="" className="type-game-visual-img" draggable={false} />
+              ) : (
+                visualEmoji
+              )}
+            </div>
+            {idleHelped && !revealed && (
+              <div className="idle-help-answer idle-help-answer--reveal" aria-live="polite">
+                <span className="idle-help-answer-main">{expected}</span>
+                {produceTerm && current.definition && (
+                  <span className="idle-help-answer-gloss">{current.definition}</span>
+                )}
+              </div>
+            )}
           </div>
         ) : (
           <div className="type-game-term-row">
@@ -221,10 +300,23 @@ export function TypeGame({
             </h2>
             {!mathLike && (
               <HearButton
-                text={typeKeyword ? current.definition : current.term}
-                lang={resolveSideLang(current, typeKeyword ? 'def' : 'term')}
+                text={produceTerm || typeKeyword ? current.definition : current.term}
+                lang={resolveSideLang(current, produceTerm || typeKeyword ? 'def' : 'term')}
                 locale={locale}
               />
+            )}
+          </div>
+        )}
+
+        {idleEnabled && (
+          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+        )}
+
+        {!useVisual && idleHelped && !revealed && (
+          <div className="idle-help-answer idle-help-answer--reveal" aria-live="polite">
+            <span className="idle-help-answer-main">{expected}</span>
+            {produceTerm && current.definition && (
+              <span className="idle-help-answer-gloss">{current.definition}</span>
             )}
           </div>
         )}
@@ -245,6 +337,7 @@ export function TypeGame({
                   index={i}
                   state={state}
                   disabled={revealed}
+                  nudge={!revealed && idleHelped && opt === expected}
                   onSelect={() => pickOption(opt)}
                 >
                   <FormulaText text={opt} />
@@ -256,7 +349,10 @@ export function TypeGame({
           <MathAnswerKeyboard
             key={index}
             value={input}
-            onChange={setInput}
+            onChange={(v) => {
+              bumpActivity();
+              setInput(v);
+            }}
             seedTexts={mathSeedTexts}
             locale={locale}
             disabled={revealed}
@@ -271,7 +367,10 @@ export function TypeGame({
               ref={inputRef}
               className="field-input type-game-input"
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                bumpActivity();
+                setInput(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
                   e.preventDefault();
@@ -279,7 +378,7 @@ export function TypeGame({
                   else submit();
                 }
               }}
-              placeholder={t('typePlaceholder', locale)}
+              placeholder={t(produceTerm ? 'typePlaceholderTarget' : 'typePlaceholder', locale)}
               disabled={revealed}
               autoComplete="off"
               autoCorrect="off"

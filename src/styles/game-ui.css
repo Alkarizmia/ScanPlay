@@ -148,7 +148,8 @@
   flex-direction: column;
   gap: 10px;
   margin-top: auto;
-  padding-bottom: 8px;
+  padding: 4px 4px 8px;
+  overflow: visible;
 }
 
 .choice-card {

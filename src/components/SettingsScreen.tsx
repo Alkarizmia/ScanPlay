@@ -39,7 +39,7 @@ interface SettingsScreenProps {
 export function SettingsScreen({
   locale,
   device,
-  refreshKey: _refreshKey,
+  refreshKey,
   isLoggedIn,
   onLocaleChange,
   onAuth,
@@ -141,14 +141,16 @@ export function SettingsScreen({
                 </button>
               </div>
             </section>
-            <SubscriptionSection
-              locale={locale}
-              isLoggedIn={false}
-              onPricing={onPricing}
-              onAuth={onAuth}
-            />
           </>
         )}
+
+        <SubscriptionSection
+          locale={locale}
+          isLoggedIn={isLoggedIn}
+          refreshKey={refreshKey}
+          onPricing={onPricing}
+          onAuth={onAuth}
+        />
 
         <section className="settings-section">
           <h3 className="settings-label">{t('account', locale)}</h3>
@@ -344,7 +346,7 @@ export function SettingsScreen({
           <section className="settings-section dev-section">
             <h3 className="settings-label">{t('devPlan', locale)}</h3>
             <div className="dev-plans">
-              {(['free', 'plus', 'pro'] as Plan[]).map((p) => (
+              {(['free', 'plus', 'pro', 'max'] as Plan[]).map((p) => (
                 <button
                   key={p}
                   type="button"

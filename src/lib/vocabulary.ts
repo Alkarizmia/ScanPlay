@@ -140,8 +140,17 @@ export function isMathLikeText(text: string): boolean {
   if (/^[\d]+$/.test(t)) return true;
   if (/^[a-z]'+?$/i.test(t)) return true;
   if (/^\d+[a-z]+$/i.test(t)) return true;
-  if (/\b(sin|cos|tan|ln|log|exp|sqrt)\b/i.test(t)) return true;
-  return /[=+\-×÷*/^√∫∑]|\\frac|[0-9]\s*[+\-*/^]|[a-z]\s*=\s*[^=]|'v\b|uv'/i.test(text);
+
+  // Math functions only as formulas — not vocab like "to log in" / "catalogue".
+  if (/^(sin|cos|tan|ln|log|exp|sqrt)(\s*\(?[\d.xπ]+\)?)?$/i.test(t)) return true;
+  if (/\b(sin|cos|tan|ln|log|exp|sqrt)\s*[\d(]/i.test(t)) return true;
+
+  // Operators / structures. Do not treat word hyphens (peut-être, log-in) as minus.
+  if (/\\frac|[×÷*/^√∫∑]|'v\b|uv'/i.test(t)) return true;
+  if (/[0-9]\s*[+\-*/^=]\s*[0-9a-z]/i.test(t)) return true;
+  if (/[a-z]\s*=\s*[^=]/i.test(t)) return true;
+  if (/(?:^|[^A-Za-zÀ-ÿ])=(?:[^A-Za-zÀ-ÿ]|$)/.test(t)) return true;
+  return false;
 }
 
 export function isValidVocabPair(pair: WordPair, options?: { mathSheet?: boolean }): boolean {
@@ -260,8 +269,7 @@ export function answersMatch(typed: string, expected: string, mathLike = false):
 
 /** Plain trig / short formula answers that isMathLikeText can miss (e.g. "cos x"). */
 function looksLikeMathPair(typed: string, expected: string): boolean {
-  const both = `${typed} ${expected}`;
-  return /\\|\b(sin|cos|tan|ln|log|exp|sqrt)\b|[^=]=[^=]|\^|√|∫|∑/i.test(both);
+  return isMathLikeText(typed) || isMathLikeText(expected);
 }
 
 function levenshtein(a: string, b: string): number {
@@ -372,17 +380,21 @@ export function pickTypeGameOptions(
   pool: WordPair[],
   distractorCount = 3,
   seed?: string,
+  field: 'definition' | 'term' = 'definition',
 ): string[] {
+  const valueOf = (pair: WordPair) => (field === 'definition' ? pair.definition : pair.term);
+  const prompt = field === 'definition' ? correct.term : correct.definition;
+  const target = valueOf(correct);
   const wrong = pool
-    .filter((p) => p.definition !== correct.definition)
-    .filter((p) => isValidTypeDistractor(correct.term, p.definition, correct.definition))
-    .map((p) => p.definition);
+    .filter((p) => valueOf(p) !== target)
+    .filter((p) => isValidTypeDistractor(prompt, valueOf(p), target))
+    .map((p) => valueOf(p));
 
   const unique = [...new Set(wrong)];
   const mix = (arr: string[]) => (seed ? seededShuffle(arr, `${seed}-type-opts-${correct.term}`) : shuffle(arr));
   const picks = mix(unique).slice(0, distractorCount);
 
-  return mix([correct.definition, ...picks]);
+  return mix([target, ...picks]);
 }
 
 export function gradeTypedAnswer(typed: string, expected: string, mathLike = false): AnswerGrade {

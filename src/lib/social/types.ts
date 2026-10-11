@@ -31,6 +31,8 @@ export interface PublicPlayer {
   friendStatus?: FriendStatus;
   friendsSince?: string;
   lastSeenAt?: string | null;
+  plan?: Plan;
+  bannerTheme?: string;
 }
 
 export interface FriendProfile {
@@ -43,6 +45,7 @@ export interface FriendProfile {
   streak: number;
   deckCount: number;
   plan: Plan;
+  bannerTheme?: string;
   friendCount: number;
   achievementCount: number;
   achievementUnlocks: PublicUnlockRecord[];

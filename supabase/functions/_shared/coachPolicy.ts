@@ -1,9 +1,11 @@
-export type CoachPlan = 'free' | 'plus' | 'pro';
+export type CoachPlan = 'free' | 'plus' | 'pro' | 'max';
 
+/** Soft UX caps only — daily message quotas removed; AI envelope is the ceiling. */
 export const COACH_LIMITS = {
-  free: { chatPerDay: 0, maxChars: 150, historyWindow: 0 },
-  plus: { chatPerDay: 15, maxChars: 200, historyWindow: 4 },
-  pro: { chatPerDay: 40, maxChars: 250, historyWindow: 7 },
+  free: { chatPerDay: 9999, maxChars: 4000, historyWindow: 7 },
+  plus: { chatPerDay: 9999, maxChars: 4000, historyWindow: 15 },
+  pro: { chatPerDay: 9999, maxChars: 4000, historyWindow: 25 },
+  max: { chatPerDay: 9999, maxChars: 4000, historyWindow: 40 },
 } as const;
 
 const PII_TOPIC =
@@ -129,6 +131,16 @@ export function looksLikeSettingsHelp(message: string): boolean {
   );
 }
 
+/** Questions about ScanPlay AI envelope / usage % (not sheet history window). */
+export function looksLikeAiUsageAsk(message: string): boolean {
+  const text = message.trim();
+  if (/\d+\s*%/.test(text)) return true;
+  if (/%\s*(utilis|used|gebruik|usado|مستخد)/i.test(text)) return true;
+  return /\b(limite\s*ai|limite\s*ia|enveloppe|quota\s*ai|quota\s*ia|usage\s*ai|ai\s*limit|ai\s*usage|token|combien\s*(de\s*)?(limite|pour\s*cent)|en\s*%|percent|pourcentage|barre\s*(ia|ai)|scanplay\s*ai|utilis[eé](r|s)?\s*.*%|j'?ai\s*utilis)/i.test(
+    text,
+  );
+}
+
 /** Univers / Univer / Universe in ScanPlay (not "université"). */
 export function looksLikeUniverseAsk(message: string): boolean {
   const text = message.trim();
@@ -142,13 +154,34 @@ export function looksLikeUniverseAsk(message: string): boolean {
 export function localCoachReply(
   message: string,
   locale: string,
-  opts: { sheetCount: number; isNewAccount?: boolean },
+  opts: {
+    sheetCount: number;
+    isNewAccount?: boolean;
+    aiUsagePercent?: number;
+    aiEnvelopeLabel?: string;
+    plan?: string;
+  },
 ): string | null {
   if (looksLikeOtherUserPii(message)) return refusePii(locale);
   if (looksLikeSupportIssue(message)) return refuseSupport(locale);
 
   const lang = coachLang(locale);
   const empty = opts.sheetCount <= 0;
+  const pct = Math.max(0, Math.min(100, Math.round(opts.aiUsagePercent ?? 0)));
+  const envelope = opts.aiEnvelopeLabel?.trim() || (lang === 'en' ? 'your plan' : 'ton plan');
+
+  if (looksLikeAiUsageAsk(message)) {
+    if (lang === 'en') {
+      return `Yes — your **ScanPlay AI** bar is at **${pct}%** (envelope ${envelope}).\n\nThat % comes from Settings, not your sheet count. Sheets in my memory are only for quizzes — they don't fill the AI bar.\n\nAt ~90% quality steps down a bit; at 100% AI pauses until the next cycle.\n\n[[action:settings]]`;
+    }
+    if (lang === 'nl') {
+      return `Ja — je **ScanPlay AI**-balk staat op **${pct}%** (enveloppe ${envelope}).\n\nDat % komt uit Instellingen, niet uit je aantal bladen. Bladen in mijn geheugen zijn alleen voor quizzen.\n\nRond 90% daalt de kwaliteit wat; bij 100% pauzeert AI tot de volgende cyclus.\n\n[[action:settings]]`;
+    }
+    if (lang === 'es') {
+      return `Sí — tu barra **IA ScanPlay** está al **${pct}%** (envolvente ${envelope}).\n\nEse % sale de Ajustes, no del número de fichas. Las fichas en mi memoria son solo para quizzes.\n\nCerca del 90% baja un poco la calidad; al 100% la IA espera al siguiente ciclo.\n\n[[action:settings]]`;
+    }
+    return `Oui — ta barre **IA ScanPlay** est bien à **${pct}%** (enveloppe ${envelope}).\n\nCe % vient des paramètres, pas du nombre de fiches. Les fiches en mémoire coach, c'est juste ce que je peux quiz ; ça ne compte pas dans la barre IA.\n\nVers 90 % on baisse un peu la qualité ; à 100 % l'IA attend le prochain cycle.\n\n[[action:settings]]`;
+  }
 
   if (looksLikeThanks(message)) {
     if (lang === 'en') {

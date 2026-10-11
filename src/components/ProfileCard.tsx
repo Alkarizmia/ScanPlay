@@ -2,9 +2,11 @@ import type { CSSProperties, ReactNode } from 'react';
 import type { AchievementDef } from '../lib/achievements';
 import { xpForNextLevel } from '../lib/gamification';
 import { t } from '../lib/i18n';
+import { bannerClassFromTheme, hasVerifiedBadge } from '../lib/profileBanner';
 import type { Locale, Plan } from '../types';
 import { AchievementGlyph } from './icons/AchievementGlyph';
 import { StreakFlame } from './icons/StreakFlame';
+import { VerifiedBadge } from './icons/VerifiedBadge';
 import { PlanBadge } from './PlanBadge';
 
 export interface ProfileCardStat {
@@ -21,6 +23,7 @@ interface ProfileCardProps {
   avatar: ReactNode;
   friendCount?: number;
   plan?: Plan;
+  bannerTheme?: string | null;
   featuredAchievements?: AchievementDef[];
   stats?: ProfileCardStat[];
   children?: ReactNode;
@@ -36,21 +39,31 @@ export function ProfileCard({
   avatar,
   friendCount,
   plan,
+  bannerTheme,
   featuredAchievements = [],
   stats = [],
   children,
 }: ProfileCardProps) {
   const { progress } = xpForNextLevel(xp);
+  const banner = bannerClassFromTheme(bannerTheme);
+  const verified = plan ? hasVerifiedBadge(plan) : false;
 
   return (
     <div className="profile-card profile-card--public">
+      <div className={`profile-card-hero sp-profile-hero sp-profile-hero--${banner}`} aria-hidden="true">
+        <div className="sp-profile-hero-glow" />
+        <div className="profile-card-hero-avatar">{avatar}</div>
+      </div>
+
       <div className="profile-header">
         <div className="profile-header-left">
-          <div className="profile-avatar-preview" aria-hidden="true">
-            {avatar}
-          </div>
           <div className="profile-header-info">
-            <p className="profile-header-name">{displayName}</p>
+            <p className="profile-header-name">
+              <span className="profile-header-name-text">{displayName}</span>
+              {verified && (
+                <VerifiedBadge size={16} className="profile-verified" title={t('verifiedMax', locale)} />
+              )}
+            </p>
             <p className="profile-header-meta">
               {xp} {t('xp', locale)}
               {streak > 0 && (

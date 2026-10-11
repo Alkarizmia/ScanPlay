@@ -147,6 +147,7 @@ export function EnglishChapterSkip({
             locale={locale}
             maxItems={Math.min(hardenType ? 10 : 12, pairs.length)}
             examMode
+            targetSide="term"
             shuffleSeed={`skip-${chapterId}-${profile.level}`}
             onAnswer={(pair, correct) => {
               if (!correct) {
@@ -178,6 +179,7 @@ export function EnglishChapterSkip({
             locale={locale}
             maxItems={typePairs.length}
             examMode
+            targetSide="term"
             onAnswer={(pair, correct) => {
               if (!correct) {
                 onWrong(pair);

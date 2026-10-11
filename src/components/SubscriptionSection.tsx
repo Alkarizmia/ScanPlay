@@ -1,112 +1,53 @@
 import { useState } from 'react';
-
-import { BillingCycleToggle } from './BillingCycleToggle';
-import { usePlan } from '../hooks/usePlan';
 import { PlanBadge } from './PlanBadge';
 import { PlanPerksBar } from './PlanPerksBar';
-
-import {
-
-  getBillingCycle,
-
-  getScansRemaining,
-  PLAN_LIMITS,
-
-  planLabel,
-
-  planMonthlyEquivalent,
-
-  planPrice,
-
-  setBillingCycle,
-
-} from '../lib/planLimits';
-
-import {
-
-  isStripeCheckoutEnabled,
-
-  openStripePortal,
-
-  stripeErrorMessage,
-
-} from '../lib/stripeCheckout';
-
-import {
-
-  formatSubscriptionDate,
-
-  getSubscriptionCancelAtPeriodEnd,
-
-  getSubscriptionPeriodEnd,
-
-} from '../lib/subscription';
-
+import { PlanUsageBars } from './PlanUsageBars';
+import { usePlan } from '../hooks/usePlan';
 import { t } from '../lib/i18n';
-
-import type { BillingCycle, Locale, Plan } from '../types';
-
-
+import {
+  getBillingCycle,
+  isPaidPlan,
+  planLabel,
+  planMonthlyEquivalent,
+  planPrice,
+} from '../lib/planLimits';
+import { isStripeCheckoutEnabled, openStripePortal, stripeErrorMessage } from '../lib/stripeCheckout';
+import {
+  formatSubscriptionDate,
+  getSubscriptionCancelAtPeriodEnd,
+  getSubscriptionPeriodEnd,
+} from '../lib/subscription';
+import type { Locale, Plan } from '../types';
 
 interface SubscriptionSectionProps {
-
   locale: Locale;
-
   isLoggedIn: boolean;
-
+  refreshKey?: number;
   onPricing: () => void;
-
   onAuth: () => void;
-
   onToast?: (message: string) => void;
-
   embedded?: boolean;
-
 }
-
-
 
 function primaryCtaKey(plan: Plan): 'upgradePlus' | 'settingsManagePlan' {
   return plan === 'free' ? 'upgradePlus' : 'settingsManagePlan';
 }
 
-
-
 export function SubscriptionSection({
-
   locale,
-
   isLoggedIn,
-
+  refreshKey = 0,
   onPricing,
-
   onAuth,
-
   onToast,
-
   embedded = false,
-
 }: SubscriptionSectionProps) {
-
-  const plan = usePlan();
+  const plan = usePlan(refreshKey);
   const effectivePlan = isLoggedIn ? plan : 'free';
-  const [billingCycle, setBillingCycleState] = useState<BillingCycle>(() => getBillingCycle());
+  const billingCycle = getBillingCycle();
   const [portalLoading, setPortalLoading] = useState(false);
   const [periodEnd] = useState<Date | null>(() => getSubscriptionPeriodEnd());
   const [cancelAtEnd] = useState(() => getSubscriptionCancelAtPeriodEnd());
-
-  const scansLeft = isLoggedIn ? getScansRemaining() : null;
-
-
-  const handleBillingCycle = (cycle: BillingCycle) => {
-
-    setBillingCycleState(cycle);
-
-    setBillingCycle(cycle);
-
-  };
-
-
 
   const pricePeriod =
     effectivePlan === 'free'
@@ -130,88 +71,51 @@ export function SubscriptionSection({
     onPricing();
   };
 
-
-
   const content = (
-
     <>
-
       {!embedded && <h3 className="settings-label">{t('currentPlan', locale)}</h3>}
-
       {embedded && <p className="profile-subscription-label">{t('currentPlan', locale)}</p>}
 
-
-
-      <BillingCycleToggle locale={locale} value={billingCycle} onChange={handleBillingCycle} />
-
-
-
-      <div className={`subscription-card ${embedded ? 'subscription-card--embedded' : ''} subscription-card--${effectivePlan}`}>
+      <div
+        className={`subscription-card ${embedded ? 'subscription-card--embedded' : ''} subscription-card--${effectivePlan}`}
+      >
         <div className="subscription-card-head">
           <div className="subscription-card-plan">
             <PlanBadge plan={effectivePlan} locale={locale} />
             <div>
               <p className="subscription-plan-name">{planLabel(effectivePlan)}</p>
               <p className="subscription-plan-price">
-                {planPrice(effectivePlan, billingCycle)}
-                {pricePeriod && ` · ${pricePeriod}`}
+                {isPaidPlan(effectivePlan)
+                  ? `${planPrice(effectivePlan, billingCycle)}${pricePeriod ? ` · ${pricePeriod}` : ''}`
+                  : t('planFree', locale)}
               </p>
-              {billingCycle === 'annual' && effectivePlan !== 'free' && (
-
+              {billingCycle === 'annual' && isPaidPlan(effectivePlan) && (
                 <p className="subscription-plan-equivalent">
-
                   {t('billingEquivalentMonthly', locale).replace(
-
                     '{price}',
-
                     planMonthlyEquivalent(effectivePlan) ?? '',
-
                   )}
-
                 </p>
-
               )}
-
             </div>
-
           </div>
-
-          {isLoggedIn && scansLeft !== null && (
-            <span className="subscription-scans-pill">
-              {scansLeft} / {PLAN_LIMITS[effectivePlan].scansPerDay} {t('scansToday', locale)}
-            </span>
-          )}
-
         </div>
 
-
+        {isLoggedIn && <PlanUsageBars locale={locale} refreshKey={refreshKey} />}
 
         {isLoggedIn && effectivePlan !== 'free' && periodEnd && isStripeCheckoutEnabled() && (
-
           <div className="subscription-period-info">
-
             <p className="subscription-period-line">
-
               {cancelAtEnd
-
                 ? t('subscriptionEndsOn', locale).replace(
-
                     '{date}',
-
                     formatSubscriptionDate(periodEnd, locale),
-
                   )
-
                 : t('subscriptionRenewsOn', locale).replace(
-
                     '{date}',
-
                     formatSubscriptionDate(periodEnd, locale),
-
                   )}
-
             </p>
-
             {cancelAtEnd ? (
               <p className="subscription-period-note">{t('subscriptionRenewalCanceled', locale)}</p>
             ) : (
@@ -220,14 +124,9 @@ export function SubscriptionSection({
           </div>
         )}
 
-
-
         {isLoggedIn ? (
-
           <>
-
             <PlanPerksBar locale={locale} onLockedClick={() => onPricing()} />
-
             <button
               type="button"
               className="btn-primary btn-lg subscription-cta"
@@ -244,57 +143,29 @@ export function SubscriptionSection({
               </button>
             )}
             {effectivePlan === 'free' && (
-
               <button type="button" className="btn-secondary subscription-cta-secondary" onClick={onPricing}>
-
                 {t('settingsViewPlans', locale)}
-
               </button>
-
             )}
-
           </>
-
         ) : (
-
           <>
-
             <p className="subscription-guest-hint">{t('settingsPlanGuestHint', locale)}</p>
-
             <button type="button" className="btn-primary btn-lg subscription-cta" onClick={onAuth}>
-
               {t('connect', locale)}
-
             </button>
-
             <button type="button" className="btn-secondary subscription-cta-secondary" onClick={onPricing}>
-
               {t('settingsViewPlans', locale)}
-
             </button>
-
           </>
-
         )}
-
       </div>
-
     </>
-
   );
 
-
-
   if (embedded) {
-
     return <div className="profile-subscription-block">{content}</div>;
-
   }
 
-
-
   return <section className="settings-section subscription-section">{content}</section>;
-
 }
-
-

@@ -36,6 +36,51 @@ scripts/_fr-locale.json
 scripts/_ar-locale.json
 scripts/_fr-keys.json
 
+# Vocab-bank staging scratch (keep only english-vocab-staging.txt)
+scripts/_a-*.json
+scripts/_a-*.mjs
+scripts/_a-*.txt
+scripts/_b-*.json
+scripts/_b-*.mjs
+scripts/_b-*.txt
+scripts/_merge-letter-a.mjs
+scripts/_fix-conventions.mjs
+scripts/_apply-convention-fixes.mjs
+scripts/_add-function-words.mjs
+scripts/_gen-letter-b.mjs
+scripts/_restore-fw-a.mjs
+scripts/_ar-imperfect-map.mjs
+scripts/_ar-missing*.txt
+scripts/_ar-pack-to-convert.txt
+scripts/_convention-fix-report.json
+scripts/_nl-variant-report.json
+scripts/_count-still.mjs
+scripts/_missing-sentences.txt
+scripts/_sentences-list.json
+scripts/_sentences.txt
+scripts/_still-*.json
+scripts/_still-missing.txt
+scripts/_vocab-rows.json
+scripts/vocab-bank-temp/
+scripts/_fresh-*.json
+scripts/_ignored-*.json
+scripts/_entries-*.json
+scripts/_discarded-*.json
+scripts/_report-*.json
+scripts/_lot-*.mjs
+scripts/_lot-*.json
+scripts/_fix-staging-*.mjs
+scripts/_merge-validate-lots.mjs
+scripts/_theme-overview.json
+scripts/level-criteria-audit.json
+scripts/_def-*.mjs
+scripts/_assemble-*.mjs
+scripts/run-GHI.mjs
+scripts/build-jklm-entries.mjs
+scripts/_jklm-*.json
+# keep level-criteria.json, check-level-criteria.mjs, staging-progress.json
+
+
 # Driving sign pipeline scratch
 public/universe/signs/_raw/
 public/universe/signs/_manifest.json

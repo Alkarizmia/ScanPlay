@@ -177,10 +177,13 @@ export function isGarbageVocabTerm(text: string): boolean {
   if (isHeadlessOcrFragment(t)) return true;
   if (/^[a-zà-]{1,5}\)$/i.test(t)) return true;
   if (/\)\s*$/.test(t) && !/\(/.test(t)) return true;
+  // Short "xx word" OCR crumbs — keep real pronouns/articles (incl. FR "se connecter").
   if (
     /^[a-z]{1,2}\s+[a-zà-]/i.test(t) &&
     t.length <= 14 &&
-    !/^(de|het|een|le|la|les|un|une|du|des|au|en|te|om|op|il|je|tu|a|an|the|to|my|i|we|you|he|she|they|it|me|my|no)\s+/i.test(t)
+    !/^(de|het|een|le|la|les|un|une|du|des|au|en|te|om|op|il|je|tu|a|an|the|to|my|i|we|you|he|she|they|it|me|no|se|sa|son|ses|mon|ton|ma|ta|nos|vos|leur|ce|cet|cette|ne|ni|si|ou|et|al|el|lo|la|un|una|mi|tu|su|yo|él)\s+/i.test(
+      t,
+    )
   ) {
     return true;
   }

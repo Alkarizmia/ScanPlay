@@ -3,6 +3,7 @@ import { LockIcon } from '../icons/LockIcon';
 import { PathGameKindIcon, type PathGameKind } from '../icons/PathGameIcons';
 import { ScanPlayChest } from '../ScanPlayChest';
 import { StreakFlame } from '../icons/StreakFlame';
+import { getMascotAssetUrl } from '../../lib/mascot/catalog';
 import { lt, type LandingLang } from '../../lib/landingI18n';
 import type { Locale } from '../../types';
 
@@ -408,5 +409,84 @@ export function TrophyIcon() {
     <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M18 4h2.5a1.5 1.5 0 0 1 1.5 1.5C22 8.5 20.2 11 17.6 11.7A6 6 0 0 1 13 15.9V18h3a1 1 0 1 1 0 2H8a1 1 0 1 1 0-2h3v-2.1a6 6 0 0 1-4.6-4.2C3.8 11 2 8.5 2 5.5A1.5 1.5 0 0 1 3.5 4H6V3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1ZM6 6H4.1c.3 1.7 1.3 3.1 2.6 3.7A16 16 0 0 1 6 7.4V6Zm12 1.4c0 .8-.1 1.6-.3 2.3 1.3-.6 2.3-2 2.6-3.7H18v1.4Z" />
     </svg>
+  );
+}
+
+/** Settings-style AI usage bar (same idea as in-app PlanUsageBars). */
+export function AiUsageBarMock({ label, percent }: { label: string; percent: number }) {
+  const pct = Math.max(0, Math.min(100, percent));
+  return (
+    <div className="lp-mock-ai" aria-hidden="true">
+      <div className="lp-mock-ai-head">
+        <strong>{label}</strong>
+        <span>{pct} %</span>
+      </div>
+      <div className="lp-mock-ai-track">
+        <div className="lp-mock-ai-fill" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
+/** Compact UK flag (English course) — not NL. */
+function UkFlagIcon() {
+  return (
+    <svg className="lp-mock-universe-flag" viewBox="0 0 60 36" aria-hidden="true" focusable="false">
+      <rect width="60" height="36" fill="#012169" />
+      <path d="M0 0 L60 36 M60 0 L0 36" stroke="#fff" strokeWidth="8" />
+      <path d="M0 0 L60 36 M60 0 L0 36" stroke="#C8102E" strokeWidth="4" />
+      <path d="M30 0 V36 M0 18 H60" stroke="#fff" strokeWidth="12" />
+      <path d="M30 0 V36 M0 18 H60" stroke="#C8102E" strokeWidth="6" />
+    </svg>
+  );
+}
+
+/** Universe hearts + English course chip (real product signals). */
+export function UniverseMock({
+  heartsLabel,
+  courseLabel,
+}: {
+  heartsLabel: string;
+  courseLabel: string;
+}) {
+  return (
+    <div className="lp-mock-universe" aria-hidden="true">
+      <div className="lp-mock-universe-hearts">
+        {Array.from({ length: 3 }, (_, i) => (
+          <span key={i} className={`lp-mock-heart${i < 2 ? ' is-on' : ''}`}>
+            ♥
+          </span>
+        ))}
+        <span className="lp-mock-universe-cap">{heartsLabel}</span>
+      </div>
+      <div className="lp-mock-universe-course">
+        <UkFlagIcon />
+        <span>{courseLabel}</span>
+      </div>
+    </div>
+  );
+}
+
+/** Profile banner + avatar using the real mascot asset. */
+export function ProfileBannerMock({ handle }: { handle: string }) {
+  const src = getMascotAssetUrl('happy') ?? '/mascot/emotions/happy.webp';
+  return (
+    <div className="lp-mock-profile" aria-hidden="true">
+      <div className="lp-mock-profile-banner" />
+      <div className="lp-mock-profile-avatar-wrap">
+        <img className="lp-mock-profile-avatar" src={src} alt="" width={80} height={80} />
+      </div>
+      <p className="lp-mock-profile-handle">{handle}</p>
+    </div>
+  );
+}
+
+/** Pix mascot intro visual for the landing. */
+export function PixIntroMock() {
+  const src = getMascotAssetUrl('welcome') ?? getMascotAssetUrl('happy') ?? '/mascot/emotions/welcome.webp';
+  return (
+    <div className="lp-pix-visual" aria-hidden="true">
+      <img className="lp-pix-visual-img" src={src} alt="" width={160} height={160} />
+    </div>
   );
 }

@@ -10,7 +10,7 @@ import type { FriendProfile, FriendStatus, PendingFriendRequest, PublicPlayer, P
 import type { Plan } from '../../types';
 
 function mapPlan(raw: unknown): Plan {
-  if (raw === 'plus' || raw === 'pro') return raw;
+  if (raw === 'plus' || raw === 'pro' || raw === 'max') return raw;
   return 'free';
 }
 
@@ -33,6 +33,8 @@ function mapPlayer(row: Record<string, unknown>): PublicPlayer {
     friendStatus: mapFriendStatus(row.friend_status),
     friendsSince: row.friends_since ? String(row.friends_since) : undefined,
     lastSeenAt: row.last_seen_at != null ? String(row.last_seen_at) : null,
+    plan: row.plan != null ? mapPlan(row.plan) : undefined,
+    bannerTheme: typeof row.banner_theme === 'string' ? row.banner_theme : undefined,
   };
 }
 
@@ -59,7 +61,12 @@ async function syncStatsToCloud(): Promise<void> {
   const { xp, streak } = getGamification();
   const deckCount = getHistory().length;
 
-  await supabase.rpc('sync_public_profile_stats', {
+  const bannerTheme =
+    typeof profile.bannerTheme === 'string' && profile.bannerTheme.trim()
+      ? profile.bannerTheme.trim()
+      : 'green';
+
+  const { error } = await supabase.rpc('sync_public_profile_stats', {
     p_display_name: profile.displayName,
     p_avatar_id: profile.avatar,
     p_xp: xp,
@@ -68,7 +75,28 @@ async function syncStatsToCloud(): Promise<void> {
     p_plan: getPlan(),
     p_avatar_url:
       profile.avatar === 'custom' && profile.customAvatarData ? profile.customAvatarData : null,
+    p_banner_theme: bannerTheme,
   });
+
+  if (error) {
+    await supabase.rpc('sync_public_profile_stats', {
+      p_display_name: profile.displayName,
+      p_avatar_id: profile.avatar,
+      p_xp: xp,
+      p_streak: streak,
+      p_deck_count: deckCount,
+      p_plan: getPlan(),
+      p_avatar_url:
+        profile.avatar === 'custom' && profile.customAvatarData ? profile.customAvatarData : null,
+    });
+    const userId = getUserId();
+    if (userId) {
+      await supabase
+        .from('scanplay_public_profiles')
+        .update({ banner_theme: bannerTheme })
+        .eq('user_id', userId);
+    }
+  }
 }
 
 export async function searchPlayers(query: string): Promise<PublicPlayer[]> {
@@ -152,6 +180,7 @@ export async function getFriendProfile(userId: string): Promise<FriendProfile | 
     streak: Number(row.streak ?? 0),
     deckCount: Number(row.deck_count ?? 0),
     plan: mapPlan(row.plan),
+    bannerTheme: typeof row.banner_theme === 'string' ? row.banner_theme : undefined,
     friendCount: Number(row.friend_count ?? 0),
     achievementCount: Number(row.achievement_count ?? mapAchievementUnlocks(row.achievement_unlocks).length),
     achievementUnlocks: mapAchievementUnlocks(row.achievement_unlocks),

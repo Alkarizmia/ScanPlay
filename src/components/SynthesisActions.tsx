@@ -81,11 +81,7 @@ export function SynthesisActions({
       return;
     }
     if (!canUseSynthesis(plan)) {
-      if (plan === 'pro') {
-        onToast(t('synthesisQuotaExhausted', locale));
-      } else {
-        onUpgrade('synthesis');
-      }
+      onUpgrade('aiBudget');
       return;
     }
     if (pairs.length < 2) {

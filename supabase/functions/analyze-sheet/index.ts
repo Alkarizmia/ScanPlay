@@ -4,6 +4,7 @@ import {
   fetchUserPlan,
   fetchUserStatsData,
   incrementScanCount,
+  isAiSaverFromStats,
 } from '../_shared/planQuotas.ts';
 import {
   isReasoningVisionModel,
@@ -377,7 +378,7 @@ Deno.serve(async (req) => {
     const body = (await req.json()) as AnalyzeBody;
     const { imageBase64, mimeType = 'image/jpeg', sheetType = 'vocab' } = body;
     const platform = normalizeScanPlatform(body.platform);
-    const channel = resolveScanChannel(plan, platform);
+    const channel = resolveScanChannel(plan, platform, { saver: isAiSaverFromStats(plan, statsData) });
 
     if (!imageBase64 || typeof imageBase64 !== 'string') {
       return new Response(JSON.stringify({ error: 'imageBase64 required' }), {

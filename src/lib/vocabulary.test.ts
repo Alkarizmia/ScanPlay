@@ -4,10 +4,28 @@ import {
   coercePlayablePairs,
   gradeTypedAnswer,
   isLongExpectedAnswer,
+  isMathLikeText,
   isValidVocabPair,
   pickTypeGameOptions,
 } from './vocabulary';
 import type { WordPair } from '../types';
+
+describe('isMathLikeText', () => {
+  it('does not treat vocab with “log” as a formula', () => {
+    expect(isMathLikeText('to log in')).toBe(false);
+    expect(isMathLikeText('log in')).toBe(false);
+    expect(isMathLikeText('se connecter')).toBe(false);
+    expect(isMathLikeText('peut-être')).toBe(false);
+  });
+
+  it('still detects real formulas', () => {
+    expect(isMathLikeText('log')).toBe(true);
+    expect(isMathLikeText('log(2)')).toBe(true);
+    expect(isMathLikeText('cos x')).toBe(true);
+    expect(isMathLikeText('2+3')).toBe(true);
+    expect(isMathLikeText('x=2')).toBe(true);
+  });
+});
 
 describe('math formula pairs', () => {
   it('keeps short derivative answers like 0, 1, k', () => {

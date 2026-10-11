@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 
-export type PaidPlan = 'plus' | 'pro';
+export type PaidPlan = 'plus' | 'pro' | 'max';
 export type BillingCycle = 'monthly' | 'annual';
 
 let stripeClient: Stripe | null = null;
@@ -38,6 +38,8 @@ export function getPriceId(plan: PaidPlan, cycle: BillingCycle): string | null {
     'plus:annual': process.env.STRIPE_PRICE_PLUS_ANNUAL,
     'pro:monthly': process.env.STRIPE_PRICE_PRO_MONTHLY,
     'pro:annual': process.env.STRIPE_PRICE_PRO_ANNUAL,
+    'max:monthly': process.env.STRIPE_PRICE_MAX_MONTHLY,
+    'max:annual': process.env.STRIPE_PRICE_MAX_ANNUAL,
   };
   return map[`${plan}:${cycle}`] ?? null;
 }
@@ -46,17 +48,27 @@ export function planFromPriceId(priceId: string | null | undefined): PaidPlan | 
   if (!priceId) return 'free';
   const plusIds = [process.env.STRIPE_PRICE_PLUS_MONTHLY, process.env.STRIPE_PRICE_PLUS_ANNUAL];
   const proIds = [process.env.STRIPE_PRICE_PRO_MONTHLY, process.env.STRIPE_PRICE_PRO_ANNUAL];
+  const maxIds = [process.env.STRIPE_PRICE_MAX_MONTHLY, process.env.STRIPE_PRICE_MAX_ANNUAL];
   if (plusIds.includes(priceId)) return 'plus';
   if (proIds.includes(priceId)) return 'pro';
+  if (maxIds.includes(priceId)) return 'max';
   return 'free';
 }
 
 export function billingFromPriceId(priceId: string | null | undefined): BillingCycle | null {
   if (!priceId) return null;
-  if (priceId === process.env.STRIPE_PRICE_PLUS_ANNUAL || priceId === process.env.STRIPE_PRICE_PRO_ANNUAL) {
+  if (
+    priceId === process.env.STRIPE_PRICE_PLUS_ANNUAL ||
+    priceId === process.env.STRIPE_PRICE_PRO_ANNUAL ||
+    priceId === process.env.STRIPE_PRICE_MAX_ANNUAL
+  ) {
     return 'annual';
   }
-  if (priceId === process.env.STRIPE_PRICE_PLUS_MONTHLY || priceId === process.env.STRIPE_PRICE_PRO_MONTHLY) {
+  if (
+    priceId === process.env.STRIPE_PRICE_PLUS_MONTHLY ||
+    priceId === process.env.STRIPE_PRICE_PRO_MONTHLY ||
+    priceId === process.env.STRIPE_PRICE_MAX_MONTHLY
+  ) {
     return 'monthly';
   }
   return null;

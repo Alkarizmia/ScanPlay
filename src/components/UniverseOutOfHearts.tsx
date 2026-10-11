@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
   formatUniverseRegenCountdown,
+  getUniverseHeartCap,
   msUntilNextUniverseHeart,
-  UNIVERSE_MAX_HEARTS,
 } from '../lib/universeHearts';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -45,7 +45,7 @@ export function UniverseOutOfHearts({ locale, onBack }: UniverseOutOfHeartsProps
           role="img"
           aria-label={t('universeHeartsLabel', locale).replace('{n}', '0')}
         >
-          {Array.from({ length: UNIVERSE_MAX_HEARTS }, (_, i) => (
+          {Array.from({ length: Math.min(5, getUniverseHeartCap()) }, (_, i) => (
             <span key={i} className="universe-out-of-hearts-heart" aria-hidden="true">
               ♡
             </span>

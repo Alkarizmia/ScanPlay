@@ -101,6 +101,7 @@ export function FriendProfileSheet({
               streak={profile.streak}
               friendCount={profile.friendCount}
               plan={profile.plan}
+              bannerTheme={profile.bannerTheme}
               featuredAchievements={featured}
               stats={[
                 { label: t('xp', locale), value: String(profile.xp) },
@@ -184,6 +185,8 @@ export function FriendProfileSheet({
               level={seed.level}
               xp={seed.xp ?? 0}
               streak={seed.streak ?? 0}
+              plan={seed.plan}
+              bannerTheme={seed.bannerTheme}
               featuredAchievements={[]}
               stats={[{ label: t('level', locale), value: String(seed.level) }]}
               avatar={

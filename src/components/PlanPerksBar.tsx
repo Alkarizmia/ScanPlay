@@ -2,6 +2,7 @@ import { LockIcon } from './icons/LockIcon';
 import { hasFeature, PLAN_LIMITS } from '../lib/planLimits';
 import { usePlan } from '../hooks/usePlan';
 import { t } from '../lib/i18n';
+import { PLAN_HEART_TIER } from '../lib/planUsage';
 import type { Locale, UpgradeReason } from '../types';
 
 interface PlanPerksBarProps {
@@ -11,36 +12,35 @@ interface PlanPerksBarProps {
 
 const FEATURE_REASON: Record<string, UpgradeReason> = {
   spaced: 'feature',
-  synthesis: 'synthesis',
   stats: 'stats',
   exam: 'exam',
   share: 'share',
 };
 
+function heartSummary(plan: ReturnType<typeof usePlan>, locale: Locale): string {
+  const tier = PLAN_HEART_TIER[plan];
+  if (tier === '3') return '3';
+  if (tier === '5regen') return `5 · ${t('heartsRegenFast', locale)}`;
+  return '∞';
+}
+
 export function PlanPerksBar({ locale, onLockedClick }: PlanPerksBarProps) {
   const plan = usePlan();
+  const summaryKey =
+    plan === 'free'
+      ? 'activePerksFree'
+      : plan === 'plus'
+        ? 'activePerksPlus'
+        : plan === 'max'
+          ? 'activePerksMax'
+          : 'activePerksPro';
 
-  let summary = '';
-  if (plan === 'free') {
-    summary = t('activePerksFree', locale)
-      .replace('{scans}', String(PLAN_LIMITS.free.scansPerDay))
-      .replace('{words}', String(PLAN_LIMITS.free.maxWords))
-      .replace('{steps}', String(PLAN_LIMITS.free.pathSteps));
-  } else if (plan === 'plus') {
-    summary = t('activePerksPlus', locale)
-      .replace('{scans}', String(PLAN_LIMITS.plus.scansPerDay))
-      .replace('{words}', String(PLAN_LIMITS.plus.maxWords))
-      .replace('{steps}', String(PLAN_LIMITS.plus.pathSteps));
-  } else {
-    summary = t('activePerksPro', locale)
-      .replace('{scans}', String(PLAN_LIMITS.pro.scansPerDay))
-      .replace('{words}', String(PLAN_LIMITS.pro.maxWords))
-      .replace('{steps}', String(PLAN_LIMITS.pro.pathSteps));
-  }
+  const summary = t(summaryKey, locale)
+    .replace('{hearts}', heartSummary(plan, locale))
+    .replace('{steps}', String(PLAN_LIMITS[plan].pathSteps));
 
   const chips = [
     { feature: 'spaced' as const, label: t('planPerkSpacedShort', locale) },
-    { feature: 'synthesis' as const, label: t('synthesis', locale) },
     { feature: 'stats' as const, label: t('statsTitle', locale) },
     { feature: 'exam' as const, label: t('examMode', locale) },
     { feature: 'share' as const, label: t('shareDeck', locale) },

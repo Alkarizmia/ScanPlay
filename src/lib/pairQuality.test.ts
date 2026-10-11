@@ -112,6 +112,8 @@ describe('pairQuality', () => {
     expect(isGarbageVocabTerm('e animal')).toBe(true);
     expect(isGarbageVocabTerm('a baby')).toBe(false);
     expect(isGarbageVocabTerm('to be born')).toBe(false);
+    expect(isGarbageVocabTerm('se connecter')).toBe(false);
+    expect(isGarbageVocabTerm('se laver')).toBe(false);
     expect(isSectionTitle('la grossesse')).toBe(false);
     expect(isSectionTitle('La Grossesse')).toBe(false);
   });

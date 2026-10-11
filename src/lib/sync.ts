@@ -31,7 +31,7 @@ async function applyPlanFromCloud(
 ): Promise<void> {
   const applyProfilePlan = (row: Record<string, unknown>) => {
     const plan = row.plan;
-    if (plan === 'plus' || plan === 'pro' || plan === 'free') {
+    if (plan === 'plus' || plan === 'pro' || plan === 'max' || plan === 'free') {
       setPlan(plan);
     }
     const billing = row.billing_cycle;
@@ -40,7 +40,7 @@ async function applyPlanFromCloud(
     }
     if (plan === 'free') {
       clearSubscriptionMeta();
-    } else if (plan === 'plus' || plan === 'pro') {
+    } else if (plan === 'plus' || plan === 'pro' || plan === 'max') {
       applySubscriptionMeta(
         row.subscription_period_end as string | null | undefined,
         row.subscription_cancel_at_period_end as boolean | null | undefined,
@@ -52,13 +52,13 @@ async function applyPlanFromCloud(
     try {
       const { refreshPlanFromStripe } = await import('./stripeCheckout');
       const sub = await refreshPlanFromStripe(options?.checkoutSessionId ?? null);
-      if (sub?.plan === 'plus' || sub?.plan === 'pro') return;
+      if (sub?.plan === 'plus' || sub?.plan === 'pro' || sub?.plan === 'max') return;
     } catch {
       /* fall through to profile */
     }
   }
 
-  if (profile && (profile.plan === 'plus' || profile.plan === 'pro')) {
+  if (profile && (profile.plan === 'plus' || profile.plan === 'pro' || profile.plan === 'max')) {
     applyProfilePlan(profile);
     return;
   }
@@ -85,6 +85,8 @@ function collectStatsBlob(): Record<string, unknown> {
     multiScans: read(MULTI_SCAN_KEY) ?? 0,
     examPasses: read(EXAM_PASS_KEY) ?? 0,
     scansDay: read(SCANS_KEY) ?? {},
+    coachDay: read('scanplay-coach-day') ?? {},
+    synthesisTokenDay: read('scanplay-synthesis-token-day') ?? {},
     notifications: read('scanplay-notifications') ?? [],
     achievementUnlocks: read('scanplay-achievement-unlocks') ?? [],
     achievementTotal: getUnlockedCount(),
@@ -107,6 +109,12 @@ function applyStatsBlob(data: Record<string, unknown>): void {
   }
   if (data.scansDay && typeof data.scansDay === 'object') {
     localStorage.setItem(SCANS_KEY, JSON.stringify(data.scansDay));
+  }
+  if (data.coachDay && typeof data.coachDay === 'object') {
+    localStorage.setItem('scanplay-coach-day', JSON.stringify(data.coachDay));
+  }
+  if (data.synthesisTokenDay && typeof data.synthesisTokenDay === 'object') {
+    localStorage.setItem('scanplay-synthesis-token-day', JSON.stringify(data.synthesisTokenDay));
   }
   if (Array.isArray(data.notifications)) {
     localStorage.setItem('scanplay-notifications', JSON.stringify(data.notifications));

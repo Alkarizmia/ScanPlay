@@ -4,6 +4,7 @@ import { getGamification, getLevel } from './gamification';
 import { getHistory } from './history';
 import { t } from './i18n';
 import { getChatHistoryWindow, getChatMaxChars, getDailyChatLimit, getPlan } from './planLimits';
+import { canSpendAiBudget, getAiUsageRatio, planTokenEnvelopeLabel } from './planUsage';
 import { getProfile, isDefaultDisplayName } from './profile';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { localCoachReply } from './coachPolicy';
@@ -102,6 +103,9 @@ export function buildCoachContext(
         ]
       : [];
 
+  const plan = getPlan();
+  const aiUsagePercent = Math.round(getAiUsageRatio(plan) * 100);
+
   return {
     streak,
     level: getLevel(xp),
@@ -112,6 +116,9 @@ export function buildCoachContext(
     defaultName,
     displayName: profile?.displayName?.slice(0, 24) ?? '',
     achievements: unlocked.slice(-6).map((item) => t(item.nameKey, locale)),
+    plan,
+    aiUsagePercent,
+    aiEnvelopeLabel: planTokenEnvelopeLabel(plan, locale),
     allowedSheets: [
       ...chatSheet,
       ...allowed.map((entry) => ({
@@ -373,13 +380,16 @@ export async function sendCoachMessage(
     pendingPairs: options?.pendingPairs,
     pendingTitle: options?.pendingTitle,
   });
-  if (getPlan() === 'free' || getDailyChatLimit() <= 0) {
-    return { error: 'plan' };
+  if (!canSpendAiBudget()) {
+    return { error: 'quota' };
   }
 
   const canned = localCoachReply(message, locale, {
     sheetCount: context.sheetCount,
     isNewAccount: context.isNewAccount,
+    aiUsagePercent: context.aiUsagePercent,
+    aiEnvelopeLabel: context.aiEnvelopeLabel,
+    plan: context.plan,
   });
 
   const supabase = getSupabase();
@@ -394,6 +404,7 @@ export async function sendCoachMessage(
     }
     await persistCoachExchange(conversationId, message, canned);
     void import('./achievements').then((m) => m.recordCoachUsed());
+    // Local canned replies never hit OpenAI — do not bill the AI envelope.
     return { reply: canned, quota: currentQuota, blocked: 'local' };
   }
 
@@ -438,6 +449,10 @@ export async function sendCoachMessage(
   if (payload?.reply) {
     await persistCoachExchange(conversationId, message, payload.reply);
     void import('./achievements').then((m) => m.recordCoachUsed());
+    // Only real OpenAI coach turns count toward the AI envelope.
+    if (payload.blocked !== 'local' && payload.blocked !== 'too_long' && payload.blocked !== 'privacy' && payload.blocked !== 'support' && payload.blocked !== 'history') {
+      void import('./planUsage').then((m) => m.recordCoachTokenUse());
+    }
     return {
       reply: payload.reply,
       quota: payload.quota ? normalizeQuota(payload.quota) : currentQuota,
@@ -446,9 +461,9 @@ export async function sendCoachMessage(
   }
 
   if (payload?.error === 'plan_required' || status === 403) {
-    return { error: 'plan' };
+    return { error: 'quota' };
   }
-  if (payload?.error === 'quota_exceeded') {
+  if (payload?.error === 'ai_budget_exhausted' || payload?.error === 'quota_exceeded') {
     return { error: 'quota', quota: normalizeQuota(payload.quota ?? undefined) };
   }
   if (payload?.error === 'quota_rpc_failed') {

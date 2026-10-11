@@ -12,7 +12,7 @@ create table if not exists public.scanplay_profiles (
   xp int not null default 0,
   streak int not null default 0,
   last_play_date date,
-  plan text not null default 'free' check (plan in ('free', 'plus', 'pro')),
+  plan text not null default 'free' check (plan in ('free', 'plus', 'pro', 'max')),
   locale text not null default 'fr',
   updated_at timestamptz not null default now()
 );

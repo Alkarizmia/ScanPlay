@@ -1,6 +1,7 @@
 import { ACHIEVEMENTS, getAchievementSkin } from '../lib/achievements';
 import { getAchievementDef } from '../lib/achievementUnlocks';
 import { AchievementGlyph } from './icons/AchievementGlyph';
+import { AchievementShieldFrame } from './icons/AchievementShieldFrame';
 import { t } from '../lib/i18n';
 import type { PublicUnlockRecord } from '../lib/social/types';
 import type { Locale } from '../types';
@@ -32,9 +33,9 @@ export function FriendAchievementsGrid({ unlocks, locale, compact = false }: Fri
         return (
           <div key={ach.id} className={`achievement-badge unlocked friend-achievement-badge achievement-badge--${getAchievementSkin(ach.id)}`} title={t(ach.descKey, locale)}>
             <span className="achievement-icon-wrap" aria-hidden="true">
-              <span className="achievement-icon">
-                <AchievementGlyph achievement={ach} size={compact ? 22 : 28} />
-              </span>
+              <AchievementShieldFrame locked={false} size={compact ? 48 : 72}>
+                <AchievementGlyph achievement={ach} size={compact ? 22 : 36} />
+              </AchievementShieldFrame>
             </span>
             {!compact && (
               <>

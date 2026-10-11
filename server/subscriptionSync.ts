@@ -3,13 +3,17 @@ import { getSupabaseAdmin } from './auth.js';
 import { billingFromPriceId, getStripe, planFromPriceId, type BillingCycle, type PaidPlan } from './stripe.js';
 
 export interface SyncedSubscription {
-  plan: 'free' | 'plus' | 'pro';
+  plan: 'free' | 'plus' | 'pro' | 'max';
   billing_cycle: 'monthly' | 'annual' | null;
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   stripe_price_id: string | null;
   subscription_period_end: string | null;
   subscription_cancel_at_period_end: boolean;
+}
+
+function isPaidPlan(plan: unknown): plan is PaidPlan {
+  return plan === 'plus' || plan === 'pro' || plan === 'max';
 }
 
 function customerIdFrom(subscription: Stripe.Subscription): string | null {
@@ -38,7 +42,7 @@ function isScanPlaySubscription(sub: Stripe.Subscription, userId?: string): bool
   if (planFromPriceId(priceId) !== 'free') return true;
 
   const metaPlan = sub.metadata?.plan;
-  if (metaPlan === 'plus' || metaPlan === 'pro') return true;
+  if (metaPlan === 'plus' || metaPlan === 'pro' || metaPlan === 'max') return true;
 
   if (userId && sub.metadata?.user_id === userId) return true;
 
@@ -50,7 +54,7 @@ function profileFieldsFromRow(
 ): SyncedSubscription {
   const plan = profile.plan;
   return {
-    plan: plan === 'plus' || plan === 'pro' ? plan : 'free',
+    plan: isPaidPlan(plan) ? plan : 'free',
     billing_cycle:
       profile.billing_cycle === 'monthly' || profile.billing_cycle === 'annual'
         ? profile.billing_cycle
@@ -63,13 +67,17 @@ function profileFieldsFromRow(
   };
 }
 
-function resolvePlan(subscription: Stripe.Subscription, priceId: string | null, active: boolean): 'free' | 'plus' | 'pro' {
+function resolvePlan(
+  subscription: Stripe.Subscription,
+  priceId: string | null,
+  active: boolean,
+): 'free' | 'plus' | 'pro' | 'max' {
   if (!active) return 'free';
 
   let plan = planFromPriceId(priceId);
   if (plan === 'free') {
     const metaPlan = subscription.metadata?.plan;
-    if (metaPlan === 'plus' || metaPlan === 'pro') plan = metaPlan;
+    if (isPaidPlan(metaPlan)) plan = metaPlan;
   }
   return plan === 'free' ? 'free' : plan;
 }
@@ -153,7 +161,7 @@ async function findActiveSubscription(
       const sessionPlan = sub.metadata?.plan;
       if (
         (sub.status === 'active' || sub.status === 'trialing') &&
-        (sessionPlan === 'plus' || sessionPlan === 'pro')
+        isPaidPlan(sessionPlan)
       ) {
         return sub;
       }
@@ -245,7 +253,7 @@ export async function syncUserSubscriptionFromStripe(
       session.payment_status === 'paid' || session.payment_status === 'no_payment_required';
     if (
       paid &&
-      (sessionPlan === 'plus' || sessionPlan === 'pro') &&
+      isPaidPlan(sessionPlan) &&
       fields.plan === 'free'
     ) {
       fields = {
@@ -286,7 +294,7 @@ export async function syncUserSubscriptionFromStripe(
   );
 
   if (!subscription) {
-    if (profile && (profile.plan === 'plus' || profile.plan === 'pro')) {
+    if (profile && isPaidPlan(profile.plan)) {
       return profileFieldsFromRow(profile);
     }
 
@@ -339,7 +347,7 @@ export async function getActivePaidSubscription(
 
   const priceId = subscription.items.data[0]?.price?.id ?? null;
   const plan = resolvePlan(subscription, priceId, true);
-  if (plan !== 'plus' && plan !== 'pro') return null;
+  if (!isPaidPlan(plan)) return null;
 
   return { subscription, plan };
 }

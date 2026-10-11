@@ -6,10 +6,18 @@ import {
   trySetDisplayName,
   type UserProfileData,
 } from '../lib/profile';
+import {
+  PROFILE_BANNERS,
+  canUseBanner,
+  getProfileBanner,
+  setProfileBanner,
+  type ProfileBannerId,
+} from '../lib/profileBanner';
 import { isDisplayNameAvailable, isSocialAvailable } from '../lib/social/publicProfile';
 import { createProfileAvatar } from '../lib/thumbnail';
 import { t } from '../lib/i18n';
 import { playSound } from '../lib/sounds';
+import { usePlan } from '../hooks/usePlan';
 import type { Locale } from '../types';
 
 interface ProfileEditSheetProps {
@@ -18,11 +26,21 @@ interface ProfileEditSheetProps {
   profile: UserProfileData;
   onClose: () => void;
   onRefresh: () => void;
+  onUpgrade?: () => void;
 }
 
-export function ProfileEditSheet({ open, locale, profile, onClose, onRefresh }: ProfileEditSheetProps) {
+export function ProfileEditSheet({
+  open,
+  locale,
+  profile,
+  onClose,
+  onRefresh,
+  onUpgrade,
+}: ProfileEditSheetProps) {
   const fileRef = useRef<HTMLInputElement>(null);
-  const [mode, setMode] = useState<'menu' | 'name'>('menu');
+  const plan = usePlan();
+  const [mode, setMode] = useState<'menu' | 'name' | 'banner'>('menu');
+  const [bannerId, setBannerId] = useState<ProfileBannerId>(() => getProfileBanner(plan));
   const [nameDraft, setNameDraft] = useState(profile.displayName);
   const [nameError, setNameError] = useState<string | null>(null);
   const [nameTaken, setNameTaken] = useState(false);
@@ -37,7 +55,8 @@ export function ProfileEditSheet({ open, locale, profile, onClose, onRefresh }: 
     setNameError(null);
     setNameTaken(false);
     setPhotoError(null);
-  }, [open, profile.displayName]);
+    setBannerId(getProfileBanner(plan));
+  }, [open, profile.displayName, plan]);
 
   useEffect(() => {
     if (!open || mode !== 'name' || !isSocialAvailable()) {
@@ -136,10 +155,52 @@ export function ProfileEditSheet({ open, locale, profile, onClose, onRefresh }: 
             <button type="button" className="profile-edit-action" onClick={() => setMode('name')}>
               {t('profileChangeName', locale)}
             </button>
+            <button type="button" className="profile-edit-action" onClick={() => setMode('banner')}>
+              {t('profileChangeBanner', locale)}
+            </button>
             <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onClose}>
               {t('cancel', locale)}
             </button>
             {photoError && <p className="profile-upload-error">{photoError}</p>}
+          </div>
+        ) : mode === 'banner' ? (
+          <div className="profile-edit-banner">
+            <p className="profile-picker-label">{t('profileBannerTitle', locale)}</p>
+            <p className="profile-name-hint">{t('profileBannerHint', locale)}</p>
+            <div className="profile-banner-grid" role="listbox" aria-label={t('profileBannerTitle', locale)}>
+              {PROFILE_BANNERS.map((b) => {
+                const locked = !canUseBanner(b.id, plan);
+                const active = bannerId === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`profile-banner-swatch profile-banner-swatch--${b.id}${active ? ' active' : ''}${locked ? ' locked' : ''}`}
+                    onClick={() => {
+                      if (locked) {
+                        playSound('tap');
+                        onUpgrade?.();
+                        return;
+                      }
+                      if (setProfileBanner(b.id)) {
+                        setBannerId(b.id);
+                        playSound('profileUpdated');
+                        onRefresh();
+                      }
+                    }}
+                  >
+                    <span className="profile-banner-swatch-preview" aria-hidden="true" />
+                    <span className="profile-banner-swatch-label">{t(b.labelKey, locale)}</span>
+                    {locked && <span className="profile-banner-lock">Plus</span>}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={() => setMode('menu')}>
+              {t('back', locale)}
+            </button>
           </div>
         ) : (
           <div className="profile-edit-name">

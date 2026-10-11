@@ -1,11 +1,7 @@
 import { useState } from 'react';
 import { usePlan } from '../hooks/usePlan';
-import {
-  getHistoryMax,
-  getScansRemaining,
-  hasFeature,
-  PLAN_LIMITS,
-} from '../lib/planLimits';
+import { getHistoryMax, hasFeature, PLAN_LIMITS } from '../lib/planLimits';
+import { PLAN_HEART_TIER } from '../lib/planUsage';
 import { isStripeCheckoutEnabled, openStripePortal, stripeErrorMessage } from '../lib/stripeCheckout';
 import { isLoggedIn } from '../lib/auth';
 import { canGuestScan } from '../lib/guestTrial';
@@ -22,6 +18,7 @@ interface PlanCardProps {
 }
 
 function planActiveHint(plan: Plan, locale: Locale): string {
+  if (plan === 'max') return t('planMaxActiveHint', locale);
   if (plan === 'pro') return t('planProActiveHint', locale);
   if (plan === 'plus') return t('planPlusActiveHint', locale);
   return '';
@@ -31,30 +28,30 @@ export function PlanCard({ locale, refreshKey = 0, onUpgrade, onToast }: PlanCar
   const plan = usePlan(refreshKey);
   const [portalLoading, setPortalLoading] = useState(false);
   const limits = PLAN_LIMITS[plan];
-  const scansLeft = getScansRemaining();
   const historyMax = getHistoryMax();
   const loggedIn = isLoggedIn();
   const guestTrialAvailable = !loggedIn && canGuestScan();
-
-  const scansPerkText =
-    !loggedIn
-      ? guestTrialAvailable
-        ? t('planPerkGuestTrial', locale)
-        : t('planPerkFreeAccountScans', locale)
-      : `${scansLeft} / ${limits.scansPerDay} ${t('scansToday', locale)}`;
+  const heartTier = PLAN_HEART_TIER[plan];
+  const heartText =
+    heartTier === '3'
+      ? `3 ${t('planCardHeartsLabel', locale)}`
+      : heartTier === '5regen'
+        ? t('planPerkHearts5', locale)
+        : t('planPerkHeartsInfinite', locale);
 
   const perks = [
-    {
-      ok: true,
-      text: scansPerkText,
-    },
-    ...(!loggedIn && guestTrialAvailable
-      ? []
-      : !loggedIn
-        ? [{ ok: true, text: t('planPerkFreeAccountScans', locale) }]
-        : []),
+    ...(!loggedIn
+      ? [
+          {
+            ok: true,
+            text: guestTrialAvailable
+              ? t('planPerkGuestTrial', locale)
+              : t('planPerkFreeAccountScans', locale),
+          },
+        ]
+      : []),
+    { ok: true, text: heartText },
     { ok: true, text: t(plan === 'free' ? 'planPerkScanAiFree' : 'planPerkScanAiPaid', locale) },
-    { ok: true, text: `${limits.maxWords} ${t('planPerkWords', locale)}` },
     { ok: true, text: t('planPerkPath', locale).replace('{n}', String(limits.pathSteps)) },
     { ok: true, text: t('planPerkReplay', locale).replace('{n}', String(limits.historyReplay)) },
     { ok: hasFeature('spaced', plan), text: t('planPerkSpaced', locale) },

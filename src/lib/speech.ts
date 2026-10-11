@@ -235,7 +235,12 @@ async function playBlob(blob: Blob, gen: number): Promise<boolean> {
   }
 }
 
-async function speakBrowser(spoken: string, lang: LangCode | undefined, rate?: number): Promise<void> {
+async function speakBrowser(
+  spoken: string,
+  lang: LangCode | undefined,
+  rate?: number,
+  pitch = 1,
+): Promise<void> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   const langTag = speechLangTag(lang);
   const voices = await loadVoices();
@@ -245,8 +250,54 @@ async function speakBrowser(spoken: string, lang: LangCode | undefined, rate?: n
   utterance.lang = langTag;
   if (voice) utterance.voice = voice;
   utterance.rate = Math.min(1.5, Math.max(0.4, rate ?? 0.84));
-  utterance.pitch = 1;
-  window.speechSynthesis.speak(utterance);
+  utterance.pitch = pitch;
+  await new Promise<void>((resolve) => {
+    let done = false;
+    const finish = () => {
+      if (done) return;
+      done = true;
+      resolve();
+    };
+    utterance.onend = finish;
+    utterance.onerror = finish;
+    window.speechSynthesis.speak(utterance);
+    // Some engines never fire onend — don't block the dialogue forever.
+    window.setTimeout(finish, Math.min(12000, 800 + spoken.length * 80));
+  });
+}
+
+/** Browser TTS only — no OpenAI / server tokens. Prefer for long dialogues. */
+export async function speakLocal(
+  text: string,
+  lang?: LangCode,
+  options?: SpeakOptions & { pitch?: number },
+): Promise<void> {
+  if (!canSpeak() || !text.trim()) return;
+  const spoken = sanitizeTextForSpeech(text);
+  if (!spoken) return;
+  speakGen += 1;
+  stopPlaying();
+  await speakBrowser(spoken, lang, options?.rate, options?.pitch ?? 1);
+}
+
+/** Play short dialogue lines locally (≈15s), alternating pitch for two speakers. */
+export async function speakDialogueLocal(
+  lines: { text: string }[],
+  lang: LangCode = 'en',
+): Promise<void> {
+  if (!lines.length) return;
+  speakGen += 1;
+  const gen = speakGen;
+  stopPlaying();
+  for (let i = 0; i < lines.length; i += 1) {
+    if (gen !== speakGen) return;
+    const spoken = sanitizeTextForSpeech(lines[i]!.text);
+    if (!spoken) continue;
+    const pitch = i % 2 === 0 ? 1.05 : 0.92;
+    await speakBrowser(spoken, lang, 0.92, pitch);
+    if (gen !== speakGen) return;
+    await new Promise((r) => window.setTimeout(r, 220));
+  }
 }
 
 export async function speakText(

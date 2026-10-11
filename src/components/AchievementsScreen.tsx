@@ -7,6 +7,7 @@ import {
   isAchievementUnlocked,
 } from '../lib/achievements';
 import { AchievementGlyph } from './icons/AchievementGlyph';
+import { AchievementShieldFrame } from './icons/AchievementShieldFrame';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
 
@@ -44,9 +45,9 @@ export function AchievementsScreen({ locale, refreshKey }: AchievementsScreenPro
             return (
               <div key={ach.id} className={`achievement-badge achievement-badge--${skin} ${ok ? 'unlocked' : 'locked'}`}>
                 <span className="achievement-icon-wrap" aria-hidden="true">
-                  <span className="achievement-icon">
-                    <AchievementGlyph achievement={ach} size={52} locked={!ok} />
-                  </span>
+                  <AchievementShieldFrame locked={!ok} size={88}>
+                    <AchievementGlyph achievement={ach} size={48} locked={!ok} />
+                  </AchievementShieldFrame>
                 </span>
                 <span className="achievement-name">{t(ach.nameKey, locale)}</span>
                 <span className="achievement-desc">{t(ach.descKey, locale)}</span>

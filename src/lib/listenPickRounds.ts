@@ -82,9 +82,14 @@ function uniqueTokens(values: string[]): string[] {
  */
 export function buildListenPickRounds(
   pairs: WordPair[],
-  options: { maxRounds?: number; seed?: string } = {},
+  options: {
+    maxRounds?: number;
+    seed?: string;
+    /** Force answers on this side (English Universe → `term`). */
+    answerField?: 'term' | 'definition' | 'alternate';
+  } = {},
 ): ListenPickRound[] {
-  const { maxRounds = 6, seed = 'listenpick' } = options;
+  const { maxRounds = 6, seed = 'listenpick', answerField = 'alternate' } = options;
   const playable = coercePlayablePairs(pairs);
   const pool = playable.filter(isPickable);
   if (pool.length < MIN_CANDIDATES) return [];
@@ -95,7 +100,8 @@ export function buildListenPickRounds(
   const rounds: ListenPickRound[] = [];
   for (let i = 0; i < pool.length && rounds.length < maxRounds; i++) {
     const pair = pool[i]!;
-    const hearTerm = i % 2 === 0;
+    const hearTerm =
+      answerField === 'term' ? false : answerField === 'definition' ? true : i % 2 === 0;
     const spokenSide = hearTerm ? pair.term : pair.definition;
     const answerSide = hearTerm ? pair.definition : pair.term;
     const spoken = pickVocabToken(spokenSide, `${seed}-spoken-${i}`);

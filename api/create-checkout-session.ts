@@ -19,7 +19,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const plan = body.plan as PaidPlan | undefined;
     const billingCycle = body.billingCycle as BillingCycle | undefined;
 
-    if (plan !== 'plus' && plan !== 'pro') {
+    if (plan !== 'plus' && plan !== 'pro' && plan !== 'max') {
       return res.status(400).json({ error: 'invalid_plan' });
     }
     if (billingCycle !== 'monthly' && billingCycle !== 'annual') {

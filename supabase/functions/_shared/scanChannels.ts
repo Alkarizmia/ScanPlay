@@ -19,15 +19,19 @@ export function normalizeScanPlatform(value: unknown): ScanClientPlatform {
 }
 
 /** Plan comes ONLY from Supabase profile (user id). Client maxPairs is ignored. */
-export function resolveScanChannel(plan: Plan, platform: ScanClientPlatform): ScanChannel {
+export function resolveScanChannel(
+  plan: Plan,
+  platform: ScanClientPlatform,
+  opts: { saver?: boolean } = {},
+): ScanChannel {
   const maxPairs = PLAN_LIMITS[plan].maxWords;
-  const model = resolveScanModel(plan);
+  const model = resolveScanModel(plan, { saver: opts.saver });
   return {
     plan,
     platform,
     maxPairs,
     model,
-    label: `plan:${plan}|device:${platform}|cap:${maxPairs}|model:${model}`,
+    label: `plan:${plan}|device:${platform}|cap:${maxPairs}|model:${model}${opts.saver ? '|saver' : ''}`,
   };
 }
 

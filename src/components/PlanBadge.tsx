@@ -8,7 +8,7 @@ interface PlanBadgeProps {
 }
 
 export function PlanBadge({ plan, locale }: PlanBadgeProps) {
-  const icons: Record<Plan, string> = { free: '', plus: '✦', pro: '★' };
+  const icons: Record<Plan, string> = { free: '', plus: '✦', pro: '★', max: '◆' };
   const label = plan === 'free' ? t('planFree', locale) : planLabel(plan);
 
   return (

@@ -34,7 +34,7 @@ export type LangCode = 'nl' | 'fr' | 'en' | 'es' | 'unknown';
 
 export type PairDirection = 'forward' | 'reverse' | 'auto';
 
-export type Plan = 'free' | 'plus' | 'pro';
+export type Plan = 'free' | 'plus' | 'pro' | 'max';
 
 export type BillingCycle = 'monthly' | 'annual';
 
@@ -200,4 +200,5 @@ export type UpgradeReason =
   | 'exam'
   | 'stats'
   | 'multiplayer'
-  | 'coach';
+  | 'coach'
+  | 'aiBudget';

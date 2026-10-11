@@ -14,7 +14,8 @@ import {
   type CoachQuota,
 } from '../lib/coachChat';
 import { getHistory } from '../lib/history';
-import { getChatMaxChars, getDailyChatLimit, getPlan } from '../lib/planLimits';
+import { getChatMaxChars, getDailyChatLimit } from '../lib/planLimits';
+import { canSpendAiBudget, getAiUsageRatio } from '../lib/planUsage';
 import { isCoachChatEnabled } from '../lib/coachFlag';
 import { t } from '../lib/i18n';
 import { speakText } from '../lib/speech';
@@ -271,21 +272,10 @@ function ChatScreenLive({
 
   useEffect(() => () => stopVoiceRef.current?.(), []);
 
-  const limit = Number(quota.limit) || getDailyChatLimit();
-  const used = Math.max(0, Number.isFinite(Number(quota.used)) ? Number(quota.used) : 0);
-  const remaining =
-    used === 0 && limit > 0
-      ? limit
-      : Math.max(
-          0,
-          Math.min(
-            limit,
-            Number.isFinite(Number(quota.remaining)) ? Number(quota.remaining) : limit - used,
-          ),
-        );
+  const aiPct = Math.round(getAiUsageRatio() * 100);
+  const aiExhausted = !canSpendAiBudget();
   const noSheets = getHistory().length === 0 && pendingPairs.length === 0;
-  const freeLocked = getPlan() === 'free' || getDailyChatLimit() <= 0;
-  const blocked = !freeLocked && !noSheets && remaining <= 0 && used >= limit;
+  const blocked = aiExhausted;
 
   const pushAssistant = (content: string) => {
     setMessages((prev) => [
@@ -369,17 +359,18 @@ function ChatScreenLive({
       if (conversation) setActiveConversation(conversation);
     }
 
-    if (freeLocked) {
+    if (aiExhausted) {
       setMessages((prev) => [
         ...prev.filter((row) => row.id !== localId),
         { id: `${localId}-user`, role: 'user', content: message },
         {
           id: `${localId}-bot`,
           role: 'assistant',
-          content: enrichCoachActions(t('chatFreeLockedReply', locale)),
+          content: enrichCoachActions(t('chatAiBudgetReply', locale)),
         },
       ]);
       setBusy(false);
+      onOpenSettings?.();
       return;
     }
 
@@ -400,17 +391,17 @@ function ChatScreenLive({
         setActiveConversation(null);
       }
       if (result.quota) setQuota(result.quota);
-      if (result.error === 'quota') setError(t('chatQuotaEmpty', locale));
-      else if (result.error === 'plan') {
+      if (result.error === 'quota' || result.error === 'plan') {
         setMessages((prev) => [
           ...prev,
           { id: `${localId}-user`, role: 'user', content: message },
           {
             id: `${localId}-bot`,
             role: 'assistant',
-            content: enrichCoachActions(t('chatFreeLockedReply', locale)),
+            content: enrichCoachActions(t('chatAiBudgetReply', locale)),
           },
         ]);
+        onOpenSettings?.();
         setBusy(false);
         return;
       } else if (result.error === 'rpc') setError(t('chatErrorSql', locale));
@@ -683,9 +674,9 @@ function ChatScreenLive({
         )}
 
         {error && <p className="shop-msg shop-msg--error">{error}</p>}
-        {(blocked || freeLocked) && (
-          <button type="button" className="btn-primary" onClick={onUpgrade}>
-            {t('chatUpgradeCta', locale)}
+        {blocked && (
+          <button type="button" className="btn-primary" onClick={() => onOpenSettings?.()}>
+            {t('upgradeAiBudgetCta', locale)}
           </button>
         )}
 
@@ -798,10 +789,8 @@ function ChatScreenLive({
             )}
           </form>
 
-          <p className="chat-quota-line" title={freeLocked ? t('chatFreeQuotaHint', locale) : undefined}>
-            {freeLocked
-              ? t('chatFreeQuotaHint', locale)
-              : t('chatQuota', locale).replace('{remaining}', String(remaining)).replace('{limit}', String(limit))}
+          <p className="chat-quota-line">
+            {t('chatAiUsageLine', locale).replace('{pct}', String(aiPct))}
           </p>
         </div>
       </main>

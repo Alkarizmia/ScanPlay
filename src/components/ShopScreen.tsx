@@ -51,7 +51,7 @@ import {
   type ChestReward,
   type ShopPurchaseResult,
 } from '../lib/shop';
-import { getUniverseHearts, UNIVERSE_MAX_HEARTS } from '../lib/universeHearts';
+import { getUniverseHeartCap, getUniverseHearts, hasInfiniteUniverseHearts } from '../lib/universeHearts';
 import {
   getTranslateHints,
   getXpBoostMinutesLeft,
@@ -222,7 +222,7 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
   const synthesisBonus = getSynthesisBonusCredits();
   const extraScanOk = canBuyExtraScanInShop();
   const universeHearts = getUniverseHearts().hearts;
-  const universeHeartsFull = universeHearts >= UNIVERSE_MAX_HEARTS;
+  const universeHeartsFull = hasInfiniteUniverseHearts() || universeHearts >= getUniverseHeartCap();
 
   const run = async (id: string, fn: () => ShopPurchaseResult | Promise<ShopPurchaseResult>, successKey?: TranslationKey) => {
     setError(null);

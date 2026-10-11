@@ -224,7 +224,7 @@ export const CARTOON_ART: CartoonArt[] = [
   {
     id: 'table',
     src: '/game-art/game-table.png',
-    aliases: ['table', 'desk', 'tafel', 'mesa'],
+    aliases: ['table', 'desk', 'bureau', 'office', 'tafel', 'mesa', 'escritorio', 'schreibtisch'],
   },
   {
     id: 'fenetre',

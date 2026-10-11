@@ -7,6 +7,8 @@ interface ChoiceCardProps {
   onSelect: () => void;
   state?: ChoiceState;
   disabled?: boolean;
+  /** Soft vibrate nudge when idle-help reveals the right tile. */
+  nudge?: boolean;
   /** Position in the list — drives the stagger-in animation. */
   index?: number;
   className?: string;
@@ -19,6 +21,7 @@ export function ChoiceCard({
   onSelect,
   state = 'idle',
   disabled = false,
+  nudge = false,
   index = 0,
   className = '',
   ariaLabel,
@@ -26,7 +29,7 @@ export function ChoiceCard({
   return (
     <button
       type="button"
-      className={`choice-card choice-card--${state}${className ? ` ${className}` : ''}`}
+      className={`choice-card choice-card--${state}${nudge ? ' choice-card--nudge' : ''}${className ? ` ${className}` : ''}`}
       style={{ '--stagger': index } as CSSProperties}
       onClick={onSelect}
       disabled={disabled}

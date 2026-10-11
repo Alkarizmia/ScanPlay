@@ -24,7 +24,8 @@ type UpgradeMessageKey =
   | 'upgradeExam'
   | 'upgradeStats'
   | 'upgradeMultiplayer'
-  | 'upgradeCoach';
+  | 'upgradeCoach'
+  | 'upgradeAiBudget';
 
 const REASON_KEYS: Record<UpgradeReason, UpgradeMessageKey> = {
   scans: 'upgradeScans',
@@ -39,6 +40,7 @@ const REASON_KEYS: Record<UpgradeReason, UpgradeMessageKey> = {
   stats: 'upgradeStats',
   multiplayer: 'upgradeMultiplayer',
   coach: 'upgradeCoach',
+  aiBudget: 'upgradeAiBudget',
 };
 
 const PRO_REASONS = new Set<UpgradeReason>(['share', 'exam']);
@@ -47,11 +49,14 @@ export function UpgradeModal({ reason, locale, onClose, onUpgrade }: UpgradeModa
   const plan = usePlan();
   let messageKey = REASON_KEYS[reason];
   if (reason === 'historyReplay') {
-    messageKey = plan === 'plus' ? 'upgradeHistoryReplayPro' : 'upgradeHistoryReplayPlus';
+    messageKey =
+      plan === 'plus' || plan === 'pro' ? 'upgradeHistoryReplayPro' : 'upgradeHistoryReplayPlus';
   }
-  const ctaKey =
-    reason === 'historyReplay' || reason === 'coach'
-      ? plan === 'plus'
+  const isAiBudget = reason === 'aiBudget';
+  const ctaKey = isAiBudget
+    ? 'upgradeAiBudgetCta'
+    : reason === 'historyReplay' || reason === 'coach'
+      ? plan === 'plus' || plan === 'pro'
         ? 'upgradePro'
         : 'upgradePlus'
       : PRO_REASONS.has(reason)
@@ -62,7 +67,7 @@ export function UpgradeModal({ reason, locale, onClose, onUpgrade }: UpgradeModa
     <div className="modal-overlay" role="dialog" aria-modal="true">
       <div className="modal-card">
         <Mascot message={t(messageKey, locale)} mood="encouraging" size={64} />
-        <h3 className="modal-title">{t('upgradeTitle', locale)}</h3>
+        <h3 className="modal-title">{t(isAiBudget ? 'upgradeAiBudgetTitle' : 'upgradeTitle', locale)}</h3>
         <button type="button" className="btn-primary btn-lg" onClick={onUpgrade}>
           {t(ctaKey, locale)}
         </button>

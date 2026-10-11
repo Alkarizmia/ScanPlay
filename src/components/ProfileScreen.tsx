@@ -11,6 +11,7 @@ interface ProfileScreenProps {
   onAuth: () => void;
   onOpenFriends?: () => void;
   onOpenAchievements?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export function ProfileScreen({
@@ -22,6 +23,7 @@ export function ProfileScreen({
   onAuth,
   onOpenFriends,
   onOpenAchievements,
+  onOpenSettings,
 }: ProfileScreenProps) {
   return (
     <div className="screen tab-screen profile-screen">
@@ -34,6 +36,7 @@ export function ProfileScreen({
             onUpgrade={onUpgrade}
             onOpenFriends={onOpenFriends}
             onOpenAchievements={onOpenAchievements}
+            onOpenSettings={onOpenSettings}
           />
         ) : (
           <div className="profile-guest-card">

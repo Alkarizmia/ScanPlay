@@ -1,4 +1,5 @@
 import { getPlan, PLAN_LIMITS } from './planLimits';
+import { canSpendAiBudget, recordSynthesisTokenUse } from './planUsage';
 import { consumeSynthesisBonusCredit, getSynthesisBonusCredits } from './wallet';
 import type { Plan } from '../types';
 
@@ -33,6 +34,7 @@ function writeUsage(usage: SynthesisUsage): void {
   void import('./sync').then((m) => m.scheduleSync());
 }
 
+/** @deprecated Monthly synth caps removed — AI envelope is the ceiling. */
 export function getSynthesisLimit(plan?: Plan): number {
   return PLAN_LIMITS[plan ?? getPlan()].synthesesPerMonth;
 }
@@ -42,28 +44,29 @@ export function getSynthesisUsed(): number {
 }
 
 export function getSynthesisRemaining(plan?: Plan): number {
-  const limit = getSynthesisLimit(plan);
-  const used = getSynthesisUsed();
-  const bonus = getSynthesisBonusCredits();
-  return Math.max(0, limit - used + bonus);
+  if (!canSpendAiBudget(plan)) return getSynthesisBonusCredits() > 0 ? getSynthesisBonusCredits() : 0;
+  return Infinity;
 }
 
 export function canUseSynthesis(plan?: Plan): boolean {
-  return getSynthesisRemaining(plan) > 0;
+  if (getSynthesisBonusCredits() > 0) return true;
+  return canSpendAiBudget(plan);
 }
 
 export function recordSynthesisUsage(): void {
-  const usage = readUsage();
-  const limit = getSynthesisLimit();
-  if (usage.used < limit) {
+  if (canSpendAiBudget()) {
+    const usage = readUsage();
     writeUsage({ month: usage.month, used: usage.used + 1 });
+    recordSynthesisTokenUse();
     return;
   }
   consumeSynthesisBonusCredit();
 }
 
 export function synthesisQuotaLabel(plan?: Plan): string {
-  const remaining = getSynthesisRemaining(plan);
-  const limit = getSynthesisLimit(plan);
-  return `${remaining}/${limit}`;
+  if (!canSpendAiBudget(plan)) {
+    const bonus = getSynthesisBonusCredits();
+    return bonus > 0 ? `${bonus}` : '0';
+  }
+  return '∞';
 }

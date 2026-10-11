@@ -131,7 +131,7 @@ export async function openStripePortal(): Promise<void> {
 }
 
 export interface SyncedSubscriptionPayload {
-  plan: 'free' | 'plus' | 'pro';
+  plan: 'free' | 'plus' | 'pro' | 'max';
   billing_cycle: 'monthly' | 'annual' | null;
   subscription_period_end: string | null;
   subscription_cancel_at_period_end: boolean;
@@ -181,7 +181,7 @@ export async function cancelSubscriptionRenewal(): Promise<SyncedSubscriptionPay
 
 /** Apply Stripe subscription payload to local plan state (UI + limits). */
 export function applySyncedSubscription(sub: SyncedSubscriptionPayload): void {
-  if (sub.plan === 'free' || sub.plan === 'plus' || sub.plan === 'pro') {
+  if (sub.plan === 'free' || sub.plan === 'plus' || sub.plan === 'pro' || sub.plan === 'max') {
     setPlan(sub.plan);
   }
   if (sub.billing_cycle === 'monthly' || sub.billing_cycle === 'annual') {
@@ -194,7 +194,7 @@ export async function refreshPlanFromStripe(sessionId?: string | null): Promise<
   if (!isStripeCheckoutEnabled()) return null;
   try {
     const sub = await syncStripeSubscription(sessionId);
-    if (sub?.plan === 'plus' || sub?.plan === 'pro') {
+    if (sub?.plan === 'plus' || sub?.plan === 'pro' || sub?.plan === 'max') {
       applySyncedSubscription(sub);
     }
     return sub;
@@ -203,13 +203,13 @@ export async function refreshPlanFromStripe(sessionId?: string | null): Promise<
   }
 }
 
-/** Aggressive post-checkout sync — waits for auth and retries until Plus/Pro is active. */
+/** Aggressive post-checkout sync — waits for auth and retries until a paid plan is active. */
 export async function activatePlanAfterCheckout(sessionId: string): Promise<SyncedSubscriptionPayload | null> {
   if (!isStripeCheckoutEnabled()) return null;
   await waitForAuth();
   try {
     const sub = await syncStripeSubscription(sessionId);
-    if (sub?.plan === 'plus' || sub?.plan === 'pro') {
+    if (sub?.plan === 'plus' || sub?.plan === 'pro' || sub?.plan === 'max') {
       applySyncedSubscription(sub);
       sessionStorage.removeItem('scanplay-checkout-pending');
       return sub;

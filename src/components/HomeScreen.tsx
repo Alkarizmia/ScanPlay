@@ -22,7 +22,7 @@ import { getHistory, peekLastHomeDeck } from '../lib/history';
 import { trackEvent } from '../lib/analytics';
 import { getDateLocale, t } from '../lib/i18n';
 import { collectDroppedImageFiles } from '../lib/droppedFiles';
-import { clampImagesForImport, getMaxImagesPerImport, getScansRemaining, PLAN_LIMITS } from '../lib/planLimits';
+import { clampImagesForImport, getMaxImagesPerImport } from '../lib/planLimits';
 import { getCurrentEnglishLesson } from '../lib/universeEnglish';
 import { resolveUniverseHomeResume } from '../lib/universeLastActivity';
 import type { DeviceProfile } from '../lib/device';
@@ -96,7 +96,6 @@ export function HomeScreen({
   onNewUnlocks,
 }: HomeScreenProps) {
   const plan = usePlan(refreshKey);
-  const scansLeft = getScansRemaining();
   const isDesktop = device.kind === 'desktop';
   const fileRef = useRef<HTMLInputElement>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -270,11 +269,6 @@ export function HomeScreen({
 
         {!lastDeck && (
           <section className="home-continue-block">
-            {loggedIn && scansLeft !== Infinity && (
-              <p className="home-continue-hint">
-                {scansLeft} / {PLAN_LIMITS[plan].scansPerDay} {t('scansToday', locale)}
-              </p>
-            )}
             <button type="button" className="btn-primary btn-lg home-continue-cta" onClick={() => onScanPlay()}>
               {t('lpHeroCta', locale)}
             </button>

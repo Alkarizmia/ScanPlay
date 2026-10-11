@@ -10,7 +10,9 @@ const SCANPLAY_BG = '#0f172a';
 let cachedIconFileId: string | null = process.env.STRIPE_SCANPLAY_ICON_FILE ?? null;
 
 export function scanplayProductName(plan: PaidPlan): string {
-  return plan === 'plus' ? 'ScanPlay Plus' : 'ScanPlay Pro';
+  if (plan === 'plus') return 'ScanPlay Plus';
+  if (plan === 'max') return 'ScanPlay Max';
+  return 'ScanPlay Pro';
 }
 
 function readBundledIcon(): Buffer {

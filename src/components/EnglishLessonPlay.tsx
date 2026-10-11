@@ -9,12 +9,14 @@ import {
   setEnglishLessonStep,
 } from '../lib/universeEnglish';
 import { ENGLISH_LESSONS } from '../lib/englishCurriculum';
+import { hasDialogueForLesson } from '../lib/englishDialogues';
 import { hasEnoughImagePickPairs } from '../lib/imagePickRounds';
 import { buildListenPickRounds } from '../lib/listenPickRounds';
 import { buildLocalTranslateRounds } from '../lib/translateRounds';
 import { canPlayUniverse, loseUniverseHeart } from '../lib/universeHearts';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
+import type { CefrLevel, EnglishGoal } from '../lib/englishCurriculum';
 import type { GameCompleteMeta, Locale, WordPair } from '../types';
 import { gameProgressPct, GameHeader } from './games/GameHeader';
 import { UniverseOutOfHearts } from './UniverseOutOfHearts';
@@ -32,12 +34,26 @@ const ImagePickGame = lazy(() =>
 const TranslateGame = lazy(() =>
   import('./games/TranslateGame').then((m) => ({ default: m.TranslateGame })),
 );
+const DialogueListenGame = lazy(() =>
+  import('./games/DialogueListenGame').then((m) => ({ default: m.DialogueListenGame })),
+);
 
-type StepKind = 'listen' | 'speak' | 'quiz' | 'type' | 'image' | 'translate';
+type StepKind =
+  | 'listen'
+  | 'speak'
+  | 'quiz'
+  | 'type'
+  | 'image'
+  | 'translate'
+  | 'story'
+  | 'mood'
+  | 'fact';
 
 interface MixStep {
   kind: StepKind;
   focus: WordPair;
+  /** Salt for dialogue bank variety (story/mood/fact). */
+  dialogueSalt?: number;
 }
 
 interface EnglishLessonPlayProps {
@@ -61,25 +77,46 @@ function uniqPairs(list: WordPair[]): WordPair[] {
   return out;
 }
 
-function canPlayKind(kind: StepKind, focus: WordPair, pool: WordPair[]): boolean {
+function canPlayKind(
+  kind: StepKind,
+  focus: WordPair,
+  pool: WordPair[],
+  level?: CefrLevel,
+  goal?: EnglishGoal,
+): boolean {
   if (kind === 'image') return hasEnoughImagePickPairs([focus]);
   // Listen-pick needs ≥4 short bilingual candidates in the lesson pool, else rounds = [].
-  if (kind === 'listen') return buildListenPickRounds(pool, { maxRounds: 1 }).length >= 1;
+  if (kind === 'listen')
+    return buildListenPickRounds(pool, { maxRounds: 1, answerField: 'term' }).length >= 1;
   if (kind === 'translate') return buildLocalTranslateRounds(pool, 1).length >= 1;
+  if (kind === 'story' || kind === 'mood' || kind === 'fact') {
+    return !!level && !!goal && hasDialogueForLesson(level, goal);
+  }
   return true;
 }
 
-function fallbackKind(prev: StepKind | undefined, focus: WordPair, pool: WordPair[]): StepKind {
+function fallbackKind(
+  prev: StepKind | undefined,
+  focus: WordPair,
+  pool: WordPair[],
+  level?: CefrLevel,
+  goal?: EnglishGoal,
+): StepKind {
   const candidates: StepKind[] = ['quiz', 'type', 'translate', 'speak', 'listen', 'image'];
   for (const kind of candidates) {
     if (kind === prev) continue;
-    if (canPlayKind(kind, focus, pool)) return kind;
+    if (canPlayKind(kind, focus, pool, level, goal)) return kind;
   }
   return prev === 'quiz' ? 'type' : 'quiz';
 }
 
 /** Duolingo-style: alternate exercise types, never a block of the same kind. */
-function buildMixedSteps(pairs: WordPair[], lessonId: string): MixStep[] {
+function buildMixedSteps(
+  pairs: WordPair[],
+  lessonId: string,
+  level: CefrLevel,
+  goal: EnglishGoal,
+): MixStep[] {
   const rotation: StepKind[] = ['quiz', 'listen', 'translate', 'speak', 'image', 'type', 'quiz', 'listen'];
   const steps: MixStep[] = [];
   let rot = lessonId.length % rotation.length;
@@ -87,20 +124,20 @@ function buildMixedSteps(pairs: WordPair[], lessonId: string): MixStep[] {
   for (const focus of pairs) {
     let attempts = 0;
     let kind = rotation[rot % rotation.length]!;
-    while (attempts < rotation.length && !canPlayKind(kind, focus, pairs)) {
+    while (attempts < rotation.length && !canPlayKind(kind, focus, pairs, level, goal)) {
       rot += 1;
       kind = rotation[rot % rotation.length]!;
       attempts += 1;
     }
-    if (!canPlayKind(kind, focus, pairs)) {
-      kind = fallbackKind(undefined, focus, pairs);
+    if (!canPlayKind(kind, focus, pairs, level, goal)) {
+      kind = fallbackKind(undefined, focus, pairs, level, goal);
     }
     const prev = steps[steps.length - 1]?.kind;
     if (prev === kind) {
       rot += 1;
       kind = rotation[rot % rotation.length]!;
-      if (!canPlayKind(kind, focus, pairs) || kind === prev) {
-        kind = fallbackKind(prev, focus, pairs);
+      if (!canPlayKind(kind, focus, pairs, level, goal) || kind === prev) {
+        kind = fallbackKind(prev, focus, pairs, level, goal);
       }
     }
     steps.push({ kind, focus });
@@ -111,10 +148,22 @@ function buildMixedSteps(pairs: WordPair[], lessonId: string): MixStep[] {
   for (let i = 0; i < Math.min(3, pairs.length); i += 1) {
     const focus = pairs[(i * 3) % pairs.length]!;
     let kind = extraKinds[i % extraKinds.length]!;
-    if (!canPlayKind(kind, focus, pairs) || steps[steps.length - 1]?.kind === kind) {
-      kind = fallbackKind(steps[steps.length - 1]?.kind, focus, pairs);
+    if (!canPlayKind(kind, focus, pairs, level, goal) || steps[steps.length - 1]?.kind === kind) {
+      kind = fallbackKind(steps[steps.length - 1]?.kind, focus, pairs, level, goal);
     }
     steps.push({ kind, focus });
+  }
+
+  // 1–2 mini-conversation listen games (static bank, browser TTS — no AI tokens).
+  if (pairs.length > 0 && hasDialogueForLesson(level, goal)) {
+    const anchor = pairs[lessonId.length % pairs.length]!;
+    const dialogueKinds: StepKind[] = ['story', 'mood', 'fact'];
+    const first = dialogueKinds[lessonId.length % 3]!;
+    const second = dialogueKinds[(lessonId.length + 1) % 3]!;
+    steps.push({ kind: first, focus: anchor, dialogueSalt: 0 });
+    if (pairs.length >= 4) {
+      steps.push({ kind: second, focus: pairs[(lessonId.length + 2) % pairs.length]!, dialogueSalt: 1 });
+    }
   }
 
   return steps;
@@ -133,7 +182,10 @@ export function EnglishLessonPlay({
     () => getEnglishLessonPairs(lessonId, profile.nativeLang),
     [lessonId, profile.nativeLang],
   );
-  const steps = useMemo(() => buildMixedSteps(pairs, lessonId), [pairs, lessonId]);
+  const steps = useMemo(
+    () => buildMixedSteps(pairs, lessonId, profile.level, profile.goal),
+    [pairs, lessonId, profile.level, profile.goal],
+  );
   const [stepIndex, setStepIndex] = useState(() => {
     const saved = getUniverseEnglish();
     if (saved.currentLessonId !== lessonId) return 0;
@@ -296,6 +348,7 @@ export function EnglishLessonPlay({
             locale={locale}
             maxItems={1}
             embedded
+            answerField="term"
             deckId={`eng-mix-listen-${lessonId}-${stepIndex}`}
             onAnswer={(pair, correct) => {
               if (correct) markRight(pair);
@@ -322,6 +375,7 @@ export function EnglishLessonPlay({
             locale={locale}
             maxItems={1}
             embedded
+            targetSide="term"
             shuffleSeed={`eng-mix-quiz-${lessonId}-${stepIndex}`}
             onAnswer={(pair, correct) => {
               if (correct) markRight(pair);
@@ -337,6 +391,7 @@ export function EnglishLessonPlay({
             locale={locale}
             maxItems={1}
             embedded
+            targetSide="term"
             onAnswer={(pair, correct) => {
               if (correct) markRight(pair);
               else markWrong(pair);
@@ -368,12 +423,32 @@ export function EnglishLessonPlay({
             onNotEnoughPairs={() => advanceStep()}
           />
         )}
+        {phase === 'play' &&
+          (step?.kind === 'story' || step?.kind === 'mood' || step?.kind === 'fact') && (
+            <DialogueListenGame
+              locale={locale}
+              nativeLang={profile.nativeLang}
+              lessonId={lessonId}
+              level={profile.level}
+              goal={profile.goal}
+              mode={step.kind === 'story' ? 'topic' : step.kind}
+              salt={step.dialogueSalt ?? 0}
+              embedded
+              onAnswer={(correct) => {
+                if (correct) markRight(step.focus);
+                else markWrong(step.focus);
+              }}
+              onComplete={() => advanceStep()}
+              onExit={onExit}
+            />
+          )}
         {phase === 'review' && reviewPairs.length > 0 && (
           <TypeGame
             pairs={reviewPairs}
             locale={locale}
             maxItems={reviewPairs.length}
             embedded
+            targetSide="term"
             onAnswer={(pair, correct) => {
               if (!correct) {
                 markWrong(pair);

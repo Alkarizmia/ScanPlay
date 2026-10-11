@@ -10,6 +10,8 @@ export interface UserProfileData {
   displayName: string;
   avatar: AvatarId;
   customAvatarData?: string;
+  /** Background behind the profile photo (green/red/blue/yellow free; chromatic Plus+). */
+  bannerTheme?: string;
   profileUpdatedAt?: number;
   /** Timestamp of last successful custom display-name change (for 7-day cooldown). */
   displayNameChangedAt?: number;
@@ -170,6 +172,7 @@ export interface CloudProfilePatch {
   displayName?: string | null;
   avatarId?: string | null;
   avatarUrl?: string | null;
+  bannerTheme?: string | null;
   updatedAt?: string | null;
 }
 
@@ -223,6 +226,15 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
     changed = true;
   } else if (patch.avatarUrl && next.avatar === 'custom' && patch.avatarUrl !== local.customAvatarData) {
     next.customAvatarData = patch.avatarUrl;
+    changed = true;
+  }
+
+  if (
+    patch.bannerTheme?.trim() &&
+    patch.bannerTheme.trim() !== local.bannerTheme &&
+    (cloudTime > localTime || localTime === 0 || !local.bannerTheme)
+  ) {
+    next.bannerTheme = patch.bannerTheme.trim();
     changed = true;
   }
 

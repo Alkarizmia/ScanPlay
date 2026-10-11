@@ -5,15 +5,15 @@ import { usePlan } from '../hooks/usePlan';
 import { isLoggedIn } from '../lib/auth';
 import { t, type TranslationKey } from '../lib/i18n';
 import {
-  formatGapFactor,
   getBillingCycle,
+  isPaidPlan,
   PLAN_LIMITS,
-  planGapVsFree,
   planMonthlyEquivalent,
   planPrice,
   setBillingCycle,
   setPlan,
 } from '../lib/planLimits';
+import { PLAN_HEART_TIER, type HeartTierLabel } from '../lib/planUsage';
 import {
   isStripeCheckoutEnabled,
   openStripePortal,
@@ -33,12 +33,31 @@ interface PricingScreenProps {
   onToast?: (message: string) => void;
 }
 
-const PLANS: Plan[] = ['free', 'plus', 'pro'];
+const PLANS: Plan[] = ['free', 'plus', 'pro', 'max'];
 
 const EXCLUSIVE_PERKS: Record<Plan, TranslationKey[]> = {
-            free: ['compareHistory', 'compareReplay'],
-  plus: ['planPerkSpaced', 'planPerkSynthesis', 'planPerkStats'],
-  pro: ['planPerkSpaced', 'planPerkSynthesis', 'planPerkStats', 'planPerkExam', 'planPerkShare'],
+  free: ['compareHistory', 'compareReplay'],
+  plus: ['planPerkStatus', 'planPerkHeartsRegen', 'planPerkBannerChromatic', 'planPerkSpaced', 'planPerkStats'],
+  pro: [
+    'planPerkStatus',
+    'planPerkHeartsInfinite',
+    'planPerkBannerChromatic',
+    'planPerkExam',
+    'planPerkShare',
+  ],
+  max: [
+    'planPerkVerified',
+    'planPerkHeartsInfinite',
+    'planPerkBannerChromatic',
+    'planPerkPriority',
+    'planPerkExam',
+  ],
+};
+
+const TAGLINE_KEY: Record<Exclude<Plan, 'free'>, TranslationKey> = {
+  plus: 'planPlusTagline',
+  pro: 'planProTagline',
+  max: 'planMaxTagline',
 };
 
 type CompareRow = {
@@ -46,27 +65,57 @@ type CompareRow = {
   free: string;
   plus: string;
   pro: string;
+  max: string;
 };
 
-const ROWS: CompareRow[] = [
-  { labelKey: 'compareScans', free: `${PLAN_LIMITS.free.scansPerDay}/j`, plus: `${PLAN_LIMITS.plus.scansPerDay}/j`, pro: `${PLAN_LIMITS.pro.scansPerDay}/j` },
-  { labelKey: 'compareWords', free: String(PLAN_LIMITS.free.maxWords), plus: String(PLAN_LIMITS.plus.maxWords), pro: String(PLAN_LIMITS.pro.maxWords) },
-  { labelKey: 'comparePath', free: String(PLAN_LIMITS.free.pathSteps), plus: String(PLAN_LIMITS.plus.pathSteps), pro: String(PLAN_LIMITS.pro.pathSteps) },
-  { labelKey: 'compareHistory', free: `${PLAN_LIMITS.free.historyMax}`, plus: '∞', pro: '∞' },
-  { labelKey: 'compareReplay', free: `${PLAN_LIMITS.free.historyReplay}`, plus: `${PLAN_LIMITS.plus.historyReplay}`, pro: `${PLAN_LIMITS.pro.historyReplay}` },
-  { labelKey: 'compareSpaced', free: '·', plus: '✓', pro: '✓' },
-  { labelKey: 'compareSynthesis', free: '2/m', plus: '15/m', pro: '40/m' },
-  { labelKey: 'compareCoach', free: '—', plus: `${PLAN_LIMITS.plus.chatPerDay}/j`, pro: `${PLAN_LIMITS.pro.chatPerDay}/j` },
-  { labelKey: 'compareCoachChars', free: '—', plus: String(PLAN_LIMITS.plus.chatMaxChars), pro: String(PLAN_LIMITS.pro.chatMaxChars) },
-  { labelKey: 'compareCoachHistory', free: '—', plus: String(PLAN_LIMITS.plus.chatHistoryWindow), pro: String(PLAN_LIMITS.pro.chatHistoryWindow) },
-  { labelKey: 'compareStats', free: '·', plus: '✓', pro: '✓' },
-  { labelKey: 'compareExam', free: '·', plus: '·', pro: '✓' },
-  { labelKey: 'compareShare', free: '·', plus: '·', pro: '✓' },
-];
+function heartLabel(tier: HeartTierLabel, locale: Locale): string {
+  if (tier === '3') return '3';
+  if (tier === '5regen') return `5 · ${t('heartsRegenFast', locale)}`;
+  return '∞';
+}
+
+function buildRows(locale: Locale): CompareRow[] {
+  return [
+    {
+      labelKey: 'compareHearts',
+      free: heartLabel(PLAN_HEART_TIER.free, locale),
+      plus: heartLabel(PLAN_HEART_TIER.plus, locale),
+      pro: heartLabel(PLAN_HEART_TIER.pro, locale),
+      max: heartLabel(PLAN_HEART_TIER.max, locale),
+    },
+    {
+      labelKey: 'comparePath',
+      free: String(PLAN_LIMITS.free.pathSteps),
+      plus: String(PLAN_LIMITS.plus.pathSteps),
+      pro: String(PLAN_LIMITS.pro.pathSteps),
+      max: String(PLAN_LIMITS.max.pathSteps),
+    },
+    {
+      labelKey: 'compareHistory',
+      free: `${PLAN_LIMITS.free.historyMax}`,
+      plus: '∞',
+      pro: '∞',
+      max: '∞',
+    },
+    {
+      labelKey: 'compareReplay',
+      free: `${PLAN_LIMITS.free.historyReplay}`,
+      plus: `${PLAN_LIMITS.plus.historyReplay}`,
+      pro: `${PLAN_LIMITS.pro.historyReplay}`,
+      max: `${PLAN_LIMITS.max.historyReplay}`,
+    },
+    { labelKey: 'compareSpaced', free: '·', plus: '✓', pro: '✓', max: '✓' },
+    { labelKey: 'compareStats', free: '·', plus: '✓', pro: '✓', max: '✓' },
+    { labelKey: 'compareExam', free: '·', plus: '·', pro: '✓', max: '✓' },
+    { labelKey: 'compareShare', free: '·', plus: '·', pro: '✓', max: '✓' },
+    { labelKey: 'compareStatus', free: '·', plus: '✓', pro: '✓', max: '✓✓' },
+  ];
+}
 
 function planTitle(plan: Plan, locale: Locale) {
   if (plan === 'free') return t('planFree', locale);
   if (plan === 'plus') return t('planPlus', locale);
+  if (plan === 'max') return t('planMax', locale);
   return t('planPro', locale);
 }
 
@@ -74,6 +123,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
   const current = usePlan(refreshKey);
   const [billingCycle, setBillingCycleState] = useState<BillingCycle>(() => getBillingCycle());
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const rows = useMemo(() => buildRows(locale), [locale]);
 
   useEffect(() => {
     if (!isLoggedIn() || !isStripeCheckoutEnabled()) return;
@@ -81,8 +131,9 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
   }, [refreshKey]);
 
   const paidPlans = useMemo<Plan[]>(() => {
-    if (current === 'pro') return ['pro', 'plus'];
-    return ['plus', 'pro'];
+    if (current === 'max') return ['max', 'pro', 'plus'];
+    if (current === 'pro') return ['pro', 'max', 'plus'];
+    return ['plus', 'pro', 'max'];
   }, [current]);
 
   const handleBillingCycle = (cycle: BillingCycle) => {
@@ -134,7 +185,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
   };
 
   const handlePlanAction = async (plan: Plan) => {
-    if (plan === current && current !== 'free' && isStripeCheckoutEnabled()) {
+    if (plan === current && isPaidPlan(current) && isStripeCheckoutEnabled()) {
       try {
         setCheckoutLoading(true);
         await openStripePortal();
@@ -150,7 +201,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
 
   const planButtonLabel = (plan: Plan) => {
     if (plan === current) {
-      if (current !== 'free' && isStripeCheckoutEnabled()) {
+      if (isPaidPlan(current) && isStripeCheckoutEnabled()) {
         return t('settingsManagePlan', locale);
       }
       return t('current', locale);
@@ -181,7 +232,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
 
         {current === 'free' ? (
           <p className="pricing-free-status" role="status">
-            {t('planCurrentFreeHint', locale).replace('{scans}', String(PLAN_LIMITS.free.scansPerDay))}
+            {t('planCurrentFreeHint', locale)}
           </p>
         ) : (
           <p className="pricing-active-plan" role="status">
@@ -191,10 +242,9 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
 
         <div className="pricing-cards">
           {paidPlans.map((plan) => {
-            const limits = PLAN_LIMITS[plan];
-            const gap = planGapVsFree(plan);
             const featured = plan === 'plus' && current === 'free';
             const isCurrent = plan === current;
+            const heart = heartLabel(PLAN_HEART_TIER[plan], locale);
             return (
               <article
                 key={plan}
@@ -205,11 +255,12 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
                     <div className="pricing-title-row">
                       <h3>{planTitle(plan, locale)}</h3>
                       {featured && <span className="pricing-popular">{t('planPopular', locale)}</span>}
+                      {plan === 'max' && !isCurrent && (
+                        <span className="pricing-max-pill">{t('planMaxBadge', locale)}</span>
+                      )}
                       {isCurrent && <span className="pricing-current-pill">{t('current', locale)}</span>}
                     </div>
-                    <p className="pricing-tagline">
-                      {t(plan === 'plus' ? 'planPlusTagline' : 'planProTagline', locale)}
-                    </p>
+                    <p className="pricing-tagline">{t(TAGLINE_KEY[plan as Exclude<Plan, 'free'>], locale)}</p>
                   </div>
                   <div className="pricing-price-block">
                     <span className="pricing-price">
@@ -229,30 +280,18 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
 
                 <div className="pricing-metrics">
                   <div className="pricing-metric">
-                    <strong>{limits.scansPerDay}</strong>
-                    <span>{t('planCardScansLabel', locale)}</span>
+                    <strong>{heart}</strong>
+                    <span>{t('planCardHeartsLabel', locale)}</span>
                   </div>
                   <div className="pricing-metric">
-                    <strong>{limits.maxWords}</strong>
-                    <span>{t('planCardWordsLabel', locale)}</span>
+                    <strong>{PLAN_LIMITS[plan].pathSteps}</strong>
+                    <span>{t('planCardPathLabel', locale)}</span>
                   </div>
                   <div className="pricing-metric">
-                    <strong>GPT-4.1</strong>
-                    <span>{t('planCardAiLabel', locale)}</span>
+                    <strong>✓</strong>
+                    <span>{t('planCardStatusLabel', locale)}</span>
                   </div>
                 </div>
-
-                {gap && (
-                  <div className="pricing-gap-chips">
-                    <span>
-                      ×{formatGapFactor(gap.scanFactor, locale)} {t('planCardScansLabel', locale)}
-                    </span>
-                    <span>
-                      ×{formatGapFactor(gap.wordFactor, locale)} {t('planCardWordsLabel', locale)}
-                    </span>
-                    <span>vs Free</span>
-                  </div>
-                )}
 
                 <ul className="pricing-highlights">
                   {EXCLUSIVE_PERKS[plan].map((key) => (
@@ -288,12 +327,13 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
                 </tr>
               </thead>
               <tbody>
-                {ROWS.map((row) => (
+                {rows.map((row) => (
                   <tr key={row.labelKey}>
                     <td>{t(row.labelKey, locale)}</td>
                     <td className={current === 'free' ? 'col-current' : ''}>{row.free}</td>
                     <td className={current === 'plus' ? 'col-current' : ''}>{row.plus}</td>
                     <td className={current === 'pro' ? 'col-current' : ''}>{row.pro}</td>
+                    <td className={current === 'max' ? 'col-current' : ''}>{row.max}</td>
                   </tr>
                 ))}
               </tbody>
@@ -304,7 +344,7 @@ export function PricingScreen({ locale, refreshKey = 0, onBack, onSelect, onAuth
         <p className="pricing-note">
           {isStripeCheckoutEnabled() ? t('pricingStripe', locale) : t('pricingSimulated', locale)}
         </p>
-        {isStripeCheckoutEnabled() && current !== 'free' && current !== 'pro' && (
+        {isStripeCheckoutEnabled() && isPaidPlan(current) && current !== 'max' && (
           <p className="pricing-upgrade-policy">{t('subscriptionUpgradeBlockedHint', locale)}</p>
         )}
       </main>

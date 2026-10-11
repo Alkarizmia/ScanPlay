@@ -16,10 +16,12 @@ import {
   type TranslateRound,
 } from '../../lib/translateRounds';
 import { consumeTranslateHint, getTranslateHints } from '../../lib/wallet';
+import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
 import type { EmbeddedGameProps } from './embeddedGame';
 import { LessonGameShell } from './LessonGameShell';
+import { IdleHelpChip } from './IdleHelpChip';
 
 interface TranslateGameProps extends EmbeddedGameProps {
   pairs: WordPair[];
@@ -94,9 +96,17 @@ export function TranslateGame({
   const slots = round?.expected.length ?? 0;
   const slotsFilled = Boolean(round && picked.length === slots);
 
+  const settled = feedback === 'ok' || feedback === 'fail';
+  const idleEnabled = !examMode && !settled;
+  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+    enabled: idleEnabled,
+    resetKey: `${index}-${round?.source ?? ''}`,
+  });
+
   const pickFromBank = (id: string) => {
     if (feedback === 'ok' || feedback === 'fail' || picked.includes(id)) return;
     if (round && picked.length >= round.expected.length) return;
+    bumpActivity();
     playSound('tap');
     setPicked((ids) => [...ids, id]);
     if (feedback === 'almost') setFeedback('idle');
@@ -104,6 +114,7 @@ export function TranslateGame({
 
   const returnTile = (id: string) => {
     if (feedback === 'ok' || feedback === 'fail') return;
+    bumpActivity();
     playSound('tap');
     setPicked((ids) => ids.filter((x) => x !== id));
   };
@@ -197,6 +208,15 @@ export function TranslateGame({
         </div>
         {hintMsg && <p className="translate-hint-msg">{hintMsg}</p>}
 
+        {idleEnabled && (
+          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+        )}
+        {idleHelped && !settled && round && (
+          <p className="idle-help-answer idle-help-answer--reveal" aria-live="polite">
+            {round.expected.join(' ')}
+          </p>
+        )}
+
         <div className="translate-prompt">
           <ScanPlayMascot expression={mascotFor(feedback)} size={88} idle={feedback === 'idle'} />
           <div className="translate-speech">
@@ -254,17 +274,25 @@ export function TranslateGame({
         <div className="translate-bank">
           {(round?.bank ?? [])
             .filter((tile) => !picked.includes(tile.id))
-            .map((tile) => (
-              <button
-                key={tile.id}
-                type="button"
-                className="translate-tile"
-                disabled={feedback === 'ok' || feedback === 'fail'}
-                onClick={() => pickFromBank(tile.id)}
-              >
-                {tile.text}
-              </button>
-            ))}
+            .map((tile) => {
+              const nextSlot = picked.length;
+              const shouldNudge =
+                idleHelped &&
+                !settled &&
+                nextSlot < (round?.expected.length ?? 0) &&
+                tile.text === round?.expected[nextSlot];
+              return (
+                <button
+                  key={tile.id}
+                  type="button"
+                  className={`translate-tile${shouldNudge ? ' translate-tile--nudge' : ''}`}
+                  disabled={feedback === 'ok' || feedback === 'fail'}
+                  onClick={() => pickFromBank(tile.id)}
+                >
+                  {tile.text}
+                </button>
+              );
+            })}
         </div>
       </main>
 
