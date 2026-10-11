@@ -10,7 +10,7 @@
   "lpHeroTitleAccent": "They turn into a game.",
   "lpHeroSub": "One photo of your notes becomes a game. Nothing to build by hand.",
   "lpHeroCta": "Scan my notes",
-  "lpHeroCtaNote": "1st scan without an account — free, AI envelope stays at 0%.",
+  "lpHeroCtaNote": "1st scan without an account. Free, AI envelope stays at 0%.",
   "lpHeroTrust1": "Revise by playing",
   "lpHeroTrust2": "No account",
   "lpHeroTrust3": "No credit card",
@@ -134,7 +134,7 @@
   "lpFaq1Q": "Is it really free?",
   "lpFaq1A": "Yes. You can scan a first sheet without an account: that trial scan is free and does not use your AI envelope (you stay at 0% after creating an account). With a free account, your history is saved and you get a ScanPlay AI envelope (€0.15/week): scans, coach and summaries share the same %. One trial scan per device (refreshing the page does not grant another). Paid plans grow the envelope, but nothing forces you into them.",
   "lpFaq2Q": "Do I have to create an account?",
-  "lpFaq2A": "Not to scan your first sheet. A free account is asked when you start the games, to save your progress. The no-account trial is limited to 1 scan per device — then you need an account. That first scan does not consume your AI usage %.",
+  "lpFaq2A": "Not to scan your first sheet. A free account is asked when you start the games, to save your progress. The no-account trial is limited to 1 scan per device. Then you need an account. That first scan does not consume your AI usage %.",
   "lpFaq3Q": "Which documents does it work with?",
   "lpFaq3A": "Images: a photo of your sheet, a textbook page, or a screenshot. Printed or neatly written text is recognised best. PDFs are not supported yet.",
   "lpFaq4Q": "What if the scan gets it wrong?",
@@ -201,4 +201,4 @@
   "lpPixKicker": "Meet Pix",
   "lpPixTitle": "Pix, your ScanPlay coach",
   "lpPixBody": "The green mascot who cheers you on, guides you in the coach, and joins you in Universe. Not a cold bot: a buddy who pushes you to revise."
-}
+}\n

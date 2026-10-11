@@ -1,0 +1,18 @@
+---
+description: Never use em dashes in ScanPlay user-facing copy
+alwaysApply: true
+---
+
+# No em dashes in product copy
+
+Never use the em dash character (`—`) or en dash (`–`) in **user-facing** text: landing, FAQ, UI strings, toasts, emails, `llms.txt`, JSON-LD, marketing.
+
+Use a period, comma, colon, or parentheses instead.
+
+Examples:
+- Bad: `1er scan sans compte — gratuit`
+- Good: `1er scan sans compte. Gratuit`
+- Bad: `Yes — your bar is at 50%`
+- Good: `Yes: your bar is at 50%`
+
+Code comments may keep dashes if needed; product copy must not.

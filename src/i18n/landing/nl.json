@@ -10,7 +10,7 @@
   "lpHeroTitleAccent": "Hij wordt een spel.",
   "lpHeroSub": "Eén foto van je les en ScanPlay maakt er een spel van. Niets zelf te maken.",
   "lpHeroCta": "Scan mijn les",
-  "lpHeroCtaNote": "1e scan zonder account — gratis, AI-enveloppe blijft 0%.",
+  "lpHeroCtaNote": "1e scan zonder account. Gratis, AI-enveloppe blijft 0%.",
   "lpHeroTrust1": "Leren door te spelen",
   "lpHeroTrust2": "Geen account",
   "lpHeroTrust3": "Geen creditcard",
@@ -134,7 +134,7 @@
   "lpFaq1Q": "Is het echt gratis?",
   "lpFaq1A": "Ja. Je kunt een eerste blad scannen zonder account: die proefscan is gratis en gebruikt je AI-enveloppe niet (je blijft op 0% na het aanmaken van een account). Met een gratis account wordt je geschiedenis bewaard en krijg je een ScanPlay AI-enveloppe (€0,15/week): scans, coach en samenvattingen delen hetzelfde %. Eén proefscan per apparaat (pagina vernieuwen geeft geen nieuwe). Betaalde abonnementen vergroten de enveloppe, maar niets verplicht je.",
   "lpFaq2Q": "Moet ik een account maken?",
-  "lpFaq2A": "Niet om je eerste blad te scannen. Een gratis account wordt gevraagd om de spellen te starten en je voortgang te bewaren. De proef zonder account is beperkt tot 1 scan per apparaat — daarna heb je een account nodig. Die eerste scan verbruikt je AI-gebruik % niet.",
+  "lpFaq2A": "Niet om je eerste blad te scannen. Een gratis account wordt gevraagd om de spellen te starten en je voortgang te bewaren. De proef zonder account is beperkt tot 1 scan per apparaat. Daarna heb je een account nodig. Die eerste scan verbruikt je AI-gebruik % niet.",
   "lpFaq3Q": "Met welke documenten werkt het?",
   "lpFaq3A": "Met afbeeldingen: een foto van je blad, een pagina uit je boek of een screenshot. Gedrukte of netjes geschreven tekst wordt het best herkend. Pdf's worden nog niet ondersteund.",
   "lpFaq4Q": "En als de scan een fout maakt?",
@@ -201,4 +201,4 @@
   "lpPixKicker": "Maak kennis met Pix",
   "lpPixTitle": "Pix, jouw ScanPlay-coach",
   "lpPixBody": "De groene mascotte die je aanmoedigt, je helpt in de coach, en meegaat in Univers. Geen koude bot: een maatje dat je aanzet tot studeren."
-}
+}\n

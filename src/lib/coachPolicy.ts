@@ -182,18 +182,18 @@ export function localCoachReply(
 
   if (looksLikeAiUsageAsk(message)) {
     if (lang === 'en') {
-      return `Yes — your **ScanPlay AI** bar is at **${pct}%** (envelope ${envelope}).\n\nThat % comes from Settings, not your sheet count. Sheets in my memory are only for quizzes — they don't fill the AI bar.\n\nAt ~90% quality steps down a bit; at 100% AI pauses until the next cycle.\n\n[[action:settings]]`;
+      return `Yes: your **ScanPlay AI** bar is at **${pct}%** (envelope ${envelope}).\n\nThat % comes from Settings, not your sheet count. Sheets in my memory are only for quizzes; they don't fill the AI bar.\n\nAt ~90% quality steps down a bit; at 100% AI pauses until the next cycle.\n\n[[action:settings]]`;
     }
     if (lang === 'nl') {
-      return `Ja — je **ScanPlay AI**-balk staat op **${pct}%** (enveloppe ${envelope}).\n\nDat % komt uit Instellingen, niet uit je aantal bladen. Bladen in mijn geheugen zijn alleen voor quizzen.\n\nRond 90% daalt de kwaliteit wat; bij 100% pauzeert AI tot de volgende cyclus.\n\n[[action:settings]]`;
+      return `Ja: je **ScanPlay AI**-balk staat op **${pct}%** (enveloppe ${envelope}).\n\nDat % komt uit Instellingen, niet uit je aantal bladen. Bladen in mijn geheugen zijn alleen voor quizzen.\n\nRond 90% daalt de kwaliteit wat; bij 100% pauzeert AI tot de volgende cyclus.\n\n[[action:settings]]`;
     }
     if (lang === 'es') {
-      return `Sí — tu barra **IA ScanPlay** está al **${pct}%** (envolvente ${envelope}).\n\nEse % sale de Ajustes, no del número de fichas. Las fichas en mi memoria son solo para quizzes.\n\nCerca del 90% baja un poco la calidad; al 100% la IA espera al siguiente ciclo.\n\n[[action:settings]]`;
+      return `Sí: tu barra **IA ScanPlay** está al **${pct}%** (envolvente ${envelope}).\n\nEse % sale de Ajustes, no del número de fichas. Las fichas en mi memoria son solo para quizzes.\n\nCerca del 90% baja un poco la calidad; al 100% la IA espera al siguiente ciclo.\n\n[[action:settings]]`;
     }
     if (lang === 'ar') {
-      return `نعم — شريط **ذكاء ScanPlay** عند **${pct}%** (الغلاف ${envelope}).\n\nهذه النسبة من الإعدادات لا من عدد البطاقات. البطاقات في ذاكرتي للأسئلة فقط.\n\nقرب 90% تنخفض الجودة قليلاً؛ عند 100% يتوقف الذكاء حتى الدورة التالية.\n\n[[action:settings]]`;
+      return `نعم: شريط **ذكاء ScanPlay** عند **${pct}%** (الغلاف ${envelope}).\n\nهذه النسبة من الإعدادات لا من عدد البطاقات. البطاقات في ذاكرتي للأسئلة فقط.\n\nقرب 90% تنخفض الجودة قليلاً؛ عند 100% يتوقف الذكاء حتى الدورة التالية.\n\n[[action:settings]]`;
     }
-    return `Oui — ta barre **IA ScanPlay** est bien à **${pct}%** (enveloppe ${envelope}).\n\nCe % vient des paramètres, pas du nombre de fiches. Les fiches en mémoire coach, c'est juste ce que je peux quiz ; ça ne compte pas dans la barre IA.\n\nVers 90 % on baisse un peu la qualité ; à 100 % l'IA attend le prochain cycle.\n\n[[action:settings]]`;
+    return `Oui: ta barre **IA ScanPlay** est bien à **${pct}%** (enveloppe ${envelope}).\n\nCe % vient des paramètres, pas du nombre de fiches. Les fiches en mémoire coach, c'est juste ce que je peux quiz ; ça ne compte pas dans la barre IA.\n\nVers 90 % on baisse un peu la qualité ; à 100 % l'IA attend le prochain cycle.\n\n[[action:settings]]`;
   }
 
   if (looksLikeThanks(message)) {

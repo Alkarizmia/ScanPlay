@@ -183,7 +183,7 @@ export function ProfileSection({
           }}
           disabled={!onOpenFriends}
         >
-          <span className="sp-profile-stat-val">{isSocialAvailable() ? friendCount : '—'}</span>
+          <span className="sp-profile-stat-val">{isSocialAvailable() ? friendCount : '-'}</span>
           <span className="sp-profile-stat-label">{t('profileStatFriends', locale)}</span>
         </button>
         <button
