@@ -1,5 +1,5 @@
 import { lazy, startTransition, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { initTheme } from './hooks/useTheme';
+import { applyTheme, getInitialTheme, initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
 import { consumeBootIntent, consumePendingScanAfterAuth, setPendingScanAfterAuth } from './lib/bootIntent';
 import './index.css';
@@ -1111,10 +1111,9 @@ export default function App() {
         const mathOpts = isFormulaScan ? { mathSheet: true } : undefined;
         const playable = coercePlayablePairs(allPairs, mathOpts);
         if (canOpenGamePath(playable, mathOpts)) {
+          // Guest trial still consumes AI envelope usage (same % bar after signup).
+          for (let s = 0; s < scanFiles.length; s += 1) recordScan();
           if (guestScan) recordGuestScan();
-          else {
-            for (let s = 0; s < scanFiles.length; s += 1) recordScan();
-          }
         }
         finished = true;
         setScanProgress(95);
@@ -1652,6 +1651,21 @@ export default function App() {
 
   const showBottomNav = isLoggedIn() && (device.kind === 'desktop' || flow === null);
   const waitingForSession = !authReady && !isLoggedIn() && hasStoredAuthSession();
+  const isGuestShell = !waitingForSession && !isLoggedIn();
+
+  /** Guest funnel stays light (landing → scan → aha); stored theme resumes after login. */
+  useEffect(() => {
+    if (!isGuestShell) return;
+    const html = document.documentElement;
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+    html.setAttribute('data-theme', 'light');
+    html.style.backgroundColor = '#f8fafc';
+    document.body.style.backgroundColor = '#f8fafc';
+    themeColor?.setAttribute('content', '#f8fafc');
+    return () => {
+      applyTheme(getInitialTheme());
+    };
+  }, [isGuestShell]);
 
   const lastAnalyticsScreen = useRef<string | null>(null);
   useEffect(() => {
@@ -1933,7 +1947,7 @@ export default function App() {
         return true;
       }
       if (guestPlayGate) {
-        setGuestPlayGate(false);
+        /* Must create / sign in — no “regarder encore” escape */
         return true;
       }
       return false;
@@ -1981,25 +1995,33 @@ export default function App() {
 
       {showBottomNav && (
         <>
-          <NavMoreSheet
-            open={navMoreOpen}
-            locale={locale}
-            activeTab={tab}
-            universeActive={flow === 'pixUniverse'}
-            onSelect={handleTabChange}
-            onOpenUniverse={() => {
-              setUniverseResumeTarget(null);
-              setFlow('pixUniverse');
-            }}
-            onClose={() => setNavMoreOpen(false)}
-          />
+          {device.kind !== 'desktop' && (
+            <NavMoreSheet
+              open={navMoreOpen}
+              locale={locale}
+              activeTab={tab}
+              universeActive={flow === 'pixUniverse'}
+              onSelect={handleTabChange}
+              onOpenUniverse={() => {
+                setUniverseResumeTarget(null);
+                setFlow('pixUniverse');
+              }}
+              onClose={() => setNavMoreOpen(false)}
+            />
+          )}
           <BottomNav
             active={tab}
             onChange={handleTabChange}
             locale={locale}
             device={device.kind}
-            moreOpen={navMoreOpen}
-            onMoreToggle={() => setNavMoreOpen((o) => !o)}
+            moreOpen={device.kind === 'desktop' ? false : navMoreOpen}
+            onMoreToggle={device.kind === 'desktop' ? undefined : () => setNavMoreOpen((o) => !o)}
+            universeActive={flow === 'pixUniverse'}
+            onOpenUniverse={() => {
+              setNavMoreOpen(false);
+              setUniverseResumeTarget(null);
+              setFlow('pixUniverse');
+            }}
           />
         </>
       )}
@@ -2046,7 +2068,6 @@ export default function App() {
           locale={locale}
           onSignup={() => openAuth('signup')}
           onLogin={() => openAuth('login')}
-          onClose={() => setGuestPlayGate(false)}
         />
       )}
 

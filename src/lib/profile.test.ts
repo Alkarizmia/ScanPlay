@@ -52,32 +52,19 @@ describe('display name merge', () => {
     expect(JSON.parse(localStorage.getItem('scanplay-profile') ?? '{}').displayName).toBe('Bilal');
   });
 
-  it('shows the pseudo tutorial once until OK or skip is stored', () => {
+  it('never shows the deprecated pseudo tutorial (name chosen at signup)', () => {
     saveProfileRaw({
       displayName: defaultDisplayName(USER),
       avatar: 'avatar1',
-    });
-    expect(shouldShowPseudoOnboarding()).toBe(true);
-
-    saveProfileRaw({
-      displayName: 'PixFan',
-      avatar: 'avatar1',
-    });
-    expect(shouldShowPseudoOnboarding()).toBe(true);
-
-    saveProfileRaw({
-      displayName: defaultDisplayName(USER),
-      avatar: 'avatar1',
-      pseudoOnboardingDone: true,
     });
     expect(shouldShowPseudoOnboarding()).toBe(false);
-  });
 
-  it('keeps the tutorial closed after the cloud flag is true', () => {
     saveProfileRaw({
-      displayName: defaultDisplayName(USER),
+      displayName: 'Pix',
       avatar: 'avatar1',
     });
+    expect(shouldShowPseudoOnboarding()).toBe(false);
+
     applyPseudoOnboardingFromCloud(true);
     expect(shouldShowPseudoOnboarding()).toBe(false);
   });

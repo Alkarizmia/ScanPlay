@@ -2,12 +2,12 @@ import { t, type TranslationKey } from '../lib/i18n';
 import { NavIcon } from './icons/NavIcon';
 import type { Locale, TabId } from '../types';
 
-type MoreItem =
+export type MoreItem =
   | { kind: 'tab'; id: TabId; labelKey: TranslationKey }
   | { kind: 'universe'; labelKey: TranslationKey };
 
 /** Profile + Compte shortcuts (direct access). */
-const MORE_ITEMS: MoreItem[] = [
+export const MORE_ITEMS: MoreItem[] = [
   { kind: 'tab', id: 'profile', labelKey: 'profileTitle' },
   { kind: 'tab', id: 'settings', labelKey: 'settings' },
   { kind: 'universe', labelKey: 'pixUniverseTitle' },
@@ -16,7 +16,7 @@ const MORE_ITEMS: MoreItem[] = [
   { kind: 'tab', id: 'achievements', labelKey: 'achievements' },
 ];
 
-function UniverseNavIcon() {
+export function UniverseNavIcon() {
   return (
     <svg className="nav-icon-svg" viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="8.5" />

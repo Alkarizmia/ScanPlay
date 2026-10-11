@@ -1,5 +1,8 @@
-export const CHEST_CLOSED_SRC = '/chest/scanplay-chest-closed.png?v=2';
-export const CHEST_OPEN_SRC = '/chest/scanplay-chest-open.png?v=2';
+/** WebP display assets (~10 KB). PNG kept as decode fallback. */
+export const CHEST_CLOSED_SRC = '/chest/scanplay-chest-closed.webp?v=3';
+export const CHEST_OPEN_SRC = '/chest/scanplay-chest-open.webp?v=3';
+const CHEST_CLOSED_FALLBACK = '/chest/scanplay-chest-closed.png?v=3';
+const CHEST_OPEN_FALLBACK = '/chest/scanplay-chest-open.png?v=3';
 
 interface ScanPlayChestProps {
   open?: boolean;
@@ -28,6 +31,13 @@ export function ScanPlayChest({
       className={`scanplay-chest-art${motion ? ` ${motion}` : ''}${className ? ` ${className}` : ''}`}
       draggable={false}
       aria-hidden="true"
+      decoding="async"
+      onError={(event) => {
+        const img = event.currentTarget;
+        if (img.getAttribute('data-fallback') === '1') return;
+        img.setAttribute('data-fallback', '1');
+        img.src = open ? CHEST_OPEN_FALLBACK : CHEST_CLOSED_FALLBACK;
+      }}
     />
   );
 }

@@ -1,9 +1,5 @@
 import { useEffect, useState } from 'react';
-import {
-  getProfile,
-  pullPseudoTutoFlag,
-  shouldShowPseudoOnboarding,
-} from '../lib/profile';
+import { getProfile } from '../lib/profile';
 import { ACHIEVEMENTS, getUnlockedCount, isAchievementUnlocked } from '../lib/achievements';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { xpForNextLevel } from '../lib/gamification';
@@ -54,14 +50,6 @@ export function ProfileSection({
   const plan = usePlan(refreshKey);
   const banner = getProfileBanner(plan);
   const verified = hasVerifiedBadge(plan);
-
-  useEffect(() => {
-    if (shouldShowPseudoOnboarding()) {
-      void pullPseudoTutoFlag().then(() => {
-        if (shouldShowPseudoOnboarding()) setEditOpen(true);
-      });
-    }
-  }, [refreshKey]);
 
   useEffect(() => {
     if (!isSocialAvailable()) {
@@ -145,6 +133,7 @@ export function ProfileSection({
 
       <div className={`sp-profile-hero sp-profile-hero--${banner}`} aria-hidden="true">
         <div className="sp-profile-hero-glow" />
+        <img className="sp-profile-hero-logo" src="/logo-128.png?v=9" alt="" width={40} height={40} />
         <button type="button" className="sp-profile-avatar-btn" onClick={openEdit}>
           <img
             src={showCustom ? profile.customAvatarData! : DEFAULT_AVATAR_SRC}

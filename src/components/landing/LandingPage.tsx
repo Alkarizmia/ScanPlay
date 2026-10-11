@@ -56,12 +56,18 @@ interface Testimonial {
   avatarUrl: string;
 }
 
-function proofAvatarUrl(seed: string): string {
-  const params = new URLSearchParams({
-    seed,
-    backgroundColor: 'b6e3f4,c0aede,d1f4d1,ffd5dc,ffdfbf',
-  });
-  return `https://api.dicebear.com/9.x/notionists/svg?${params.toString()}`;
+const PROOF_AVATAR_COLORS = ['b6e3f4', 'c0aede', 'd1f4d1', 'ffd5dc', 'ffdfbf'] as const;
+
+/** Local SVG avatar — no third-party request (DiceBear was ~1 MB + LCP delay). */
+function proofAvatarUrl(seed: string, label: string): string {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+  }
+  const bg = PROOF_AVATAR_COLORS[hash % PROOF_AVATAR_COLORS.length];
+  const initial = (label.trim().charAt(0) || '?').toUpperCase();
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" viewBox="0 0 80 80"><rect width="80" height="80" rx="40" fill="#${bg}"/><text x="40" y="44" text-anchor="middle" dominant-baseline="middle" font-family="Inter,system-ui,sans-serif" font-size="34" font-weight="700" fill="#0f2418">${initial}</text></svg>`;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
 const PROOF_ITEMS: {
@@ -186,7 +192,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
       author,
       context: lt(item.role, lang),
       rating: 5,
-      avatarUrl: proofAvatarUrl(`${item.id}-${author}`),
+      avatarUrl: proofAvatarUrl(`${item.id}-${author}`, author),
     };
   });
 
@@ -248,7 +254,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
       <header className="lp-header">
         <div className="lp-container lp-header-inner">
           <div className="lp-header-brand">
-            <LogoWordmark />
+            <LogoWordmark priority />
           </div>
 
           {isDesktop && (
@@ -406,7 +412,7 @@ export function LandingPage({ locale: _appLocale, device, onScanPlay, onAuth }: 
                         <img
                           className="lp-proof-avatar"
                           src={item.avatarUrl}
-                          alt=""
+                          alt={item.author}
                           width={40}
                           height={40}
                           loading="lazy"

@@ -19,8 +19,8 @@ export interface UserProfileData {
   pseudoOnboardingDone?: boolean;
 }
 
-export const DISPLAY_NAME_MIN = 5;
-export const DISPLAY_NAME_MAX = 24;
+export const DISPLAY_NAME_MIN = 2;
+export const DISPLAY_NAME_MAX = 5;
 export const DISPLAY_NAME_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const DEFAULT_AVATARS: { id: AvatarId; emoji: string }[] = [
@@ -255,11 +255,9 @@ export function hasCompletedPseudoOnboarding(): boolean {
   return Boolean(profile?.pseudoOnboardingDone);
 }
 
+/** Deprecated: name is chosen at signup — never show the old ID→pseudo tuto. */
 export function shouldShowPseudoOnboarding(): boolean {
-  if (!isLoggedIn()) return false;
-  const profile = getProfile();
-  if (!profile) return false;
-  return !profile.pseudoOnboardingDone;
+  return false;
 }
 
 export function markPseudoOnboardingDoneLocal(): void {

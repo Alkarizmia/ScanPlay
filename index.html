@@ -47,11 +47,12 @@
         window.addEventListener('load', loadGtag);
       }
     </script>
-    <link rel="icon" type="image/png" href="/logo.png?v=9" />
-    <link rel="apple-touch-icon" href="/icon-512.png?v=9" />
+    <link rel="icon" type="image/png" href="/favicon-32.png?v=10" />
+    <link rel="apple-touch-icon" href="/icon-192.png?v=10" />
     <link rel="manifest" href="/manifest.json" />
+    <link rel="preload" as="image" href="/logo-128.png?v=9" fetchpriority="high" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#ffffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="ScanPlay" />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -74,17 +75,18 @@
       property="og:description"
       content="Ta fiche devient un parcours de jeux : flashcards, quiz, oral, dictée. Scan gratuit, sans carte bancaire."
     />
-    <meta property="og:image" content="https://scanplay.org/icon-512.png?v=9" />
-    <meta property="og:image:width" content="512" />
-    <meta property="og:image:height" content="512" />
-    <meta property="og:image:alt" content="Logo ScanPlay" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content="https://scanplay.org/marketing/og-share.jpg?v=1" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/jpeg" />
+    <meta property="og:image:alt" content="ScanPlay : parcours de révision après scan d’une fiche de cours" />
+    <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="ScanPlay : prends ton cours en photo, il devient un jeu" />
     <meta
       name="twitter:description"
       content="Ta fiche de cours devient des flashcards, des quiz et des mini-jeux. Scan gratuit, sans carte bancaire."
     />
-    <meta name="twitter:image" content="https://scanplay.org/icon-512.png?v=9" />
+    <meta name="twitter:image" content="https://scanplay.org/marketing/og-share.jpg?v=1" />
 
     <script type="application/ld+json">
       {
@@ -122,6 +124,61 @@
             ],
             "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" },
             "publisher": { "@id": "https://scanplay.org/#organization" }
+          },
+          {
+            "@type": "FAQPage",
+            "@id": "https://scanplay.org/#faq",
+            "inLanguage": "fr",
+            "mainEntity": [
+              {
+                "@type": "Question",
+                "name": "C'est vraiment gratuit ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Oui. Tu peux scanner une première fiche sans compte. Avec un compte gratuit, ton historique est sauvegardé et tu as une enveloppe IA ScanPlay (0,15 €/semaine) : scans, coach et synthèses partagent le même %. Le scan fait avant de créer le compte compte déjà dans cette enveloppe. Ce n'est pas un crédit offert en plus. Les formules payantes agrandissent l'enveloppe, mais rien ne t'y oblige."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Je dois créer un compte ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Pas pour scanner ta première fiche. Le compte gratuit est demandé pour lancer les jeux et sauvegarder ta progression. Si tu as déjà scanné en invité, tu vois tout de suite le % d'usage IA dans Paramètres : il part de ce scan demandé."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Ça marche avec quels documents ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Avec des images : photo d'une fiche, d'une page de manuel, ou capture d'écran. Le texte imprimé ou écrit proprement est le mieux reconnu. Les PDF ne sont pas encore pris en charge."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Et si le scan se trompe ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Tu vois toutes les cartes avant de jouer. Tu peux corriger un mot, en supprimer ou en ajouter, puis lancer le parcours."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Ça marche sur téléphone ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "ScanPlay est pensé d'abord pour le téléphone et s'installe depuis ton navigateur comme une application, sans passer par un store. Ça fonctionne aussi sur ordinateur."
+                }
+              },
+              {
+                "@type": "Question",
+                "name": "Mes cours restent-ils privés ?",
+                "acceptedAnswer": {
+                  "@type": "Answer",
+                  "text": "Tes fiches sont rattachées à ton compte et ne sont pas publiques. Le détail de ce que nous conservons est écrit dans la politique de confidentialité."
+                }
+              }
+            ]
           }
         ]
       }
@@ -131,11 +188,25 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
+      rel="preload"
+      as="style"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
+      media="print"
+      onload="this.media='all'"
     />
+    <noscript>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+        rel="stylesheet"
+      />
+    </noscript>
     <style>
-      html, body, #root { background: #0f172a; }
+      /* Match landing first paint — app shell paints its own dark boot screen. */
+      html, body, #root { background: #ffffff; }
     </style>
   </head>
   <body>
@@ -143,6 +214,7 @@
     <noscript>
       <main style="max-width:720px;margin:0 auto;padding:24px;color:#f8fafc;font-family:Inter,Arial,sans-serif">
         <h1>ScanPlay : transforme ta fiche de révision en jeu</h1>
+        <p>ScanPlay transforme tes cours photographiés en jeu de révision.</p>
         <p>Prends ton cours en photo : ScanPlay le transforme en parcours de jeux pour réviser, avec flashcards, quiz, écoute, écriture et dictée.</p>
         <ul>
           <li>Scanne ta fiche de révision ou tes notes de cours</li>

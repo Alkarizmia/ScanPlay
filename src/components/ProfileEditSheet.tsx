@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
+  DISPLAY_NAME_MAX,
   DISPLAY_NAME_MIN,
   getDisplayNameCooldownMsLeft,
   setAvatar,
@@ -212,7 +213,7 @@ export function ProfileEditSheet({
                 id="profile-edit-display-name"
                 className="profile-name-input"
                 value={nameDraft}
-                maxLength={24}
+                maxLength={DISPLAY_NAME_MAX}
                 onChange={(e) => setNameDraft(e.target.value)}
                 placeholder={profile.displayName}
                 autoFocus

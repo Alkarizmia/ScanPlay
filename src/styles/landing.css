@@ -485,10 +485,30 @@ html[data-landing='true'] .screen.sp-landing {
 
 @media (min-width: 768px) {
   .lp-header-inner {
-    gap: clamp(12px, 1.5vw, 24px);
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: clamp(24px, 2.8vw, 48px);
+  }
+
+  .lp-header-brand {
+    position: relative;
+    z-index: 1;
+  }
+
+  .lp-nav {
+    justify-self: stretch;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    padding-inline: 0;
+    gap: clamp(16px, 1.8vw, 28px);
+    justify-content: center;
   }
 
   .lp-header-actions {
+    position: relative;
+    z-index: 1;
     max-width: none;
     gap: 8px;
   }
@@ -508,9 +528,12 @@ html[data-landing='true'] .screen.sp-landing {
     padding-inline: clamp(12px, 2vw, 20px);
   }
 
+  .lp-header-inner {
+    column-gap: clamp(18px, 2.2vw, 32px);
+  }
+
   .lp-nav {
-    gap: clamp(8px, 1.1vw, 14px);
-    padding-inline: 4px;
+    gap: clamp(12px, 1.3vw, 18px);
   }
 
   .lp-header-actions .lp-btn--primary.lp-btn--sm {
@@ -519,8 +542,8 @@ html[data-landing='true'] .screen.sp-landing {
   }
 }
 
-/* Free space for long FR/ES/NL nav labels before the wide desktop range. */
-@media (min-width: 768px) and (max-width: 960px) {
+/* Long header CTA (FR/ES) — free space until the wide desktop range. */
+@media (min-width: 768px) and (max-width: 1080px) {
   .lp-header-actions .lp-btn--primary {
     display: none;
   }

@@ -52,7 +52,7 @@ export function SheetMock({ locale }: { locale: Locale }) {
 
 /**
  * Slot for a real in-app capture. No gameplay screenshot or GIF exists in the
- * repo yet (`public/marketing/hero-guest-path.png` is an old path mock, not a game).
+ * repo yet (`public/marketing/hero-guest-path.webp` / `.png` is an old path mock, not a game).
  */
 export function HeroGameCapture({ lang }: { lang: LandingLang }) {
   return (
@@ -474,7 +474,15 @@ export function ProfileBannerMock({ handle }: { handle: string }) {
     <div className="lp-mock-profile" aria-hidden="true">
       <div className="lp-mock-profile-banner" />
       <div className="lp-mock-profile-avatar-wrap">
-        <img className="lp-mock-profile-avatar" src={src} alt="" width={80} height={80} />
+        <img
+          className="lp-mock-profile-avatar"
+          src={src}
+          alt=""
+          width={80}
+          height={80}
+          loading="lazy"
+          decoding="async"
+        />
       </div>
       <p className="lp-mock-profile-handle">{handle}</p>
     </div>
@@ -486,7 +494,15 @@ export function PixIntroMock() {
   const src = getMascotAssetUrl('welcome') ?? getMascotAssetUrl('happy') ?? '/mascot/emotions/welcome.webp';
   return (
     <div className="lp-pix-visual" aria-hidden="true">
-      <img className="lp-pix-visual-img" src={src} alt="" width={160} height={160} />
+      <img
+        className="lp-pix-visual-img"
+        src={src}
+        alt=""
+        width={160}
+        height={160}
+        loading="lazy"
+        decoding="async"
+      />
     </div>
   );
 }

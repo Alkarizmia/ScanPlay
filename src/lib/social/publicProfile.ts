@@ -126,11 +126,12 @@ export async function syncPublicProfileResolvingConflicts(): Promise<SyncProfile
 }
 
 export async function isDisplayNameAvailable(name: string): Promise<boolean | null> {
-  if (!isSupabaseConfigured || !isLoggedIn()) return null;
+  if (!isSupabaseConfigured) return null;
   const supabase = getSupabase();
   if (!supabase) return null;
   const trimmed = name.trim();
-  if (trimmed.length < 5) return false;
+  // Keep in sync with DISPLAY_NAME_MIN / DISPLAY_NAME_MAX in profile.ts
+  if (trimmed.length < 2 || trimmed.length > 5) return false;
 
   const { data, error } = await supabase.rpc('check_display_name_available', { p_name: trimmed });
   if (error) return null;

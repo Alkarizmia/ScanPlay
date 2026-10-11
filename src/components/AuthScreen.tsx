@@ -5,11 +5,11 @@ import { SiteFooter } from './SiteFooter';
 import {
   isSupabaseEnabled,
   resetPassword,
-  resendSignupConfirmation,
   signIn,
   signInWithGoogle,
   signUp,
 } from '../lib/auth';
+import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '../lib/profile';
 import { t, type TranslationKey } from '../lib/i18n';
 import { trackEvent } from '../lib/analytics';
 import type { Locale } from '../types';
@@ -36,14 +36,15 @@ export function AuthScreen({
   initialMode = 'login',
 }: AuthScreenProps) {
   const [mode, setMode] = useState<AuthMode>(initialMode);
+  const [identifier, setIdentifier] = useState('');
   const [email, setEmail] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [password, setPassword] = useState('');
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorKey, setErrorKey] = useState<TranslationKey | null>(null);
   const [errorDetail, setErrorDetail] = useState<string | null>(null);
   const [infoKey, setInfoKey] = useState<TranslationKey | null>(null);
-  const [awaitingEmailConfirm, setAwaitingEmailConfirm] = useState(false);
   const [resetEmailSent, setResetEmailSent] = useState(false);
   const [ageConfirmed, setAgeConfirmed] = useState(false);
 
@@ -52,7 +53,6 @@ export function AuthScreen({
     setErrorKey(null);
     setErrorDetail(null);
     setInfoKey(null);
-    setAwaitingEmailConfirm(false);
     setResetEmailSent(false);
     if (next !== 'signup') setAgeConfirmed(false);
   };
@@ -81,11 +81,25 @@ export function AuthScreen({
 
   const runAuth = async () => {
     if (!requireSignupAgeConfirm()) return;
-    if (!email.trim() || !password) {
+
+    if (mode === 'signup') {
+      const name = displayName.trim();
+      if (!email.trim() || !password || !name) {
+        setErrorKey('authFillFields');
+        setErrorDetail(null);
+        return;
+      }
+      if (name.length < DISPLAY_NAME_MIN || name.length > DISPLAY_NAME_MAX) {
+        setErrorKey('authNameInvalid');
+        setErrorDetail(null);
+        return;
+      }
+    } else if (!identifier.trim() || !password) {
       setErrorKey('authFillFields');
       setErrorDetail(null);
       return;
     }
+
     setLoading(true);
     setErrorKey(null);
     setErrorDetail(null);
@@ -94,8 +108,8 @@ export function AuthScreen({
     try {
       const result =
         mode === 'login'
-          ? await signIn(email.trim(), password)
-          : await signUp(email.trim(), password);
+          ? await signIn(identifier.trim(), password)
+          : await signUp(email.trim(), password, displayName.trim());
 
       if (result.error) {
         setErrorKey(result.error as TranslationKey);
@@ -103,8 +117,9 @@ export function AuthScreen({
         return;
       }
       if (result.needsEmailConfirmation) {
-        setAwaitingEmailConfirm(true);
         setInfoKey('authConfirmEmail');
+        setMode('login');
+        setIdentifier(email.trim());
         if (mode === 'signup') trackEvent('compte_cree', { confirmation: 'email' });
         return;
       }
@@ -139,20 +154,26 @@ export function AuthScreen({
   };
 
   const handleForgot = async () => {
-    if (!email.trim()) {
+    if (!email.trim() && !identifier.trim()) {
+      setErrorKey('authEmailRequired');
+      return;
+    }
+    const target = email.trim() || identifier.trim();
+    if (!target.includes('@')) {
       setErrorKey('authEmailRequired');
       return;
     }
     setLoading(true);
     setErrorKey(null);
     setInfoKey(null);
-    const result = await resetPassword(email.trim());
+    const result = await resetPassword(target);
     setLoading(false);
     if (result.error) {
       setErrorKey(result.error as TranslationKey);
       setErrorDetail(result.errorDetail ?? null);
       return;
     }
+    setEmail(target);
     setResetEmailSent(true);
     setInfoKey('authResetSent');
   };
@@ -183,23 +204,6 @@ export function AuthScreen({
     }
   };
 
-  const handleResendConfirm = async () => {
-    if (!email.trim()) {
-      setErrorKey('authEmailRequired');
-      return;
-    }
-    setLoading(true);
-    setErrorKey(null);
-    const result = await resendSignupConfirmation(email.trim());
-    setLoading(false);
-    if (result.error) {
-      setErrorKey(result.error as TranslationKey);
-      setErrorDetail(result.errorDetail ?? null);
-      return;
-    }
-    setInfoKey('authResendSent');
-  };
-
   const showErrorDetail =
     errorDetail &&
     (errorKey === 'authGenericError' ||
@@ -208,7 +212,7 @@ export function AuthScreen({
       errorKey === 'authEmailNotConfirmed' ||
       errorKey === 'authInvalidCredentials');
 
-  const showForgotFooter = mode === 'login' && !awaitingEmailConfirm;
+  const showForgotFooter = mode === 'login';
   const showInvalidCredentialsHint = mode === 'login' && errorKey === 'authInvalidCredentials';
 
   useEffect(() => {
@@ -291,20 +295,20 @@ export function AuthScreen({
             )}
           </div>
         )}
-        {awaitingEmailConfirm ? (
-          <div className="auth-confirm-panel" role="status">
-            <p className="auth-info">{t('authConfirmEmail', locale)}</p>
-            <p className="auth-confirm-hint">{t('authConfirmEmailHint', locale)}</p>
+        {resetEmailSent ? (
+          <div className="auth-reset-panel" role="status">
+            <p className="auth-info">{t('authResetSent', locale)}</p>
+            <p className="auth-reset-hint">{t('authResetSentHint', locale)}</p>
             <p className="auth-confirm-email">
               <strong>{email.trim()}</strong>
             </p>
             <button
               type="button"
               className="btn-secondary auth-resend"
-              onClick={() => void handleResendConfirm()}
+              onClick={() => void handleForgot()}
               disabled={loading}
             >
-              {t('authResendConfirm', locale)}
+              {t('authForgotResend', locale)}
             </button>
             <button
               type="button"
@@ -312,44 +316,18 @@ export function AuthScreen({
               onClick={() => switchMode('login')}
               disabled={loading}
             >
-              {t('authConfirmGoLogin', locale)}
+              {t('authForgotBackLogin', locale)}
             </button>
           </div>
         ) : (
-          resetEmailSent ? (
-            <div className="auth-reset-panel" role="status">
-              <p className="auth-info">{t('authResetSent', locale)}</p>
-              <p className="auth-reset-hint">{t('authResetSentHint', locale)}</p>
-              <p className="auth-confirm-email">
-                <strong>{email.trim()}</strong>
-              </p>
-              <button
-                type="button"
-                className="btn-secondary auth-resend"
-                onClick={() => void handleForgot()}
-                disabled={loading}
-              >
-                {t('authForgotResend', locale)}
-              </button>
-              <button
-                type="button"
-                className="btn-primary btn-lg auth-confirm-login"
-                onClick={() => switchMode('login')}
-                disabled={loading}
-              >
-                {t('authForgotBackLogin', locale)}
-              </button>
-            </div>
-          ) : (
-            infoKey && (
-              <p className="auth-info" role="status">
-                {t(infoKey, locale)}
-              </p>
-            )
+          infoKey && (
+            <p className="auth-info" role="status">
+              {t(infoKey, locale)}
+            </p>
           )
         )}
 
-        {mode === 'signup' && !awaitingEmailConfirm && !resetEmailSent && (
+        {mode === 'signup' && !resetEmailSent && (
           <label className="auth-age-confirm">
             <input
               type="checkbox"
@@ -365,7 +343,7 @@ export function AuthScreen({
           </label>
         )}
 
-        {!awaitingEmailConfirm && !resetEmailSent && isSupabaseEnabled() && mode !== 'forgot' && (
+        {!resetEmailSent && isSupabaseEnabled() && mode !== 'forgot' && (
           <>
             <button
               type="button"
@@ -399,18 +377,63 @@ export function AuthScreen({
           </>
         )}
 
-        {!awaitingEmailConfirm && !resetEmailSent && (
+        {!resetEmailSent && (
         <form onSubmit={handleSubmit} className="auth-form">
-          <label className="field-label">{t('email', locale)}</label>
-          <input
-            type="email"
-            className="field-input"
-            placeholder={t('authEmailPlaceholder', locale)}
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
-            disabled={loading}
-          />
+          {mode === 'login' && (
+            <>
+              <label className="field-label">{t('authIdentifier', locale)}</label>
+              <input
+                type="text"
+                className="field-input"
+                placeholder={t('authIdentifierPlaceholder', locale)}
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                autoComplete="username"
+                disabled={loading}
+              />
+            </>
+          )}
+
+          {mode === 'signup' && (
+            <>
+              <label className="field-label">{t('authName', locale)}</label>
+              <input
+                type="text"
+                className="field-input"
+                placeholder={t('authNamePlaceholder', locale)}
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value.slice(0, DISPLAY_NAME_MAX))}
+                maxLength={DISPLAY_NAME_MAX}
+                autoComplete="nickname"
+                disabled={loading}
+              />
+              <label className="field-label">{t('email', locale)}</label>
+              <input
+                type="email"
+                className="field-input"
+                placeholder={t('authEmailPlaceholder', locale)}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                disabled={loading}
+              />
+            </>
+          )}
+
+          {mode === 'forgot' && (
+            <>
+              <label className="field-label">{t('email', locale)}</label>
+              <input
+                type="email"
+                className="field-input"
+                placeholder={t('authEmailPlaceholder', locale)}
+                value={email || (identifier.includes('@') ? identifier : '')}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+                disabled={loading}
+              />
+            </>
+          )}
 
           {mode !== 'forgot' && (
             <>
@@ -480,7 +503,7 @@ export function AuthScreen({
           </div>
         )}
 
-        {onBack && !awaitingEmailConfirm && !resetEmailSent && mode !== 'forgot' && (
+        {onBack && !resetEmailSent && mode !== 'forgot' && (
           <button type="button" className="btn-ghost" onClick={onBack} disabled={loading}>
             {t('back', locale)}
           </button>

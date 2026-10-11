@@ -1,7 +1,13 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import type { UserProfile } from '../types';
 import { clearLocalUserData, clearUniverseLocalProgress } from './localData';
-import { ensureUserProfile, loadProfileRaw } from './profile';
+import {
+  completePseudoOnboarding,
+  ensureUserProfile,
+  loadProfileRaw,
+  markPseudoOnboardingDoneLocal,
+  saveProfileRaw,
+} from './profile';
 import { getSupabase, isSupabaseConfigured } from './supabase';
 import { flushSync, syncAfterLogin, syncOnSessionRestore } from './sync';
 import { clearGuestTrial } from './guestTrial';
@@ -262,19 +268,42 @@ export type AuthResult = {
   redirecting?: boolean;
 };
 
-export async function signUp(email: string, password: string): Promise<AuthResult> {
+function normalizeDisplayName(raw: string): string {
+  return raw.trim().slice(0, 5);
+}
+
+export async function signUp(
+  email: string,
+  password: string,
+  displayName: string,
+): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) return { error: 'authNotConfigured' };
+
+  const name = normalizeDisplayName(displayName);
+  if (name.length < 2 || name.length > 5) {
+    return { error: 'authNameInvalid' };
+  }
 
   if (password.length < 6) {
     return { error: 'authWeakPassword' };
   }
 
   try {
+    const { isDisplayNameAvailable } = await import('./social/publicProfile');
+    const available = await isDisplayNameAvailable(name);
+    if (available === false) return { error: 'authNameTaken' };
+    if (available !== true) {
+      /* offline / RPC missing — continue; sync will re-check */
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password,
-      options: { emailRedirectTo: `${window.location.origin}/` },
+      options: {
+        emailRedirectTo: `${window.location.origin}/`,
+        data: { display_name: name, login_name: name },
+      },
     });
 
     if (error) {
@@ -286,13 +315,21 @@ export async function signUp(email: string, password: string): Promise<AuthResul
       return { error: 'authEmailTaken' };
     }
 
-    // Ne jamais entrer dans l'app juste après inscription : validation email d'abord.
-    // (Supabase peut renvoyer une session si auto-confirm SQL ou Confirm email OFF.)
-    if (data.session) {
-      await supabase.auth.signOut();
+    if (data.session && data.user) {
+      setCache(data.session);
+      skipNextSignedInSync = true;
+      applySignupDisplayName(name);
+      deferPostAuth(data.session, true);
+      return { error: null };
     }
 
+    // Email confirmation required — stash name for first login.
     if (data.user) {
+      try {
+        localStorage.setItem('scanplay-pending-display-name', name);
+      } catch {
+        /* ignore */
+      }
       return { error: null, needsEmailConfirmation: true };
     }
 
@@ -301,6 +338,38 @@ export async function signUp(email: string, password: string): Promise<AuthResul
     const msg = e instanceof Error ? e.message : String(e);
     return { error: mapAuthError(msg), errorDetail: msg };
   }
+}
+
+function applySignupDisplayName(name: string): void {
+  const userId = cachedUserId;
+  if (!userId) return;
+  const profile = ensureUserProfile(userId);
+  const now = Date.now();
+  saveProfileRaw({
+    ...profile,
+    displayName: name,
+    profileUpdatedAt: now,
+    displayNameChangedAt: now,
+    pseudoOnboardingDone: true,
+  });
+  markPseudoOnboardingDoneLocal();
+  void completePseudoOnboarding();
+  refreshProfileCacheFromProfile();
+  void import('./social/publicProfile').then((p) => {
+    void p.syncPublicProfileWithDisplayName(name);
+  });
+}
+
+function consumePendingDisplayName(): void {
+  let pending: string | null = null;
+  try {
+    pending = localStorage.getItem('scanplay-pending-display-name');
+    if (pending) localStorage.removeItem('scanplay-pending-display-name');
+  } catch {
+    return;
+  }
+  if (!pending) return;
+  applySignupDisplayName(normalizeDisplayName(pending));
 }
 
 export async function signInWithGoogle(): Promise<AuthResult> {
@@ -359,13 +428,24 @@ export async function signInWithGoogle(): Promise<AuthResult> {
   }
 }
 
-export async function signIn(email: string, password: string): Promise<AuthResult> {
+export async function signIn(identifier: string, password: string): Promise<AuthResult> {
   const supabase = getSupabase();
   if (!supabase) return { error: 'authNotConfigured' };
 
   try {
+    let email = identifier.trim();
+    if (!email.includes('@')) {
+      const { data: resolved, error: resolveError } = await supabase.rpc('resolve_login_email', {
+        p_identifier: email,
+      });
+      if (resolveError || typeof resolved !== 'string' || !resolved) {
+        return { error: 'authInvalidCredentials' };
+      }
+      email = resolved;
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email,
       password,
     });
     if (error) {
@@ -376,6 +456,7 @@ export async function signIn(email: string, password: string): Promise<AuthResul
     }
     setCache(data.session);
     skipNextSignedInSync = true;
+    consumePendingDisplayName();
     deferPostAuth(data.session, true);
     return { error: null };
   } catch (e) {
@@ -537,8 +618,8 @@ export function login(email: string, password: string): UserProfile {
 }
 
 /** @deprecated use signUp */
-export function signup(email: string, password: string): UserProfile {
-  void signUp(email, password);
+export function signup(email: string, password: string, displayName = 'User'): UserProfile {
+  void signUp(email, password, displayName);
   return cachedUser;
 }
 

@@ -7,7 +7,7 @@ alter table public.scanplay_public_profiles
   add column if not exists banner_theme text not null default 'green';
 
 comment on column public.scanplay_public_profiles.banner_theme is
-  'Fond derrière la photo (green/red/blue/yellow free; aurora/ocean/sunset/prism/neon Plus+)';
+  'Fond derrière la photo — tous les thèmes (green/red/blue/yellow/aurora/ocean/sunset/prism/neon) sont ouverts à tous les plans';
 
 -- Autoriser Max côté public
 alter table public.scanplay_public_profiles

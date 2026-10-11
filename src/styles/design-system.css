@@ -2209,7 +2209,7 @@ html:not([data-landing]):has(.app-shell--guest) #root {
   max-height: 100dvh;
   overflow: clip;
   overscroll-behavior: none;
-  background: #07110d;
+  background: #f8fafc;
 }
 
 @supports (height: 100svh) {

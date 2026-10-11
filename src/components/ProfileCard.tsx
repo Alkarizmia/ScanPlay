@@ -52,6 +52,7 @@ export function ProfileCard({
     <div className="profile-card profile-card--public">
       <div className={`profile-card-hero sp-profile-hero sp-profile-hero--${banner}`} aria-hidden="true">
         <div className="sp-profile-hero-glow" />
+        <img className="sp-profile-hero-logo" src="/logo-128.png?v=9" alt="" width={36} height={36} />
         <div className="profile-card-hero-avatar">{avatar}</div>
       </div>
 

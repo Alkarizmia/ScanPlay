@@ -7,9 +7,12 @@ const LOGO_SRC = '/logo-128.png?v=9';
 export function Logo({
   size = 48,
   variant = 'default',
+  priority = false,
 }: {
   size?: number;
   variant?: 'default' | 'sidebar';
+  /** Eager LCP hint for the header mark on the public landing. */
+  priority?: boolean;
 }) {
   return (
     <img
@@ -20,11 +23,19 @@ export function Logo({
       className="scanplay-logo"
       aria-hidden="true"
       draggable={false}
+      decoding="async"
+      {...(priority ? { fetchPriority: 'high' as const } : {})}
     />
   );
 }
 
-export function LogoWordmark({ variant = 'default' }: { variant?: 'default' | 'sidebar' }) {
+export function LogoWordmark({
+  variant = 'default',
+  priority = false,
+}: {
+  variant?: 'default' | 'sidebar';
+  priority?: boolean;
+}) {
   const tapsRef = useRef(0);
   const lastTapRef = useRef(0);
   const logoSize = variant === 'sidebar' ? 36 : 40;
@@ -46,7 +57,7 @@ export function LogoWordmark({ variant = 'default' }: { variant?: 'default' | 's
       onClick={handleEasterEgg}
       role="presentation"
     >
-      <Logo size={logoSize} variant={variant} />
+      <Logo size={logoSize} variant={variant} priority={priority} />
       <span className="wordmark-text">
         Scan<span className="wordmark-accent">Play</span>
       </span>
