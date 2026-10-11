@@ -87,3 +87,128 @@ html[data-landing='true'] #root {
   color: #052e16;
   font-weight: 700;
 }
+
+/*
+ * Critical first viewport while landing.css streams in (async chunk).
+ * Keep this small — full styles/animations still live in landing.css.
+ */
+html[data-landing='true'],
+html[data-landing='true'] body,
+html[data-landing='true'] #root {
+  height: auto;
+  min-height: 100%;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.sp-landing {
+  --lp-text: #0f2418;
+  --lp-muted: rgba(15, 36, 24, 0.68);
+  --lp-green: #22c55e;
+  --lp-gutter: clamp(16px, 4.5vw, 40px);
+  --lp-max: 1120px;
+  --lp-header-h: 60px;
+  font-family: Inter, system-ui, -apple-system, sans-serif;
+  background: #ffffff;
+  color: var(--lp-text);
+}
+
+.sp-landing .lp-container {
+  width: 100%;
+  max-width: var(--lp-max);
+  margin-inline: auto;
+  padding-inline: var(--lp-gutter);
+}
+
+.sp-landing .lp-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  padding-top: env(safe-area-inset-top, 0px);
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid rgba(15, 40, 25, 0.1);
+}
+
+.sp-landing .lp-header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: var(--lp-header-h);
+}
+
+.sp-landing .lp-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sp-landing .lp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 12px 22px 14px;
+  border: none;
+  border-radius: 16px;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.sp-landing .lp-btn--primary {
+  background: #58cc02;
+  color: #14350c;
+  border-bottom: 4px solid #46a302;
+}
+
+.sp-landing .lp-btn--ghost {
+  background: #fff;
+  color: var(--lp-text);
+  border: 1.5px solid rgba(15, 40, 25, 0.16);
+  border-bottom: 4px solid rgba(15, 40, 25, 0.12);
+}
+
+.sp-landing .lp-btn--lg,
+.sp-landing .lp-btn--hero {
+  min-height: 56px;
+  width: 100%;
+  font-size: 1.06rem;
+}
+
+.sp-landing .lp-hero {
+  padding: clamp(14px, 5vw, 60px) 0 clamp(36px, 7vw, 84px);
+}
+
+.sp-landing .lp-hero-title {
+  margin: 0;
+  font-size: clamp(1.95rem, 8.2vw, 3.4rem);
+  font-weight: 850;
+  line-height: 1.07;
+  letter-spacing: -0.035em;
+}
+
+.sp-landing .lp-hero-title-accent {
+  color: #16a34a;
+}
+
+.sp-landing .lp-hero-sub {
+  margin: 16px 0;
+  color: var(--lp-muted);
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+
+.sp-landing .lp-hero-trust {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 14px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--lp-muted);
+  font-size: 0.82rem;
+  font-weight: 650;
+}

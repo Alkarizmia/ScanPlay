@@ -208,7 +208,8 @@ export function ImportScreen({
 
   return (
     <div
-      className={`screen flow-screen import-screen${isDesktop ? ' import-screen--desktop' : ''}${step === 'pick' ? ' import-screen--pick' : ''}${step === 'configure' ? ' import-screen--configure' : ''}${step === 'photos' ? ' import-screen--photos' : ''}`}
+      className={`screen flow-screen import-screen${isDesktop ? ' import-screen--desktop' : ''}${step === 'pick' ? ' import-screen--pick' : ''}${step === 'configure' ? ' import-screen--configure' : ''}${step === 'photos' ? ' import-screen--photos' : ''}${guestMode ? ' import-screen--guest' : ''}`}
+      {...(guestMode ? { 'data-theme': 'light' as const } : {})}
     >
       {(step === 'pick' || step === 'configure') && (
         <div className="import-ambient" aria-hidden="true">

@@ -6996,6 +6996,22 @@ html[data-device="desktop"] .flashcard.flipped .back {
   padding: 8px 0 24px;
 }
 
+/* Guest photo review: keep the mint funnel look even if html theme briefly flickers. */
+.import-screen--guest.import-screen--photos,
+.app-shell--guest .import-screen--photos {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.app-shell--guest .import-screen--photos .screen-title {
+  color: #0f172a;
+}
+
+.app-shell--guest .import-screen--photos .import-photos-sub,
+.app-shell--guest .import-screen--photos .import-photos-limit {
+  color: #64748b;
+}
+
 .import-photos-sub {
   margin: 0;
   color: var(--text-muted, #64748b);

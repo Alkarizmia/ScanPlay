@@ -590,6 +590,9 @@ html[data-landing='true'] .screen.sp-landing {
 }
 
 .lp-section {
+  /* Below-fold sections: skip layout until near viewport (hero is .lp-hero, untouched). */
+  content-visibility: auto;
+  contain-intrinsic-size: 1px 720px;
   padding-block: var(--lp-section-y);
   scroll-margin-top: calc(var(--lp-header-h) + 16px);
 }

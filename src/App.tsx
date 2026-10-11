@@ -1,5 +1,5 @@
 import { lazy, startTransition, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { applyTheme, getInitialTheme, initTheme } from './hooks/useTheme';
+import { applyGuestLightTheme, applyTheme, getInitialTheme, initTheme } from './hooks/useTheme';
 import { restoreSavedAdConsent } from './lib/ads/consent';
 import { consumeBootIntent, consumePendingScanAfterAuth, setPendingScanAfterAuth } from './lib/bootIntent';
 import './index.css';
@@ -1653,17 +1653,24 @@ export default function App() {
   const waitingForSession = !authReady && !isLoggedIn() && hasStoredAuthSession();
   const isGuestShell = !waitingForSession && !isLoggedIn();
 
-  /** Guest funnel stays light (landing → scan → aha); stored theme resumes after login. */
+  /** Guest funnel stays light (landing → scan → aha); ignore OS/saved dark until Settings. */
   useEffect(() => {
     if (!isGuestShell) return;
-    const html = document.documentElement;
-    const themeColor = document.querySelector('meta[name="theme-color"]');
-    html.setAttribute('data-theme', 'light');
-    html.style.backgroundColor = '#f8fafc';
-    document.body.style.backgroundColor = '#f8fafc';
-    themeColor?.setAttribute('content', '#f8fafc');
+    applyGuestLightTheme();
     return () => {
       applyTheme(getInitialTheme());
+    };
+  }, [isGuestShell]);
+
+  // Re-assert light after camera/file-picker returns (some WebViews restore dark color-scheme).
+  useEffect(() => {
+    if (!isGuestShell) return;
+    const assertLight = () => applyGuestLightTheme();
+    document.addEventListener('visibilitychange', assertLight);
+    window.addEventListener('focus', assertLight);
+    return () => {
+      document.removeEventListener('visibilitychange', assertLight);
+      window.removeEventListener('focus', assertLight);
     };
   }, [isGuestShell]);
 
