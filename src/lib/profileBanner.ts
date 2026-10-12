@@ -1,9 +1,9 @@
 import type { Plan } from '../types';
 import type { TranslationKey } from './i18n';
-import { getPlan } from './planLimits';
+import { getPlan, isPaidPlan } from './planLimits';
 import { getProfile, saveProfileRaw } from './profile';
 
-/** All chromatic banners are available to every plan. */
+/** Solid colors: Free. Animated chromatic banners: Plus / Pro / Max. */
 export type ProfileBannerId =
   | 'green'
   | 'red'
@@ -26,21 +26,25 @@ export const PROFILE_BANNERS: ProfileBannerDef[] = [
   { id: 'red', free: true, labelKey: 'bannerRed' },
   { id: 'blue', free: true, labelKey: 'bannerBlue' },
   { id: 'yellow', free: true, labelKey: 'bannerYellow' },
-  { id: 'aurora', free: true, labelKey: 'bannerAurora' },
-  { id: 'ocean', free: true, labelKey: 'bannerOcean' },
-  { id: 'sunset', free: true, labelKey: 'bannerSunset' },
-  { id: 'prism', free: true, labelKey: 'bannerPrism' },
-  { id: 'neon', free: true, labelKey: 'bannerNeon' },
+  { id: 'aurora', free: false, labelKey: 'bannerAurora' },
+  { id: 'ocean', free: false, labelKey: 'bannerOcean' },
+  { id: 'sunset', free: false, labelKey: 'bannerSunset' },
+  { id: 'prism', free: false, labelKey: 'bannerPrism' },
+  { id: 'neon', free: false, labelKey: 'bannerNeon' },
 ];
 
 const BANNER_IDS = new Set(PROFILE_BANNERS.map((b) => b.id));
+const BANNER_BY_ID = new Map(PROFILE_BANNERS.map((b) => [b.id, b]));
 
 export function isProfileBannerId(value: unknown): value is ProfileBannerId {
   return typeof value === 'string' && BANNER_IDS.has(value as ProfileBannerId);
 }
 
-export function canUseBanner(id: ProfileBannerId, _plan: Plan = getPlan()): boolean {
-  return isProfileBannerId(id);
+export function canUseBanner(id: ProfileBannerId, plan: Plan = getPlan()): boolean {
+  if (!isProfileBannerId(id)) return false;
+  const def = BANNER_BY_ID.get(id);
+  if (!def) return false;
+  return def.free || isPaidPlan(plan);
 }
 
 export function getProfileBanner(plan: Plan = getPlan()): ProfileBannerId {

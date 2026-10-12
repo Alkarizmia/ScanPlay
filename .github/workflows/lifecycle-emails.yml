@@ -9,7 +9,7 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Send streak and social emails
+      - name: Send streak and social emails (P0 + social/install)
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
@@ -20,3 +20,10 @@ jobs:
           curl -fsS -X GET \
             -H "Authorization: Bearer $CRON_SECRET" \
             "https://scanplay.org/api/lifecycle-emails"
+      - name: Retention queue send (P1–P3 real emails; purge still dry-run only)
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          curl -fsS -X GET \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "https://scanplay.org/api/lifecycle-emails?mode=retention&send_mail=1"

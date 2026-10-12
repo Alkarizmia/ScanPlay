@@ -1,0 +1,1006 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Admin métriques — ScanPlay</title>
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <style>
+      :root {
+        --bg: #f1f5f9;
+        --card: #fff;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --green: #58cc02;
+        --green-ink: #14350c;
+        --danger: #b91c1c;
+        --ok: #15803d;
+        --sticky-h: 0px;
+      }
+      * { box-sizing: border-box; }
+      html { scroll-behavior: smooth; scroll-padding-top: calc(var(--sticky-h) + 12px); }
+      body {
+        margin: 0;
+        font-family: Inter, system-ui, sans-serif;
+        background: var(--bg);
+        color: var(--ink);
+        padding: 16px 14px 88px;
+        -webkit-user-select: text;
+        user-select: text;
+      }
+      .wrap { max-width: 1100px; margin: 0 auto; }
+      h1 { font-size: 1.35rem; margin: 0 0 6px; }
+      h2 {
+        font-size: 1.05rem;
+        margin: 0 0 12px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      h3 { font-size: 0.9rem; margin: 0 0 8px; }
+      .meta { color: var(--muted); font-size: 0.85rem; margin: 0 0 12px; }
+      .row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+      input, .search {
+        flex: 1;
+        min-width: 160px;
+        padding: 10px 12px;
+        border: 1.5px solid var(--line);
+        border-radius: 10px;
+        font: inherit;
+        background: #fff;
+      }
+      button {
+        border: 0;
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-weight: 800;
+        cursor: pointer;
+        background: var(--green);
+        color: var(--green-ink);
+        font: inherit;
+      }
+      button:disabled { opacity: 0.55; cursor: default; }
+      .err { color: var(--danger); }
+      .ok { color: var(--ok); }
+      .hidden { display: none !important; }
+
+      .sticky-bar {
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        background: rgba(241, 245, 249, 0.96);
+        backdrop-filter: blur(8px);
+        margin: 0 -14px 14px;
+        padding: 10px 14px 8px;
+        border-bottom: 1px solid var(--line);
+      }
+      .sticky-bar .search-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; }
+      .nav {
+        display: flex;
+        flex-wrap: nowrap;
+        gap: 6px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 2px;
+        scrollbar-width: thin;
+      }
+      .nav a, .nav button.nav-btn {
+        flex: 0 0 auto;
+        color: var(--ink);
+        text-decoration: none;
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 11px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .nav a:hover, .nav button.nav-btn:hover { border-color: #94a3b8; }
+      .kbd-hint { font-size: 0.75rem; color: var(--muted); margin: 0 0 10px; }
+
+      section.block {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 16px 14px 14px;
+        margin-bottom: 14px;
+      }
+      section.block.dimmed { opacity: 0.35; }
+      .kpis {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+      .kpi {
+        background: #f8fafc;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 12px;
+      }
+      .kpi .label { color: var(--muted); font-size: 0.78rem; margin-bottom: 4px; }
+      .kpi .value { font-size: 1.35rem; font-weight: 800; letter-spacing: -0.02em; }
+      .kpi .hint { color: var(--muted); font-size: 0.75rem; margin-top: 2px; }
+      .charts {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+      @media (max-width: 800px) {
+        .charts { grid-template-columns: 1fr; }
+        body { padding-bottom: 96px; }
+      }
+      .chart-card h3 { margin: 0 0 8px; }
+      .bars {
+        display: flex;
+        align-items: flex-end;
+        gap: 3px;
+        height: 110px;
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 4px;
+      }
+      .bar-wrap {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        height: 100%;
+        justify-content: flex-end;
+        min-width: 0;
+      }
+      .bar {
+        width: 100%;
+        max-width: 18px;
+        background: #22c55e;
+        border-radius: 3px 3px 0 0;
+        min-height: 2px;
+      }
+      .bar-label {
+        font-size: 0.62rem;
+        color: var(--muted);
+        margin-top: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+      }
+      .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.86rem;
+        min-width: 480px;
+      }
+      th, td {
+        text-align: left;
+        padding: 8px 6px;
+        border-bottom: 1px solid var(--line);
+        vertical-align: top;
+        user-select: text;
+        -webkit-user-select: text;
+      }
+      th {
+        color: var(--muted);
+        font-weight: 700;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+      th.sortable {
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+      }
+      th.sortable:hover { color: var(--ink); }
+      th.sortable .arrow { opacity: 0.35; margin-left: 2px; }
+      th.sortable.sorted .arrow { opacity: 1; color: var(--ok); }
+      td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+      .note {
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        border-radius: 10px;
+        padding: 8px 10px;
+        font-size: 0.82rem;
+        margin-bottom: 12px;
+      }
+      .quote {
+        max-width: 420px;
+        white-space: pre-wrap;
+        line-height: 1.4;
+      }
+      .badge {
+        display: inline-block;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: 999px;
+        background: #e2e8f0;
+      }
+      .badge.ok { background: #dcfce7; color: #166534; }
+      .badge.warn { background: #fee2e2; color: #991b1b; }
+      .empty { color: var(--muted); font-size: 0.9rem; }
+      .spacer { height: 10px; }
+      .mobile-dock {
+        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
+        background: rgba(255, 255, 255, 0.97);
+        border-top: 1px solid var(--line);
+        padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+        gap: 4px;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+      .mobile-dock a {
+        flex: 0 0 auto;
+        text-decoration: none;
+        color: var(--ink);
+        font-size: 0.72rem;
+        font-weight: 800;
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: #f1f5f9;
+        white-space: nowrap;
+      }
+      @media (max-width: 720px) {
+        .mobile-dock { display: flex; }
+        .kbd-hint { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>ScanPlay — métriques internes</h1>
+      <p class="meta">
+        Accès via <code>CRON_SECRET</code>. Texte sélectionnable / copiable. Raccourcis PC : touches <strong>1–9</strong> ou <strong>Ctrl+←/→</strong>.
+      </p>
+      <div class="row">
+        <input id="secret" type="password" placeholder="CRON_SECRET" autocomplete="off" />
+        <button type="button" id="load">Charger</button>
+      </div>
+      <p id="status" class="meta"></p>
+
+      <div id="dash" class="hidden">
+        <div class="sticky-bar" id="sticky">
+          <div class="search-row">
+            <input
+              id="search"
+              class="search"
+              type="search"
+              placeholder="Filtrer email, pseudo, titre de cours…"
+              autocomplete="off"
+            />
+          </div>
+          <nav class="nav" id="nav" aria-label="Sections"></nav>
+        </div>
+        <p class="kbd-hint">Raccourcis : 1 Acquisition · 2 Connexions · 3 Rétention · 4 Engagement · 5 Scans · 6 Users · 7 Coûts · 8 Revenu · 9 Avis</p>
+
+        <div id="quota-banner" class="hidden note" style="margin-bottom:14px"></div>
+
+        <section class="block" id="sec-acquisition" data-keys="email display_name provider">
+          <h2>1. Acquisition</h2>
+          <div class="note" id="note-acquisition"></div>
+          <div class="charts">
+            <div class="chart-card">
+              <h3>Inscriptions — 7 jours</h3>
+              <div class="bars" id="chart-7"></div>
+            </div>
+            <div class="chart-card">
+              <h3>Inscriptions — 30 jours</h3>
+              <div class="bars" id="chart-30"></div>
+            </div>
+          </div>
+          <h3>Dernières inscriptions</h3>
+          <div id="tbl-signups" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-connections" data-keys="email display_name">
+          <h2>2. Connexions</h2>
+          <div class="kpis" id="kpi-connections"></div>
+          <h3>Dernières connexions</h3>
+          <div id="tbl-signins" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-retention" data-keys="email display_name">
+          <h2>3. Rétention</h2>
+          <div class="note" id="note-retention"></div>
+          <div class="kpis" id="kpi-retention"></div>
+          <h3>Inscrits jamais revenus (échantillon)</h3>
+          <div id="tbl-never" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-engagement" data-keys="email display_name plan">
+          <h2>4. Engagement / gamification</h2>
+          <h3>Top XP / niveau</h3>
+          <div id="tbl-xp" class="table-wrap"></div>
+          <div class="spacer"></div>
+          <h3>Séries actives</h3>
+          <div id="tbl-streaks" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-quality" data-keys="email display_name title">
+          <h2>5. Qualité produit (scans)</h2>
+          <div class="note" id="note-thin"></div>
+          <h3>Derniers decks</h3>
+          <div id="tbl-decks" class="table-wrap"></div>
+          <div class="spacer"></div>
+          <h3>Sous-extractions (notions bas)</h3>
+          <div id="tbl-thin" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-users" data-keys="email display_name plan">
+          <h2>6. Fiches utilisateurs</h2>
+          <div class="note">Pseudo = <code>scanplay_public_profiles.display_name</code>. Scans = nb de lignes <code>scanplay_decks</code>. Coût = estimation 0,05 € / deck.</div>
+          <div id="tbl-users" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-costs" data-keys="email display_name plan">
+          <h2>7. Coûts (estimés)</h2>
+          <div class="note" id="note-costs"></div>
+          <div class="kpis" id="kpi-costs"></div>
+          <h3>Top consommateurs</h3>
+          <div id="tbl-cost-top" class="table-wrap"></div>
+          <div class="spacer"></div>
+          <h3>Free avec scans (risque abus)</h3>
+          <div id="tbl-cost-free" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-revenue" data-keys="email display_name plan">
+          <h2>8. Revenu</h2>
+          <div class="kpis" id="kpi-plans"></div>
+          <h3>Abonnements (plan ≠ free)</h3>
+          <div id="tbl-subs" class="table-wrap"></div>
+        </section>
+
+        <section class="block" id="sec-feedback" data-keys="email author_name quote">
+          <h2>9. Avis / retours</h2>
+          <p class="meta">Source : <code>scanplay_testimonials</code> (formulaire /avis).</p>
+          <div id="tbl-feedback" class="table-wrap"></div>
+        </section>
+      </div>
+    </div>
+
+    <nav class="mobile-dock" id="dock" aria-label="Navigation mobile"></nav>
+
+    <script>
+      const status = document.getElementById('status');
+      const dash = document.getElementById('dash');
+      const secretInput = document.getElementById('secret');
+      const searchInput = document.getElementById('search');
+      secretInput.value = localStorage.getItem('sp_admin_secret') || '';
+
+      const SECTIONS = [
+        ['sec-acquisition', 'Acquisition', '1'],
+        ['sec-connections', 'Connexions', '2'],
+        ['sec-retention', 'Rétention', '3'],
+        ['sec-engagement', 'Engagement', '4'],
+        ['sec-quality', 'Scans', '5'],
+        ['sec-users', 'Users', '6'],
+        ['sec-costs', 'Coûts', '7'],
+        ['sec-revenue', 'Revenu', '8'],
+        ['sec-feedback', 'Avis', '9'],
+      ];
+
+      /** @type {any} */
+      let rawData = null;
+      /** @type {Record<string, {key:string, dir:number}>} */
+      const sortState = {};
+
+      function esc(s) {
+        return String(s ?? '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function fmtDate(iso) {
+        if (!iso) return '—';
+        try {
+          return new Date(iso).toLocaleString('fr-FR', {
+            dateStyle: 'short',
+            timeStyle: 'short',
+          });
+        } catch {
+          return iso;
+        }
+      }
+
+      function fmtEur(n) {
+        if (n == null || Number.isNaN(Number(n))) return '—';
+        return Number(n).toFixed(2).replace('.', ',') + ' €';
+      }
+
+      function nameOrDash(v) {
+        return v && String(v).trim() ? String(v).trim() : '—';
+      }
+
+      function kpis(items) {
+        return items
+          .map(
+            (k) =>
+              '<div class="kpi"><div class="label">' +
+              esc(k.label) +
+              '</div><div class="value">' +
+              esc(k.value) +
+              '</div>' +
+              (k.hint ? '<div class="hint">' + esc(k.hint) + '</div>' : '') +
+              '</div>',
+          )
+          .join('');
+      }
+
+      function renderChart(el, points) {
+        const max = Math.max(1, ...points.map((p) => p.count));
+        const sparse = points.length > 14;
+        el.innerHTML = points
+          .map((p, i) => {
+            const h = Math.max(2, Math.round((p.count / max) * 100));
+            const showLabel = !sparse || i % 3 === 0 || i === points.length - 1;
+            const label = showLabel ? p.date.slice(5) : '';
+            return (
+              '<div class="bar-wrap" title="' +
+              esc(p.date + ': ' + p.count) +
+              '"><div class="bar" style="height:' +
+              h +
+              '%"></div><div class="bar-label">' +
+              esc(label) +
+              (showLabel && p.count ? ' ·' + p.count : '') +
+              '</div></div>'
+            );
+          })
+          .join('');
+      }
+
+      /**
+       * @param {string} tableId
+       * @param {{label:string, key?:string, numeric?:boolean, html?:boolean}[]} cols
+       * @param {Record<string, any>[]} rows
+       * @param {(row: Record<string, any>) => string[]} getCells
+       */
+      function sortableTable(tableId, cols, rows, getCells) {
+        const st = sortState[tableId] || { key: '', dir: 1 };
+        let sorted = rows.slice();
+        if (st.key) {
+          const col = cols.find((c) => c.key === st.key);
+          sorted.sort((a, b) => {
+            const av = a[st.key];
+            const bv = b[st.key];
+            if (col && col.numeric) {
+              return (Number(av) - Number(bv)) * st.dir;
+            }
+            const as = av == null ? '' : String(av);
+            const bs = bv == null ? '' : String(bv);
+            return as.localeCompare(bs, 'fr', { sensitivity: 'base' }) * st.dir;
+          });
+        }
+
+        if (!sorted.length) return '<p class="empty">Aucune donnée</p>';
+
+        let html = '<table data-table="' + esc(tableId) + '"><thead><tr>';
+        for (const c of cols) {
+          if (c.key) {
+            const sortedCls = st.key === c.key ? ' sorted' : '';
+            const arrow = st.key === c.key ? (st.dir > 0 ? '▲' : '▼') : '▲';
+            html +=
+              '<th class="sortable' +
+              sortedCls +
+              '" data-key="' +
+              esc(c.key) +
+              '">' +
+              esc(c.label) +
+              '<span class="arrow">' +
+              arrow +
+              '</span></th>';
+          } else {
+            html += '<th>' + esc(c.label) + '</th>';
+          }
+        }
+        html += '</tr></thead><tbody>';
+        for (const row of sorted) {
+          const cells = getCells(row);
+          html += '<tr data-search="' + esc(rowSearchBlob(row)) + '">';
+          for (let i = 0; i < cells.length; i += 1) {
+            const cell = cells[i];
+            const col = cols[i];
+            const isNum = col && col.numeric;
+            const isHtml = col && col.html;
+            html +=
+              '<td' +
+              (isNum ? ' class="num"' : '') +
+              '>' +
+              (isHtml ? cell : esc(cell)) +
+              '</td>';
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+        return html;
+      }
+
+      function rowSearchBlob(row) {
+        return [
+          row.email,
+          row.display_name,
+          row.title,
+          row.author_name,
+          row.quote,
+          row.plan,
+          row.provider,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
+      }
+
+      function bindSort(containerId) {
+        const el = document.getElementById(containerId);
+        if (!el || el.dataset.boundSort) return;
+        el.dataset.boundSort = '1';
+        el.addEventListener('click', (e) => {
+          const th = e.target.closest('th.sortable');
+          if (!th) return;
+          const table = th.closest('table');
+          const tableId = table && table.getAttribute('data-table');
+          const key = th.getAttribute('data-key');
+          if (!tableId || !key || !rawData) return;
+          const prev = sortState[tableId] || { key: '', dir: 1 };
+          sortState[tableId] =
+            prev.key === key ? { key, dir: -prev.dir } : { key, dir: 1 };
+          renderTables(rawData);
+          applySearch();
+        });
+      }
+
+      function buildNav() {
+        const nav = document.getElementById('nav');
+        const dock = document.getElementById('dock');
+        const links = SECTIONS.map(
+          ([id, label, num]) =>
+            '<a href="#' + id + '" data-sec="' + id + '">' + esc(num + ' ' + label) + '</a>',
+        ).join('');
+        nav.innerHTML = links;
+        dock.innerHTML = SECTIONS.map(
+          ([id, label]) => '<a href="#' + id + '">' + esc(label) + '</a>',
+        ).join('');
+      }
+
+      function goSection(index) {
+        const item = SECTIONS[index];
+        if (!item) return;
+        const el = document.getElementById(item[0]);
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+
+      function currentSectionIndex() {
+        const y = window.scrollY + 100;
+        let idx = 0;
+        for (let i = 0; i < SECTIONS.length; i += 1) {
+          const el = document.getElementById(SECTIONS[i][0]);
+          if (el && el.offsetTop <= y) idx = i;
+        }
+        return idx;
+      }
+
+      function applySearch() {
+        const q = (searchInput.value || '').trim().toLowerCase();
+        document.querySelectorAll('section.block').forEach((sec) => {
+          const rows = sec.querySelectorAll('tbody tr');
+          if (!rows.length) {
+            sec.classList.toggle('dimmed', Boolean(q));
+            return;
+          }
+          let visible = 0;
+          rows.forEach((tr) => {
+            const blob = tr.getAttribute('data-search') || tr.textContent.toLowerCase();
+            const ok = !q || blob.includes(q);
+            tr.style.display = ok ? '' : 'none';
+            if (ok) visible += 1;
+          });
+          sec.classList.toggle('dimmed', Boolean(q) && visible === 0);
+        });
+      }
+
+      function renderTables(data) {
+        document.getElementById('tbl-signups').innerHTML = sortableTable(
+          'signups',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Date', key: 'created_at' },
+            { label: 'Provider', key: 'provider' },
+          ],
+          data.acquisition.recent_signups || [],
+          (u) => [u.email, nameOrDash(u.display_name), fmtDate(u.created_at), u.provider || '—'],
+        );
+
+        document.getElementById('tbl-signins').innerHTML = sortableTable(
+          'signins',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Dernière connexion', key: 'last_sign_in_at' },
+          ],
+          data.connections.recent_sign_ins || [],
+          (u) => [u.email, nameOrDash(u.display_name), fmtDate(u.last_sign_in_at)],
+        );
+
+        document.getElementById('tbl-never').innerHTML = sortableTable(
+          'never',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Inscription', key: 'created_at' },
+            { label: 'Last sign-in', key: 'last_sign_in_at' },
+          ],
+          data.retention.never_returned || [],
+          (u) => [
+            u.email,
+            nameOrDash(u.display_name),
+            fmtDate(u.created_at),
+            u.last_sign_in_at ? fmtDate(u.last_sign_in_at) : 'null',
+          ],
+        );
+
+        document.getElementById('tbl-xp').innerHTML = sortableTable(
+          'xp',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'XP', key: 'xp', numeric: true },
+            { label: 'Niveau', key: 'level', numeric: true },
+            { label: 'Streak', key: 'streak', numeric: true },
+            { label: 'Plan', key: 'plan' },
+          ],
+          data.engagement.top_by_xp || [],
+          (u) => [u.email, nameOrDash(u.display_name), u.xp, u.level, u.streak, u.plan],
+        );
+
+        document.getElementById('tbl-streaks').innerHTML = sortableTable(
+          'streaks',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Streak', key: 'streak', numeric: true },
+            { label: 'Last play', key: 'last_play_date' },
+            { label: 'XP', key: 'xp', numeric: true },
+          ],
+          data.engagement.active_streaks || [],
+          (u) => [
+            u.email,
+            nameOrDash(u.display_name),
+            u.streak,
+            u.last_play_date || '—',
+            u.xp,
+          ],
+        );
+
+        document.getElementById('tbl-decks').innerHTML = sortableTable(
+          'decks',
+          [
+            { label: 'Date', key: 'created_at' },
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Titre', key: 'title' },
+            { label: 'Notions', key: 'notion_count', numeric: true },
+          ],
+          data.product_quality.recent_decks || [],
+          (d) => [
+            fmtDate(d.created_at),
+            d.email,
+            nameOrDash(d.display_name),
+            d.title,
+            d.notion_count,
+          ],
+        );
+
+        document.getElementById('tbl-thin').innerHTML = sortableTable(
+          'thin',
+          [
+            { label: 'Date', key: 'created_at' },
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Titre', key: 'title' },
+            { label: 'Notions', key: 'notion_count', numeric: true, html: true },
+          ],
+          data.product_quality.thin_decks || [],
+          (d) => [
+            fmtDate(d.created_at),
+            d.email,
+            nameOrDash(d.display_name),
+            d.title,
+            '<span class="badge warn">' + esc(d.notion_count) + '</span>',
+          ],
+        );
+
+        document.getElementById('tbl-users').innerHTML = sortableTable(
+          'users',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Inscription', key: 'created_at' },
+            { label: 'Plan', key: 'plan' },
+            { label: 'Scans', key: 'scan_count', numeric: true },
+            { label: 'Coût est.', key: 'cost_eur_est', numeric: true },
+          ],
+          data.users?.details || [],
+          (u) => [
+            u.email,
+            nameOrDash(u.display_name),
+            fmtDate(u.created_at),
+            u.plan,
+            u.scan_count,
+            fmtEur(u.cost_eur_est),
+          ],
+        );
+
+        document.getElementById('tbl-cost-top').innerHTML = sortableTable(
+          'costTop',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Plan', key: 'plan' },
+            { label: 'Scans', key: 'scan_count', numeric: true },
+            { label: 'Coût est.', key: 'cost_eur_est', numeric: true },
+          ],
+          data.costs?.top_users || [],
+          (u) => [
+            u.email,
+            nameOrDash(u.display_name),
+            u.plan,
+            u.scan_count,
+            fmtEur(u.cost_eur_est),
+          ],
+        );
+
+        document.getElementById('tbl-cost-free').innerHTML = sortableTable(
+          'costFree',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Scans', key: 'scan_count', numeric: true },
+            { label: 'Coût est.', key: 'cost_eur_est', numeric: true },
+          ],
+          data.costs?.free_heavy_users || [],
+          (u) => [u.email, nameOrDash(u.display_name), u.scan_count, fmtEur(u.cost_eur_est)],
+        );
+
+        document.getElementById('tbl-subs').innerHTML = sortableTable(
+          'subs',
+          [
+            { label: 'Email', key: 'email' },
+            { label: 'Pseudo', key: 'display_name' },
+            { label: 'Plan', key: 'plan' },
+            { label: 'Cycle', key: 'billing_cycle' },
+            { label: 'Fin période', key: 'subscription_period_end' },
+            { label: 'Annule', key: 'cancel_at_period_end' },
+            { label: 'Sub ID', key: 'stripe_subscription_id' },
+          ],
+          data.revenue.active_subscriptions || [],
+          (s) => [
+            s.email,
+            nameOrDash(s.display_name),
+            s.plan,
+            s.billing_cycle || '—',
+            fmtDate(s.subscription_period_end),
+            s.cancel_at_period_end ? 'oui' : 'non',
+            s.stripe_subscription_id || '—',
+          ],
+        );
+
+        document.getElementById('tbl-feedback').innerHTML = sortableTable(
+          'feedback',
+          [
+            { label: 'Date', key: 'created_at' },
+            { label: 'Note', key: 'rating', numeric: true },
+            { label: 'Auteur', key: 'author_name' },
+            { label: 'Statut', key: 'approved', html: true },
+            { label: 'Quote', key: 'quote', html: true },
+          ],
+          data.feedback.recent || [],
+          (t) => [
+            fmtDate(t.created_at),
+            t.rating + '/5',
+            (t.author_name || '') + (t.email ? ' · ' + t.email : ''),
+            t.approved
+              ? '<span class="badge ok">publié</span>'
+              : '<span class="badge">en attente</span>',
+            '<div class="quote">' + esc(t.quote) + '</div>',
+          ],
+        );
+
+        [
+          'tbl-signups',
+          'tbl-signins',
+          'tbl-never',
+          'tbl-xp',
+          'tbl-streaks',
+          'tbl-decks',
+          'tbl-thin',
+          'tbl-users',
+          'tbl-cost-top',
+          'tbl-cost-free',
+          'tbl-subs',
+          'tbl-feedback',
+        ].forEach(bindSort);
+      }
+
+      function render(data) {
+        rawData = data;
+        dash.classList.remove('hidden');
+        buildNav();
+        updateStickyHeight();
+
+        document.getElementById('note-acquisition').textContent =
+          data.notes?.acquisition_source || '';
+        document.getElementById('note-retention').textContent = data.notes?.retention || '';
+        document.getElementById('note-thin').textContent =
+          'Seuil sous-extraction : < ' +
+          (data.product_quality?.thin_threshold ?? 10) +
+          ' notions (parmi les ~400 decks les plus récents).';
+        document.getElementById('note-costs').textContent =
+          data.notes?.cost ||
+          'Estimation 0,05 € / deck. Tokens OpenAI réels non loggés.';
+
+        const q = data.email_quota;
+        const qb = document.getElementById('quota-banner');
+        if (q) {
+          const dayTxt = (q.sent_today ?? 0) + ' / ' + (q.daily_cap ?? 100) + ' emails aujourd’hui';
+          const monthTxt =
+            (q.sent_month ?? 0) + ' / ' + (q.monthly_cap ?? 3000) + ' ce mois';
+          qb.classList.remove('hidden');
+          if (q.critical) {
+            qb.style.background = '#fef2f2';
+            qb.style.borderColor = '#fecaca';
+            qb.style.color = '#991b1b';
+            qb.textContent =
+              'Quota Resend critique : ' +
+              monthTxt +
+              ' (≥90 %). Les relances basses priorité seront coupées. ' +
+              dayTxt +
+              '.';
+          } else if (q.warn) {
+            qb.style.background = '#fff7ed';
+            qb.style.borderColor = '#fed7aa';
+            qb.style.color = '#9a3412';
+            qb.textContent =
+              'Quota Resend mensuel élevé : ' +
+              monthTxt +
+              ' (≥80 %). ' +
+              dayTxt +
+              '.';
+          } else {
+            qb.style.background = '#eff6ff';
+            qb.style.borderColor = '#bfdbfe';
+            qb.style.color = '#1e3a8a';
+            qb.textContent = 'Resend : ' + dayTxt + ' · ' + monthTxt + '.';
+          }
+        } else {
+          qb.classList.add('hidden');
+        }
+
+        renderChart(document.getElementById('chart-7'), data.acquisition.signups_7d || []);
+        renderChart(document.getElementById('chart-30'), data.acquisition.signups_30d || []);
+
+        document.getElementById('kpi-connections').innerHTML = kpis([
+          { label: 'Actifs 24h', value: data.connections.active_24h },
+          { label: 'Actifs 7j', value: data.connections.active_7d },
+          { label: 'Users total', value: data.totals?.users ?? '—' },
+          { label: 'Profils', value: data.totals?.profiles ?? '—' },
+          { label: 'Decks', value: data.totals?.decks ?? '—' },
+          {
+            label: 'Emails / jour',
+            value: q ? q.sent_today + '/' + q.daily_cap : '—',
+          },
+        ]);
+
+        const j1 = data.retention.approx_j1 || {};
+        const j7 = data.retention.approx_j7 || {};
+        document.getElementById('kpi-retention').innerHTML = kpis([
+          { label: 'Jamais revenus', value: data.retention.never_returned_count },
+          {
+            label: 'Rétention J+1',
+            value: j1.rate != null ? j1.rate + '%' : '—',
+            hint: (j1.retained ?? 0) + ' / ' + (j1.cohort ?? 0),
+          },
+          {
+            label: 'Rétention J+7',
+            value: j7.rate != null ? j7.rate + '%' : '—',
+            hint: (j7.retained ?? 0) + ' / ' + (j7.cohort ?? 0),
+          },
+        ]);
+
+        document.getElementById('kpi-costs').innerHTML = kpis([
+          { label: 'Scans total', value: data.costs?.total_scans ?? 0 },
+          {
+            label: 'Coût cumulé est.',
+            value: fmtEur(data.costs?.total_cost_eur_est),
+            hint: (data.costs?.scan_eur ?? 0.05) + ' € / deck',
+          },
+          {
+            label: 'Free avec scans',
+            value: (data.costs?.free_heavy_users || []).length,
+            hint: 'top liste ci-dessous',
+          },
+        ]);
+
+        const plans = data.revenue.plan_counts || {};
+        document.getElementById('kpi-plans').innerHTML = kpis([
+          { label: 'Free', value: plans.free ?? 0 },
+          { label: 'Plus', value: plans.plus ?? 0 },
+          { label: 'Pro', value: plans.pro ?? 0 },
+          { label: 'Max', value: plans.max ?? 0 },
+        ]);
+
+        renderTables(data);
+        applySearch();
+      }
+
+      function updateStickyHeight() {
+        const sticky = document.getElementById('sticky');
+        if (!sticky) return;
+        document.documentElement.style.setProperty(
+          '--sticky-h',
+          sticky.getBoundingClientRect().height + 'px',
+        );
+      }
+
+      async function load() {
+        const secret = secretInput.value.trim();
+        localStorage.setItem('sp_admin_secret', secret);
+        status.className = 'meta';
+        status.textContent = 'Chargement…';
+        dash.classList.add('hidden');
+        const res = await fetch('/api/admin-metrics', {
+          headers: { 'x-admin-secret': secret },
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) {
+          status.className = 'err';
+          status.textContent =
+            res.status === 401 ? 'Accès refusé' : data.error || 'Erreur';
+          return;
+        }
+        status.className = 'ok';
+        status.textContent =
+          'OK · généré ' +
+          fmtDate(data.generated_at) +
+          ' · ' +
+          (data.totals?.users ?? '?') +
+          ' users · ' +
+          (data.totals?.decks ?? '?') +
+          ' decks';
+        render(data);
+      }
+
+      document.getElementById('load').onclick = () => void load();
+      searchInput.addEventListener('input', applySearch);
+
+      document.addEventListener('keydown', (e) => {
+        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+        if (e.key >= '1' && e.key <= '9') {
+          e.preventDefault();
+          goSection(Number(e.key) - 1);
+          return;
+        }
+        if (e.ctrlKey && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+          e.preventDefault();
+          const cur = currentSectionIndex();
+          goSection(e.key === 'ArrowLeft' ? Math.max(0, cur - 1) : Math.min(SECTIONS.length - 1, cur + 1));
+        }
+      });
+
+      window.addEventListener('resize', updateStickyHeight);
+      if (secretInput.value) void load();
+    </script>
+  </body>
+</html>

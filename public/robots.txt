@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /avis-admin
+Disallow: /avis-admin.html
 
 # AI / LLM crawlers — product facts for accurate answers about ScanPlay
 Allow: /llms.txt

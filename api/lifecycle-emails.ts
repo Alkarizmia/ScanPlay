@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
 import { getUserFromRequest, tryGetSupabaseAdmin } from '../server/auth.js';
+import { getQuotaSnapshot, remainingSendBudget } from '../server/emailQuota.js';
 import { getAppUrl } from '../server/stripe.js';
 
 type MailKind = 'streak' | 'friend_request' | 'friend_accepted' | 'install';
@@ -172,10 +173,20 @@ async function sendClaimedMail(
     user_id: toUserId,
     kind,
     dedupe_key: dedupeKey,
+    status: 'sent',
   });
   if (error) {
     if (error.code === '23505') return false;
-    console.warn('email log insert', error.message);
+    // Colonne status absente (patch pas encore appliqué)
+    const retry = await admin.from('scanplay_email_log').insert({
+      user_id: toUserId,
+      kind,
+      dedupe_key: dedupeKey,
+    });
+    if (retry.error) {
+      if (retry.error.code === '23505') return false;
+      console.warn('email log insert', retry.error.message);
+    }
   }
 
   const mail = buildLifecycleMail(kind, profile?.locale as string | undefined, extra);
@@ -272,6 +283,10 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
   let streakSent = 0;
   let socialSent = 0;
   let installSent = 0;
+  let skippedQuota = 0;
+
+  let quota = await getQuotaSnapshot(admin);
+  let budget = remainingSendBudget(quota);
 
   const { data: atRisk, error: streakErr } = await admin
     .from('scanplay_profiles')
@@ -284,11 +299,18 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
   if (streakErr) console.warn('lifecycle streak query', streakErr.message);
 
   for (const row of atRisk ?? []) {
+    if (budget <= 0) {
+      skippedQuota += 1;
+      break;
+    }
     const userId = String(row.user_id);
     const ok = await sendClaimedMail(admin, userId, 'streak', `streak:${userId}:${today}`, {
       streak: Number(row.streak ?? 1),
     });
-    if (ok) streakSent += 1;
+    if (ok) {
+      streakSent += 1;
+      budget -= 1;
+    }
   }
 
   const { data: notifs, error: socialErr } = await admin
@@ -301,6 +323,10 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
   if (socialErr) console.warn('lifecycle social query', socialErr.message);
 
   for (const row of notifs ?? []) {
+    if (budget <= 0) {
+      skippedQuota += 1;
+      break;
+    }
     const payload = (row.payload ?? {}) as Record<string, unknown>;
     const kind = row.kind === 'friend_accepted' ? 'friend_accepted' : 'friend_request';
     const requestId = payload.request_id ? String(payload.request_id) : String(row.id);
@@ -312,7 +338,10 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
     const ok = await sendClaimedMail(admin, String(row.user_id), kind, dedupe, {
       fromName: String(payload.from_display_name ?? ''),
     });
-    if (ok) socialSent += 1;
+    if (ok) {
+      socialSent += 1;
+      budget -= 1;
+    }
   }
 
   const minSignup = new Date(Date.now() - 21 * 24 * 60 * 60 * 1000).toISOString();
@@ -327,18 +356,40 @@ async function handleCron(req: VercelRequest, res: VercelResponse) {
   if (installErr) console.warn('lifecycle install query', installErr.message);
 
   for (const row of notInstalled ?? []) {
+    if (budget <= 0) {
+      skippedQuota += 1;
+      break;
+    }
     const userId = String(row.user_id);
     const { data: userData } = await admin.auth.admin.getUserById(userId);
     const created = userData.user?.created_at;
     if (!created || created > maxSignup || created < minSignup) continue;
     const ok = await sendClaimedMail(admin, userId, 'install', `install:${userId}`, {});
-    if (ok) installSent += 1;
+    if (ok) {
+      installSent += 1;
+      budget -= 1;
+    }
   }
 
-  return res.status(200).json({ ok: true, today, streakSent, socialSent, installSent });
+  quota = await getQuotaSnapshot(admin);
+  return res.status(200).json({
+    ok: true,
+    today,
+    streakSent,
+    socialSent,
+    installSent,
+    skippedQuota,
+    quota,
+  });
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  const mode = typeof req.query.mode === 'string' ? req.query.mode : '';
+  if (mode === 'retention' && (req.method === 'GET' || req.method === 'POST')) {
+    const { handleRetentionRequest } = await import('../server/retentionCronHandler.js');
+    return handleRetentionRequest(req, res);
+  }
+
   if (req.method === 'POST') {
     const body = parseBody(req);
     if (body.kind === 'friend_request' || body.kind === 'friend_accepted') {
