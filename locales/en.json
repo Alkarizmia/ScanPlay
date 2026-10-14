@@ -571,7 +571,7 @@
     "guestScanBannerUsedTitle": "Sign in to continue",
     "guestScanBannerUsedBody": "Create a free account to save your sheets and pick up where you left off.",
     "guestScanMobileHint": "Scan your sheet, then a free account to start a step",
-    "guestSignupTeaser": "Create a free account · 2 scans/day + history",
+    "guestSignupTeaser": "Create a free account · history + ScanPlay AI envelope",
     "settingsTitle": "Settings",
     "account": "Account",
     "guest": "Guest",
@@ -614,7 +614,7 @@
   },
   "subscription": {
     "planPerkGuestTrial": "1 guest trial (no history)",
-    "planPerkFreeAccountScans": "2 scans/day with a free account",
+    "planPerkFreeAccountScans": "ScanPlay AI envelope €0.15/wk (no daily scan quota)",
     "upgradePlus": "Upgrade to Plus",
     "upgradePro": "Upgrade to Pro",
     "pricingTitle": "Choose your plan",

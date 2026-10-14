@@ -112,7 +112,12 @@ export function QuizGame({
   }, [q, quizPool, shuffleSeed, reverse]);
 
   const idleEnabled = !examMode && !revealed;
-  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+  const {
+    helped: idleHelped,
+    secondsLeft: idleSeconds,
+    bumpActivity,
+    revealNow: revealIdleHelp,
+  } = useGameIdleHelp({
     enabled: idleEnabled,
     resetKey: `${index}-${answerText}`,
   });
@@ -233,7 +238,12 @@ export function QuizGame({
         </div>
 
         {idleEnabled && (
-          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+          <IdleHelpChip
+            locale={locale}
+            helped={idleHelped}
+            secondsLeft={idleSeconds}
+            onSkip={revealIdleHelp}
+          />
         )}
 
         <div className="choice-list quiz-options">

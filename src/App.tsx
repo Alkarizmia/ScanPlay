@@ -2015,8 +2015,10 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       <AdConsentBanner locale={locale} delayMs={2500} />
       <MascotCorner locale={locale} enabled={flow === 'playing' || flow === 'lesson'} />
 
+      {/* Never show Pix FAB on reviewCards: one accidental tap closed the draft and
+          markNavReplace() wiped back-stack, so scan/manual cards could be lost. */}
       {isLoggedIn() &&
-        (flow === 'modes' || flow === 'results' || flow === 'lessonComplete' || flow === 'reviewCards') && (
+        (flow === 'modes' || flow === 'results' || flow === 'lessonComplete') && (
         <CoachFab
           locale={locale}
           onOpen={() => {
@@ -2343,6 +2345,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
           ignored={ignoredScanPairs}
           manualMode={manualDeckMode}
           onBack={appGoBack}
+          onDraftChange={(draft) => setPairs(draft)}
           onRescan={() => {
             setIgnoredScanPairs([]);
             setManualDeckMode(false);

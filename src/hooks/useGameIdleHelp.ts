@@ -36,6 +36,16 @@ export function useGameIdleHelp({
     setCycle((n) => n + 1);
   }, [enabled]);
 
+  /** Skip the wait: show the hint now (tap the chip). */
+  const revealNow = useCallback(() => {
+    if (!enabled) return;
+    if (helpedRef.current) return;
+    genRef.current += 1;
+    helpedRef.current = true;
+    setHelped(true);
+    setSecondsLeft(0);
+  }, [enabled]);
+
   useEffect(() => {
     if (!enabled) {
       helpedRef.current = false;
@@ -74,5 +84,5 @@ export function useGameIdleHelp({
     };
   }, [enabled, resetKey, delayMs, cycle]);
 
-  return { helped, secondsLeft, bumpActivity };
+  return { helped, secondsLeft, bumpActivity, revealNow };
 }

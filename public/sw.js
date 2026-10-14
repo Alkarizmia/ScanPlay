@@ -9,6 +9,10 @@ const NO_SPA_FALLBACK = new Set([
   '/avis-admin.html',
   '/privacy.html',
   '/terms.html',
+  '/fr/questions-reponses',
+  '/fr/questions-reponses/',
+  '/en/questions-answers',
+  '/en/questions-answers/',
 ]);
 
 self.addEventListener('install', (event) => {

@@ -52,7 +52,10 @@ export interface VadRecordOptions extends VadRecordCallbacks {
 
 export interface VadRecording {
   promise: Promise<Blob | null>;
+  /** End the take and keep the audio blob (send path). */
   stop: () => void;
+  /** End the take and discard audio (trash / cancel path). */
+  cancel: () => void;
 }
 
 function readMicLevel(analyser: AnalyserNode, timeData: Uint8Array<ArrayBuffer>): number {
@@ -79,7 +82,7 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   const mime = pickMimeType();
 
   if (!mime || typeof window === 'undefined') {
-    return { promise: Promise.resolve(null), stop: () => {} };
+    return { promise: Promise.resolve(null), stop: () => {}, cancel: () => {} };
   }
 
   let stream = options.stream ?? getActiveMicStream();
@@ -113,22 +116,31 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
     }
   };
 
-  const finishStop = (resolve: (b: Blob | null) => void) => {
+  const finishStop = (resolve: (b: Blob | null) => void, discard = false) => {
     if (finished) return;
     finished = true;
     options.onSpeechEnd?.();
-    cleanup(false);
-    if (!recorder || recorder.state === 'inactive') {
-      resolve(chunks.length > 0 ? new Blob(chunks, { type: mime }) : null);
-      return;
-    }
-    recorder.onstop = () => {
+    cleanup(discard && ownsStream);
+    const done = () => {
+      if (discard) {
+        resolve(null);
+        return;
+      }
       resolve(chunks.length > 0 ? new Blob(chunks, { type: mime }) : null);
     };
+    if (!recorder || recorder.state === 'inactive') {
+      done();
+      return;
+    }
+    if (discard) {
+      recorder.ondataavailable = () => {};
+      chunks.length = 0;
+    }
+    recorder.onstop = () => done();
     try {
       recorder.stop();
     } catch {
-      resolve(chunks.length > 0 ? new Blob(chunks, { type: mime }) : null);
+      done();
     }
   };
 
@@ -223,7 +235,10 @@ export function recordSpeechWithVAD(options: VadRecordOptions = {}): VadRecordin
   return {
     promise,
     stop: () => {
-      if (resolveBlob) finishStop(resolveBlob);
+      if (resolveBlob) finishStop(resolveBlob, false);
+    },
+    cancel: () => {
+      if (resolveBlob) finishStop(resolveBlob, true);
     },
   };
 }

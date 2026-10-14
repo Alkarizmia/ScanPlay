@@ -14,11 +14,12 @@ export type CoachActionId =
   | 'universe'
   | 'continue_chat'
   | 'continue_game'
+  | 'create_cards'
   | 'export_word'
   | 'export_pdf';
 
 const ACTION_RE =
-  /\[\[action:(scan|settings|home|universe|continue_chat|continue_game|export_word|export_pdf)\]\]/gi;
+  /\[\[action:(scan|settings|home|universe|continue_chat|continue_game|create_cards|export_word|export_pdf)\]\]/gi;
 
 export function extractCoachActions(raw: string): { text: string; actions: CoachActionId[] } {
   const actions: CoachActionId[] = [];
@@ -72,6 +73,32 @@ export function enrichCoachActions(raw: string): string {
   ) {
     add.push('continue_game');
   }
+  const looksLikeVocabList =
+    /\d+\.\s*\*\*[^*]+\*\*/.test(text) &&
+    /\b(traduction|translation|vertaling|traducci[oó]n|corrige|correction|revoir|review|erreur|wrong)\b/i.test(
+      hay,
+    );
+  if (
+    (looksLikeVocabList ||
+      /\b(cr[eé]er (plus de )?cartes|create (more )?cards|meer kaarten|crear (m[aá]s )?tarjetas)\b/i.test(
+        hay,
+      )) &&
+    !actions.includes('create_cards')
+  ) {
+    add.push('create_cards');
+  }
+  const invitesPdf =
+    /\bpdf\b/i.test(hay) &&
+    /\b(crée|créer|bouton|button|export|télécharg|telecharg|imprim|print|appuie|tap|tik|pulsa)\b/i.test(
+      hay,
+    );
+  const invitesWord =
+    /\b(word|docx)\b/i.test(hay) &&
+    /\b(crée|créer|bouton|button|export|télécharg|telecharg|download|appuie|tap|tik|pulsa)\b/i.test(
+      hay,
+    );
+  if (invitesPdf && !actions.includes('export_pdf')) add.push('export_pdf');
+  if (invitesWord && !actions.includes('export_word')) add.push('export_word');
 
   if (add.length === 0) {
     // Keep any tags that were already present.

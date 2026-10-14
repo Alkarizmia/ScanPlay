@@ -98,7 +98,12 @@ export function TranslateGame({
 
   const settled = feedback === 'ok' || feedback === 'fail';
   const idleEnabled = !examMode && !settled;
-  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+  const {
+    helped: idleHelped,
+    secondsLeft: idleSeconds,
+    bumpActivity,
+    revealNow: revealIdleHelp,
+  } = useGameIdleHelp({
     enabled: idleEnabled,
     resetKey: `${index}-${round?.source ?? ''}`,
   });
@@ -209,7 +214,12 @@ export function TranslateGame({
         {hintMsg && <p className="translate-hint-msg">{hintMsg}</p>}
 
         {idleEnabled && (
-          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+          <IdleHelpChip
+            locale={locale}
+            helped={idleHelped}
+            secondsLeft={idleSeconds}
+            onSkip={revealIdleHelp}
+          />
         )}
         {idleHelped && !settled && round && (
           <p className="idle-help-answer idle-help-answer--reveal" aria-live="polite">

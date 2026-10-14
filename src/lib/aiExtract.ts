@@ -10,6 +10,7 @@ import { getMaxWords } from './planLimits';
 import { blobToBase64, prepareSheetImage } from './sheetImage';
 import { getScanPlatform } from './scanPlatform';
 import type { LangCode, SheetType, WordPair } from '../types';
+import { inferPairQuality } from './pairCertainty';
 
 export interface AiExtractPair {
   term: string;
@@ -176,13 +177,18 @@ export function mapAiPairsToWordPairs(pairs: AiExtractPair[], options?: { mathSh
       const faces = keepRaw
         ? normalizeFaces(p.faces)
         : normalizeFaces((p.faces ?? []).map((f) => normalizeVocabCell(f)));
+      const baseQuality = (p.confidence === 'low' ? 'uncertain' : 'trusted') as WordPair['quality'];
+      const sheetKind = options?.mathSheet ? 'math' : freeText ? 'definitions' : 'auto';
       return {
         term,
         definition,
         faces,
         termLang: normalizeLang(p.termLang),
         defLang: normalizeLang(p.defLang),
-        quality: (p.confidence === 'low' ? 'uncertain' : 'trusted') as WordPair['quality'],
+        quality: inferPairQuality(
+          { term, definition, faces, quality: baseQuality },
+          sheetKind,
+        ),
       };
     })
     .filter((p) => {

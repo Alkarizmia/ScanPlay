@@ -212,3 +212,52 @@ html[data-landing='true'] #root {
   font-size: 0.82rem;
   font-weight: 650;
 }
+
+/* Language trigger looks finished before landing.css arrives. */
+.sp-landing .lp-lang {
+  position: relative;
+}
+
+.sp-landing .lp-lang-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 40px;
+  padding: 0 10px;
+  border: 1px solid rgba(15, 40, 25, 0.16);
+  border-radius: 14px;
+  background: #fff;
+  color: var(--lp-text);
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+}
+
+/*
+ * Anti-FOUC gate while the landing.css chunk streams in.
+ * Keep title + CTA visible; hide chrome that looks broken without full styles.
+ */
+html:not([data-lp-css='ready']) .sp-landing .lp-lang-menu {
+  display: none !important;
+}
+
+html:not([data-lp-css='ready']) .sp-landing .lp-nav,
+html:not([data-lp-css='ready']) .sp-landing .lp-main > *:not(.lp-hero),
+html:not([data-lp-css='ready']) .sp-landing .lp-footer,
+html:not([data-lp-css='ready']) .sp-landing .lp-sticky {
+  visibility: hidden;
+}
+
+html:not([data-lp-css='ready']) .sp-landing .lp-hero-visual,
+html:not([data-lp-css='ready']) .sp-landing .lp-hero-steps,
+html:not([data-lp-css='ready']) .sp-landing .lp-hero-bg {
+  opacity: 0;
+}
+
+html[data-lp-css='ready'] .sp-landing .lp-hero-visual,
+html[data-lp-css='ready'] .sp-landing .lp-hero-steps {
+  opacity: 1;
+  transition: opacity 160ms ease;
+}

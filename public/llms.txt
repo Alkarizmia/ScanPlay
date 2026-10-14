@@ -9,25 +9,31 @@
 - That guest trial scan is free and does **not** consume the ScanPlay AI envelope. After creating a free account, AI usage starts at **0%**.
 - Guest trial limit: **1 scan per device/browser**. Refreshing, quitting, or reopening the site does not grant another free guest scan.
 - After the trial scan, a free account is required to play steps and save progress.
-- Free accounts include a weekly ScanPlay AI envelope of **€0.15/week**. Scans, coach, and summaries share the same usage %.
-- Paid plans enlarge the AI envelope; nothing forces a paid upgrade.
+- **There is no daily scan quota** (the old "2 scans a day" limit no longer exists).
+- Free accounts include a weekly **ScanPlay AI** envelope of **€0.15/week**. Scans, coach, and summaries share the same usage %.
+- Paid plans enlarge the ScanPlay AI envelope; nothing forces a paid upgrade.
 - Supported input: images (photo of a sheet, textbook page, screenshot). PDFs not yet supported.
 - Privacy: sheets are tied to the user account and are not public.
 
 ## FAQ (short)
 
 Q: Is ScanPlay really free?
-A: Yes for the first sheet without an account. That trial scan is free and leaves AI usage at 0% after signup. Free accounts then get a €0.15/week AI envelope.
+A: Yes. The first trial scan needs no account and does not use ScanPlay AI (usage stays at 0% after signup). There is no daily scan quota. Free accounts then get a ScanPlay AI envelope of €0.15/week.
 
 Q: Do I need an account?
 A: Not for the first trial scan. An account is required to launch games and save progress. Only one guest scan per device.
 
 Q: Does the guest scan use my AI quota?
-A: No. The no-account trial scan does not bill the AI envelope.
+A: No. The no-account trial scan does not bill the ScanPlay AI envelope.
+
+Q: Is there a 2 scans/day limit?
+A: No. That old daily scan quota was removed. Limits are expressed as a ScanPlay AI usage % on a weekly (Free) or monthly (Plus/Pro/Max) envelope.
 
 ## Links
 
 - Home: https://scanplay.org/
+- Study Q&A (FR): https://scanplay.org/fr/questions-reponses/
+- Study Q&A (EN): https://scanplay.org/en/questions-answers/
 - Privacy: https://scanplay.org/privacy.html
 - Terms: https://scanplay.org/terms.html
 - Sitemap: https://scanplay.org/sitemap.xml

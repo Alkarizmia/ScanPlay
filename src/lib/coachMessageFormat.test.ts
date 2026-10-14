@@ -55,4 +55,10 @@ describe('coachMessageFormat', () => {
     const out = enrichCoachActions(raw);
     expect(out).toContain('[[action:universe]]');
   });
+
+  it('extracts create_cards shortcut', () => {
+    const out = extractCoachActions('Cartes prêtes 👇\n[[action:create_cards]]');
+    expect(out.actions).toEqual(['create_cards']);
+    expect(out.text).not.toContain('[[action:');
+  });
 });

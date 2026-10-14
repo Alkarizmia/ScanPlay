@@ -20,7 +20,18 @@ function speechLangTag(lang?: LangCode): string {
 const VOICE_HINTS: Record<string, string[]> = {
   'nl-NL': ['Google Nederlands', 'nl-NL', 'Dutch', 'Xander'],
   'fr-FR': ['Google français', 'fr-FR', 'Thomas', 'Amélie', 'French'],
-  'en-GB': ['Google UK English', 'en-GB', 'Daniel', 'Google US English', 'en-US', 'Samantha', 'Microsoft Zira'],
+  'en-GB': [
+    'Google UK English Female',
+    'Google UK English Male',
+    'Google UK English',
+    'en-GB',
+    'Daniel',
+    'Microsoft Sonia',
+    'Google US English',
+    'en-US',
+    'Samantha',
+    'Microsoft Zira',
+  ],
   'es-ES': ['Google español', 'es-ES', 'Spanish', 'Jorge', 'Monica'],
 };
 
@@ -280,24 +291,62 @@ export async function speakLocal(
   await speakBrowser(spoken, lang, options?.rate, options?.pitch ?? 1);
 }
 
-/** Play short dialogue lines locally (≈15s), alternating pitch for two speakers. */
+export type DialogueSpeakOptions = SpeakOptions & {
+  /** 0→1 while lines play (YouTube-style bar). */
+  onProgress?: (ratio: number) => void;
+};
+
+function estimateUtteranceMs(text: string, rate: number): number {
+  const safeRate = Math.min(1.5, Math.max(0.4, rate));
+  return Math.min(12000, (650 + text.length * 70) / safeRate);
+}
+
+/** Play short A1/A2 dialogue lines locally, alternating pitch for two speakers. */
 export async function speakDialogueLocal(
   lines: { text: string }[],
   lang: LangCode = 'en',
+  options?: DialogueSpeakOptions,
 ): Promise<void> {
   if (!lines.length) return;
   speakGen += 1;
   const gen = speakGen;
   stopPlaying();
-  for (let i = 0; i < lines.length; i += 1) {
+  const rate = options?.rate ?? 0.86;
+  const spokenLines = lines
+    .map((line) => sanitizeTextForSpeech(line.text))
+    .filter(Boolean);
+  const totalMs =
+    spokenLines.reduce((sum, text) => sum + estimateUtteranceMs(text, rate) + 200, 0) || 1;
+  const startedAt = Date.now();
+  let raf = 0;
+  const pump = () => {
     if (gen !== speakGen) return;
-    const spoken = sanitizeTextForSpeech(lines[i]!.text);
-    if (!spoken) continue;
-    const pitch = i % 2 === 0 ? 1.05 : 0.92;
-    await speakBrowser(spoken, lang, 0.92, pitch);
-    if (gen !== speakGen) return;
-    await new Promise((r) => window.setTimeout(r, 220));
+    const ratio = Math.min(0.98, (Date.now() - startedAt) / totalMs);
+    options?.onProgress?.(ratio);
+    raf = window.requestAnimationFrame(pump);
+  };
+  raf = window.requestAnimationFrame(pump);
+
+  try {
+    for (let i = 0; i < spokenLines.length; i += 1) {
+      if (gen !== speakGen) return;
+      const spoken = spokenLines[i]!;
+      /* Slight pitch gap helps hear two speakers without rushing A1 words. */
+      const pitch = i % 2 === 0 ? 1.02 : 0.94;
+      await speakBrowser(spoken, lang, rate, pitch);
+      if (gen !== speakGen) return;
+      await new Promise((r) => window.setTimeout(r, 200));
+    }
+    options?.onProgress?.(1);
+  } finally {
+    window.cancelAnimationFrame(raf);
   }
+}
+
+/** Stop any in-flight dialogue / TTS (replay / speed change). */
+export function stopDialogueSpeech(): void {
+  speakGen += 1;
+  stopPlaying();
 }
 
 export async function speakText(

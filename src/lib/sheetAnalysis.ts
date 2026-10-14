@@ -5,6 +5,7 @@ import { extractTextFromImage } from './ocr';
 import { parseContent } from './parser';
 import { getMaxWords } from './planLimits';
 import { dropSameLanguageOutliers } from './pairQuality';
+import { applyPairCertainty } from './pairCertainty';
 import {
   isFusedRowPair,
   sanitizeVocabExtractPairs,
@@ -47,7 +48,7 @@ function finalizeVocabPairs(pairs: WordPair[], maxPairs: number): WordPair[] {
     faces: p.faces,
     quality: ((p as WordPair).quality ?? 'trusted') as WordPair['quality'],
   }));
-  return dropSameLanguageOutliers(sanitized).slice(0, maxPairs);
+  return applyPairCertainty(dropSameLanguageOutliers(sanitized), 'vocab').slice(0, maxPairs);
 }
 
 /** Prefer AI order; append OCR-only rows so a thin AI sample (e.g. 8) can still grow to full sheet. */
@@ -135,19 +136,30 @@ export async function extractPairsFromImage(
 
         /* Formules / définitions: never drop a usable AI table because of vocab filters. */
         if (mathSheet || formulaSheet) {
-          let pairs = coercePlayablePairs(mapped, { mathSheet: true });
-          if (pairs.length < 2 && mapped.length >= 2) pairs = mapped;
+          /* Science/definitions share the formula pipeline but not math certainty rules. */
+          const formulaKind =
+            sheetType === 'definitions' || resolvedType === 'definitions' ? 'definitions' : 'math';
+          let pairs = applyPairCertainty(
+            coercePlayablePairs(mapped, { mathSheet: true }),
+            formulaKind,
+          );
+          if (pairs.length < 2 && mapped.length >= 2) {
+            pairs = applyPairCertainty(mapped, formulaKind);
+          }
           if (pairs.length < 2) {
-            pairs = ai.pairs
-              .filter((p) => p.term?.trim() && p.definition?.trim())
-              .map((p) => ({
-                term: p.term.trim().slice(0, 120),
-                definition: p.definition.trim().slice(0, 280),
-                termLang: 'unknown' as const,
-                defLang: 'unknown' as const,
-                quality: 'trusted' as const,
-              }))
-              .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase());
+            pairs = applyPairCertainty(
+              ai.pairs
+                .filter((p) => p.term?.trim() && p.definition?.trim())
+                .map((p) => ({
+                  term: p.term.trim().slice(0, 120),
+                  definition: p.definition.trim().slice(0, 280),
+                  termLang: 'unknown' as const,
+                  defLang: 'unknown' as const,
+                  quality: 'trusted' as const,
+                }))
+                .filter((p) => p.term.toLowerCase() !== p.definition.toLowerCase()),
+              formulaKind,
+            );
           }
           if (pairs.length >= 2) {
             return { pairs: pairs.slice(0, getMaxWords()), source: 'ai', ignored };
@@ -156,7 +168,7 @@ export async function extractPairsFromImage(
 
         let pairs: WordPair[];
         if (freeText) {
-          pairs = coercePlayablePairs(mapped);
+          pairs = applyPairCertainty(coercePlayablePairs(mapped), 'definitions');
         } else {
           const fromVision = (ai.warnings ?? []).some(
             (w) =>

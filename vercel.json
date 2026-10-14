@@ -9,7 +9,9 @@
     { "source": "/avis-admin", "destination": "/avis-admin.html" },
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/admin/", "destination": "/admin.html" },
-    { "source": "/((?!api/|assets/|game-art/|mascot/|marketing/|chest/|brand/|fonts/|logo\\.png|logo-128\\.png|icon-192\\.png|icon-512\\.png|icon-maskable-512\\.png|favicon\\.svg|favicon-32\\.png|logo\\.svg|manifest\\.json|sw\\.js|ads\\.txt|llms\\.txt|privacy\\.html|terms\\.html|avis\\.html|avis-admin\\.html|admin\\.html|robots\\.txt|sitemap\\.xml).*)", "destination": "/index.html" }
+    { "source": "/fr/questions-reponses", "destination": "/fr/questions-reponses/" },
+    { "source": "/en/questions-answers", "destination": "/en/questions-answers/" },
+    { "source": "/((?!api/|assets/|game-art/|mascot/|marketing/|chest/|brand/|fonts/|qa/|fr/|en/|logo\\.png|logo-128\\.png|icon-192\\.png|icon-512\\.png|icon-maskable-512\\.png|favicon\\.svg|favicon-32\\.png|logo\\.svg|manifest\\.json|sw\\.js|ads\\.txt|llms\\.txt|privacy\\.html|terms\\.html|avis\\.html|avis-admin\\.html|admin\\.html|robots\\.txt|sitemap\\.xml).*)", "destination": "/index.html" }
   ],
   "headers": [
     {

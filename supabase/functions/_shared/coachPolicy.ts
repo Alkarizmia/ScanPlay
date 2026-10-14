@@ -150,6 +150,51 @@ export function looksLikeUniverseAsk(message: string): boolean {
   );
 }
 
+/** User asks if the coach remembers / saw the photo or file they sent. */
+export function looksLikePhotoRecallAsk(message: string): boolean {
+  const text = message.trim();
+  if (
+    /\b(pas encore|jamais|pas (du tout )?envoy|haven't|have not|not (yet )?sent|geen .*gestuurd|aún no|todavía no)\b/i.test(
+      text,
+    )
+  ) {
+    return false;
+  }
+  const aboutMedia = /\b(photo|image|fichier|picture|file|png|jpe?g|img)\b/i.test(text);
+  const aboutRecall =
+    /\b(rappel\w*|souviens\w*|remember\w*|re[cç]u|seen|tu as (vu|reçu)|what i (sent|shared)|ce que je t['']ai envoy)\b/i.test(
+      text,
+    );
+  return aboutMedia && aboutRecall;
+}
+
+/** User wants a PDF / Word export (not “can I upload a PDF?”). */
+export function looksLikeExportAsk(message: string): 'pdf' | 'word' | 'both' | null {
+  const text = message.trim();
+  const hasPdf = /\bpdf\b/i.test(text);
+  const hasWord = /\b(word|docx)\b/i.test(text);
+  const hasSynthExport =
+    /\b(synthèse|synthese|synthesis)\b/i.test(text) &&
+    /\b(export|télécharg|telecharg|download|imprim|print|pdf|word)\b/i.test(text);
+  if (!hasPdf && !hasWord && !hasSynthExport) return null;
+
+  if (
+    /\b(support[eé]?s?|accepte[sr]?|compatible|import(er)?|upload|ouvrir un|open a|fichier pdf)\b/i.test(
+      text,
+    ) &&
+    !/\b(crée|créer|fais|fait|génère|genere|export|télécharge|telecharge|download|make|create|donne|give|haz|maak)\b/i.test(
+      text,
+    )
+  ) {
+    return null;
+  }
+
+  if (hasPdf && hasWord) return 'both';
+  if (hasPdf) return 'pdf';
+  if (hasWord) return 'word';
+  return 'both';
+}
+
 /** Réponse locale : pas d'IA, pas de crédit. Null = vrai appel coach (fiches + question). */
 export function localCoachReply(
   message: string,
@@ -160,6 +205,7 @@ export function localCoachReply(
     aiUsagePercent?: number;
     aiEnvelopeLabel?: string;
     plan?: string;
+    sheetPreview?: { title: string; count: number; sample: string } | null;
   },
 ): string | null {
   if (looksLikeOtherUserPii(message)) return refusePii(locale);
@@ -169,6 +215,64 @@ export function localCoachReply(
   const empty = opts.sheetCount <= 0;
   const pct = Math.max(0, Math.min(100, Math.round(opts.aiUsagePercent ?? 0)));
   const envelope = opts.aiEnvelopeLabel?.trim() || (lang === 'en' ? 'your plan' : 'ton plan');
+  const preview = opts.sheetPreview;
+
+  if (looksLikePhotoRecallAsk(message)) {
+    if (preview && preview.count > 0) {
+      if (lang === 'en') {
+        return `Yes. Your photo is in my memory as **${preview.title}** (${preview.count} cards: ${preview.sample}). Ask me anything about it, or export a PDF.\n\n[[action:export_pdf]]\n[[action:continue_game]]`;
+      }
+      if (lang === 'nl') {
+        return `Ja. Je foto staat in mijn geheugen als **${preview.title}** (${preview.count} kaarten: ${preview.sample}). Vraag me er alles over, of exporteer een PDF.\n\n[[action:export_pdf]]\n[[action:continue_game]]`;
+      }
+      if (lang === 'es') {
+        return `Sí. Tu foto está en mi memoria como **${preview.title}** (${preview.count} tarjetas: ${preview.sample}). Pregúntame lo que quieras, o exporta un PDF.\n\n[[action:export_pdf]]\n[[action:continue_game]]`;
+      }
+      return `Oui. Ta photo est bien en mémoire comme **${preview.title}** (${preview.count} cartes : ${preview.sample}). Pose-moi une question dessus, ou exporte un PDF.\n\n[[action:export_pdf]]\n[[action:continue_game]]`;
+    }
+    if (lang === 'en') {
+      return "I don't have a sheet from a photo in this chat yet. Attach one with +, or scan from Home.\n\n[[action:scan]]";
+    }
+    if (lang === 'nl') {
+      return "Ik heb in dit chat nog geen blad van een foto. Voeg er een toe met +, of scan via Home.\n\n[[action:scan]]";
+    }
+    if (lang === 'es') {
+      return "Aún no tengo una ficha de una foto en este chat. Añade una con +, o escanea desde Inicio.\n\n[[action:scan]]";
+    }
+    return "Je n'ai pas encore de fiche issue d'une photo dans ce chat. Joins-en une avec +, ou scanne depuis Accueil.\n\n[[action:scan]]";
+  }
+
+  const exportKind = looksLikeExportAsk(message);
+  if (exportKind) {
+    if (empty) {
+      if (lang === 'en') {
+        return "I can make a PDF or Word, but I need a sheet first. Attach one with + here, or scan from Home.\n\n[[action:scan]]";
+      }
+      if (lang === 'nl') {
+        return "Ik kan een PDF of Word maken, maar ik heb eerst een blad nodig. Voeg er een toe met +, of scan via Home.\n\n[[action:scan]]";
+      }
+      if (lang === 'es') {
+        return "Puedo crear un PDF o Word, pero primero necesito una ficha. Añade una con +, o escanea desde Inicio.\n\n[[action:scan]]";
+      }
+      return "Je peux créer un PDF ou un Word, mais il me faut d'abord une fiche. Joins-en une avec +, ou scanne depuis Accueil.\n\n[[action:scan]]";
+    }
+    const tags =
+      exportKind === 'pdf'
+        ? '[[action:export_pdf]]'
+        : exportKind === 'word'
+          ? '[[action:export_word]]'
+          : '[[action:export_pdf]]\n[[action:export_word]]';
+    if (lang === 'en') {
+      return `Yes. Tap the button below: ScanPlay builds the document from your sheet (print dialog for PDF, or Word download).\n\n${tags}`;
+    }
+    if (lang === 'nl') {
+      return `Ja. Tik op de knop hieronder: ScanPlay maakt het document van je blad (printen voor PDF, of Word-download).\n\n${tags}`;
+    }
+    if (lang === 'es') {
+      return `Sí. Pulsa el botón de abajo: ScanPlay crea el documento a partir de tu ficha (imprimir para PDF, o descarga Word).\n\n${tags}`;
+    }
+    return `Oui. Appuie sur le bouton ci-dessous : ScanPlay crée le document à partir de ta fiche (impression pour le PDF, ou téléchargement Word).\n\n${tags}`;
+  }
 
   if (looksLikeAiUsageAsk(message)) {
     if (lang === 'en') {

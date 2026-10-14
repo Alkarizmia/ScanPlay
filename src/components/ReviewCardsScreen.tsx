@@ -14,6 +14,8 @@ interface ReviewCardsScreenProps {
   onContinue: (pairs: WordPair[]) => void;
   onRescan: () => void;
   onBack: () => void;
+  /** Keep App.pairs in sync while editing so leaving the screen does not drop draft cards. */
+  onDraftChange?: (pairs: WordPair[]) => void;
 }
 
 type ReviewRow = WordPair & { id: string; added?: boolean };
@@ -65,8 +67,11 @@ export function ReviewCardsScreen({
   onContinue,
   onRescan,
   onBack,
+  onDraftChange,
 }: ReviewCardsScreenProps) {
-  const [rows, setRows] = useState(() => clonePairs(pairs));
+  const [rows, setRows] = useState(() =>
+    clonePairs(pairs.filter((p) => p.term.trim() && p.definition.trim())),
+  );
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftTerm, setDraftTerm] = useState('');
   const [draftDef, setDraftDef] = useState('');
@@ -74,6 +79,12 @@ export function ReviewCardsScreen({
   const [freshId, setFreshId] = useState<string | null>(null);
   const termInputRef = useRef<HTMLInputElement>(null);
   const freshTimer = useRef<number | null>(null);
+
+  const onDraftChangeRef = useRef(onDraftChange);
+  onDraftChangeRef.current = onDraftChange;
+  useEffect(() => {
+    onDraftChangeRef.current?.(rows.map(toWordPair).filter((p) => p.term && p.definition));
+  }, [rows]);
 
   const trustedCount = rows.filter((p) => p.quality !== 'uncertain').length;
   const uncertainCount = rows.filter((p) => p.quality === 'uncertain').length;

@@ -108,7 +108,12 @@ export function ImagePickGame({
   );
 
   const idleEnabled = !examMode && picked == null;
-  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+  const {
+    helped: idleHelped,
+    secondsLeft: idleSeconds,
+    bumpActivity,
+    revealNow: revealIdleHelp,
+  } = useGameIdleHelp({
     enabled: idleEnabled,
     resetKey: `${index}-${round?.targetId ?? ''}`,
   });
@@ -165,7 +170,12 @@ export function ImagePickGame({
         <p className="game-instruction">{t('imagePickInstruction', locale)}</p>
         <h2 className="game-question imagepick-prompt">{round.prompt}</h2>
         {idleEnabled && (
-          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+          <IdleHelpChip
+            locale={locale}
+            helped={idleHelped}
+            secondsLeft={idleSeconds}
+            onSkip={revealIdleHelp}
+          />
         )}
         <div className={`imagepick-grid${artsReady ? ' is-ready' : ''}`} aria-busy={!artsReady}>
           {artsReady

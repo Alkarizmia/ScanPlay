@@ -9,8 +9,14 @@ import { Root } from './Root';
 
 applyDeviceAttributes(detectDeviceProfile());
 
+const markLandingCssReady = () => {
+  document.documentElement.dataset.lpCss = 'ready';
+};
+
 // Full landing CSS as a separate chunk — start immediately, don't block the JS module graph.
-void import('./styles/landing.css');
+void import('./styles/landing.css').then(markLandingCssReady).catch(markLandingCssReady);
+// Never leave the anti-FOUC gate stuck if the chunk is unusually slow.
+window.setTimeout(markLandingCssReady, 2500);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

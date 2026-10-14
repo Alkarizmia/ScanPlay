@@ -72,6 +72,32 @@ async function applyPlanFromCloud(
   clearSubscriptionMeta();
 }
 
+/** Day→count maps for AI envelope: never lose the higher device count. */
+function mergeDayCountMaps(
+  local: Record<string, unknown> | null | undefined,
+  cloud: Record<string, unknown> | null | undefined,
+): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const src of [local, cloud]) {
+    if (!src || typeof src !== 'object') continue;
+    for (const [day, raw] of Object.entries(src)) {
+      const n = Number(raw);
+      if (!Number.isFinite(n) || n < 0) continue;
+      out[day] = Math.max(out[day] ?? 0, n);
+    }
+  }
+  return out;
+}
+
+function readDayCountMap(key: string): Record<string, number> {
+  try {
+    const raw = JSON.parse(localStorage.getItem(key) ?? '{}') as Record<string, unknown>;
+    return mergeDayCountMaps(raw, null);
+  } catch {
+    return {};
+  }
+}
+
 function collectStatsBlob(): Record<string, unknown> {
   const read = (key: string) => {
     try {
@@ -84,9 +110,9 @@ function collectStatsBlob(): Record<string, unknown> {
     best: read(STATS_KEY) ?? {},
     multiScans: read(MULTI_SCAN_KEY) ?? 0,
     examPasses: read(EXAM_PASS_KEY) ?? 0,
-    scansDay: read(SCANS_KEY) ?? {},
-    coachDay: read('scanplay-coach-day') ?? {},
-    synthesisTokenDay: read('scanplay-synthesis-token-day') ?? {},
+    scansDay: readDayCountMap(SCANS_KEY),
+    coachDay: readDayCountMap('scanplay-coach-day'),
+    synthesisTokenDay: readDayCountMap('scanplay-synthesis-token-day'),
     notifications: read('scanplay-notifications') ?? [],
     achievementUnlocks: read('scanplay-achievement-unlocks') ?? [],
     achievementTotal: getUnlockedCount(),
@@ -108,13 +134,22 @@ function applyStatsBlob(data: Record<string, unknown>): void {
     localStorage.setItem(EXAM_PASS_KEY, String(data.examPasses));
   }
   if (data.scansDay && typeof data.scansDay === 'object') {
-    localStorage.setItem(SCANS_KEY, JSON.stringify(data.scansDay));
+    const merged = mergeDayCountMaps(readDayCountMap(SCANS_KEY), data.scansDay as Record<string, unknown>);
+    localStorage.setItem(SCANS_KEY, JSON.stringify(merged));
   }
   if (data.coachDay && typeof data.coachDay === 'object') {
-    localStorage.setItem('scanplay-coach-day', JSON.stringify(data.coachDay));
+    const merged = mergeDayCountMaps(
+      readDayCountMap('scanplay-coach-day'),
+      data.coachDay as Record<string, unknown>,
+    );
+    localStorage.setItem('scanplay-coach-day', JSON.stringify(merged));
   }
   if (data.synthesisTokenDay && typeof data.synthesisTokenDay === 'object') {
-    localStorage.setItem('scanplay-synthesis-token-day', JSON.stringify(data.synthesisTokenDay));
+    const merged = mergeDayCountMaps(
+      readDayCountMap('scanplay-synthesis-token-day'),
+      data.synthesisTokenDay as Record<string, unknown>,
+    );
+    localStorage.setItem('scanplay-synthesis-token-day', JSON.stringify(merged));
   }
   if (Array.isArray(data.notifications)) {
     localStorage.setItem('scanplay-notifications', JSON.stringify(data.notifications));
@@ -353,6 +388,47 @@ export async function pushUserData(): Promise<void> {
           created_at: m.createdAt,
           corrected_at: m.correctedAt ?? null,
         })),
+      );
+    }
+
+    // Merge cloud day-maps before push so a stale device cannot wipe higher usage.
+    const { data: existingStats } = await supabase
+      .from('scanplay_user_stats')
+      .select('data')
+      .eq('user_id', userId)
+      .maybeSingle();
+    const cloudData =
+      existingStats?.data && typeof existingStats.data === 'object'
+        ? (existingStats.data as Record<string, unknown>)
+        : {};
+    if (cloudData.scansDay && typeof cloudData.scansDay === 'object') {
+      localStorage.setItem(
+        SCANS_KEY,
+        JSON.stringify(
+          mergeDayCountMaps(readDayCountMap(SCANS_KEY), cloudData.scansDay as Record<string, unknown>),
+        ),
+      );
+    }
+    if (cloudData.coachDay && typeof cloudData.coachDay === 'object') {
+      localStorage.setItem(
+        'scanplay-coach-day',
+        JSON.stringify(
+          mergeDayCountMaps(
+            readDayCountMap('scanplay-coach-day'),
+            cloudData.coachDay as Record<string, unknown>,
+          ),
+        ),
+      );
+    }
+    if (cloudData.synthesisTokenDay && typeof cloudData.synthesisTokenDay === 'object') {
+      localStorage.setItem(
+        'scanplay-synthesis-token-day',
+        JSON.stringify(
+          mergeDayCountMaps(
+            readDayCountMap('scanplay-synthesis-token-day'),
+            cloudData.synthesisTokenDay as Record<string, unknown>,
+          ),
+        ),
       );
     }
 

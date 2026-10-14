@@ -129,7 +129,12 @@ export function TypeGame({
   const [reportOpen, setReportOpen] = useState(false);
 
   const idleEnabled = !examMode && !revealed && !useChoiceMode && !mathLike;
-  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+  const {
+    helped: idleHelped,
+    secondsLeft: idleSeconds,
+    bumpActivity,
+    revealNow: revealIdleHelp,
+  } = useGameIdleHelp({
     enabled: idleEnabled,
     resetKey: `${index}-${expected}`,
   });
@@ -309,7 +314,12 @@ export function TypeGame({
         )}
 
         {idleEnabled && (
-          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+          <IdleHelpChip
+            locale={locale}
+            helped={idleHelped}
+            secondsLeft={idleSeconds}
+            onSkip={revealIdleHelp}
+          />
         )}
 
         {!useVisual && idleHelped && !revealed && (

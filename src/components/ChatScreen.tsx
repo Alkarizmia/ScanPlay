@@ -5,8 +5,10 @@ import {
   ensureActiveConversation,
   fetchCoachQuota,
   listCoachConversations,
+  loadCoachConversationSheet,
   loadCoachMessages,
   persistCoachExchange,
+  saveCoachConversationSheet,
   sendCoachMessage,
   titleFromFirstMessage,
   type CoachConversation,
@@ -18,6 +20,7 @@ import { getChatMaxChars, getDailyChatLimit } from '../lib/planLimits';
 import { canSpendAiBudget, getAiUsageRatio } from '../lib/planUsage';
 import { isCoachChatEnabled } from '../lib/coachFlag';
 import { t } from '../lib/i18n';
+import { onSyncReady, pullUserData } from '../lib/sync';
 import { speakText } from '../lib/speech';
 import { canRecordCoachVoice, recordSpeechWithVAD, transcribeViaServer } from '../lib/speechServer';
 import { extractPairsFromImage } from '../lib/sheetAnalysis';
@@ -34,6 +37,20 @@ import {
   parseCoachSegments,
   type CoachActionId,
 } from '../lib/coachMessageFormat';
+import {
+  buildCoachReviewPairs,
+  coachExchangeHasCards,
+  mergeWordPairs,
+} from '../lib/coachCards';
+
+/** Enrich actions and auto-add create_cards when the turn yields reviewable pairs. */
+function finalizeCoachReply(reply: string, userMessage = ''): string {
+  const enriched = enrichCoachActions(reply);
+  const { text, actions } = extractCoachActions(enriched);
+  if (actions.includes('create_cards')) return enriched;
+  if (!coachExchangeHasCards(userMessage, text)) return enriched;
+  return `${enriched}\n[[action:create_cards]]`;
+}
 
 interface ChatScreenProps {
   locale: Locale;
@@ -62,6 +79,8 @@ function actionLabel(action: CoachActionId, locale: Locale): string {
       return t('chatContinueHere', locale);
     case 'continue_game':
       return t('chatContinueGame', locale);
+    case 'create_cards':
+      return t('chatCreateCards', locale);
     case 'export_word':
       return t('chatExportWord', locale);
     case 'export_pdf':
@@ -93,7 +112,7 @@ function CoachBubbleBody({
   content: string;
   role: CoachMessage['role'];
   locale: Locale;
-  onAction?: (action: CoachActionId) => void;
+  onAction?: (action: CoachActionId, sourceContent?: string) => void;
 }) {
   if (role === 'user') return <>{content}</>;
   const { text, actions } = extractCoachActions(content);
@@ -105,7 +124,12 @@ function CoachBubbleBody({
       {actions.length > 0 && onAction && (
         <span className="chat-action-row">
           {actions.map((action) => (
-            <button key={action} type="button" className="chat-action-btn" onClick={() => onAction(action)}>
+            <button
+              key={action}
+              type="button"
+              className="chat-action-btn"
+              onClick={() => onAction(action, content)}
+            >
               {actionLabel(action, locale)}
             </button>
           ))}
@@ -176,8 +200,13 @@ function ChatScreenLive({
   const [activeConversation, setActiveConversation] = useState<CoachConversation | null>(null);
   const [pendingPairs, setPendingPairs] = useState<WordPair[]>([]);
   const [pendingThumb, setPendingThumb] = useState<string | undefined>();
-  const [pendingTitle, setPendingTitle] = useState('Fiche du chat');
+  const [pendingTitle, setPendingTitle] = useState('Fiche jointe (photo du chat)');
+  const [pendingAttaches, setPendingAttaches] = useState<
+    { id: string; file: File; previewUrl: string; name: string }[]
+  >([]);
   const [showJumpDown, setShowJumpDown] = useState(false);
+  /** Bumps when cloud sync / focus updates the AI envelope locally. */
+  const [usageTick, setUsageTick] = useState(0);
   const [quota, setQuota] = useState<CoachQuota>({
     used: 0,
     limit: getDailyChatLimit(),
@@ -191,12 +220,17 @@ function ChatScreenLive({
   const draftRef = useRef<HTMLTextAreaElement>(null);
   const stickToBottomRef = useRef(true);
   const stopVoiceRef = useRef<(() => void) | null>(null);
+  const cancelVoiceRef = useRef<(() => void) | null>(null);
+  const voiceDiscardedRef = useRef(false);
   const cameraRef = useRef<HTMLInputElement>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const firstMessageRef = useRef(true);
+  const pendingAttachUrlsRef = useRef<string[]>([]);
+  const MAX_PENDING_ATTACHES = 5;
 
   const maxChars = quota.maxChars ?? getChatMaxChars();
   const voiceOn = quota.voiceEnabled !== false && canRecordCoachVoice();
+  const hasPendingAttach = pendingAttaches.length > 0;
 
   const resizeDraft = () => {
     const el = draftRef.current;
@@ -214,9 +248,17 @@ function ChatScreenLive({
     const history = await loadCoachMessages(conversationId);
     firstMessageRef.current = history.filter((m) => m.role === 'user').length === 0;
     setMessages(
-      history.map((row) =>
-        row.role === 'assistant' ? { ...row, content: enrichCoachActions(row.content) } : row,
-      ),
+      history.map((row, i, arr) => {
+        if (row.role !== 'assistant') return row;
+        let userText = '';
+        for (let j = i - 1; j >= 0; j -= 1) {
+          if (arr[j]!.role === 'user') {
+            userText = arr[j]!.content;
+            break;
+          }
+        }
+        return { ...row, content: finalizeCoachReply(row.content, userText) };
+      }),
     );
   };
 
@@ -224,6 +266,10 @@ function ChatScreenLive({
     if (!isLoggedIn) return;
     let cancelled = false;
     void (async () => {
+      // Refresh AI % from cloud so phone/PC don't show different bars.
+      await pullUserData({ skipStripeSync: true }).catch(() => false);
+      if (cancelled) return;
+      setUsageTick((n) => n + 1);
       const [nextQuota, active, list] = await Promise.all([
         fetchCoachQuota(),
         ensureActiveConversation(),
@@ -234,17 +280,41 @@ function ChatScreenLive({
       setConversations(list);
       if (active) {
         setActiveConversation(active);
+        applyConversationSheet(active.id);
         await reloadThread(active.id);
       } else {
         setActiveConversation(null);
         setMessages([]);
         firstMessageRef.current = true;
+        setPendingPairs([]);
+        setPendingThumb(undefined);
+        setPendingTitle('Fiche jointe (photo du chat)');
       }
     })();
     return () => {
       cancelled = true;
     };
   }, [isLoggedIn, refreshKey]);
+
+  useEffect(() => {
+    const bump = () => setUsageTick((n) => n + 1);
+    const unsub = onSyncReady(bump);
+    const onVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      bump();
+      if (!isLoggedIn) return;
+      void pullUserData({ skipStripeSync: true }).then((ok) => {
+        if (ok) bump();
+      });
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    window.addEventListener('focus', bump);
+    return () => {
+      unsub();
+      document.removeEventListener('visibilitychange', onVisible);
+      window.removeEventListener('focus', bump);
+    };
+  }, [isLoggedIn]);
 
   const updateJumpVisibility = () => {
     const el = listRef.current;
@@ -271,8 +341,58 @@ function ChatScreenLive({
     scrollThreadToBottom(false);
   }, [messages, busy]);
 
-  useEffect(() => () => stopVoiceRef.current?.(), []);
+  useEffect(
+    () => () => {
+      stopVoiceRef.current?.();
+      cancelVoiceRef.current?.();
+      pendingAttachUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+      pendingAttachUrlsRef.current = [];
+    },
+    [],
+  );
 
+  const clearPendingAttaches = () => {
+    pendingAttachUrlsRef.current.forEach((url) => URL.revokeObjectURL(url));
+    pendingAttachUrlsRef.current = [];
+    setPendingAttaches([]);
+  };
+
+  const removePendingAttach = (id: string) => {
+    setPendingAttaches((prev) => {
+      const target = prev.find((item) => item.id === id);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+        pendingAttachUrlsRef.current = pendingAttachUrlsRef.current.filter(
+          (url) => url !== target.previewUrl,
+        );
+      }
+      return prev.filter((item) => item.id !== id);
+    });
+  };
+
+  const queueAttachments = (files: File[]) => {
+    setAttachOpen(false);
+    if (busy || blocked || files.length === 0) return;
+    setPendingAttaches((prev) => {
+      const room = Math.max(0, MAX_PENDING_ATTACHES - prev.length);
+      if (room === 0) return prev;
+      const nextItems = files.slice(0, room).map((file) => {
+        const previewUrl = URL.createObjectURL(file);
+        pendingAttachUrlsRef.current.push(previewUrl);
+        return {
+          id: `att-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+          file,
+          previewUrl,
+          name: file.name || 'image',
+        };
+      });
+      return [...prev, ...nextItems];
+    });
+    setError(null);
+    window.requestAnimationFrame(() => draftRef.current?.focus());
+  };
+
+  void usageTick;
   const aiPct = Math.round(getAiUsageRatio() * 100);
   const aiExhausted = !canSpendAiBudget();
   const noSheets = getHistory().length === 0 && pendingPairs.length === 0;
@@ -322,7 +442,7 @@ function ChatScreenLive({
     setBusy(false);
   };
 
-  const runAction = (action: CoachActionId) => {
+  const runAction = (action: CoachActionId, sourceContent?: string) => {
     if (action === 'scan') onOpenScan?.();
     else if (action === 'settings') onOpenSettings?.();
     else if (action === 'home') onOpenHome?.();
@@ -335,17 +455,61 @@ function ChatScreenLive({
       } else {
         setError(t('chatExportNeedPairs', locale));
       }
+    } else if (action === 'create_cards') {
+      let userText = '';
+      let coachText = sourceContent ?? '';
+      if (sourceContent) {
+        const idx = messages.findIndex(
+          (row) => row.role === 'assistant' && row.content === sourceContent,
+        );
+        if (idx > 0) {
+          for (let i = idx - 1; i >= 0; i -= 1) {
+            if (messages[i]!.role === 'user') {
+              userText = messages[i]!.content;
+              break;
+            }
+          }
+        }
+        coachText = sourceContent;
+      } else {
+        for (let i = messages.length - 1; i >= 0; i -= 1) {
+          if (messages[i]!.role === 'assistant') {
+            coachText = messages[i]!.content;
+            for (let j = i - 1; j >= 0; j -= 1) {
+              if (messages[j]!.role === 'user') {
+                userText = messages[j]!.content;
+                break;
+              }
+            }
+            break;
+          }
+        }
+      }
+      const extracted = buildCoachReviewPairs(userText, coachText);
+      const merged = mergeWordPairs(pendingPairs, extracted);
+      if (merged.length === 0) {
+        setError(t('chatCreateCardsEmpty', locale));
+        return;
+      }
+      setPendingPairs(merged);
+      onContinueInGame?.(merged, pendingThumb);
     } else if (action === 'export_word') void runExport('word');
     else if (action === 'export_pdf') void runExport('pdf');
   };
 
-  const send = async (text: string, speakReply = false) => {
+  const send = async (
+    text: string,
+    speakReply = false,
+    sheet?: { pairs: WordPair[]; title?: string; thumb?: string },
+  ) => {
     const message = text.trim();
     if (!message || busy || blocked) return;
     if (message.length > maxChars) {
       setError(t('chatTooLong', locale).replace('{max}', String(maxChars)));
       return;
     }
+    const pairsForTurn = sheet?.pairs ?? pendingPairs;
+    const titleForTurn = sheet?.title ?? pendingTitle;
     setBusy(true);
     setError(null);
     setDraft('');
@@ -378,10 +542,18 @@ function ChatScreenLive({
     const isFirst = firstMessageRef.current;
     firstMessageRef.current = false;
 
+    if (conversation && pairsForTurn.length >= 2) {
+      saveCoachConversationSheet(conversation.id, {
+        title: titleForTurn,
+        pairs: pairsForTurn,
+        thumb: sheet?.thumb ?? pendingThumb,
+      });
+    }
+
     const result = await sendCoachMessage(message, locale, {
       conversationId: conversation?.id,
-      pendingPairs,
-      pendingTitle,
+      pendingPairs: pairsForTurn,
+      pendingTitle: titleForTurn,
       isFirstMessage: isFirst,
     });
     if ('error' in result) {
@@ -424,7 +596,7 @@ function ChatScreenLive({
       setActiveConversation(titled);
       setConversations((prev) => [titled, ...prev.filter((c) => c.id !== titled.id)]);
     }
-    const reply = enrichCoachActions(result.reply);
+    const reply = finalizeCoachReply(result.reply, message);
     setMessages((prev) => [
       ...prev.filter((row) => row.id !== localId),
       { id: `${localId}-user`, role: 'user', content: message },
@@ -437,25 +609,39 @@ function ChatScreenLive({
     setBusy(false);
   };
 
+  const discardVoice = () => {
+    if (!recording) return;
+    voiceDiscardedRef.current = true;
+    cancelVoiceRef.current?.();
+  };
+
   const toggleVoice = async () => {
     if (busy || blocked) return;
     if (recording) {
+      voiceDiscardedRef.current = false;
       stopVoiceRef.current?.();
       return;
     }
     setError(null);
     setRecording(true);
     setMicLevel(0.2);
+    voiceDiscardedRef.current = false;
     const session = recordSpeechWithVAD({
       untilStop: true,
       maxMs: 20000,
       onLevel: (level) => setMicLevel(level),
     });
     stopVoiceRef.current = session.stop;
+    cancelVoiceRef.current = session.cancel;
     const blob = await session.promise;
     stopVoiceRef.current = null;
+    cancelVoiceRef.current = null;
     setRecording(false);
     setMicLevel(0);
+    if (voiceDiscardedRef.current) {
+      voiceDiscardedRef.current = false;
+      return;
+    }
     if (!blob) {
       setError(t('chatVoiceError', locale));
       return;
@@ -468,33 +654,60 @@ function ChatScreenLive({
     await send(transcribed.text.slice(0, maxChars), true);
   };
 
-  const analyzeAttachment = async (file: File) => {
+  const analyzeAttachments = async (files: File[], caption = '') => {
     setAttachOpen(false);
-    if (busy || blocked) return;
+    if (busy || blocked || files.length === 0) return;
     setBusy(true);
     setError(null);
     const localId = `attach-${Date.now()}`;
+    const note = caption.trim();
     setMessages((prev) => [
       ...prev,
       { id: localId, role: 'user', content: t('chatAttachAnalyzing', locale) },
     ]);
     try {
-      const thumb = await createThumbnail(file, 160).catch(() => undefined);
-      const { pairs } = await extractPairsFromImage(file, 'vocab');
-      const playable = coercePlayablePairs(pairs);
+      const merged: WordPair[] = [];
+      const seen = new Set<string>();
+      let thumb: string | undefined;
+      for (const file of files) {
+        if (!thumb) {
+          thumb = await createThumbnail(file, 160).catch(() => undefined);
+        }
+        const { pairs } = await extractPairsFromImage(file, 'vocab');
+        for (const pair of coercePlayablePairs(pairs)) {
+          const key = `${pair.term.trim().toLowerCase()}|${pair.definition.trim().toLowerCase()}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          merged.push(pair);
+        }
+      }
+      const playable = coercePlayablePairs(merged);
       if (!canOpenGamePath(playable) || playable.length < 2) {
         setMessages((prev) => prev.filter((row) => row.id !== localId));
         setError(t('chatAttachEmpty', locale));
         setBusy(false);
         return;
       }
+      const sheetTitle = 'Fiche jointe (photo du chat)';
       setPendingPairs(playable);
       setPendingThumb(thumb);
-      setPendingTitle(playable[0]?.term?.slice(0, 40) || 'Fiche du chat');
+      setPendingTitle(sheetTitle);
+
+      if (note) {
+        // Drop the analyzing placeholder; send() posts the real user bubble + coach reply.
+        setMessages((prev) => prev.filter((row) => row.id !== localId));
+        setBusy(false);
+        await send(`📷 ${note}`, false, { pairs: playable, title: sheetTitle, thumb });
+        return;
+      }
+
       const summary = t('chatAttachReady', locale)
         .replace('{count}', String(playable.length))
         .replace('{sample}', playable.slice(0, 3).map((p) => p.term).join(', '));
-      const userLine = t('chatAttachSent', locale);
+      const userLine =
+        files.length > 1
+          ? `${t('chatAttachSent', locale)} (${files.length})`
+          : t('chatAttachSent', locale);
       const botLine = enrichCoachActions(
         `${summary}\n\n[[action:continue_chat]]\n[[action:continue_game]]\n[[action:export_word]]\n[[action:export_pdf]]`,
       );
@@ -505,6 +718,13 @@ function ChatScreenLive({
           setActiveConversation(conversation);
           setConversations((prev) => [conversation!, ...prev.filter((c) => c.id !== conversation!.id)]);
         }
+      }
+      if (conversation) {
+        saveCoachConversationSheet(conversation.id, {
+          title: sheetTitle,
+          pairs: playable,
+          thumb,
+        });
       }
       await persistCoachExchange(conversation?.id, userLine, botLine);
       setMessages((prev) => [
@@ -519,10 +739,24 @@ function ChatScreenLive({
     setBusy(false);
   };
 
+  const submitComposer = async () => {
+    if (busy || blocked || recording) return;
+    if (pendingAttaches.length > 0) {
+      const files = pendingAttaches.map((item) => item.file);
+      const caption = draft.trim();
+      clearPendingAttaches();
+      setDraft('');
+      await analyzeAttachments(files, caption);
+      return;
+    }
+    await send(draft);
+  };
+
   const startNewConversation = () => {
     // Draft only — nothing in history until the first message is sent.
     setHistoryOpen(false);
     setAttachOpen(false);
+    clearPendingAttaches();
     setActiveConversation(null);
     setMessages([]);
     firstMessageRef.current = true;
@@ -533,11 +767,24 @@ function ChatScreenLive({
     stickToBottomRef.current = true;
   };
 
+  const applyConversationSheet = (conversationId: string | null | undefined) => {
+    const saved = loadCoachConversationSheet(conversationId);
+    if (saved) {
+      setPendingPairs(saved.pairs);
+      setPendingTitle(saved.title || 'Fiche jointe (photo du chat)');
+      setPendingThumb(saved.thumb);
+      return;
+    }
+    setPendingPairs([]);
+    setPendingTitle('Fiche jointe (photo du chat)');
+    setPendingThumb(undefined);
+  };
+
   const openConversation = async (conv: CoachConversation) => {
     setHistoryOpen(false);
+    clearPendingAttaches();
     setActiveConversation(conv);
-    setPendingPairs([]);
-    setPendingThumb(undefined);
+    applyConversationSheet(conv.id);
     setError(null);
     stickToBottomRef.current = true;
     setShowJumpDown(false);
@@ -726,26 +973,60 @@ function ChatScreenLive({
             </div>
           )}
 
+          {hasPendingAttach && !recording && (
+            <div className="chat-attach-preview-list" aria-label={t('chatAttachPending', locale)}>
+              {pendingAttaches.map((item) => (
+                <div key={item.id} className="chat-attach-preview">
+                  <img className="chat-attach-preview-thumb" src={item.previewUrl} alt="" />
+                  <div className="chat-attach-preview-meta">
+                    <p className="chat-attach-preview-label">{t('chatAttachPending', locale)}</p>
+                    <p className="chat-attach-preview-name">{item.name}</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="chat-attach-preview-remove"
+                    aria-label={t('chatAttachRemove', locale)}
+                    disabled={busy || blocked}
+                    onClick={() => removePendingAttach(item.id)}
+                  >
+                    <TrashIcon size={16} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+
           <form
-            className={`chat-composer chat-composer--gpt${recording ? ' chat-composer--recording' : ''}${draft.includes('\n') || draft.length > 42 ? ' chat-composer--tall' : ''}`}
+            className={`chat-composer chat-composer--gpt${recording ? ' chat-composer--recording' : ''}${draft.includes('\n') || draft.length > 42 || hasPendingAttach ? ' chat-composer--tall' : ''}`}
             onSubmit={(event) => {
               event.preventDefault();
-              void send(draft);
+              void submitComposer();
             }}
           >
-            <button
-              type="button"
-              className={`chat-plus${attachOpen ? ' chat-plus--open' : ''}`}
-              aria-label={t('chatAttach', locale)}
-              aria-expanded={attachOpen}
-              disabled={busy || blocked}
-              onClick={() => {
-                setHistoryOpen(false);
-                setAttachOpen((v) => !v);
-              }}
-            >
-              +
-            </button>
+            {recording ? (
+              <button
+                type="button"
+                className="chat-discard-icon"
+                aria-label={t('chatVoiceDiscard', locale)}
+                onClick={discardVoice}
+              >
+                <TrashIcon size={18} />
+              </button>
+            ) : (
+              <button
+                type="button"
+                className={`chat-plus${attachOpen ? ' chat-plus--open' : ''}`}
+                aria-label={t('chatAttach', locale)}
+                aria-expanded={attachOpen}
+                disabled={busy || blocked}
+                onClick={() => {
+                  setHistoryOpen(false);
+                  setAttachOpen((v) => !v);
+                }}
+              >
+                +
+              </button>
+            )}
 
             {recording ? (
               <button type="button" className="chat-input-slot chat-input-slot--wave" onClick={() => void toggleVoice()}>
@@ -765,7 +1046,7 @@ function ChatScreenLive({
                 onKeyDown={(event) => {
                   if (event.key === 'Enter' && !event.shiftKey) {
                     event.preventDefault();
-                    if (draft.trim() && !busy && !blocked) void send(draft);
+                    if ((draft.trim() || hasPendingAttach) && !busy && !blocked) void submitComposer();
                   }
                 }}
                 placeholder={t('chatPlaceholder', locale)}
@@ -775,7 +1056,7 @@ function ChatScreenLive({
               />
             )}
 
-            {draft.trim() && !recording ? (
+            {(draft.trim() || hasPendingAttach) && !recording ? (
               <button type="submit" className="chat-send-icon" disabled={busy || blocked} aria-label={t('chatSend', locale)}>
                 <ChatArrowIcon direction="up" size={18} />
               </button>
@@ -808,22 +1089,37 @@ function ChatScreenLive({
         capture="environment"
         className="sr-only"
         onChange={(e) => {
-          const file = e.target.files?.[0];
+          const files = Array.from(e.target.files ?? []);
           e.target.value = '';
-          if (file) void analyzeAttachment(file);
+          if (files.length > 0) queueAttachments(files);
         }}
       />
       <input
         ref={fileRef}
         type="file"
         accept="image/*"
+        multiple
         className="sr-only"
         onChange={(e) => {
-          const file = e.target.files?.[0];
+          const files = Array.from(e.target.files ?? []);
           e.target.value = '';
-          if (file) void analyzeAttachment(file);
+          if (files.length > 0) queueAttachments(files);
         }}
       />
     </div>
+  );
+}
+
+function TrashIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M9.2 4.5h5.6M5 7h14M16.2 7l-.6 11.2a1.8 1.8 0 0 1-1.8 1.7H10.2a1.8 1.8 0 0 1-1.8-1.7L7.8 7M10.2 11v5.2M13.8 11v5.2"
+        stroke="currentColor"
+        strokeWidth="2.1"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   );
 }

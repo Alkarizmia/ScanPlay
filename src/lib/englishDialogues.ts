@@ -103,7 +103,7 @@ export const ENGLISH_DIALOGUES: EnglishDialogue[] = [
     levels: ['A2', 'B1'],
     goals: ['work', 'other'],
     lines: [
-      { text: 'Sorry I am late. The train was delayed.' },
+      { text: 'Sorry I am late. The train was late.' },
       { text: 'No problem. We can start now.' },
       { text: 'Did you get my email?' },
       { text: 'Yes. Let’s open the file.' },
@@ -220,8 +220,8 @@ export const ENGLISH_DIALOGUES: EnglishDialogue[] = [
     lines: [
       { text: 'I bought this shirt yesterday. It is too small.' },
       { text: 'Do you have the receipt?' },
-      { text: 'Yes, here it is.' },
-      { text: 'OK. I can give you a refund.' },
+      { text: 'Yes. Here it is.' },
+      { text: 'OK. I can give your money back.' },
     ],
     topic: L('Remboursement en magasin', 'Terugbetaling in de winkel', 'Devolución en la tienda', 'استرداد في المتجر'),
     topicWrong: [

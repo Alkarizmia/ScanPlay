@@ -94,7 +94,12 @@ export function ListenPickGame({
   );
 
   const idleEnabled = !examMode && picked == null;
-  const { helped: idleHelped, secondsLeft: idleSeconds, bumpActivity } = useGameIdleHelp({
+  const {
+    helped: idleHelped,
+    secondsLeft: idleSeconds,
+    bumpActivity,
+    revealNow: revealIdleHelp,
+  } = useGameIdleHelp({
     enabled: idleEnabled,
     resetKey: `${index}-${round?.target ?? ''}`,
   });
@@ -168,7 +173,12 @@ export function ListenPickGame({
         </div>
 
         {idleEnabled && (
-          <IdleHelpChip locale={locale} helped={idleHelped} secondsLeft={idleSeconds} />
+          <IdleHelpChip
+            locale={locale}
+            helped={idleHelped}
+            secondsLeft={idleSeconds}
+            onSkip={revealIdleHelp}
+          />
         )}
 
         <div className="choice-list listen-options">

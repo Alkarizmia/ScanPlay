@@ -33,6 +33,49 @@ export interface CoachConversation {
   updatedAt: string;
 }
 
+export interface CoachConversationSheet {
+  title: string;
+  pairs: WordPair[];
+  thumb?: string;
+}
+
+const CHAT_SHEET_STORE = 'scanplay-coach-conv-sheets-v1';
+
+export function saveCoachConversationSheet(
+  conversationId: string,
+  sheet: CoachConversationSheet,
+): void {
+  if (!conversationId || sheet.pairs.length < 2) return;
+  try {
+    const raw = localStorage.getItem(CHAT_SHEET_STORE);
+    const all = raw ? (JSON.parse(raw) as Record<string, CoachConversationSheet>) : {};
+    all[conversationId] = {
+      title: sheet.title.slice(0, 80),
+      pairs: sheet.pairs.slice(0, 80),
+      thumb: sheet.thumb,
+    };
+    localStorage.setItem(CHAT_SHEET_STORE, JSON.stringify(all));
+  } catch {
+    /* private mode */
+  }
+}
+
+export function loadCoachConversationSheet(
+  conversationId: string | null | undefined,
+): CoachConversationSheet | null {
+  if (!conversationId) return null;
+  try {
+    const raw = localStorage.getItem(CHAT_SHEET_STORE);
+    if (!raw) return null;
+    const all = JSON.parse(raw) as Record<string, CoachConversationSheet>;
+    const sheet = all[conversationId];
+    if (!sheet?.pairs || sheet.pairs.length < 2) return null;
+    return sheet;
+  } catch {
+    return null;
+  }
+}
+
 function normalizeQuota(row: Partial<CoachQuota> | null | undefined): CoachQuota {
   const fallback = fallbackQuota();
   const limit = Number(row?.limit);
@@ -94,7 +137,8 @@ export function buildCoachContext(
     pendingPairs.length > 0
       ? [
           {
-            title: extras?.pendingTitle?.slice(0, 60) || 'Fiche du chat',
+            title:
+              extras?.pendingTitle?.slice(0, 60) || 'Fiche jointe (photo du chat)',
             pairs: pendingPairs.map((pair) => ({
               term: pair.term,
               definition: pair.definition,
@@ -259,15 +303,22 @@ export async function ensureActiveConversation(): Promise<CoachConversation | nu
 }
 
 function mapMessageRows(
-  data: { id: unknown; role: unknown; content: unknown }[],
+  data: { id: unknown; role: unknown; content: unknown; created_at?: unknown }[],
 ): CoachMessage[] {
-  return data
-    .filter((row) => row.role === 'user' || row.role === 'assistant')
-    .map((row) => ({
-      id: String(row.id),
-      role: row.role as 'user' | 'assistant',
-      content: String(row.content ?? ''),
-    }));
+  const rows = data.filter((row) => row.role === 'user' || row.role === 'assistant');
+  // Same created_at (batch insert) used to shuffle user/assistant — keep user first.
+  rows.sort((a, b) => {
+    const ta = Date.parse(String(a.created_at ?? '')) || 0;
+    const tb = Date.parse(String(b.created_at ?? '')) || 0;
+    if (ta !== tb) return ta - tb;
+    if (a.role !== b.role) return a.role === 'user' ? -1 : 1;
+    return String(a.id).localeCompare(String(b.id));
+  });
+  return rows.map((row) => ({
+    id: String(row.id),
+    role: row.role as 'user' | 'assistant',
+    content: String(row.content ?? ''),
+  }));
 }
 
 export async function loadCoachMessages(conversationId?: string | null): Promise<CoachMessage[]> {
@@ -332,27 +383,58 @@ export async function persistCoachExchange(
   const assistantMsg = assistantContent.trim();
   if (!userMsg || !assistantMsg) return false;
 
+  // Stagger timestamps so reload order is always user → assistant.
+  const userAt = new Date();
+  const assistantAt = new Date(userAt.getTime() + 2);
+
   const withConv = conversationId
     ? [
-        { user_id: userId, role: 'user' as const, content: userMsg, conversation_id: conversationId },
+        {
+          user_id: userId,
+          role: 'user' as const,
+          content: userMsg,
+          conversation_id: conversationId,
+          created_at: userAt.toISOString(),
+        },
         {
           user_id: userId,
           role: 'assistant' as const,
           content: assistantMsg,
           conversation_id: conversationId,
+          created_at: assistantAt.toISOString(),
         },
       ]
     : [
-        { user_id: userId, role: 'user' as const, content: userMsg },
-        { user_id: userId, role: 'assistant' as const, content: assistantMsg },
+        {
+          user_id: userId,
+          role: 'user' as const,
+          content: userMsg,
+          created_at: userAt.toISOString(),
+        },
+        {
+          user_id: userId,
+          role: 'assistant' as const,
+          content: assistantMsg,
+          created_at: assistantAt.toISOString(),
+        },
       ];
 
   let { error } = await supabase.from('scanplay_coach_chat_messages').insert(withConv);
   if (error && conversationId) {
     // Column / FK not ready yet → fall back without conversation_id
     ({ error } = await supabase.from('scanplay_coach_chat_messages').insert([
-      { user_id: userId, role: 'user', content: userMsg },
-      { user_id: userId, role: 'assistant', content: assistantMsg },
+      {
+        user_id: userId,
+        role: 'user',
+        content: userMsg,
+        created_at: userAt.toISOString(),
+      },
+      {
+        user_id: userId,
+        role: 'assistant',
+        content: assistantMsg,
+        created_at: assistantAt.toISOString(),
+      },
     ]));
   }
   if (error) {
@@ -384,12 +466,26 @@ export async function sendCoachMessage(
     return { error: 'quota' };
   }
 
+  const firstSheet = context.allowedSheets[0];
+  const sheetPreview =
+    firstSheet && firstSheet.pairs.length > 0
+      ? {
+          title: firstSheet.title || 'Fiche',
+          count: firstSheet.pairs.length,
+          sample: firstSheet.pairs
+            .slice(0, 3)
+            .map((p) => p.term)
+            .filter(Boolean)
+            .join(', '),
+        }
+      : null;
   const canned = localCoachReply(message, locale, {
     sheetCount: context.sheetCount,
     isNewAccount: context.isNewAccount,
     aiUsagePercent: context.aiUsagePercent,
     aiEnvelopeLabel: context.aiEnvelopeLabel,
     plan: context.plan,
+    sheetPreview,
   });
 
   const supabase = getSupabase();

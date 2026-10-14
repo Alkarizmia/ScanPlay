@@ -756,6 +756,9 @@ export function LandingPage({
             <div>
               <p className="lp-footer-nav-title">{lt('lpFooterHelp', locale)}</p>
               <a href="mailto:support@scanplay.org">support@scanplay.org</a>
+              <a href={locale === 'en' ? '/en/questions-answers/' : '/fr/questions-reponses/'}>
+                {lt('lpQaGuide', locale)}
+              </a>
               <a href="/privacy.html">{lt('lpPrivacy', locale)}</a>
               <a href="/terms.html">{lt('lpTerms', locale)}</a>
             </div>

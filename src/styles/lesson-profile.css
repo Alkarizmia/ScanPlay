@@ -73,21 +73,75 @@
   border-radius: var(--radius-lg);
   border: 2px solid var(--border);
   background: var(--surface);
+  width: 100%;
+  box-sizing: border-box;
 }
 .listen-audio-icon {
   font-size: 2.5rem;
+}
+.listen-audio-progress {
+  width: 100%;
+  max-width: 280px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--border, #e5e7eb) 80%, #fff);
+  overflow: hidden;
+}
+.listen-audio-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #58cc02, #89e219);
+  transition: width 0.12s linear;
+}
+.listen-audio-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 .listen-hear-btn {
   font-size: 1.1rem;
   padding: 12px 20px;
 }
+.listen-audio-rates {
+  display: inline-flex;
+  gap: 4px;
+  padding: 3px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-2, #f3f4f6) 90%, transparent);
+}
+.listen-audio-rate {
+  appearance: none;
+  border: 0;
+  border-radius: 9px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text-muted, #64748b);
+  background: transparent;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.listen-audio-rate--on {
+  background: #fff;
+  color: #166534;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
 .listen-audio-hint {
   margin: 0;
   font-size: 0.85rem;
   color: var(--text-muted);
+  text-align: center;
 }
 .listen-options {
   margin-top: 8px;
+}
+.listen-options--locked {
+  pointer-events: none;
+  opacity: 0.72;
 }
 .listen-game--embedded {
   display: flex;

@@ -5,23 +5,37 @@ interface IdleHelpChipProps {
   locale: Locale;
   helped: boolean;
   secondsLeft: number | null;
+  /** Tap while counting down to reveal the hint immediately. */
+  onSkip?: () => void;
 }
 
-/** Soft countdown → “help is here” so waiting 9s feels intentional, not failing. */
-export function IdleHelpChip({ locale, helped, secondsLeft }: IdleHelpChipProps) {
+/** Soft countdown → tap to skip wait, or “help is here” once ready. */
+export function IdleHelpChip({ locale, helped, secondsLeft, onSkip }: IdleHelpChipProps) {
   if (!helped) {
     if (secondsLeft == null || secondsLeft > 9) return null;
   }
 
+  if (helped) {
+    return (
+      <div className="idle-help-chip idle-help-chip--ready" aria-live="polite">
+        <span className="idle-help-chip-ring" aria-hidden="true" />
+        {t('idleHelpReady', locale)}
+      </div>
+    );
+  }
+
   return (
-    <div
-      className={`idle-help-chip${helped ? ' idle-help-chip--ready' : ''}`}
-      aria-live="polite"
+    <button
+      type="button"
+      className="idle-help-chip idle-help-chip--skip"
+      onClick={() => onSkip?.()}
+      aria-label={t('idleHelpSkip', locale)}
     >
       <span className="idle-help-chip-ring" aria-hidden="true" />
-      {helped
-        ? t('idleHelpReady', locale)
-        : t('idleHelpSoon', locale).replace('{n}', String(Math.max(1, secondsLeft ?? 1)))}
-    </div>
+      <span className="idle-help-chip-soon">
+        {t('idleHelpSoon', locale).replace('{n}', String(Math.max(1, secondsLeft ?? 1)))}
+      </span>
+      <span className="idle-help-chip-skip-label">{t('idleHelpSkip', locale)}</span>
+    </button>
   );
 }
