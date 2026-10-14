@@ -19,8 +19,8 @@ export interface UserProfileData {
   pseudoOnboardingDone?: boolean;
 }
 
-export const DISPLAY_NAME_MIN = 2;
-export const DISPLAY_NAME_MAX = 5;
+export const DISPLAY_NAME_MIN = 5;
+export const DISPLAY_NAME_MAX = 20;
 export const DISPLAY_NAME_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
 
 export const DEFAULT_AVATARS: { id: AvatarId; emoji: string }[] = [
@@ -87,7 +87,7 @@ export type SetDisplayNameResult =
   | { ok: true }
   | {
       ok: false;
-      error: 'not_logged_in' | 'too_short' | 'display_name_taken' | 'sync_failed' | 'cooldown';
+      error: 'not_logged_in' | 'too_short' | 'too_long' | 'display_name_taken' | 'sync_failed' | 'cooldown';
       cooldownMsLeft?: number;
     };
 
@@ -109,8 +109,9 @@ export function getDisplayNameCooldownMsLeft(profile?: UserProfileData | null): 
 export async function trySetDisplayName(name: string): Promise<SetDisplayNameResult> {
   const profile = getProfile();
   if (!profile) return { ok: false, error: 'not_logged_in' };
-  const trimmed = name.trim().slice(0, DISPLAY_NAME_MAX);
+  const trimmed = name.trim();
   if (trimmed.length < DISPLAY_NAME_MIN) return { ok: false, error: 'too_short' };
+  if (trimmed.length > DISPLAY_NAME_MAX) return { ok: false, error: 'too_long' };
   if (trimmed === profile.displayName) return { ok: true };
 
   const cooldownLeft = getDisplayNameCooldownMsLeft(profile);
@@ -120,14 +121,24 @@ export async function trySetDisplayName(name: string): Promise<SetDisplayNameRes
 
   if (isSupabaseConfigured && isLoggedIn()) {
     const available = await isDisplayNameAvailable(trimmed);
-    if (available !== true) {
-      return { ok: false, error: available === false ? 'display_name_taken' : 'sync_failed' };
+    // false = réellement pris ; null = erreur réseau / RPC (ne pas confondre avec "pris")
+    if (available === false) {
+      return { ok: false, error: 'display_name_taken' };
+    }
+    if (available === null) {
+      return { ok: false, error: 'sync_failed' };
     }
 
     const sync = await syncPublicProfileWithDisplayName(trimmed);
     if (!sync.ok) {
-      if (sync.code === 'display_name_taken' || sync.code === 'display_name_invalid') {
+      if (sync.code === 'display_name_taken') {
         return { ok: false, error: 'display_name_taken' };
+      }
+      if (sync.code === 'display_name_invalid') {
+        return {
+          ok: false,
+          error: trimmed.length > DISPLAY_NAME_MAX ? 'too_long' : 'too_short',
+        };
       }
       return { ok: false, error: 'sync_failed' };
     }

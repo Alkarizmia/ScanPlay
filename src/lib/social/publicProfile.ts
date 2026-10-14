@@ -2,6 +2,8 @@ import { getUserId, isLoggedIn } from '../auth';
 import { getGamification } from '../gamification';
 import { getHistory } from '../history';
 import {
+  DISPLAY_NAME_MAX,
+  DISPLAY_NAME_MIN,
   getProfile,
   isDefaultDisplayName,
   mergeProfileFromCloud,
@@ -55,7 +57,7 @@ export async function syncPublicProfileWithDisplayName(displayName: string): Pro
 
   const { xp, streak } = getGamification();
   const deckCount = getHistory().length;
-  const trimmed = displayName.trim().slice(0, 24);
+  const trimmed = displayName.trim().slice(0, DISPLAY_NAME_MAX);
 
   const bannerTheme =
     typeof profile.bannerTheme === 'string' && profile.bannerTheme.trim()
@@ -130,8 +132,8 @@ export async function isDisplayNameAvailable(name: string): Promise<boolean | nu
   const supabase = getSupabase();
   if (!supabase) return null;
   const trimmed = name.trim();
-  // Keep in sync with DISPLAY_NAME_MIN / DISPLAY_NAME_MAX in profile.ts
-  if (trimmed.length < 2 || trimmed.length > 5) return false;
+  // Hors plage : ne pas signaler "déjà pris" (laisse l'UI afficher trop court / trop long).
+  if (trimmed.length < DISPLAY_NAME_MIN || trimmed.length > DISPLAY_NAME_MAX) return null;
 
   const { data, error } = await supabase.rpc('check_display_name_available', { p_name: trimmed });
   if (error) return null;

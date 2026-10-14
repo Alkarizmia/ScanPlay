@@ -65,12 +65,17 @@ export function ProfileEditSheet({
       return;
     }
     const trimmed = nameDraft.trim();
-    if (trimmed.length < DISPLAY_NAME_MIN || trimmed === profile.displayName) {
+    if (
+      trimmed.length < DISPLAY_NAME_MIN ||
+      trimmed.length > DISPLAY_NAME_MAX ||
+      trimmed === profile.displayName
+    ) {
       setNameTaken(false);
       return;
     }
     const timer = window.setTimeout(() => {
       void isDisplayNameAvailable(trimmed).then((available) => {
+        // Uniquement true "pris" quand le RPC dit explicitement non disponible.
         setNameTaken(available === false);
       });
     }, 350);
@@ -110,6 +115,15 @@ export function ProfileEditSheet({
 
   const saveName = () => {
     setNameError(null);
+    const trimmed = nameDraft.trim();
+    if (trimmed.length < DISPLAY_NAME_MIN) {
+      setNameError(t('profileNameTooShort', locale));
+      return;
+    }
+    if (trimmed.length > DISPLAY_NAME_MAX) {
+      setNameError(t('profileNameTooLong', locale));
+      return;
+    }
     if (nameTaken) {
       setNameError(t('profileNameTaken', locale));
       return;
@@ -120,6 +134,7 @@ export function ProfileEditSheet({
       if (!result.ok) {
         if (result.error === 'display_name_taken') setNameError(t('profileNameTaken', locale));
         else if (result.error === 'too_short') setNameError(t('profileNameTooShort', locale));
+        else if (result.error === 'too_long') setNameError(t('profileNameTooLong', locale));
         else if (result.error === 'cooldown') setNameError(formatCooldownDays(result.cooldownMsLeft ?? 0));
         else setNameError(t('profileNameSaveError', locale));
         return;
