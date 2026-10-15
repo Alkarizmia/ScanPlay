@@ -1,5 +1,6 @@
 import {
   activateXpBoost,
+  AD_REWARD_COINS,
   addCoins,
   addGems,
   canBuyExtraScan,
@@ -25,6 +26,8 @@ import {
   XP_BOOST_DURATION_MS,
   type SpendResult,
 } from './wallet';
+
+export { AD_REWARD_COINS };
 import { getNewUnlocksSince, recordUnlocks, snapshotUnlockedIds } from './achievementUnlocks';
 import { addBonusXp } from './gamification';
 import { getPlan } from './planLimits';
@@ -38,6 +41,13 @@ import {
   hasInfiniteUniverseHearts,
   refillUniverseHeart,
 } from './universeHearts';
+import {
+  equipCosmetic,
+  getCosmetic,
+  grantCosmetic,
+  ownsCosmetic,
+  type ProfileCosmeticId,
+} from './profileCosmetics';
 
 export const SHOP_XP_POTION_PRICE = 80;
 export const SHOP_XP_POTION_MINUTES = 15;
@@ -168,6 +178,18 @@ export function buyUniverseHeart(): ShopPurchaseResult {
     addCoins(SHOP_UNIVERSE_HEART_PRICE);
     return { ok: false, reason: 'limit_reached' };
   }
+  return { ok: true };
+}
+
+/** Achat cosmétique profil (fond shop ou cadre). Possession à vie. */
+export function buyProfileCosmetic(id: ProfileCosmeticId, equipAfter = true): ShopPurchaseResult {
+  const def = getCosmetic(id);
+  if (!def) return { ok: false, reason: 'unavailable' };
+  if (ownsCosmetic(id)) return { ok: false, reason: 'already_claimed' };
+  const spent = spendCoins(def.price);
+  if (!spent.ok) return fromSpend(spent);
+  grantCosmetic(id);
+  if (equipAfter) equipCosmetic(id);
   return { ok: true };
 }
 

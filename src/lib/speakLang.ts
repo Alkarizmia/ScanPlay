@@ -13,12 +13,14 @@ export function resolveSpeakLang(pair: WordPair): LangCode {
   if (defLang === 'nl') return 'fr';
   if (defLang === 'en') return 'en';
   if (defLang === 'es') return 'es';
+  if (defLang === 'de') return 'de';
 
   const fromDef = detectLang(pair.definition);
   if (fromDef === 'fr') return 'nl';
   if (fromDef === 'nl') return 'fr';
   if (fromDef === 'en') return 'en';
   if (fromDef === 'es') return 'es';
+  if (fromDef === 'de') return 'de';
 
   return 'unknown';
 }

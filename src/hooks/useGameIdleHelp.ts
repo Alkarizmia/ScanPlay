@@ -1,13 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-export const GAME_IDLE_HELP_MS = 9000;
-/** Only early taps (first second) restart the 9s timer — later taps don't push the hint away. */
+export const GAME_IDLE_HELP_MS = 15_000;
+/** Only early taps (first second) restart the 15s timer. Later taps don't push the hint away. */
 export const GAME_IDLE_RESET_WINDOW_MS = 1000;
 
 interface UseGameIdleHelpOptions {
   /** Off in exam mode / chapter skip / after reveal. */
   enabled: boolean;
-  /** Bumps when the question changes — restarts the 9s timer. */
+  /** Bumps when the question changes — restarts the 15s timer. */
   resetKey: string | number;
   delayMs?: number;
 }

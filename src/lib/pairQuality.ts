@@ -5,7 +5,7 @@ import type { WordPair } from '../types';
 
 const TITLE_FRAGMENT = /^(vocabulaire|quelques mots|dans la (lan|langue)|liste de|un peu de)\b/i;
 
-function detectLangSimple(text: string): 'nl' | 'fr' | 'en' | 'unknown' {
+function detectLangSimple(text: string): 'nl' | 'fr' | 'en' | 'de' | 'unknown' {
   const lang = detectScanLang(text);
   return lang === 'es' ? 'unknown' : lang;
 }

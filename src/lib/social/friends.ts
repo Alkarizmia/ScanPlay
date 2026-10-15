@@ -35,6 +35,8 @@ function mapPlayer(row: Record<string, unknown>): PublicPlayer {
     lastSeenAt: row.last_seen_at != null ? String(row.last_seen_at) : null,
     plan: row.plan != null ? mapPlan(row.plan) : undefined,
     bannerTheme: typeof row.banner_theme === 'string' ? row.banner_theme : undefined,
+    avatarFrame: typeof row.avatar_frame === 'string' && row.avatar_frame ? row.avatar_frame : null,
+    bannerFrame: typeof row.banner_frame === 'string' && row.banner_frame ? row.banner_frame : null,
   };
 }
 
@@ -65,6 +67,14 @@ async function syncStatsToCloud(): Promise<void> {
     typeof profile.bannerTheme === 'string' && profile.bannerTheme.trim()
       ? profile.bannerTheme.trim()
       : 'green';
+  const avatarFrame =
+    typeof profile.avatarFrame === 'string' && profile.avatarFrame.trim()
+      ? profile.avatarFrame.trim()
+      : null;
+  const bannerFrame =
+    typeof profile.bannerFrame === 'string' && profile.bannerFrame.trim()
+      ? profile.bannerFrame.trim()
+      : null;
 
   const { error } = await supabase.rpc('sync_public_profile_stats', {
     p_display_name: profile.displayName,
@@ -76,6 +86,8 @@ async function syncStatsToCloud(): Promise<void> {
     p_avatar_url:
       profile.avatar === 'custom' && profile.customAvatarData ? profile.customAvatarData : null,
     p_banner_theme: bannerTheme,
+    p_avatar_frame: avatarFrame,
+    p_banner_frame: bannerFrame,
   });
 
   if (error) {
@@ -88,12 +100,18 @@ async function syncStatsToCloud(): Promise<void> {
       p_plan: getPlan(),
       p_avatar_url:
         profile.avatar === 'custom' && profile.customAvatarData ? profile.customAvatarData : null,
+      p_banner_theme: bannerTheme,
+      p_avatar_frame: avatarFrame,
     });
     const userId = getUserId();
     if (userId) {
       await supabase
         .from('scanplay_public_profiles')
-        .update({ banner_theme: bannerTheme })
+        .update({
+          banner_theme: bannerTheme,
+          avatar_frame: avatarFrame,
+          banner_frame: bannerFrame,
+        })
         .eq('user_id', userId);
     }
   }
@@ -181,6 +199,8 @@ export async function getFriendProfile(userId: string): Promise<FriendProfile | 
     deckCount: Number(row.deck_count ?? 0),
     plan: mapPlan(row.plan),
     bannerTheme: typeof row.banner_theme === 'string' ? row.banner_theme : undefined,
+    avatarFrame: typeof row.avatar_frame === 'string' && row.avatar_frame ? row.avatar_frame : null,
+    bannerFrame: typeof row.banner_frame === 'string' && row.banner_frame ? row.banner_frame : null,
     friendCount: Number(row.friend_count ?? 0),
     achievementCount: Number(row.achievement_count ?? mapAchievementUnlocks(row.achievement_unlocks).length),
     achievementUnlocks: mapAchievementUnlocks(row.achievement_unlocks),

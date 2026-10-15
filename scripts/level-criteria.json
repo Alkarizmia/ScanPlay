@@ -1,0 +1,81 @@
+{
+  "version": 1,
+  "notes": "Not wired into the generator. Used by check-level-criteria.mjs and staging sentence length checks. Challenge these defaults before wiring.",
+  "levels": {
+    "A1": {
+      "maxWords": 8,
+      "allowedStructures": ["present simple", "be", "have", "can"],
+      "contractions": "full forms first; explicit note I am = I'm at end of A1; I'm normal from A2",
+      "forbiddenInStagingSentences": ["I'm", "you're", "he's", "she's", "it's", "we're", "they're", "don't", "doesn't", "can't", "won't", "isn't", "aren't"]
+    },
+    "A2": {
+      "maxWords": 12,
+      "allowedStructures": ["past simple", "going to", "comparatives", "there is/are", "must", "should", "present simple"],
+      "contractions": "normal"
+    },
+    "B1": {
+      "maxWords": 16,
+      "allowedStructures": ["present perfect", "present perfect continuous", "conditionals 0/1/2", "used to", "modals of deduction", "linkers"],
+      "contractions": "normal"
+    },
+    "B2": {
+      "maxWords": 20,
+      "allowedStructures": ["passive", "reported speech", "third conditional", "non-defining relatives", "formal linkers"],
+      "contractions": "normal"
+    },
+    "C1": {
+      "maxWords": 25,
+      "allowedStructures": ["inversion", "nuance", "formal register", "informal register"],
+      "contractions": "normal"
+    },
+    "C2": {
+      "maxWords": 25,
+      "allowedStructures": ["inversion", "nuance", "formal register", "informal register"],
+      "contractions": "normal"
+    }
+  },
+  "chapterTypes": {
+    "greet-A1": {
+      "match": { "chapterIdSuffix": "-greet", "level": "A1" },
+      "alsoMatchTitles": ["Se présenter", "Bases solides"],
+      "minOccurrences": 2,
+      "requiredStructures": [
+        { "id": "i_am_name_job_age", "label": "I am + name / job / age", "patterns": ["\\bI am a [a-z]+\\b", "\\bI am an [a-z]+\\b", "\\bI am \\d+\\b", "\\bI am [A-Z][a-z]+\\.$"] },
+        { "id": "my_name_is", "label": "My name is ...", "patterns": ["\\bMy name is\\b"] },
+        { "id": "i_am_from", "label": "I am from ...", "patterns": ["\\bI am from\\b"] },
+        { "id": "i_live_in", "label": "I live in ...", "patterns": ["\\bI live in\\b"] },
+        { "id": "i_work_as_or_i_am_a", "label": "I work as ... / I am a ...", "patterns": ["\\bI work as\\b", "\\bI am a\\b", "\\bI am an\\b"] },
+        { "id": "years_old", "label": "I am ... years old", "patterns": ["\\byears old\\b"] },
+        { "id": "this_is_my", "label": "This is my ...", "patterns": ["\\bThis is my\\b"] },
+        { "id": "nice_to_meet_you", "label": "Nice to meet you", "patterns": ["\\bNice to meet you\\b"] },
+        { "id": "how_are_you", "label": "How are you?", "patterns": ["\\bHow are you\\b"] }
+      ]
+    },
+    "greet-B1": {
+      "match": { "chapterIdSuffix": "-greet", "level": "B1" },
+      "minOccurrences": 2,
+      "requiredStructures": [
+        { "id": "ive_been_working", "label": "I've been working as ... for ... years", "patterns": ["\\bI've been working\\b", "\\bI have been working\\b"] },
+        { "id": "in_charge_of", "label": "I'm in charge of ...", "patterns": ["\\bin charge of\\b"] },
+        { "id": "used_to", "label": "I used to ...", "patterns": ["\\bI used to\\b"] },
+        { "id": "interested_in", "label": "I'm interested in ...", "patterns": ["\\binterested in\\b"] },
+        { "id": "looking_for", "label": "I'm looking for ...", "patterns": ["\\blooking for\\b"] },
+        { "id": "could_you_tell_me", "label": "Could you tell me about ...?", "patterns": ["\\bCould you tell me\\b"] }
+      ]
+    },
+    "generic-A1": {
+      "match": { "level": "A1" },
+      "minOccurrences": 1,
+      "requiredStructures": [
+        { "id": "present_be_or_have", "label": "present be/have/can somewhere in chapter", "patterns": ["\\bI am\\b", "\\bI have\\b", "\\bI can\\b", "\\bThere is\\b", "\\bThere are\\b"] }
+      ]
+    },
+    "generic-A2": {
+      "match": { "level": "A2" },
+      "minOccurrences": 1,
+      "requiredStructures": [
+        { "id": "a2_anchor", "label": "past / going to / there is / must|should", "patterns": ["\\b(was|were|went|had|did)\\b", "\\bgoing to\\b", "\\bthere (is|are)\\b", "\\b(must|should)\\b"] }
+      ]
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import type { Locale } from '../types';
 import ar from '../i18n/landing/ar.json';
+import de from '../i18n/landing/de.json';
 import en from '../i18n/landing/en.json';
 import es from '../i18n/landing/es.json';
 import fr from '../i18n/landing/fr.json';
@@ -9,13 +10,14 @@ import nl from '../i18n/landing/nl.json';
 export type LandingLang = Locale;
 export type LandingCopyKey = keyof typeof fr;
 
-const copies: Record<LandingLang, Record<string, string>> = { fr, en, nl, es, ar };
+const copies: Record<LandingLang, Record<string, string>> = { fr, en, nl, es, ar, de };
 
 export const LANDING_LANGS: { id: LandingLang; label: string; short: string }[] = [
   { id: 'fr', label: 'Français', short: 'FR' },
   { id: 'en', label: 'English', short: 'EN' },
   { id: 'nl', label: 'Nederlands', short: 'NL' },
   { id: 'es', label: 'Español', short: 'ES' },
+  { id: 'de', label: 'Deutsch', short: 'DE' },
   { id: 'ar', label: 'العربية', short: 'AR' },
 ];
 
@@ -23,10 +25,17 @@ export const LANDING_LANGS: { id: LandingLang; label: string; short: string }[] 
 const LOCALE_KEY = 'scanplay-locale';
 
 function isLandingLang(value: unknown): value is LandingLang {
-  return value === 'fr' || value === 'en' || value === 'nl' || value === 'es' || value === 'ar';
+  return (
+    value === 'fr' ||
+    value === 'en' ||
+    value === 'nl' ||
+    value === 'es' ||
+    value === 'ar' ||
+    value === 'de'
+  );
 }
 
-/** Match browser language; any fr-* is French, any ar-* is Arabic. */
+/** Match browser language; any fr-* is French, any de-* is German, any ar-* is Arabic. */
 export function landingLangFromNavigator(
   language = typeof navigator === 'undefined' ? 'en' : navigator.language,
 ): LandingLang {
@@ -34,6 +43,7 @@ export function landingLangFromNavigator(
   if (tag === 'fr' || tag.startsWith('fr-')) return 'fr';
   if (tag === 'nl' || tag.startsWith('nl-')) return 'nl';
   if (tag === 'es' || tag.startsWith('es-')) return 'es';
+  if (tag === 'de' || tag.startsWith('de-')) return 'de';
   if (tag === 'ar' || tag.startsWith('ar-')) return 'ar';
   return 'en';
 }

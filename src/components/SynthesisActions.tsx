@@ -270,7 +270,9 @@ export function SynthesisActions({
           aria-busy={step === 'loading'}
         >
           <SynthesisIcon size={16} /> {compact ? t('synthesisShort', locale) : t('synthesis', locale)}
-          <span className="synthesis-quota-pill">{quotaLabel}</span>
+          {quotaLabel !== '∞' && (
+            <span className="synthesis-quota-pill">{quotaLabel}</span>
+          )}
         </button>
         {!compact && (
           <p className="synthesis-quota-hint">

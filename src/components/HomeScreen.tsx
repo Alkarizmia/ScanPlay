@@ -13,14 +13,12 @@ import { SiteFooter } from './SiteFooter';
 import { InstallAppSheet } from './InstallAppSheet';
 import { GuestScanBanner } from './GuestScanBanner';
 import { usePwaInstall } from '../hooks/usePwaInstall';
-import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
-import { AchievementGlyph } from './icons/AchievementGlyph';
 import { NavIcon } from './icons/NavIcon';
 import { canGuestScan } from '../lib/guestTrial';
 import { isLoggedIn } from '../lib/auth';
 import { getHistory, peekLastHomeDeck } from '../lib/history';
 import { trackEvent } from '../lib/analytics';
-import { getDateLocale, t } from '../lib/i18n';
+import { t } from '../lib/i18n';
 import { collectDroppedImageFiles } from '../lib/droppedFiles';
 import { clampImagesForImport, getMaxImagesPerImport } from '../lib/planLimits';
 import { getCurrentEnglishLesson } from '../lib/universeEnglish';
@@ -29,10 +27,10 @@ import type { DeviceProfile } from '../lib/device';
 import type { HistoryEntry, Locale } from '../types';
 
 function lessonTitleForLocale(
-  title: { fr: string; en: string; nl: string; es: string; ar: string },
+  title: { fr: string; en: string; nl: string; es: string; ar: string; de: string },
   locale: Locale,
 ): string {
-  if (locale === 'en' || locale === 'nl' || locale === 'es' || locale === 'ar') {
+  if (locale === 'en' || locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de') {
     return title[locale];
   }
   return title.fr;
@@ -91,12 +89,13 @@ export function HomeScreen({
   onRefresh,
   onContinueLast,
   onContinueUniverse,
-  onOpenDeck,
+  onOpenDeck: _onOpenDeck,
   onOpenAchievements,
   onOpenShop,
   onOpenSettings,
   onNewUnlocks,
 }: HomeScreenProps) {
+  void _onOpenDeck;
   const plan = usePlan(refreshKey);
   const isDesktop = device.kind === 'desktop';
   const fileRef = useRef<HTMLInputElement>(null);
@@ -106,9 +105,7 @@ export function HomeScreen({
   const { canNativeInstall, canShowInstall, isInstalled, install, platform, isInAppBrowser } =
     usePwaInstall();
   const loggedIn = isLoggedIn();
-  const recentDecks = loggedIn ? getHistory().slice(0, 6) : [];
-  const lastDeck = recentDecks[0] ?? (loggedIn ? peekLastHomeDeck() : null);
-  const recentUnlocks = loggedIn ? getRecentUnlocks(4) : [];
+  const lastDeck = loggedIn ? (getHistory()[0] ?? peekLastHomeDeck()) : null;
   const welcomeMessage =
     lastDeck ? t('mascotWelcomeBackShort', locale) : t('mascotWelcomeReady', locale);
   const universeResumeKind =
@@ -341,81 +338,6 @@ export function HomeScreen({
           >
             {t('guestSignupTeaser', locale)}
           </button>
-        )}
-
-        {loggedIn && recentDecks.length > 0 && (
-          <section className="home-section home-section--premium">
-            <div className="home-section-head">
-              <h3 className="home-section-title">{t('homeRecentScans', locale)}</h3>
-            </div>
-            <div className="home-recent-scroll">
-              {recentDecks.map((deck) => (
-                <article
-                  key={deck.id}
-                  className="home-recent-card"
-                  role={onOpenDeck ? 'button' : undefined}
-                  tabIndex={onOpenDeck ? 0 : undefined}
-                  onClick={() => onOpenDeck?.(deck)}
-                  onKeyDown={(e) => {
-                    if (onOpenDeck && (e.key === 'Enter' || e.key === ' ')) {
-                      e.preventDefault();
-                      onOpenDeck(deck);
-                    }
-                  }}
-                >
-                  {deck.thumbnail ? (
-                    <img src={deck.thumbnail} alt="" className="home-recent-thumb" />
-                  ) : (
-                    <div className="home-recent-thumb home-recent-thumb--placeholder" aria-hidden="true">
-                      📋
-                    </div>
-                  )}
-                  <div className="home-recent-body">
-                    <span className="home-recent-title">{deck.title}</span>
-                    {deck.lastScorePct != null && (
-                      <span className="home-recent-meta">
-                        {deck.lastScorePct}%
-                        {deck.lastXpEarned != null && ` · +${deck.lastXpEarned} XP`}
-                      </span>
-                    )}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-        )}
-
-        {loggedIn && recentUnlocks.length > 0 && (
-          <section className="home-section home-section--premium">
-            <div className="home-section-head">
-              <h3 className="home-section-title">{t('homeRecentAchievements', locale)}</h3>
-            </div>
-            <div className="home-ach-grid">
-              {recentUnlocks.map((rec) => {
-                const def = getAchievementDef(rec.id);
-                if (!def) return null;
-                return (
-                  <button
-                    key={rec.id}
-                    type="button"
-                    className="home-ach-card unlocked"
-                    onClick={onOpenAchievements}
-                  >
-                    <span className="home-ach-card-icon" aria-hidden="true">
-                      <AchievementGlyph achievement={def} size={36} />
-                    </span>
-                    <span className="home-ach-card-name">{t(def.nameKey, locale)}</span>
-                    <time className="home-ach-card-date" dateTime={rec.unlockedAt}>
-                      {new Date(rec.unlockedAt).toLocaleDateString(getDateLocale(locale), {
-                        day: 'numeric',
-                        month: 'short',
-                      })}
-                    </time>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
         )}
 
         {isInstalled && <p className="home-install-done">{t('installAppInstalled', locale)}</p>}

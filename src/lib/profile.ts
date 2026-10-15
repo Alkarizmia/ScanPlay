@@ -10,8 +10,12 @@ export interface UserProfileData {
   displayName: string;
   avatar: AvatarId;
   customAvatarData?: string;
-  /** Background behind the profile photo (green/red/blue/yellow free; chromatic Plus+). */
+  /** Background behind the profile photo (green/red/blue/yellow free; chromatic Plus+; shop ids). */
   bannerTheme?: string;
+  /** Cercle autour de la photo (id shop) ou null / absent = aucun. */
+  avatarFrame?: string | null;
+  /** Cadre autour du fond / hero (id shop) ou null / absent = aucun. */
+  bannerFrame?: string | null;
   profileUpdatedAt?: number;
   /** Timestamp of last successful custom display-name change (for 7-day cooldown). */
   displayNameChangedAt?: number;
@@ -184,6 +188,8 @@ export interface CloudProfilePatch {
   avatarId?: string | null;
   avatarUrl?: string | null;
   bannerTheme?: string | null;
+  avatarFrame?: string | null;
+  bannerFrame?: string | null;
   updatedAt?: string | null;
 }
 
@@ -191,7 +197,7 @@ function isAvatarId(value: string | null | undefined): value is AvatarId {
   return value === 'avatar1' || value === 'avatar2' || value === 'avatar3' || value === 'avatar4' || value === 'custom';
 }
 
-/** Merge avatar / name from cloud when newer than local copy. */
+/** Merge avatar / name / cosmetics from cloud when newer than local, or when local field is empty. */
 export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
   if (!isLoggedIn()) return;
   const userId = getUserId();
@@ -204,54 +210,80 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
     (patch.avatarUrl && patch.avatarUrl !== local.customAvatarData) ||
     (patch.avatarId && isAvatarId(patch.avatarId) && patch.avatarId !== local.avatar);
 
-  if (cloudTime > 0 && localTime > cloudTime && !avatarDiffers) return;
+  const cloudWins = cloudTime > localTime || localTime === 0;
+  const skipIdentity = cloudTime > 0 && localTime > cloudTime && !avatarDiffers;
 
   const next: UserProfileData = { ...local };
   let changed = false;
 
-  if (patch.displayName?.trim() && patch.displayName.trim() !== local.displayName) {
-    const cloudName = patch.displayName.trim().slice(0, 24);
-    const localCustom = !isDefaultDisplayName(local.displayName, userId);
-    const cloudDefault = isDefaultDisplayName(cloudName, userId);
-    const cloudNewer = cloudTime > localTime || localTime === 0;
+  if (!skipIdentity) {
+    if (patch.displayName?.trim() && patch.displayName.trim() !== local.displayName) {
+      const cloudName = patch.displayName.trim().slice(0, 24);
+      const localCustom = !isDefaultDisplayName(local.displayName, userId);
+      const cloudDefault = isDefaultDisplayName(cloudName, userId);
+      const cloudNewer = cloudTime > localTime || localTime === 0;
 
-    if (cloudDefault && localCustom) {
-      /* keep user-chosen name — ignore stale ID-xxxx from cloud */
-    } else if (cloudNewer || !localCustom || !cloudDefault) {
-      next.displayName = cloudName;
+      if (cloudDefault && localCustom) {
+        /* keep user-chosen name — ignore stale ID-xxxx from cloud */
+      } else if (cloudNewer || !localCustom || !cloudDefault) {
+        next.displayName = cloudName;
+        changed = true;
+      }
+    }
+
+    if (patch.avatarId && isAvatarId(patch.avatarId) && patch.avatarId !== local.avatar) {
+      next.avatar = patch.avatarId;
+      if (patch.avatarId !== 'custom') {
+        next.customAvatarData = undefined;
+      }
+      changed = true;
+    }
+
+    if (patch.avatarId === 'custom' && patch.avatarUrl) {
+      next.avatar = 'custom';
+      next.customAvatarData = patch.avatarUrl;
+      changed = true;
+    } else if (patch.avatarUrl && next.avatar === 'custom' && patch.avatarUrl !== local.customAvatarData) {
+      next.customAvatarData = patch.avatarUrl;
       changed = true;
     }
   }
 
-  if (patch.avatarId && isAvatarId(patch.avatarId) && patch.avatarId !== local.avatar) {
-    next.avatar = patch.avatarId;
-    if (patch.avatarId !== 'custom') {
-      next.customAvatarData = undefined;
+  // Cosmétiques: ne jamais remplacer un fond custom par le défaut "green" du cloud public.
+  if (patch.bannerTheme?.trim()) {
+    const incoming = patch.bannerTheme.trim();
+    const current = (next.bannerTheme ?? local.bannerTheme ?? '').trim();
+    const wouldDowngradeToGreen =
+      incoming === 'green' && current !== '' && current !== 'green';
+    if (
+      !wouldDowngradeToGreen &&
+      incoming !== current &&
+      (cloudWins || !current || current === 'green')
+    ) {
+      next.bannerTheme = incoming;
+      changed = true;
     }
-    changed = true;
   }
 
-  if (patch.avatarId === 'custom' && patch.avatarUrl) {
-    next.avatar = 'custom';
-    next.customAvatarData = patch.avatarUrl;
-    changed = true;
-  } else if (patch.avatarUrl && next.avatar === 'custom' && patch.avatarUrl !== local.customAvatarData) {
-    next.customAvatarData = patch.avatarUrl;
-    changed = true;
+  if ('avatarFrame' in patch && (cloudWins || local.avatarFrame == null || local.avatarFrame === '')) {
+    const frame = patch.avatarFrame == null || patch.avatarFrame === '' ? null : String(patch.avatarFrame);
+    if (frame !== (next.avatarFrame ?? local.avatarFrame ?? null)) {
+      next.avatarFrame = frame;
+      changed = true;
+    }
   }
 
-  if (
-    patch.bannerTheme?.trim() &&
-    patch.bannerTheme.trim() !== local.bannerTheme &&
-    (cloudTime > localTime || localTime === 0 || !local.bannerTheme)
-  ) {
-    next.bannerTheme = patch.bannerTheme.trim();
-    changed = true;
+  if ('bannerFrame' in patch && (cloudWins || local.bannerFrame == null || local.bannerFrame === '')) {
+    const frame = patch.bannerFrame == null || patch.bannerFrame === '' ? null : String(patch.bannerFrame);
+    if (frame !== (next.bannerFrame ?? local.bannerFrame ?? null)) {
+      next.bannerFrame = frame;
+      changed = true;
+    }
   }
 
   if (!changed) return;
 
-  next.profileUpdatedAt = cloudTime > 0 ? cloudTime : Date.now();
+  next.profileUpdatedAt = Math.max(localTime, cloudTime > 0 ? cloudTime : Date.now());
   saveProfileRaw(next);
   void import('./auth').then((m) => m.refreshProfileCacheFromProfile());
 }

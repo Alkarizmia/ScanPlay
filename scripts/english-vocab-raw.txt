@@ -526,7 +526,7 @@ busy|occupé|bezet|ocupado|مشغول|I am busy until Friday.|A2|work
 urgent|urgent|dringend|urgente|عاجل|This message is urgent.|B1|work
 asap|dès que possible|zo snel mogelijk|lo antes posible|في أقرب وقت|Please reply asap.|B1|work
 to forward|transférer|doorsturen|reenviar|يعيد التوجيه|Forward this email to finance.|B1|work
-cc|copie carbone|cc|cc|نسخة|Please cc your manager.|B1|work
+carbon copy|copie carbone|cc (carbon copy)|copia de carbón|نسخة كربونية|Please put your manager in cc.|B1|work
 subject line|objet|onderwerp|asunto|موضوع|Write a clear subject line.|B1|work
 out of office|absent du bureau|afwezig|fuera de la oficina|خارج المكتب|I set an out of office reply.|B1|work
 to brainstorm|faire un brainstorming|brainstormen|hacer una lluvia de ideas|يعصف ذهنيا|Let's brainstorm new ideas.|B2|work

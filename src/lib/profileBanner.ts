@@ -2,8 +2,9 @@ import type { Plan } from '../types';
 import type { TranslationKey } from './i18n';
 import { getPlan, isPaidPlan } from './planLimits';
 import { getProfile, saveProfileRaw } from './profile';
+import { isShopBannerId, ownsCosmetic, type ShopBannerId } from './profileCosmetics';
 
-/** Solid colors: Free. Animated chromatic banners: Plus / Pro / Max. */
+/** Solid colors: Free. Animated chromatic banners: Plus / Pro / Max. Shop banners: owned. */
 export type ProfileBannerId =
   | 'green'
   | 'red'
@@ -13,7 +14,8 @@ export type ProfileBannerId =
   | 'ocean'
   | 'sunset'
   | 'prism'
-  | 'neon';
+  | 'neon'
+  | ShopBannerId;
 
 export interface ProfileBannerDef {
   id: ProfileBannerId;
@@ -33,24 +35,27 @@ export const PROFILE_BANNERS: ProfileBannerDef[] = [
   { id: 'neon', free: false, labelKey: 'bannerNeon' },
 ];
 
-const BANNER_IDS = new Set(PROFILE_BANNERS.map((b) => b.id));
+const PLAN_BANNER_IDS = new Set(PROFILE_BANNERS.map((b) => b.id));
 const BANNER_BY_ID = new Map(PROFILE_BANNERS.map((b) => [b.id, b]));
 
 export function isProfileBannerId(value: unknown): value is ProfileBannerId {
-  return typeof value === 'string' && BANNER_IDS.has(value as ProfileBannerId);
+  if (typeof value !== 'string') return false;
+  return PLAN_BANNER_IDS.has(value as ProfileBannerId) || isShopBannerId(value);
 }
 
 export function canUseBanner(id: ProfileBannerId, plan: Plan = getPlan()): boolean {
   if (!isProfileBannerId(id)) return false;
+  if (isShopBannerId(id)) return ownsCosmetic(id);
   const def = BANNER_BY_ID.get(id);
   if (!def) return false;
   return def.free || isPaidPlan(plan);
 }
 
-export function getProfileBanner(plan: Plan = getPlan()): ProfileBannerId {
+export function getProfileBanner(_plan: Plan = getPlan()): ProfileBannerId {
   const profile = getProfile();
   const stored = profile && 'bannerTheme' in profile ? (profile as { bannerTheme?: unknown }).bannerTheme : null;
-  if (isProfileBannerId(stored) && canUseBanner(stored, plan)) return stored;
+  // Faire confiance au fond déjà équipé (ne pas retomber sur green si le wallet / plan charge plus tard).
+  if (isProfileBannerId(stored)) return stored;
   return 'green';
 }
 

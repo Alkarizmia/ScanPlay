@@ -6,6 +6,7 @@ import type { Locale } from '../types';
 interface FriendPresenceAvatarProps {
   avatarId: string;
   avatarUrl?: string | null;
+  avatarFrame?: string | null;
   isOnline: boolean;
   locale: Locale;
   className?: string;
@@ -15,6 +16,7 @@ interface FriendPresenceAvatarProps {
 export function FriendPresenceAvatar({
   avatarId,
   avatarUrl,
+  avatarFrame,
   isOnline,
   locale,
   className = 'friend-avatar',
@@ -22,7 +24,13 @@ export function FriendPresenceAvatar({
 }: FriendPresenceAvatarProps) {
   return (
     <span className="friend-avatar-wrap">
-      <PlayerAvatar avatarId={avatarId} avatarUrl={avatarUrl} className={className} imgClassName={imgClassName} />
+      <PlayerAvatar
+        avatarId={avatarId}
+        avatarUrl={avatarUrl}
+        avatarFrame={avatarFrame}
+        className={className}
+        imgClassName={imgClassName}
+      />
       <span
         className={`friend-presence-dot ${isOnline ? 'friend-presence-dot--online' : 'friend-presence-dot--offline'}`}
         title={isOnline ? t('friendOnline', locale) : t('friendOffline', locale)}

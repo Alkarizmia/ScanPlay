@@ -29,6 +29,8 @@ export interface WalletState {
   /** Indices traduction (phrase à reconstruire). */
   translateHints: number;
   welcomeHintsGranted: boolean;
+  /** Cosmétiques profil achetés (fonds shop + cadres), ids à vie. */
+  ownedCosmetics: string[];
 }
 
 const DEFAULT: WalletState = {
@@ -47,6 +49,7 @@ const DEFAULT: WalletState = {
   streakFreezeCharges: 0,
   translateHints: 0,
   welcomeHintsGranted: false,
+  ownedCosmetics: [],
 };
 
 function todayKey(): string {
@@ -73,6 +76,9 @@ export function loadWalletRaw(): WalletState {
       streakFreezeCharges: Number(data.streakFreezeCharges ?? 0),
       translateHints: Number(data.translateHints ?? 0),
       welcomeHintsGranted: Boolean(data.welcomeHintsGranted),
+      ownedCosmetics: Array.isArray(data.ownedCosmetics)
+        ? data.ownedCosmetics.filter((id: unknown): id is string => typeof id === 'string')
+        : [],
     };
   } catch {
     return { ...DEFAULT };

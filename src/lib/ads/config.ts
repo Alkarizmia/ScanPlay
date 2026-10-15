@@ -1,7 +1,10 @@
-/** Durée minimale d'affichage avant de créditer les ScanCoins (web AdSense). */
-export const WEB_REWARDED_VIEW_SECONDS = 15;
+/** Attente locale avant de créditer les ScanCoins (pas d’unité AdSense). */
+export const WEB_REWARDED_VIEW_SECONDS = 3;
 
-/** Pause l’UI pub (bandeau, boutique, confidentialité). Les variables VITE_ADSENSE_* restent. */
+/**
+ * Pause l’UI pub (bandeau, boutique, confidentialité). Les variables VITE_ADSENSE_* restent.
+ * Laisser true tant qu’il n’y a pas de pages éditoriales riches pour AdSense.
+ */
 export const ADSENSE_UI_PAUSED = true;
 
 function envFlag(value: string | undefined, defaultOn = false): boolean {
@@ -48,11 +51,15 @@ export function isAdSenseEnabled(): boolean {
   return getAdSenseClientId() != null;
 }
 
+/**
+ * AdSense web n’autorise pas de pubs sur overlay / écrans sans contenu éditeur.
+ * Les pièces gratuites passent toujours par un timer local (simulation).
+ */
 export function isWebRewardedAdLive(): boolean {
-  return isAdSenseEnabled() && getAdSenseRewardSlot() != null;
+  return false;
 }
 
-/** Mode dev : simulation si pas de client AdSense configuré. */
+/** Toujours true : pas de vraie unité Google pour le reward web. */
 export function isAdSimulationMode(): boolean {
-  return !isWebRewardedAdLive();
+  return true;
 }

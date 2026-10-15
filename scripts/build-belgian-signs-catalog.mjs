@@ -131,7 +131,7 @@ const COPY = {
   F1a: { title: 'Début d’agglomération', meaning: 'Entrée en agglomération. Vitesse max 50 km/h (sauf indication).' },
   F3: { title: 'Fin d’agglomération', meaning: 'Sortie d’agglomération. Autres limitations s’appliquent.' },
   F3a: { title: 'Fin d’agglomération', meaning: 'Sortie d’agglomération.' },
-  F5: { title: 'Autoroute', meaning: 'Début d’autoroute. Max 120 km/h sauf indication.' },
+  F5: { title: "C24a - Entrée d'autoroute", meaning: "Début d'une autoroute. La vitesse maximale autorisée est de 120 km/h, sauf signalisation contraire. La vitesse minimale obligatoire y est de 70 km/h." },
   F7: { title: 'Fin d’autoroute', meaning: 'Fin du régime autoroutier.' },
   F9: { title: 'Route pour automobiles', meaning: 'Début de route pour automobiles.' },
   F11: { title: 'Fin de route pour automobiles', meaning: 'Fin de route pour automobiles.' },

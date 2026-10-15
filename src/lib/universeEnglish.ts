@@ -134,7 +134,7 @@ function isEnglishGoal(value: unknown): value is EnglishGoal {
 }
 
 function isNativeLang(value: unknown): value is EnglishNativeLang {
-  return value === 'fr' || value === 'nl' || value === 'es' || value === 'ar';
+  return value === 'fr' || value === 'nl' || value === 'es' || value === 'ar' || value === 'de';
 }
 
 function unionIds(a: string[], b: string[]): string[] {
@@ -378,7 +378,14 @@ export function injectWeakWordsIntoPairs(
 }
 
 function nativeExampleSentence(
-  item: { sentence?: string; sentenceFr?: string; sentenceNl?: string; sentenceEs?: string; sentenceAr?: string },
+  item: {
+    sentence?: string;
+    sentenceFr?: string;
+    sentenceNl?: string;
+    sentenceEs?: string;
+    sentenceAr?: string;
+    sentenceDe?: string;
+  },
   nativeLang: EnglishNativeLang,
 ): string | undefined {
   const map = {
@@ -386,6 +393,7 @@ function nativeExampleSentence(
     nl: item.sentenceNl,
     es: item.sentenceEs,
     ar: item.sentenceAr,
+    de: item.sentenceDe,
   } as const;
   const native = map[nativeLang]?.trim();
   return native || undefined;

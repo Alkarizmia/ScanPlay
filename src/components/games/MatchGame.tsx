@@ -134,6 +134,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
         setTimeout(finish, 400);
       }
     } else {
+      // Combo reset + wrong sound/haptic via shared registerAnswer (no XP gain).
       registerAnswer('wrong', { pathStep: stepIndex != null });
       const wrongPair = pairById[selected.pairId];
       if (wrongPair) {
@@ -143,7 +144,7 @@ export function MatchGame({ pairs, locale, examMode, deckId, stepIndex, onComple
       setTimeout(() => {
         setSelected(null);
         setWrong(new Set());
-      }, 500);
+      }, 650);
     }
   };
 

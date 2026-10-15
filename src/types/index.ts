@@ -30,7 +30,7 @@ export type HistorySubject =
 /** Written/reading vs listening/speaking focus for the learning path. */
 export type TrainingFocus = 'written' | 'oral';
 
-export type LangCode = 'nl' | 'fr' | 'en' | 'es' | 'unknown';
+export type LangCode = 'nl' | 'fr' | 'en' | 'es' | 'de' | 'unknown';
 
 export type PairDirection = 'forward' | 'reverse' | 'auto';
 
@@ -66,13 +66,14 @@ export type TabId =
   | 'settings'
   | 'chat';
 
-export type Locale = 'fr' | 'en' | 'nl' | 'es' | 'ar';
+export type Locale = 'fr' | 'en' | 'nl' | 'es' | 'ar' | 'de';
 
 export const LOCALES: { code: Locale; label: string }[] = [
   { code: 'fr', label: 'Français' },
   { code: 'en', label: 'English' },
   { code: 'nl', label: 'Nederlands' },
   { code: 'es', label: 'Español' },
+  { code: 'de', label: 'Deutsch' },
   { code: 'ar', label: 'العربية' },
 ];
 

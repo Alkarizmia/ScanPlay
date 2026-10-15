@@ -40,6 +40,7 @@ const LANG_TAG: Record<LangCode, string> = {
   en: 'en-US',
   nl: 'nl-NL',
   es: 'es-ES',
+  de: 'de-DE',
   unknown: 'fr-FR',
 };
 

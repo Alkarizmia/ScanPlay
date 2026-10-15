@@ -15,9 +15,9 @@ const CEFR_RANK = Object.fromEntries(CEFR.map((l, i) => [l, i]));
 
 /**
  * @typedef {{
- *   en: string, fr: string, nl: string, es: string, ar: string,
+ *   en: string, fr: string, nl: string, es: string, ar: string, de?: string,
  *   sentence: string,
- *   sentenceFr?: string, sentenceNl?: string, sentenceEs?: string, sentenceAr?: string,
+ *   sentenceFr?: string, sentenceNl?: string, sentenceEs?: string, sentenceAr?: string, sentenceDe?: string,
  *   cefr: string, theme: string
  * }} Vocab
  */
@@ -81,52 +81,52 @@ function parseRaw(text) {
 
 const CHAPTER_PLANS = {
   travel: [
-    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter', en: 'Introductions', nl: 'Voorstellen', es: 'Presentarse', ar: 'تقديم النفس' } },
-    { id: 'airport', themes: ['airport', 'travel', 'basics', 'time'], title: { fr: 'Aéroport & voyage', en: 'Airport & travel', nl: 'Luchthaven & reizen', es: 'Aeropuerto y viaje', ar: 'المطار والسفر' } },
-    { id: 'hotel', themes: ['hotel', 'travel', 'daily'], title: { fr: 'Hôtel & séjour', en: 'Hotel stay', nl: 'Hotelverblijf', es: 'Hotel y estancia', ar: 'الفندق والإقامة' } },
-    { id: 'city', themes: ['directions', 'travel', 'help'], title: { fr: 'Se déplacer', en: 'Getting around', nl: 'Je verplaatsen', es: 'Moverse por la ciudad', ar: 'التنقل في المدينة' } },
-    { id: 'food', themes: ['food', 'daily', 'shopping'], title: { fr: 'Restaurant & courses', en: 'Food & shopping', nl: 'Eten & winkelen', es: 'Comida y compras', ar: 'الطعام والتسوق' } },
-    { id: 'help', themes: ['help', 'travel', 'opinions'], title: { fr: 'Aide & situations', en: 'Help & situations', nl: 'Hulp & situaties', es: 'Ayuda y situaciones', ar: 'المساعدة والمواقف' } },
+    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter', en: 'Introductions', nl: 'Voorstellen', es: 'Presentarse', ar: 'تقديم النفس', de: 'Vorstellen' } },
+    { id: 'airport', themes: ['airport', 'travel', 'basics', 'time'], title: { fr: 'Aéroport & voyage', en: 'Airport & travel', nl: 'Luchthaven & reizen', es: 'Aeropuerto y viaje', ar: 'المطار والسفر', de: 'Flughafen und Reisen' } },
+    { id: 'hotel', themes: ['hotel', 'travel', 'daily'], title: { fr: 'Hôtel & séjour', en: 'Hotel stay', nl: 'Hotelverblijf', es: 'Hotel y estancia', ar: 'الفندق والإقامة', de: 'Hotelaufenthalt' } },
+    { id: 'city', themes: ['directions', 'travel', 'help'], title: { fr: 'Se déplacer', en: 'Getting around', nl: 'Je verplaatsen', es: 'Moverse por la ciudad', ar: 'التنقل في المدينة', de: 'Unterwegs' } },
+    { id: 'food', themes: ['food', 'daily', 'shopping'], title: { fr: 'Restaurant & courses', en: 'Food & shopping', nl: 'Eten & winkelen', es: 'Comida y compras', ar: 'الطعام والتسوق', de: 'Essen und Einkaufen' } },
+    { id: 'help', themes: ['help', 'travel', 'opinions'], title: { fr: 'Aide & situations', en: 'Help & situations', nl: 'Hulp & situaties', es: 'Ayuda y situaciones', ar: 'المساعدة والمواقف', de: 'Hilfe und Situationen' } },
   ],
   work: [
-    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter au travail', en: 'Workplace intros', nl: 'Voorstellen op werk', es: 'Presentarse en el trabajo', ar: 'تقديم النفس في العمل' } },
-    { id: 'office', themes: ['work', 'daily', 'core'], title: { fr: 'Bureau au quotidien', en: 'Office daily', nl: 'Kantoor dagelijks', es: 'Oficina diaria', ar: 'المكتب يوميا' } },
-    { id: 'meet', themes: ['work', 'opinions'], title: { fr: 'Réunions & feedback', en: 'Meetings & feedback', nl: 'Vergaderingen & feedback', es: 'Reuniones y feedback', ar: 'الاجتماعات والملاحظات' } },
-    { id: 'email', themes: ['work', 'core'], title: { fr: 'Emails & organisation', en: 'Email & organisation', nl: 'E-mail & organisatie', es: 'Correo y organización', ar: 'البريد والتنظيم' } },
-    { id: 'career', themes: ['work', 'advanced', 'opinions'], title: { fr: 'Carrière & projets', en: 'Career & projects', nl: 'Carrière & projecten', es: 'Carrera y proyectos', ar: 'المهنة والمشاريع' } },
-    { id: 'travelwork', themes: ['travel', 'airport', 'hotel', 'food'], title: { fr: 'Déplacements pro', en: 'Business travel', nl: 'Zakenreizen', es: 'Viajes de trabajo', ar: 'سفر العمل' } },
+    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter au travail', en: 'Workplace intros', nl: 'Voorstellen op werk', es: 'Presentarse en el trabajo', ar: 'تقديم النفس في العمل', de: 'Vorstellen bei der Arbeit' } },
+    { id: 'office', themes: ['work', 'daily', 'core'], title: { fr: 'Bureau au quotidien', en: 'Office daily', nl: 'Kantoor dagelijks', es: 'Oficina diaria', ar: 'المكتب يوميا', de: 'Büroalltag' } },
+    { id: 'meet', themes: ['work', 'opinions'], title: { fr: 'Réunions & feedback', en: 'Meetings & feedback', nl: 'Vergaderingen & feedback', es: 'Reuniones y feedback', ar: 'الاجتماعات والملاحظات', de: 'Meetings und Feedback' } },
+    { id: 'email', themes: ['work', 'core'], title: { fr: 'Emails & organisation', en: 'Email & organisation', nl: 'E-mail & organisatie', es: 'Correo y organización', ar: 'البريد والتنظيم', de: 'E-Mail und Organisation' } },
+    { id: 'career', themes: ['work', 'advanced', 'opinions'], title: { fr: 'Carrière & projets', en: 'Career & projects', nl: 'Carrière & projecten', es: 'Carrera y proyectos', ar: 'المهنة والمشاريع', de: 'Karriere und Projekte' } },
+    { id: 'travelwork', themes: ['travel', 'airport', 'hotel', 'food'], title: { fr: 'Déplacements pro', en: 'Business travel', nl: 'Zakenreizen', es: 'Viajes de trabajo', ar: 'سفر العمل', de: 'Geschäftsreisen' } },
   ],
   school: [
-    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter à l’école', en: 'School intros', nl: 'Voorstellen op school', es: 'Presentarse en clase', ar: 'تقديم النفس في المدرسة' } },
-    { id: 'class', themes: ['school', 'basics', 'daily'], title: { fr: 'En classe', en: 'In class', nl: 'In de klas', es: 'En clase', ar: 'في الصف' } },
-    { id: 'study', themes: ['school', 'core', 'opinions'], title: { fr: 'Étudier efficacement', en: 'Study skills', nl: 'Studievaardigheden', es: 'Estudiar mejor', ar: 'مهارات الدراسة' } },
-    { id: 'exam', themes: ['exam', 'school'], title: { fr: 'Examens & devoirs', en: 'Exams & assignments', nl: 'Examens & opdrachten', es: 'Exámenes y tareas', ar: 'الامتحانات والواجبات' } },
-    { id: 'academic', themes: ['exam', 'advanced', 'opinions'], title: { fr: 'Écrit académique', en: 'Academic writing', nl: 'Academisch schrijven', es: 'Escritura académica', ar: 'الكتابة الأكاديمية' } },
-    { id: 'life', themes: ['fun', 'food', 'directions', 'help'], title: { fr: 'Vie étudiante', en: 'Student life', nl: 'Studentenleven', es: 'Vida estudiantil', ar: 'حياة الطالب' } },
+    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter à l’école', en: 'School intros', nl: 'Voorstellen op school', es: 'Presentarse en clase', ar: 'تقديم النفس في المدرسة', de: 'Vorstellen in der Schule' } },
+    { id: 'class', themes: ['school', 'basics', 'daily'], title: { fr: 'En classe', en: 'In class', nl: 'In de klas', es: 'En clase', ar: 'في الصف', de: 'Im Unterricht' } },
+    { id: 'study', themes: ['school', 'core', 'opinions'], title: { fr: 'Étudier efficacement', en: 'Study skills', nl: 'Studievaardigheden', es: 'Estudiar mejor', ar: 'مهارات الدراسة', de: 'Lerntechniken' } },
+    { id: 'exam', themes: ['exam', 'school'], title: { fr: 'Examens & devoirs', en: 'Exams & assignments', nl: 'Examens & opdrachten', es: 'Exámenes y tareas', ar: 'الامتحانات والواجبات', de: 'Prüfungen und Aufgaben' } },
+    { id: 'academic', themes: ['exam', 'advanced', 'opinions'], title: { fr: 'Écrit académique', en: 'Academic writing', nl: 'Academisch schrijven', es: 'Escritura académica', ar: 'الكتابة الأكاديمية', de: 'Wissenschaftliches Schreiben' } },
+    { id: 'life', themes: ['fun', 'food', 'directions', 'help'], title: { fr: 'Vie étudiante', en: 'Student life', nl: 'Studentenleven', es: 'Vida estudiantil', ar: 'حياة الطالب', de: 'Studentenleben' } },
   ],
   exam: [
-    { id: 'core', themes: ['core', 'greetings', 'basics'], title: { fr: 'Bases solides', en: 'Solid basics', nl: 'Stevige basis', es: 'Bases sólidas', ar: 'أساسيات متينة' } },
-    { id: 'instructions', themes: ['exam', 'school'], title: { fr: 'Consignes d’examen', en: 'Exam instructions', nl: 'Exameninstructies', es: 'Instrucciones de examen', ar: 'تعليمات الامتحان' } },
-    { id: 'reading', themes: ['opinions', 'exam', 'advanced'], title: { fr: 'Compréhension & liens', en: 'Reading & links', nl: 'Begrip & verbanden', es: 'Comprensión y enlaces', ar: 'الفهم والروابط' } },
-    { id: 'writing', themes: ['exam', 'opinions', 'advanced'], title: { fr: 'Rédaction utile', en: 'Useful writing', nl: 'Nuttig schrijven', es: 'Escritura útil', ar: 'كتابة مفيدة' } },
-    { id: 'oral', themes: ['opinions', 'core', 'people'], title: { fr: 'Oral & opinions', en: 'Speaking & opinions', nl: 'Spreken & meningen', es: 'Oral y opiniones', ar: 'الشفوي والآراء' } },
-    { id: 'precision', themes: ['advanced', 'exam', 'work'], title: { fr: 'Précision avancée', en: 'Advanced precision', nl: 'Gevorderde precisie', es: 'Precisión avanzada', ar: 'دقة متقدمة' } },
+    { id: 'core', themes: ['core', 'greetings', 'basics'], title: { fr: 'Bases solides', en: 'Solid basics', nl: 'Stevige basis', es: 'Bases sólidas', ar: 'أساسيات متينة', de: 'Solide Grundlagen' } },
+    { id: 'instructions', themes: ['exam', 'school'], title: { fr: 'Consignes d’examen', en: 'Exam instructions', nl: 'Exameninstructies', es: 'Instrucciones de examen', ar: 'تعليمات الامتحان', de: 'Prüfungsanweisungen' } },
+    { id: 'reading', themes: ['opinions', 'exam', 'advanced'], title: { fr: 'Compréhension & liens', en: 'Reading & links', nl: 'Begrip & verbanden', es: 'Comprensión y enlaces', ar: 'الفهم والروابط', de: 'Leseverstehen und Zusammenhänge' } },
+    { id: 'writing', themes: ['exam', 'opinions', 'advanced'], title: { fr: 'Rédaction utile', en: 'Useful writing', nl: 'Nuttig schrijven', es: 'Escritura útil', ar: 'كتابة مفيدة', de: 'Nützliches Schreiben' } },
+    { id: 'oral', themes: ['opinions', 'core', 'people'], title: { fr: 'Oral & opinions', en: 'Speaking & opinions', nl: 'Spreken & meningen', es: 'Oral y opiniones', ar: 'الشفوي والآراء', de: 'Sprechen und Meinungen' } },
+    { id: 'precision', themes: ['advanced', 'exam', 'work'], title: { fr: 'Précision avancée', en: 'Advanced precision', nl: 'Gevorderde precisie', es: 'Precisión avanzada', ar: 'دقة متقدمة', de: 'Fortgeschrittene Präzision' } },
   ],
   fun: [
-    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter', en: 'Introductions', nl: 'Voorstellen', es: 'Presentarse', ar: 'تقديم النفس' } },
-    { id: 'daily', themes: ['daily', 'time', 'basics'], title: { fr: 'Quotidien', en: 'Daily life', nl: 'Dagelijks leven', es: 'Vida diaria', ar: 'الحياة اليومية' } },
-    { id: 'hobbies', themes: ['fun', 'core'], title: { fr: 'Loisirs', en: 'Hobbies', nl: 'Hobby’s', es: 'Aficiones', ar: 'الهوايات' } },
-    { id: 'social', themes: ['fun', 'food', 'opinions'], title: { fr: 'Sorties & avis', en: 'Going out & opinions', nl: 'Uitgaan & meningen', es: 'Salidas y opiniones', ar: 'الخروج والآراء' } },
-    { id: 'city', themes: ['directions', 'shopping', 'travel'], title: { fr: 'En ville', en: 'Around town', nl: 'In de stad', es: 'Por la ciudad', ar: 'في المدينة' } },
-    { id: 'stories', themes: ['opinions', 'advanced', 'fun'], title: { fr: 'Histoires & nuances', en: 'Stories & nuance', nl: 'Verhalen & nuances', es: 'Historias y matices', ar: 'القصص والفروق' } },
+    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter', en: 'Introductions', nl: 'Voorstellen', es: 'Presentarse', ar: 'تقديم النفس', de: 'Vorstellen' } },
+    { id: 'daily', themes: ['daily', 'time', 'basics'], title: { fr: 'Quotidien', en: 'Daily life', nl: 'Dagelijks leven', es: 'Vida diaria', ar: 'الحياة اليومية', de: 'Alltag' } },
+    { id: 'hobbies', themes: ['fun', 'core'], title: { fr: 'Loisirs', en: 'Hobbies', nl: 'Hobby’s', es: 'Aficiones', ar: 'الهوايات', de: 'Hobbys' } },
+    { id: 'social', themes: ['fun', 'food', 'opinions'], title: { fr: 'Sorties & avis', en: 'Going out & opinions', nl: 'Uitgaan & meningen', es: 'Salidas y opiniones', ar: 'الخروج والآراء', de: 'Ausgehen und Meinungen' } },
+    { id: 'city', themes: ['directions', 'shopping', 'travel'], title: { fr: 'En ville', en: 'Around town', nl: 'In de stad', es: 'Por la ciudad', ar: 'في المدينة', de: 'In der Stadt' } },
+    { id: 'stories', themes: ['opinions', 'advanced', 'fun'], title: { fr: 'Histoires & nuances', en: 'Stories & nuance', nl: 'Verhalen & nuances', es: 'Historias y matices', ar: 'القصص والفروق', de: 'Geschichten und Nuancen' } },
   ],
   other: [
-    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter', en: 'Introductions', nl: 'Voorstellen', es: 'Presentarse', ar: 'تقديم النفس' } },
-    { id: 'basics', themes: ['basics', 'daily', 'time'], title: { fr: 'Bases utiles', en: 'Useful basics', nl: 'Nuttige basis', es: 'Básicos útiles', ar: 'أساسيات مفيدة' } },
-    { id: 'city', themes: ['directions', 'food', 'shopping'], title: { fr: 'Vie en ville', en: 'City life', nl: 'Stadsleven', es: 'Vida en la ciudad', ar: 'الحياة في المدينة' } },
-    { id: 'travel', themes: ['airport', 'hotel', 'travel', 'help'], title: { fr: 'Voyage pratique', en: 'Practical travel', nl: 'Praktisch reizen', es: 'Viaje práctico', ar: 'سفر عملي' } },
-    { id: 'worklite', themes: ['work', 'core', 'opinions'], title: { fr: 'Travail & échanges', en: 'Work & exchange', nl: 'Werk & uitwisseling', es: 'Trabajo e intercambio', ar: 'العمل والتبادل' } },
-    { id: 'grow', themes: ['school', 'exam', 'advanced', 'opinions'], title: { fr: 'Progresser', en: 'Keep growing', nl: 'Blijven groeien', es: 'Seguir creciendo', ar: 'الاستمرار في التقدم' } },
+    { id: 'greet', themes: ['greetings', 'people', 'core'], title: { fr: 'Se présenter', en: 'Introductions', nl: 'Voorstellen', es: 'Presentarse', ar: 'تقديم النفس', de: 'Vorstellen' } },
+    { id: 'basics', themes: ['basics', 'daily', 'time'], title: { fr: 'Bases utiles', en: 'Useful basics', nl: 'Nuttige basis', es: 'Básicos útiles', ar: 'أساسيات مفيدة', de: 'Nützliche Basics' } },
+    { id: 'city', themes: ['directions', 'food', 'shopping'], title: { fr: 'Vie en ville', en: 'City life', nl: 'Stadsleven', es: 'Vida en la ciudad', ar: 'الحياة في المدينة', de: 'Stadtleben' } },
+    { id: 'travel', themes: ['airport', 'hotel', 'travel', 'help'], title: { fr: 'Voyage pratique', en: 'Practical travel', nl: 'Praktisch reizen', es: 'Viaje práctico', ar: 'سفر عملي', de: 'Praktisches Reisen' } },
+    { id: 'worklite', themes: ['work', 'core', 'opinions'], title: { fr: 'Travail & échanges', en: 'Work & exchange', nl: 'Werk & uitwisseling', es: 'Trabajo e intercambio', ar: 'العمل والتبادل', de: 'Arbeit und Austausch' } },
+    { id: 'grow', themes: ['school', 'exam', 'advanced', 'opinions'], title: { fr: 'Progresser', en: 'Keep growing', nl: 'Blijven groeien', es: 'Seguir creciendo', ar: 'الاستمرار في التقدم', de: 'Weiterwachsen' } },
   ],
 };
 
@@ -198,6 +198,7 @@ function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel) {
         nl: `${chapter.title.nl} · ${i + 1}`,
         es: `${chapter.title.es} · ${i + 1}`,
         ar: `${chapter.title.ar} · ${i + 1}`,
+        de: `${chapter.title.de || chapter.title.en} · ${i + 1}`,
       },
       items: items.map((v) => ({
         en: v.en,
@@ -205,11 +206,13 @@ function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel) {
         nl: v.nl,
         es: v.es,
         ar: v.ar,
+        de: v.de || v.en,
         sentence: v.sentence,
         sentenceFr: v.sentenceFr,
         sentenceNl: v.sentenceNl,
         sentenceEs: v.sentenceEs,
         sentenceAr: v.sentenceAr,
+        sentenceDe: v.sentenceDe,
       })),
     });
   }
@@ -245,7 +248,13 @@ function buildPlacement(all) {
     return {
       en: correct.en,
       sentence: correct.sentence,
-      choices: choices.map((c) => ({ fr: c.fr, nl: c.nl, es: c.es, ar: c.ar })),
+      choices: choices.map((c) => ({
+        fr: c.fr,
+        nl: c.nl,
+        es: c.es,
+        ar: c.ar,
+        de: c.de || c.en,
+      })),
       correct: choices.findIndex((c) => c.en === correct.en),
       levelHint: correct.cefr,
     };
@@ -281,15 +290,16 @@ function emitVocabItem(v) {
     v.sentenceNl ? `sentenceNl: '${esc(v.sentenceNl)}'` : '',
     v.sentenceEs ? `sentenceEs: '${esc(v.sentenceEs)}'` : '',
     v.sentenceAr ? `sentenceAr: '${esc(v.sentenceAr)}'` : '',
+    v.sentenceDe ? `sentenceDe: '${esc(v.sentenceDe)}'` : '',
   ]
     .filter(Boolean)
     .join(', ');
-  return `{ en: '${esc(v.en)}', fr: '${esc(v.fr)}', nl: '${esc(v.nl)}', es: '${esc(v.es)}', ar: '${esc(v.ar)}', sentence: '${esc(v.sentence)}'${extras ? `, ${extras}` : ''} }`;
+  return `{ en: '${esc(v.en)}', fr: '${esc(v.fr)}', nl: '${esc(v.nl)}', es: '${esc(v.es)}', ar: '${esc(v.ar)}', de: '${esc(v.de || v.en)}', sentence: '${esc(v.sentence)}'${extras ? `, ${extras}` : ''} }`;
 }
 
 function emitLesson(l) {
-  const title = `{ fr: '${esc(l.title.fr)}', en: '${esc(l.title.en)}', nl: '${esc(l.title.nl)}', es: '${esc(l.title.es)}', ar: '${esc(l.title.ar)}' }`;
-  const ch = `{ fr: '${esc(l.chapterTitle.fr)}', en: '${esc(l.chapterTitle.en)}', nl: '${esc(l.chapterTitle.nl)}', es: '${esc(l.chapterTitle.es)}', ar: '${esc(l.chapterTitle.ar)}' }`;
+  const title = `{ fr: '${esc(l.title.fr)}', en: '${esc(l.title.en)}', nl: '${esc(l.title.nl)}', es: '${esc(l.title.es)}', ar: '${esc(l.title.ar)}', de: '${esc(l.title.de || l.title.en)}' }`;
+  const ch = `{ fr: '${esc(l.chapterTitle.fr)}', en: '${esc(l.chapterTitle.en)}', nl: '${esc(l.chapterTitle.nl)}', es: '${esc(l.chapterTitle.es)}', ar: '${esc(l.chapterTitle.ar)}', de: '${esc(l.chapterTitle.de || l.chapterTitle.en)}' }`;
   const items = l.items.map(emitVocabItem).join(',\n      ');
   return `  {
     id: '${l.id}',
@@ -307,7 +317,10 @@ function emitLesson(l) {
 
 function emitPlacement(p) {
   const choices = p.choices
-    .map((c) => `{ fr: '${esc(c.fr)}', nl: '${esc(c.nl)}', es: '${esc(c.es)}', ar: '${esc(c.ar)}' }`)
+    .map(
+      (c) =>
+        `{ fr: '${esc(c.fr)}', nl: '${esc(c.nl)}', es: '${esc(c.es)}', ar: '${esc(c.ar)}', de: '${esc(c.de || c.fr)}' }`,
+    )
     .join(', ');
   return `  {
     en: '${esc(p.en)}',
@@ -318,11 +331,11 @@ function emitPlacement(p) {
   }`;
 }
 
-/** Optional map: English sentence → { fr, nl, es, ar } */
+/** Optional map: English sentence → { fr, nl, es, ar, de } */
 function applySentenceI18n(items) {
   const i18nPath = path.join(__dirname, 'english-sentence-i18n.json');
   if (!fs.existsSync(i18nPath)) return items;
-  /** @type {Record<string, { fr?: string, nl?: string, es?: string, ar?: string }>} */
+  /** @type {Record<string, { fr?: string, nl?: string, es?: string, ar?: string, de?: string }>} */
   const map = JSON.parse(fs.readFileSync(i18nPath, 'utf8'));
   return items.map((v) => {
     const row = map[v.sentence];
@@ -333,13 +346,33 @@ function applySentenceI18n(items) {
       sentenceNl: v.sentenceNl || row.nl || undefined,
       sentenceEs: v.sentenceEs || row.es || undefined,
       sentenceAr: v.sentenceAr || row.ar || undefined,
+      sentenceDe: v.sentenceDe || row.de || undefined,
+    };
+  });
+}
+
+/** Optional map: English lemma → { de, sentenceDe } */
+function applyDeGlosses(items) {
+  const dePath = path.join(__dirname, 'english-vocab-de.json');
+  if (!fs.existsSync(dePath)) return items;
+  /** @type {Record<string, { de?: string, sentenceDe?: string }>} */
+  const map = JSON.parse(fs.readFileSync(dePath, 'utf8'));
+  return items.map((v) => {
+    const row = map[v.en] || map[v.en.toLowerCase()];
+    if (!row) return { ...v, de: v.de || v.en };
+    return {
+      ...v,
+      de: row.de || v.de || v.en,
+      sentenceDe: v.sentenceDe || row.sentenceDe || undefined,
     };
   });
 }
 
 const raw = fs.readFileSync(rawPath, 'utf8');
-const vocab = applySentenceI18n(parseRaw(raw));
-const withNative = vocab.filter((v) => v.sentenceFr && v.sentenceNl && v.sentenceEs && v.sentenceAr).length;
+const vocab = applyDeGlosses(applySentenceI18n(parseRaw(raw)));
+const withNative = vocab.filter(
+  (v) => v.sentenceFr && v.sentenceNl && v.sentenceEs && v.sentenceAr,
+).length;
 console.log('Unique vocab entries:', vocab.length);
 console.log('With full native example sentences:', withNative);
 if (vocab.length < 500) {
@@ -356,7 +389,7 @@ const ts = `/** Pix Univers — Learn English curriculum (generated). Do not edi
 
 export type CefrLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2';
 export type EnglishGoal = 'travel' | 'work' | 'school' | 'exam' | 'fun' | 'other';
-export type EnglishNativeLang = 'fr' | 'nl' | 'es' | 'ar';
+export type EnglishNativeLang = 'fr' | 'nl' | 'es' | 'ar' | 'de';
 
 export const CEFR_LEVELS: CefrLevel[] = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -366,6 +399,7 @@ export interface EnglishVocabItem {
   nl: string;
   es: string;
   ar: string;
+  de: string;
   /** Natural English sentence using the word/phrase. */
   sentence: string;
   /** Matching native translations of \`sentence\` (required for accurate translate rounds). */
@@ -373,6 +407,7 @@ export interface EnglishVocabItem {
   sentenceNl?: string;
   sentenceEs?: string;
   sentenceAr?: string;
+  sentenceDe?: string;
 }
 
 export interface EnglishLessonDef {
@@ -380,9 +415,9 @@ export interface EnglishLessonDef {
   level: CefrLevel;
   unit: number;
   chapterId: string;
-  chapterTitle: { fr: string; en: string; nl: string; es: string; ar: string };
+  chapterTitle: { fr: string; en: string; nl: string; es: string; ar: string; de: string };
   goal: EnglishGoal;
-  title: { fr: string; en: string; nl: string; es: string; ar: string };
+  title: { fr: string; en: string; nl: string; es: string; ar: string; de: string };
   items: EnglishVocabItem[];
 }
 
@@ -395,7 +430,7 @@ ${lessons.map(emitLesson).join(',\n')}
 export interface PlacementItem {
   en: string;
   sentence: string;
-  choices: { fr: string; nl: string; es: string; ar: string }[];
+  choices: { fr: string; nl: string; es: string; ar: string; de: string }[];
   correct: number;
   levelHint: CefrLevel;
 }

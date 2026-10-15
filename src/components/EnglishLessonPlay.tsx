@@ -196,7 +196,12 @@ export function EnglishLessonPlay({
   const [nextLessonId, setNextLessonId] = useState<string | null>(null);
   const [nextLessonTitle, setNextLessonTitle] = useState('');
   const weakRef = useRef<WordPair[]>([]);
-  const titleLang = locale === 'en' ? 'en' : locale === 'nl' || locale === 'es' || locale === 'ar' ? locale : 'fr';
+  const titleLang =
+    locale === 'en'
+      ? 'en'
+      : locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de'
+        ? locale
+        : 'fr';
 
   useEffect(() => {
     const saved = getUniverseEnglish();

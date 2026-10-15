@@ -3,3564 +3,4158 @@
     "fr": "Un verre de vin rouge, s'il vous plaît.",
     "nl": "Een glas rode wijn, alsjeblieft.",
     "es": "Un vaso de vino tinto, por favor.",
-    "ar": "كأس من النبيذ الأحمر، من فضلك."
+    "ar": "كأس من النبيذ الأحمر، من فضلك.",
+    "de": "Ein Glas Rotwein, bitte."
   },
   "A mistake helps you learn.": {
     "fr": "Une erreur aide à apprendre.",
     "nl": "Een fout helpt je te leren.",
     "es": "Un error te ayuda a aprender.",
-    "ar": "الخطأ يساعدك على التعلم."
+    "ar": "الخطأ يساعدك على التعلم.",
+    "de": "Ein Fehler hilft beim Lernen."
   },
   "A single ticket is cheaper today.": {
     "fr": "Un billet simple est moins cher aujourd'hui.",
     "nl": "Een enkeltje is vandaag goedkoper.",
     "es": "Un billete sencillo es más barato hoy.",
-    "ar": "التذكرة ذهاب فقط أرخص اليوم."
+    "ar": "التذكرة ذهاب فقط أرخص اليوم.",
+    "de": "Ein einfaches Ticket ist heute günstiger."
   },
   "A table by the window, please.": {
     "fr": "Une table près de la fenêtre, s'il vous plaît.",
     "nl": "Een tafel bij het raam, alsjeblieft.",
     "es": "Una mesa junto a la ventana, por favor.",
-    "ar": "طاولة بجانب النافذة، من فضلك."
+    "ar": "طاولة بجانب النافذة، من فضلك.",
+    "de": "Einen Tisch am Fenster, bitte."
   },
   "Actually, I already booked.": {
     "fr": "En fait, j'ai déjà réservé.",
     "nl": "Eigenlijk heb ik al geboekt.",
     "es": "En realidad, ya reservé.",
-    "ar": "في الواقع، لقد حجزت بالفعل."
+    "ar": "في الواقع، لقد حجزت بالفعل.",
+    "de": "Eigentlich habe ich schon gebucht."
   },
   "Although it rained, we went out.": {
     "fr": "Bien qu'il ait plu, nous sommes sortis.",
     "nl": "Hoewel het regende, gingen we uit.",
     "es": "Aunque llovió, salimos.",
-    "ar": "على الرغم من المطر، خرجنا."
+    "ar": "على الرغم من المطر، خرجنا.",
+    "de": "Obwohl es geregnet hat, sind wir ausgegangen."
   },
   "Always mention your source.": {
     "fr": "Mentionne toujours ta source.",
     "nl": "Vermeld altijd je bron.",
     "es": "Menciona siempre tu fuente.",
-    "ar": "اذكر مصدرك دائماً."
+    "ar": "اذكر مصدرك دائماً.",
+    "de": "Nenne immer deine Quelle."
   },
   "Answer in full sentences.": {
     "fr": "Réponds en phrases complètes.",
     "nl": "Antwoord in volledige zinnen.",
     "es": "Responde con frases completas.",
-    "ar": "أجب بجمل كاملة."
+    "ar": "أجب بجمل كاملة.",
+    "de": "Antworte in ganzen Sätzen."
   },
   "Answer the essay question in 200 words.": {
     "fr": "Réponds à la question de dissertation en 200 mots.",
     "nl": "Beantwoord de essayvraag in 200 woorden.",
     "es": "Responde a la pregunta del ensayo en 200 palabras.",
-    "ar": "أجب عن سؤال المقال في 200 كلمة."
+    "ar": "أجب عن سؤال المقال في 200 كلمة.",
+    "de": "Beantworte die Aufsatzfrage in 200 Wörtern."
   },
   "Answer true or false.": {
     "fr": "Réponds vrai ou faux.",
     "nl": "Antwoord waar of onwaar.",
     "es": "Responde verdadero o falso.",
-    "ar": "أجب بصح أو خطأ."
+    "ar": "أجب بصح أو خطأ.",
+    "de": "Antworte mit wahr oder falsch."
   },
   "Anything to declare at customs?": {
     "fr": "Quelque chose à déclarer à la douane ?",
     "nl": "Iets aan te geven bij de douane?",
     "es": "¿Algo que declarar en aduanas?",
-    "ar": "هل لديك شيء للإقرار في الجمارك؟"
+    "ar": "هل لديك شيء للإقرار في الجمارك؟",
+    "de": "Etwas zu verzollen?"
   },
   "Are you available at three?": {
     "fr": "Es-tu disponible à trois heures ?",
     "nl": "Ben je om drie uur beschikbaar?",
     "es": "¿Estás disponible a las tres?",
-    "ar": "هل أنت متاح في الثالثة؟"
+    "ar": "هل أنت متاح في الثالثة؟",
+    "de": "Bist du um drei Uhr verfügbar?"
   },
   "Are you coming to the party?": {
     "fr": "Tu viens à la fête ?",
     "nl": "Kom je naar het feest?",
     "es": "¿Vienes a la fiesta?",
-    "ar": "هل ستأتي إلى الحفلة؟"
+    "ar": "هل ستأتي إلى الحفلة؟",
+    "de": "Kommst du zur Party?"
   },
   "Are you still learning?": {
     "fr": "Tu apprends encore ?",
     "nl": "Leer je nog steeds?",
     "es": "¿Sigues aprendiendo?",
-    "ar": "هل ما زلت تتعلم؟"
+    "ar": "هل ما زلت تتعلم؟",
+    "de": "Lernst du noch?"
   },
   "Arrival time is 14:20.": {
     "fr": "L'heure d'arrivée est 14 h 20.",
     "nl": "Aankomsttijd is 14:20.",
     "es": "La hora de llegada es las 14:20.",
-    "ar": "وقت الوصول 14:20."
+    "ar": "وقت الوصول 14:20.",
+    "de": "Die Ankunftszeit ist 14:20 Uhr."
   },
   "Arrive at least ten minutes early.": {
     "fr": "Arrive au moins dix minutes à l'avance.",
     "nl": "Kom minstens tien minuten te vroeg.",
     "es": "Llega al menos diez minutos antes.",
-    "ar": "صل قبل الموعد بعشر دقائق على الأقل."
+    "ar": "صل قبل الموعد بعشر دقائق على الأقل.",
+    "de": "Komm mindestens zehn Minuten früher."
   },
   "As a result, sales increased.": {
     "fr": "En conséquence, les ventes ont augmenté.",
     "nl": "Daardoor stegen de verkopen.",
     "es": "Como resultado, las ventas aumentaron.",
-    "ar": "نتيجة لذلك، ارتفعت المبيعات."
+    "ar": "نتيجة لذلك، ارتفعت المبيعات.",
+    "de": "Dadurch sind die Verkaufszahlen gestiegen."
   },
   "Ask a local for advice.": {
     "fr": "Demande conseil à un habitant.",
     "nl": "Vraag een local om advies.",
     "es": "Pide consejo a un local.",
-    "ar": "اطلب النصيحة من أحد السكان."
+    "ar": "اطلب النصيحة من أحد السكان.",
+    "de": "Frag einen Einheimischen um Rat."
   },
   "Ask at reception for a map.": {
     "fr": "Demande une carte à la réception.",
     "nl": "Vraag bij de receptie om een kaart.",
     "es": "Pide un mapa en recepción.",
-    "ar": "اطلب خريطة من الاستقبال."
+    "ar": "اطلب خريطة من الاستقبال.",
+    "de": "Frag an der Rezeption nach einem Stadtplan."
   },
   "Ask if you need help.": {
     "fr": "Demande si tu as besoin d'aide.",
     "nl": "Vraag het als je hulp nodig hebt.",
     "es": "Pregunta si necesitas ayuda.",
-    "ar": "اسأل إذا كنت تحتاج مساعدة."
+    "ar": "اسأل إذا كنت تحتاج مساعدة.",
+    "de": "Frag nach, wenn du Hilfe brauchst."
   },
   "Ask the cabin crew for water.": {
     "fr": "Demande de l'eau à l'équipage.",
     "nl": "Vraag het cabinepersoneel om water.",
     "es": "Pide agua a la tripulación.",
-    "ar": "اطلب الماء من طاقم الطائرة."
+    "ar": "اطلب الماء من طاقم الطائرة.",
+    "de": "Frag die Kabinenbesatzung nach Wasser."
   },
   "Ask your manager for approval.": {
     "fr": "Demande l'approbation de ton responsable.",
     "nl": "Vraag je manager om goedkeuring.",
     "es": "Pide la aprobación de tu jefe.",
-    "ar": "اطلب موافقة مديرك."
+    "ar": "اطلب موافقة مديرك.",
+    "de": "Frag deine Führungskraft um Zustimmung."
   },
   "Assess the situation before acting.": {
     "fr": "Évalue la situation avant d'agir.",
     "nl": "Beoordeel de situatie voordat je handelt.",
     "es": "Evalúa la situación antes de actuar.",
-    "ar": "قيّم الوضع قبل التصرف."
+    "ar": "قيّم الوضع قبل التصرف.",
+    "de": "Schätze die Lage ein, bevor du handelst."
   },
   "Attach a luggage tag.": {
     "fr": "Attache une étiquette à bagage.",
     "nl": "Bevestig een bagagelabel.",
     "es": "Pon una etiqueta en el equipaje.",
-    "ar": "أرفق بطاقة الأمتعة."
+    "ar": "أرفق بطاقة الأمتعة.",
+    "de": "Befestige ein Gepäckschild."
   },
   "Avoid plagiarism; cite your sources.": {
     "fr": "Évite le plagiat ; cite tes sources.",
     "nl": "Vermijd plagiaat; citeer je bronnen.",
     "es": "Evita el plagio; cita tus fuentes.",
-    "ar": "تجنب الانتحال؛ اذكر مصادرك."
+    "ar": "تجنب الانتحال؛ اذكر مصادرك.",
+    "de": "Vermeide Plagiate; gib deine Quellen an."
   },
   "Avoid the roads at rush hour.": {
     "fr": "Évite les routes aux heures de pointe.",
     "nl": "Vermijd de wegen tijdens de spits.",
     "es": "Evita las carreteras a hora punta.",
-    "ar": "تجنب الطرق في وقت الذروة."
+    "ar": "تجنب الطرق في وقت الذروة.",
+    "de": "Meide die Straßen zur Hauptverkehrszeit."
   },
   "Avoid translating word by word.": {
     "fr": "Évite de traduire mot à mot.",
     "nl": "Vermijd woord voor woord vertalen.",
     "es": "Evita traducir palabra por palabra.",
-    "ar": "تجنب الترجمة حرفياً."
+    "ar": "تجنب الترجمة حرفياً.",
+    "de": "Vermeide Wort-für-Wort-Übersetzungen."
   },
   "Baggage claim is downstairs.": {
     "fr": "La récupération des bagages est en bas.",
     "nl": "Bagagehal is beneden.",
     "es": "Recogida de equipaje está abajo.",
-    "ar": "استلام الأمتعة في الطابق السفلي."
+    "ar": "استلام الأمتعة في الطابق السفلي.",
+    "de": "Die Gepäckausgabe ist unten."
   },
   "Be precise in your wording.": {
     "fr": "Sois précis dans ta formulation.",
     "nl": "Wees precies in je formulering.",
     "es": "Sé preciso en tu redacción.",
-    "ar": "كن دقيقاً في صياغتك."
+    "ar": "كن دقيقاً في صياغتك.",
+    "de": "Sei präzise in deiner Formulierung."
   },
   "Be transparent about the costs.": {
     "fr": "Sois transparent sur les coûts.",
     "nl": "Wees transparant over de kosten.",
     "es": "Sé transparente sobre los costes.",
-    "ar": "كن شفافاً بشأن التكاليف."
+    "ar": "كن شفافاً بشأن التكاليف.",
+    "de": "Sei transparent bei den Kosten."
   },
   "Book online to save money.": {
     "fr": "Réserve en ligne pour économiser.",
     "nl": "Boek online om geld te besparen.",
     "es": "Reserva en línea para ahorrar.",
-    "ar": "احجز عبر الإنترنت لتوفير المال."
+    "ar": "احجز عبر الإنترنت لتوفير المال.",
+    "de": "Buche online, um Geld zu sparen."
   },
   "Book your tickets early.": {
     "fr": "Réserve tes billets tôt.",
     "nl": "Boek je tickets vroeg.",
     "es": "Reserva tus billetes con antelación.",
-    "ar": "احجز تذاكرك مبكراً."
+    "ar": "احجز تذاكرك مبكراً.",
+    "de": "Buche deine Tickets früh."
   },
   "Both answers can be correct.": {
     "fr": "Les deux réponses peuvent être correctes.",
     "nl": "Beide antwoorden kunnen correct zijn.",
     "es": "Ambas respuestas pueden ser correctas.",
-    "ar": "كلا الإجابتين قد تكونان صحيحتين."
+    "ar": "كلا الإجابتين قد تكونان صحيحتين.",
+    "de": "Beide Antworten können richtig sein."
   },
   "Breakfast is ready.": {
     "fr": "Le petit-déjeuner est prêt.",
     "nl": "Het ontbijt is klaar.",
     "es": "El desayuno está listo.",
-    "ar": "الفطور جاهز."
+    "ar": "الفطور جاهز.",
+    "de": "Das Frühstück ist fertig."
   },
   "Bring your laptop to the meeting.": {
     "fr": "Apporte ton ordinateur portable à la réunion.",
     "nl": "Neem je laptop mee naar de vergadering.",
     "es": "Lleva tu portátil a la reunión.",
-    "ar": "أحضر حاسوبك المحمول إلى الاجتماع."
+    "ar": "أحضر حاسوبك المحمول إلى الاجتماع.",
+    "de": "Bring deinen Laptop zum Meeting mit."
   },
   "Buy a local SIM card.": {
     "fr": "Achète une carte SIM locale.",
     "nl": "Koop een lokale simkaart.",
     "es": "Compra una tarjeta SIM local.",
-    "ar": "اشترِ شريحة SIM محلية."
+    "ar": "اشترِ شريحة SIM محلية.",
+    "de": "Kauf eine lokale SIM-Karte."
   },
   "Buy a ticket at the ticket machine.": {
     "fr": "Achète un billet au distributeur.",
     "nl": "Koop een ticket bij de automaat.",
     "es": "Compra un billete en la máquina.",
-    "ar": "اشترِ تذكرة من آلة التذاكر."
+    "ar": "اشترِ تذكرة من آلة التذاكر.",
+    "de": "Kauf ein Ticket am Automaten."
   },
   "Buy travel insurance before you leave.": {
     "fr": "Achète une assurance voyage avant de partir.",
     "nl": "Koop reisverzekering voordat je vertrekt.",
     "es": "Compra un seguro de viaje antes de irte.",
-    "ar": "اشترِ تأمين السفر قبل المغادرة."
+    "ar": "اشترِ تأمين السفر قبل المغادرة.",
+    "de": "Kauf eine Reiseversicherung, bevor du abreisest."
   },
   "By the way, are you free later?": {
     "fr": "Au fait, es-tu libre plus tard ?",
     "nl": "Trouwens, ben je later vrij?",
     "es": "Por cierto, ¿estás libre más tarde?",
-    "ar": "بالمناسبة، هل أنت متفرغ لاحقاً؟"
+    "ar": "بالمناسبة، هل أنت متفرغ لاحقاً؟",
+    "de": "Übrigens, hast du später Zeit?"
   },
   "Bye! Take care.": {
     "fr": "Salut ! Prends soin de toi.",
     "nl": "Doei! Pas op jezelf.",
     "es": "¡Chao! Cuídate.",
-    "ar": "مع السلامة! اعتن بنفسك."
+    "ar": "مع السلامة! اعتن بنفسك.",
+    "de": "Tschüss! Pass auf dich auf."
   },
   "Call a taxi to the hotel.": {
     "fr": "Appelle un taxi pour l'hôtel.",
     "nl": "Bel een taxi naar het hotel.",
     "es": "Llama un taxi al hotel.",
-    "ar": "اتصل بسيارة أجرة إلى الفندق."
+    "ar": "اتصل بسيارة أجرة إلى الفندق.",
+    "de": "Ruf ein Taxi zum Hotel."
   },
   "Call an ambulance immediately.": {
     "fr": "Appelle une ambulance immédiatement.",
     "nl": "Bel meteen een ambulance.",
     "es": "Llama a una ambulancia de inmediato.",
-    "ar": "اتصل بسيارة الإسعاف فوراً."
+    "ar": "اتصل بسيارة الإسعاف فوراً.",
+    "de": "Ruf sofort einen Krankenwagen."
   },
   "Call customer service for a refund.": {
     "fr": "Appelle le service client pour un remboursement.",
     "nl": "Bel de klantenservice voor terugbetaling.",
     "es": "Llama al servicio al cliente para un reembolso.",
-    "ar": "اتصل بخدمة العملاء لاسترداد المبلغ."
+    "ar": "اتصل بخدمة العملاء لاسترداد المبلغ.",
+    "de": "Ruf den Kundenservice wegen einer Rückerstattung an."
   },
   "Call me whenever you need help.": {
     "fr": "Appelle-moi quand tu as besoin d'aide.",
     "nl": "Bel me wanneer je hulp nodig hebt.",
     "es": "Llámame cuando necesites ayuda.",
-    "ar": "اتصل بي عندما تحتاج مساعدة."
+    "ar": "اتصل بي عندما تحتاج مساعدة.",
+    "de": "Ruf mich an, wann immer du Hilfe brauchst."
   },
   "Call this number in an emergency.": {
     "fr": "Appelle ce numéro en cas d'urgence.",
     "nl": "Bel dit nummer bij noodgeval.",
     "es": "Llama a este número en una emergencia.",
-    "ar": "اتصل بهذا الرقم في حالة الطوارئ."
+    "ar": "اتصل بهذا الرقم في حالة الطوارئ.",
+    "de": "Ruf diese Nummer im Notfall an."
   },
   "Can I exchange this for another size?": {
     "fr": "Puis-je l'échanger contre une autre taille ?",
     "nl": "Kan ik dit ruilen voor een andere maat?",
     "es": "¿Puedo cambiarlo por otra talla?",
-    "ar": "هل يمكنني استبداله بمقاس آخر؟"
+    "ar": "هل يمكنني استبداله بمقاس آخر؟",
+    "de": "Kann ich das gegen eine andere Größe umtauschen?"
   },
   "Can I have an aisle seat?": {
     "fr": "Puis-je avoir un siège côté couloir ?",
     "nl": "Kan ik een gangpadstoel krijgen?",
     "es": "¿Puedo tener un asiento de pasillo?",
-    "ar": "هل يمكنني الحصول على مقعد بجانب الممر؟"
+    "ar": "هل يمكنني الحصول على مقعد بجانب الممر؟",
+    "de": "Kann ich einen Platz am Gang bekommen?"
   },
   "Can I invite you to dinner?": {
     "fr": "Puis-je t'inviter à dîner ?",
     "nl": "Mag ik je uit eten?",
     "es": "¿Puedo invitarte a cenar?",
-    "ar": "هل يمكنني دعوتك إلى العشاء؟"
+    "ar": "هل يمكنني دعوتك إلى العشاء؟",
+    "de": "Darf ich dich zum Abendessen einladen?"
   },
   "Can I request a late check-out?": {
     "fr": "Puis-je demander un départ tardif ?",
     "nl": "Kan ik laat uitchecken aanvragen?",
     "es": "¿Puedo pedir una salida tardía?",
-    "ar": "هل يمكنني طلب مغادرة متأخرة؟"
+    "ar": "هل يمكنني طلب مغادرة متأخرة؟",
+    "de": "Kann ich einen späten Check-out beantragen?"
   },
   "Can I try on these shoes?": {
     "fr": "Puis-je essayer ces chaussures ?",
     "nl": "Mag ik deze schoenen passen?",
     "es": "¿Puedo probarme estos zapatos?",
-    "ar": "هل يمكنني تجربة هذه الأحذية؟"
+    "ar": "هل يمكنني تجربة هذه الأحذية؟",
+    "de": "Kann ich diese Schuhe anprobieren?"
   },
   "Can we postpone the call?": {
     "fr": "Peut-on reporter l'appel ?",
     "nl": "Kunnen we het gesprek uitstellen?",
     "es": "¿Podemos posponer la llamada?",
-    "ar": "هل يمكننا تأجيل المكالمة؟"
+    "ar": "هل يمكننا تأجيل المكالمة؟",
+    "de": "Können wir den Anruf verschieben?"
   },
   "Can we sustain this pace?": {
     "fr": "Pouvons-nous tenir ce rythme ?",
     "nl": "Kunnen we dit tempo volhouden?",
     "es": "¿Podemos mantener este ritmo?",
-    "ar": "هل يمكننا الإبقاء على هذا الوتيرة؟"
+    "ar": "هل يمكننا الإبقاء على هذا الوتيرة؟",
+    "de": "Können wir dieses Tempo halten?"
   },
   "Can you be my reference?": {
     "fr": "Peux-tu être ma référence ?",
     "nl": "Kun je mijn referentie zijn?",
     "es": "¿Puedes ser mi referencia?",
-    "ar": "هل يمكنك أن تكون مرجعي؟"
+    "ar": "هل يمكنك أن تكون مرجعي؟",
+    "de": "Kannst du meine Referenz sein?"
   },
   "Can you distill the main idea?": {
     "fr": "Peux-tu résumer l'idée principale ?",
     "nl": "Kun je het hoofdidee samenvatten?",
     "es": "¿Puedes destilar la idea principal?",
-    "ar": "هل يمكنك استخلاص الفكرة الرئيسية؟"
+    "ar": "هل يمكنك استخلاص الفكرة الرئيسية؟",
+    "de": "Kannst du die Hauptidee zusammenfassen?"
   },
   "Can you explain again?": {
     "fr": "Peux-tu expliquer encore ?",
     "nl": "Kun je het nog eens uitleggen?",
     "es": "¿Puedes explicarlo otra vez?",
-    "ar": "هل يمكنك الشرح مرة أخرى؟"
+    "ar": "هل يمكنك الشرح مرة أخرى؟",
+    "de": "Kannst du das noch einmal erklären?"
   },
   "Can you fix it today?": {
     "fr": "Peux-tu le réparer aujourd'hui ?",
     "nl": "Kun je het vandaag maken?",
     "es": "¿Puedes arreglarlo hoy?",
-    "ar": "هل يمكنك إصلاحه اليوم؟"
+    "ar": "هل يمكنك إصلاحه اليوم؟",
+    "de": "Kannst du es heute reparieren?"
   },
   "Can you recommend a restaurant?": {
     "fr": "Peux-tu recommander un restaurant ?",
     "nl": "Kun je een restaurant aanbevelen?",
     "es": "¿Puedes recomendar un restaurante?",
-    "ar": "هل يمكنك أن توصي بمطعم؟"
+    "ar": "هل يمكنك أن توصي بمطعم؟",
+    "de": "Kannst du ein Restaurant empfehlen?"
   },
   "Can you repeat that, please?": {
     "fr": "Peux-tu répéter, s'il te plaît ?",
     "nl": "Kun je dat herhalen, alsjeblieft?",
     "es": "¿Puedes repetirlo, por favor?",
-    "ar": "هل يمكنك التكرار، من فضلك؟"
+    "ar": "هل يمكنك التكرار، من فضلك؟",
+    "de": "Kannst du das bitte wiederholen?"
   },
   "Change is inevitable.": {
     "fr": "Le changement est inévitable.",
     "nl": "Verandering is onvermijdelijk.",
     "es": "El cambio es inevitable.",
-    "ar": "التغيير حتمي."
+    "ar": "التغيير حتمي.",
+    "de": "Veränderung ist unvermeidlich."
   },
   "Check the exchange rate first.": {
     "fr": "Vérifie d'abord le taux de change.",
     "nl": "Controleer eerst de wisselkoers.",
     "es": "Comprueba primero el tipo de cambio.",
-    "ar": "تحقق من سعر الصرف أولاً."
+    "ar": "تحقق من سعر الصرف أولاً.",
+    "de": "Prüfe zuerst den Wechselkurs."
   },
   "Check the timetable for delays.": {
     "fr": "Consulte l'horaire pour les retards.",
     "nl": "Check het rooster op vertragingen.",
     "es": "Consulta el horario por retrasos.",
-    "ar": "راجع الجدول الزمني للتأخيرات."
+    "ar": "راجع الجدول الزمني للتأخيرات.",
+    "de": "Schau im Fahrplan nach Verspätungen."
   },
   "Check your spelling.": {
     "fr": "Vérifie ton orthographe.",
     "nl": "Controleer je spelling.",
     "es": "Revisa tu ortografía.",
-    "ar": "تحقق من إملائك."
+    "ar": "تحقق من إملائك.",
+    "de": "Prüfe deine Rechtschreibung."
   },
   "Check-in starts at 3 p.m.": {
     "fr": "L'enregistrement commence à 15 h.",
     "nl": "Inchecken begint om 15 uur.",
     "es": "El check-in empieza a las 15:00.",
-    "ar": "تبدأ تسجيل الوصول الساعة 3 مساءً."
+    "ar": "تبدأ تسجيل الوصول الساعة 3 مساءً.",
+    "de": "Der Check-in beginnt um 15 Uhr."
   },
   "Check-out is before 11 a.m.": {
     "fr": "Le départ est avant 11 h.",
     "nl": "Uitchecken is vóór 11 uur.",
     "es": "La salida es antes de las 11:00.",
-    "ar": "المغادرة قبل الساعة 11 صباحاً."
+    "ar": "المغادرة قبل الساعة 11 صباحاً.",
+    "de": "Der Check-out ist vor 11 Uhr."
   },
   "Choose the best answer.": {
     "fr": "Choisis la meilleure réponse.",
     "nl": "Kies het beste antwoord.",
     "es": "Elige la mejor respuesta.",
-    "ar": "اختر أفضل إجابة."
+    "ar": "اختر أفضل إجابة.",
+    "de": "Wähle die beste Antwort."
   },
   "Clarity is an important criterion.": {
     "fr": "La clarté est un critère important.",
     "nl": "Duidelijkheid is een belangrijk criterium.",
     "es": "La claridad es un criterio importante.",
-    "ar": "الوضوح معيار مهم."
+    "ar": "الوضوح معيار مهم.",
+    "de": "Klarheit ist ein wichtiges Kriterium."
   },
   "Clean water is scarce here.": {
     "fr": "L'eau potable est rare ici.",
     "nl": "Schoon water is hier schaars.",
     "es": "El agua limpia escasea aquí.",
-    "ar": "الماء النظيف نادر هنا."
+    "ar": "الماء النظيف نادر هنا.",
+    "de": "Sauberes Wasser ist hier knapp."
   },
   "Clear the empty plates, please.": {
     "fr": "Enlève les assiettes vides, s'il vous plaît.",
     "nl": "Haal de lege borden weg, alsjeblieft.",
     "es": "Retira los platos vacíos, por favor.",
-    "ar": "أزل الأطباق الفارغة، من فضلك."
+    "ar": "أزل الأطباق الفارغة، من فضلك.",
+    "de": "Räum bitte die leeren Teller ab."
   },
   "Communication is a key skill.": {
     "fr": "La communication est une compétence clé.",
     "nl": "Communicatie is een belangrijke vaardigheid.",
     "es": "La comunicación es una habilidad clave.",
-    "ar": "التواصل مهارة أساسية."
+    "ar": "التواصل مهارة أساسية.",
+    "de": "Kommunikation ist eine Schlüsselkompetenz."
   },
   "Complete this task before noon.": {
     "fr": "Termine cette tâche avant midi.",
     "nl": "Maak deze taak af vóór de middag.",
     "es": "Completa esta tarea antes del mediodía.",
-    "ar": "أكمل هذه المهمة قبل الظهر."
+    "ar": "أكمل هذه المهمة قبل الظهر.",
+    "de": "Erledige diese Aufgabe vor mittags."
   },
   "Congratulations on your success!": {
     "fr": "Félicitations pour ta réussite !",
     "nl": "Gefeliciteerd met je succes!",
     "es": "¡Enhorabuena por tu éxito!",
-    "ar": "مبروك على نجاحك!"
+    "ar": "مبروك على نجاحك!",
+    "de": "Herzlichen Glückwunsch zu deinem Erfolg!"
   },
   "Contact support if you need help.": {
     "fr": "Contacte le support si tu as besoin d'aide.",
     "nl": "Neem contact op met support als je hulp nodig hebt.",
     "es": "Contacta con soporte si necesitas ayuda.",
-    "ar": "تواصل مع الدعم إذا احتجت مساعدة."
+    "ar": "تواصل مع الدعم إذا احتجت مساعدة.",
+    "de": "Kontaktiere den Support, wenn du Hilfe brauchst."
   },
   "Continue with the next chapter.": {
     "fr": "Continue avec le chapitre suivant.",
     "nl": "Ga verder met het volgende hoofdstuk.",
     "es": "Continúa con el siguiente capítulo.",
-    "ar": "تابع الفصل التالي."
+    "ar": "تابع الفصل التالي.",
+    "de": "Mach mit dem nächsten Kapitel weiter."
   },
   "Correct the sentence carefully.": {
     "fr": "Corrige la phrase avec soin.",
     "nl": "Corrigeer de zin zorgvuldig.",
     "es": "Corrige la frase con cuidado.",
-    "ar": "صحّح الجملة بعناية."
+    "ar": "صحّح الجملة بعناية.",
+    "de": "Korrigiere den Satz sorgfältig."
   },
   "Could I have a receipt?": {
     "fr": "Puis-je avoir un reçu ?",
     "nl": "Mag ik een bon?",
     "es": "¿Puedo tener un recibo?",
-    "ar": "هل يمكنني الحصول على إيصال؟"
+    "ar": "هل يمكنني الحصول على إيصال؟",
+    "de": "Könnte ich eine Quittung bekommen?"
   },
   "Could I have an extra towel?": {
     "fr": "Puis-je avoir une serviette supplémentaire ?",
     "nl": "Mag ik een extra handdoek?",
     "es": "¿Puedo tener una toalla extra?",
-    "ar": "هل يمكنني الحصول على منشفة إضافية؟"
+    "ar": "هل يمكنني الحصول على منشفة إضافية؟",
+    "de": "Könnte ich ein Extra-Handtuch bekommen?"
   },
   "Could I have some water?": {
     "fr": "Puis-je avoir de l'eau ?",
     "nl": "Mag ik wat water?",
     "es": "¿Puedo tomar un poco de agua?",
-    "ar": "هل يمكنني الحصول على بعض الماء؟"
+    "ar": "هل يمكنني الحصول على بعض الماء؟",
+    "de": "Könnte ich etwas Wasser bekommen?"
   },
   "Could we have the bill please?": {
     "fr": "Pourrait-on avoir l'addition, s'il vous plaît ?",
     "nl": "Mag de rekening, alsjeblieft?",
     "es": "¿Nos trae la cuenta, por favor?",
-    "ar": "هل يمكننا الحصول على الفاتورة، من فضلك؟"
+    "ar": "هل يمكننا الحصول على الفاتورة، من فضلك؟",
+    "de": "Könnten wir bitte die Rechnung haben?"
   },
   "Could you elaborate on that point?": {
     "fr": "Pourrais-tu développer ce point ?",
     "nl": "Kun je dat punt toelichten?",
     "es": "¿Podrías ampliar ese punto?",
-    "ar": "هل يمكنك التوسع في هذه النقطة؟"
+    "ar": "هل يمكنك التوسع في هذه النقطة؟",
+    "de": "Könntest du diesen Punkt genauer ausführen?"
   },
   "Could you email the invoice?": {
     "fr": "Pourrais-tu envoyer la facture par e-mail ?",
     "nl": "Kun je de factuur mailen?",
     "es": "¿Podrías enviar la factura por correo?",
-    "ar": "هل يمكنك إرسال الفاتورة بالبريد الإلكتروني؟"
+    "ar": "هل يمكنك إرسال الفاتورة بالبريد الإلكتروني؟",
+    "de": "Könntest du die Rechnung per E-Mail schicken?"
   },
   "Could you help me, please?": {
     "fr": "Pourrais-tu m'aider, s'il te plaît ?",
     "nl": "Kun je me helpen, alsjeblieft?",
     "es": "¿Podrías ayudarme, por favor?",
-    "ar": "هل يمكنك مساعدتي، من فضلك؟"
+    "ar": "هل يمكنك مساعدتي، من فضلك؟",
+    "de": "Könntest du mir bitte helfen?"
   },
   "Could you open the window?": {
     "fr": "Pourrais-tu ouvrir la fenêtre ?",
     "nl": "Kun je het raam openen?",
     "es": "¿Podrías abrir la ventana?",
-    "ar": "هل يمكنك فتح النافذة؟"
+    "ar": "هل يمكنك فتح النافذة؟",
+    "de": "Könntest du das Fenster öffnen?"
   },
   "Could you pass the salt?": {
     "fr": "Pourrais-tu me passer le sel ?",
     "nl": "Kun je het zout doorgeven?",
     "es": "¿Podrías pasarme la sal?",
-    "ar": "هل يمكنك تمرير الملح؟"
+    "ar": "هل يمكنك تمرير الملح؟",
+    "de": "Könntest du mir das Salz reichen?"
   },
   "Create an account to continue.": {
     "fr": "Crée un compte pour continuer.",
     "nl": "Maak een account om verder te gaan.",
     "es": "Crea una cuenta para continuar.",
-    "ar": "أنشئ حساباً للمتابعة."
+    "ar": "أنشئ حساباً للمتابعة.",
+    "de": "Erstelle ein Konto, um fortzufahren."
   },
   "Cross the street carefully.": {
     "fr": "Traverse la rue prudemment.",
     "nl": "Steek voorzichtig de straat over.",
     "es": "Cruza la calle con cuidado.",
-    "ar": "اعبر الشارع بحذر."
+    "ar": "اعبر الشارع بحذر.",
+    "de": "Überquere die Straße vorsichtig."
   },
   "Decide which goal matters most.": {
     "fr": "Décide quel objectif compte le plus.",
     "nl": "Bepaal welk doel het belangrijkst is.",
     "es": "Decide qué objetivo importa más.",
-    "ar": "قرر أي هدف هو الأهم."
+    "ar": "قرر أي هدف هو الأهم.",
+    "de": "Entscheide, welches Ziel am wichtigsten ist."
   },
   "Delay could jeopardise the deal.": {
     "fr": "Un retard pourrait compromettre l'accord.",
     "nl": "Vertraging kan de deal in gevaar brengen.",
     "es": "Un retraso podría poner en riesgo el trato.",
-    "ar": "التأخير قد يعرّض الصفقة للخطر."
+    "ar": "التأخير قد يعرّض الصفقة للخطر.",
+    "de": "Eine Verzögerung könnte den Deal gefährden."
   },
   "Departure is at 9:40.": {
     "fr": "Le départ est à 9 h 40.",
     "nl": "Vertrek is om 9:40.",
     "es": "La salida es a las 9:40.",
-    "ar": "المغادرة الساعة 9:40."
+    "ar": "المغادرة الساعة 9:40.",
+    "de": "Die Abfahrt ist um 9:40 Uhr."
   },
   "Dinner is at seven.": {
     "fr": "Le dîner est à sept heures.",
     "nl": "Het avondeten is om zeven uur.",
     "es": "La cena es a las siete.",
-    "ar": "العشاء الساعة السابعة."
+    "ar": "العشاء الساعة السابعة.",
+    "de": "Das Abendessen ist um sieben."
   },
   "Do I need a power adapter?": {
     "fr": "Ai-je besoin d'un adaptateur ?",
     "nl": "Heb ik een stekkeradapter nodig?",
     "es": "¿Necesito un adaptador de corriente?",
-    "ar": "هل أحتاج محول كهرباء؟"
+    "ar": "هل أحتاج محول كهرباء؟",
+    "de": "Brauche ich einen Netzadapter?"
   },
   "Do I need a visa for this trip?": {
     "fr": "Ai-je besoin d'un visa pour ce voyage ?",
     "nl": "Heb ik een visum nodig voor deze reis?",
     "es": "¿Necessito visado para este viaje?",
-    "ar": "هل أحتاج تأشيرة لهذه الرحلة؟"
+    "ar": "هل أحتاج تأشيرة لهذه الرحلة؟",
+    "de": "Brauche ich ein Visum für diese Reise?"
   },
   "Do not escalate the conflict.": {
     "fr": "N'escalade pas le conflit.",
     "nl": "Escaleer het conflict niet.",
     "es": "No escales el conflicto.",
-    "ar": "لا تصعّد النزاع."
+    "ar": "لا تصعّد النزاع.",
+    "de": "Eskaliere den Konflikt nicht."
   },
   "Do not expand the project scope.": {
     "fr": "N'élargis pas le périmètre du projet.",
     "nl": "Breid de projectscope niet uit.",
     "es": "No amplíes el alcance del proyecto.",
-    "ar": "لا توسّع نطاق المشروع."
+    "ar": "لا توسّع نطاق المشروع.",
+    "de": "Erweitere den Projektumfang nicht."
   },
   "Do not fear to fail; learn from it.": {
     "fr": "N'aie pas peur d'échouer ; apprends-en.",
     "nl": "Wees niet bang om te falen; leer ervan.",
     "es": "No temas fallar; aprende de ello.",
-    "ar": "لا تخف من الفشل؛ تعلّم منه."
+    "ar": "لا تخف من الفشل؛ تعلّم منه.",
+    "de": "Hab keine Angst zu scheitern; lerne daraus."
   },
   "Do not forget your passport.": {
     "fr": "N'oublie pas ton passeport.",
     "nl": "Vergeet je paspoort niet.",
     "es": "No olvides tu pasaporte.",
-    "ar": "لا تنسَ جواز سفرك."
+    "ar": "لا تنسَ جواز سفرك.",
+    "de": "Vergiss deinen Pass nicht."
   },
   "Do you accept cash?": {
     "fr": "Acceptez-vous les espèces ?",
     "nl": "Accepteert u contant geld?",
     "es": "¿Aceptan efectivo?",
-    "ar": "هل تقبلون النقد؟"
+    "ar": "هل تقبلون النقد؟",
+    "de": "Akzeptieren Sie Bargeld?"
   },
   "Do you accept travel insurance?": {
     "fr": "Acceptez-vous l'assurance voyage ?",
     "nl": "Accepteert u reisverzekering?",
     "es": "¿Aceptan seguro de viaje?",
-    "ar": "هل تقبلون تأمين السفر؟"
+    "ar": "هل تقبلون تأمين السفر؟",
+    "de": "Akzeptieren Sie die Reiseversicherung?"
   },
   "Do you have a single room?": {
     "fr": "Avez-vous une chambre simple ?",
     "nl": "Heeft u een eenpersoonskamer?",
     "es": "¿Tienen habitación individual?",
-    "ar": "هل لديكم غرفة مفردة؟"
+    "ar": "هل لديكم غرفة مفردة؟",
+    "de": "Haben Sie ein Einzelzimmer?"
   },
   "Do you have a suggestion?": {
     "fr": "As-tu une suggestion ?",
     "nl": "Heb je een suggestie?",
     "es": "¿Tienes alguna sugerencia?",
-    "ar": "هل لديك اقتراح؟"
+    "ar": "هل لديك اقتراح؟",
+    "de": "Hast du einen Vorschlag?"
   },
   "Do you have gluten-free bread?": {
     "fr": "Avez-vous du pain sans gluten ?",
     "nl": "Heeft u glutenvrij brood?",
     "es": "¿Tienen pan sin gluten?",
-    "ar": "هل لديكم خبز خالٍ من الغلوتين؟"
+    "ar": "هل لديكم خبز خالٍ من الغلوتين؟",
+    "de": "Haben Sie glutenfreies Brot?"
   },
   "Do you have this in size M?": {
     "fr": "L'avez-vous en taille M ?",
     "nl": "Heeft u dit in maat M?",
     "es": "¿Lo tienen en talla M?",
-    "ar": "هل لديكم هذا بالمقاس M؟"
+    "ar": "هل لديكم هذا بالمقاس M؟",
+    "de": "Haben Sie das in Größe M?"
   },
   "Do you prefer tea or coffee?": {
     "fr": "Préfères-tu le thé ou le café ?",
     "nl": "Houd je meer van thee of koffie?",
     "es": "¿Prefieres té o café?",
-    "ar": "هل تفضل الشاي أم القهوة؟"
+    "ar": "هل تفضل الشاي أم القهوة؟",
+    "de": "Bevorzugst du Tee oder Kaffee?"
   },
   "Do you want to dance?": {
     "fr": "Tu veux danser ?",
     "nl": "Wil je dansen?",
     "es": "¿Quieres bailar?",
-    "ar": "هل تريد الرقص؟"
+    "ar": "هل تريد الرقص؟",
+    "de": "Willst du tanzen?"
   },
   "Does this shirt fit me?": {
     "fr": "Cette chemise me va-t-elle ?",
     "nl": "Past dit shirt mij?",
     "es": "¿Me queda bien esta camisa?",
-    "ar": "هل يناسبني هذا القميص؟"
+    "ar": "هل يناسبني هذا القميص؟",
+    "de": "Passt mir dieses Hemd?"
   },
   "Download the map offline.": {
     "fr": "Télécharge la carte hors ligne.",
     "nl": "Download de kaart offline.",
     "es": "Descarga el mapa sin conexión.",
-    "ar": "حمّل الخريطة دون اتصال."
+    "ar": "حمّل الخريطة دون اتصال.",
+    "de": "Lade die Karte offline herunter."
   },
   "Download the report as a PDF.": {
     "fr": "Télécharge le rapport en PDF.",
     "nl": "Download het rapport als PDF.",
     "es": "Descarga el informe en PDF.",
-    "ar": "حمّل التقرير بصيغة PDF."
+    "ar": "حمّل التقرير بصيغة PDF.",
+    "de": "Lade den Bericht als PDF herunter."
   },
   "Drive north for ten kilometres.": {
     "fr": "Roulez vers le nord pendant dix kilomètres.",
     "nl": "Rijd tien kilometer noordwaarts.",
     "es": "Conduce diez kilómetros hacia el norte.",
-    "ar": "اسلك شمالاً لمسافة عشرة كيلومترات."
+    "ar": "اسلك شمالاً لمسافة عشرة كيلومترات.",
+    "de": "Fahren Sie zehn Kilometer nach Norden."
   },
   "End with a strong conclusion.": {
     "fr": "Termine par une conclusion solide.",
     "nl": "Eindig met een sterke conclusie.",
     "es": "Termina con una conclusión sólida.",
-    "ar": "اختم بخاتمة قوية."
+    "ar": "اختم بخاتمة قوية.",
+    "de": "Schließe mit einer starken Schlussfolgerung ab."
   },
   "Every student needs a notebook.": {
     "fr": "Chaque élève a besoin d'un cahier.",
     "nl": "Elke leerling heeft een schrift nodig.",
     "es": "Cada estudiante necesita un cuaderno.",
-    "ar": "كل طالب يحتاج دفتراً."
+    "ar": "كل طالب يحتاج دفتراً.",
+    "de": "Jeder Schüler braucht ein Heft."
   },
   "Everything is on sale.": {
     "fr": "Tout est en promotion.",
     "nl": "Alles is in de uitverkoop.",
     "es": "Todo está de oferta.",
-    "ar": "كل شيء معروض للبيع."
+    "ar": "كل شيء معروض للبيع.",
+    "de": "Alles ist im Angebot."
   },
   "Exams are at the end of the semester.": {
     "fr": "Les examens sont à la fin du semestre.",
     "nl": "Examens zijn aan het einde van het semester.",
     "es": "Los exámenes son al final del semestre.",
-    "ar": "الامتحانات في نهاية الفصل الدراسي."
+    "ar": "الامتحانات في نهاية الفصل الدراسي.",
+    "de": "Die Prüfungen sind am Ende des Semesters."
   },
   "Excuse me, where is the exit?": {
     "fr": "Excusez-moi, où est la sortie ?",
     "nl": "Pardon, waar is de uitgang?",
     "es": "Disculpe, ¿dónde está la salida?",
-    "ar": "عذراً، أين المخرج؟"
+    "ar": "عذراً، أين المخرج؟",
+    "de": "Entschuldigung, wo ist der Ausgang?"
   },
   "Fasten your seatbelt for take-off.": {
     "fr": "Attachez votre ceinture pour le décollage.",
     "nl": "Doe uw gordel om voor het opstijgen.",
     "es": "Abróchense el cinturón para el despegue.",
-    "ar": "اربطوا حزام الأمان للإقلاع."
+    "ar": "اربطوا حزام الأمان للإقلاع.",
+    "de": "Schnallen Sie sich für den Start an."
   },
   "Fill in the blank with one word.": {
     "fr": "Remplis le blanc avec un mot.",
     "nl": "Vul het gat in met één woord.",
     "es": "Rellena el espacio con una palabra.",
-    "ar": "املأ الفراغ بكلمة واحدة."
+    "ar": "املأ الفراغ بكلمة واحدة.",
+    "de": "Fülle die Lücke mit einem Wort aus."
   },
   "Fill my glass with water.": {
     "fr": "Remplis mon verre d'eau.",
     "nl": "Vul mijn glas met water.",
     "es": "Llena mi vaso de agua.",
-    "ar": "املأ كأسي بالماء."
+    "ar": "املأ كأسي بالماء.",
+    "de": "Füll mein Glas mit Wasser."
   },
   "Finish the exercise carefully.": {
     "fr": "Termine l'exercice avec soin.",
     "nl": "Maak de oefening zorgvuldig af.",
     "es": "Termina el ejercicio con cuidado.",
-    "ar": "أنهِ التمرين بعناية."
+    "ar": "أنهِ التمرين بعناية.",
+    "de": "Beende die Übung sorgfältig."
   },
   "Focus on meaning, not fear.": {
     "fr": "Concentre-toi sur le sens, pas la peur.",
     "nl": "Focus op betekenis, niet op angst.",
     "es": "Concéntrate en el significado, no en el miedo.",
-    "ar": "ركّز على المعنى، لا على الخوف."
+    "ar": "ركّز على المعنى، لا على الخوف.",
+    "de": "Konzentriere dich auf den Sinn, nicht auf die Angst."
   },
   "Follow the signs to the exit.": {
     "fr": "Suis les panneaux vers la sortie.",
     "nl": "Volg de borden naar de uitgang.",
     "es": "Sigue las señales hacia la salida.",
-    "ar": "اتبع اللافتات إلى المخرج."
+    "ar": "اتبع اللافتات إلى المخرج.",
+    "de": "Folge den Schildern zum Ausgang."
   },
   "For example, try this phrase.": {
     "fr": "Par exemple, essaie cette phrase.",
     "nl": "Probeer bijvoorbeeld deze zin.",
     "es": "Por ejemplo, prueba esta frase.",
-    "ar": "على سبيل المثال، جرّب هذه العبارة."
+    "ar": "على سبيل المثال، جرّب هذه العبارة.",
+    "de": "Zum Beispiel, probiere diesen Satz."
   },
   "Forward this email to finance.": {
     "fr": "Transfère cet e-mail à la finance.",
     "nl": "Stuur deze e-mail door naar finance.",
     "es": "Reenvía este correo a finanzas.",
-    "ar": "أعد توجيه هذا البريد إلى المالية."
+    "ar": "أعد توجيه هذا البريد إلى المالية.",
+    "de": "Leite diese E-Mail an die Finanzabteilung weiter."
   },
   "Give a nuanced answer.": {
     "fr": "Donne une réponse nuancée.",
     "nl": "Geef een genuanceerd antwoord.",
     "es": "Da una respuesta matizada.",
-    "ar": "قدّم إجابة دقيقة ومتوازنة."
+    "ar": "قدّم إجابة دقيقة ومتوازنة.",
+    "de": "Gib eine nuancierte Antwort."
   },
   "Give me one minute.": {
     "fr": "Donne-moi une minute.",
     "nl": "Geef me een minuut.",
     "es": "Dame un minuto.",
-    "ar": "أعطني دقيقة واحدة."
+    "ar": "أعطني دقيقة واحدة.",
+    "de": "Gib mir eine Minute."
   },
   "Go straight ahead for 200 metres.": {
     "fr": "Va tout droit pendant 200 mètres.",
     "nl": "Ga 200 meter rechtdoor.",
     "es": "Sigue recto 200 metros.",
-    "ar": "امضِ مباشرة لمسافة 200 متر."
+    "ar": "امضِ مباشرة لمسافة 200 متر.",
+    "de": "Geh 200 Meter geradeaus."
   },
   "Go when the light is green.": {
     "fr": "Pars quand le feu est vert.",
     "nl": "Ga wanneer het licht groen is.",
     "es": "Avanza cuando el semáforo esté en verde.",
-    "ar": "امضِ عندما يكون الضوء أخضر."
+    "ar": "امضِ عندما يكون الضوء أخضر.",
+    "de": "Fahr los, wenn die Ampel grün ist."
   },
   "Good afternoon, sir.": {
     "fr": "Bon après-midi, monsieur.",
     "nl": "Goedemiddag, meneer.",
     "es": "Buenas tardes, señor.",
-    "ar": "مساء الخير، سيدي."
+    "ar": "مساء الخير، سيدي.",
+    "de": "Guten Tag, mein Herr."
   },
   "Good evening and welcome.": {
     "fr": "Bonsoir et bienvenue.",
     "nl": "Goedenavond en welkom.",
     "es": "Buenas noches y bienvenido.",
-    "ar": "مساء الخير وأهلاً بك."
+    "ar": "مساء الخير وأهلاً بك.",
+    "de": "Guten Abend und willkommen."
   },
   "Good morning, everyone.": {
     "fr": "Bonjour à tous.",
     "nl": "Goedemorgen allemaal.",
     "es": "Buenos días a todos.",
-    "ar": "صباح الخير للجميع."
+    "ar": "صباح الخير للجميع.",
+    "de": "Guten Morgen allerseits."
   },
   "Good night, sleep well.": {
     "fr": "Bonne nuit, dors bien.",
     "nl": "Goedenacht, slaap lekker.",
     "es": "Buenas noches, que duermas bien.",
-    "ar": "تصبح على خير، نم جيداً."
+    "ar": "تصبح على خير، نم جيداً.",
+    "de": "Gute Nacht, schlaf gut."
   },
   "Goodbye, see you tomorrow.": {
     "fr": "Au revoir, à demain.",
     "nl": "Tot ziens, tot morgen.",
     "es": "Adiós, hasta mañana.",
-    "ar": "وداعاً، أراك غداً."
+    "ar": "وداعاً، أراك غداً.",
+    "de": "Auf Wiedersehen, bis morgen."
   },
   "Hang the do not disturb sign.": {
     "fr": "Accroche le panneau « Ne pas déranger ».",
     "nl": "Hang het « Niet storen »-bordje op.",
     "es": "Cuelga el cartel de no molestar.",
-    "ar": "علّق لافتة «عدم الإزعاج»."
+    "ar": "علّق لافتة «عدم الإزعاج».",
+    "de": "Häng das Schild „Bitte nicht stören“ auf."
   },
   "Happy birthday to you!": {
     "fr": "Joyeux anniversaire !",
     "nl": "Gefeliciteerd met je verjaardag!",
     "es": "¡Feliz cumpleaños!",
-    "ar": "عيد ميلاد سعيد!"
+    "ar": "عيد ميلاد سعيد!",
+    "de": "Alles Gute zum Geburtstag!"
   },
   "He decided to resign.": {
     "fr": "Il a décidé de démissionner.",
     "nl": "Hij besloot ontslag te nemen.",
     "es": "Decidió dimitir.",
-    "ar": "قرر الاستقالة."
+    "ar": "قرر الاستقالة.",
+    "de": "Er hat beschlossen zu kündigen."
   },
   "He earned a degree in law.": {
     "fr": "Il a obtenu un diplôme en droit.",
     "nl": "Hij behaalde een diploma rechten.",
     "es": "Obtuvo un título en derecho.",
-    "ar": "حصل على شهادة في القانون."
+    "ar": "حصل على شهادة في القانون.",
+    "de": "Er hat einen Abschluss in Jura gemacht."
   },
   "He gave an eloquent speech.": {
     "fr": "Il a prononcé un discours éloquent.",
     "nl": "Hij hield een eloquent betoog.",
     "es": "Dio un discurso elocuente.",
-    "ar": "ألقى خطاباً بليغاً."
+    "ar": "ألقى خطاباً بليغاً.",
+    "de": "Er hat eine eloquente Rede gehalten."
   },
   "Hello! How are you today?": {
     "fr": "Bonjour ! Comment allez-vous aujourd'hui ?",
     "nl": "Hallo! Hoe gaat het vandaag?",
     "es": "¡Hola! ¿Cómo estás hoy?",
-    "ar": "مرحباً! كيف حالك اليوم؟"
+    "ar": "مرحباً! كيف حالك اليوم؟",
+    "de": "Hallo! Wie geht es Ihnen heute?"
   },
   "Her presentation was clear.": {
     "fr": "Sa présentation était claire.",
     "nl": "Haar presentatie was duidelijk.",
     "es": "Su presentación fue clara.",
-    "ar": "كان عرضها واضحاً."
+    "ar": "كان عرضها واضحاً.",
+    "de": "Ihre Präsentation war klar."
   },
   "Hi, nice to see you.": {
     "fr": "Salut, content de te voir.",
     "nl": "Hoi, leuk je te zien.",
     "es": "Hola, qué gusto verte.",
-    "ar": "أهلاً، سعيد برؤيتك."
+    "ar": "أهلاً، سعيد برؤيتك.",
+    "de": "Hi, schön dich zu sehen."
   },
   "His words convey deep respect.": {
     "fr": "Ses mots traduisent un profond respect.",
     "nl": "Zijn woorden tonen diep respect.",
     "es": "Sus palabras transmiten profundo respeto.",
-    "ar": "كلماته تعبّر عن احترام عميق."
+    "ar": "كلماته تعبّر عن احترام عميق.",
+    "de": "Seine Worte zeigen tiefen Respekt."
   },
   "Honesty about a weakness helps.": {
     "fr": "L'honnêteté sur une faiblesse aide.",
     "nl": "Eerlijkheid over een zwakte helpt.",
     "es": "La honestidad sobre una debilidad ayuda.",
-    "ar": "الصدق بشأن نقطة ضعف يساعد."
+    "ar": "الصدق بشأن نقطة ضعف يساعد.",
+    "de": "Ehrlichkeit über eine Schwäche hilft."
   },
   "Housekeeping cleaned the room.": {
     "fr": "Le service d'étage a nettoyé la chambre.",
     "nl": "De housekeeping heeft de kamer schoongemaakt.",
     "es": "Limpieza limpió la habitación.",
-    "ar": "قامت خدمة الغرف بالتنظيف."
+    "ar": "قامت خدمة الغرف بالتنظيف.",
+    "de": "Der Zimmerservice hat das Zimmer gereinigt."
   },
   "How are you feeling today?": {
     "fr": "Comment te sens-tu aujourd'hui ?",
     "nl": "Hoe voel je je vandaag?",
     "es": "¿Cómo te sientes hoy?",
-    "ar": "كيف تشعر اليوم؟"
+    "ar": "كيف تشعر اليوم؟",
+    "de": "Wie fühlst du dich heute?"
   },
   "How can I cancel a booking?": {
     "fr": "Comment puis-je annuler une réservation ?",
     "nl": "Hoe kan ik een boeking annuleren?",
     "es": "¿Cómo puedo cancelar una reserva?",
-    "ar": "كيف ألغي الحجز؟"
+    "ar": "كيف ألغي الحجز؟",
+    "de": "Wie kann ich eine Buchung stornieren?"
   },
   "How do you say this in English?": {
     "fr": "Comment dit-on cela en anglais ?",
     "nl": "Hoe zeg je dit in het Engels?",
     "es": "¿Cómo se dice esto en inglés?",
-    "ar": "كيف تقول هذا بالإنجليزية؟"
+    "ar": "كيف تقول هذا بالإنجليزية؟",
+    "de": "Wie sagt man das auf Englisch?"
   },
   "How far is it to the beach?": {
     "fr": "À quelle distance est la plage ?",
     "nl": "Hoe ver is het naar het strand?",
     "es": "¿Qué tan lejos está la playa?",
-    "ar": "كم يبعد الشاطئ؟"
+    "ar": "كم يبعد الشاطئ؟",
+    "de": "Wie weit ist es zum Strand?"
   },
   "How much is it?": {
     "fr": "C'est combien ?",
     "nl": "Hoeveel kost het?",
     "es": "¿Cuánto cuesta?",
-    "ar": "كم ثمنه؟"
+    "ar": "كم ثمنه؟",
+    "de": "Was kostet das?"
   },
   "How old are you?": {
     "fr": "Quel âge as-tu ?",
     "nl": "Hoe oud ben je?",
     "es": "¿Cuántos años tienes?",
-    "ar": "كم عمرك؟"
+    "ar": "كم عمرك؟",
+    "de": "Wie alt bist du?"
   },
   "However, we need more time.": {
     "fr": "Cependant, nous avons besoin de plus de temps.",
     "nl": "We hebben echter meer tijd nodig.",
     "es": "Sin embargo, necesitamos más tiempo.",
-    "ar": "ومع ذلك، نحتاج وقتاً أطول."
+    "ar": "ومع ذلك، نحتاج وقتاً أطول.",
+    "de": "Allerdings brauchen wir mehr Zeit."
   },
   "Hurry or you will miss the train.": {
     "fr": "Dépêche-toi ou tu vas rater le train.",
     "nl": "Schiet op of je mist de trein.",
     "es": "Date prisa o perderás el tren.",
-    "ar": "أسرع وإلا فاتك القطار."
+    "ar": "أسرع وإلا فاتك القطار.",
+    "de": "Beeil dich, sonst verpasst du den Zug."
   },
   "I agree with your point.": {
     "fr": "Je suis d'accord avec ton point.",
     "nl": "Ik ben het met je punt eens.",
     "es": "Estoy de acuerdo con tu punto.",
-    "ar": "أوافق على وجهة نظرك."
+    "ar": "أوافق على وجهة نظرك.",
+    "de": "Ich stimme deinem Punkt zu."
   },
   "I already finished the lesson.": {
     "fr": "J'ai déjà terminé la leçon.",
     "nl": "Ik heb de les al afgerond.",
     "es": "Ya terminé la lección.",
-    "ar": "لقد أنهيت الدرس بالفعل."
+    "ar": "لقد أنهيت الدرس بالفعل.",
+    "de": "Ich habe die Lektion schon beendet."
   },
   "I always drink water.": {
     "fr": "Je bois toujours de l'eau.",
     "nl": "Ik drink altijd water.",
     "es": "Siempre bebo agua.",
-    "ar": "أشرب الماء دائماً."
+    "ar": "أشرب الماء دائماً.",
+    "de": "Ich trinke immer Wasser."
   },
   "I am busy until Friday.": {
     "fr": "Je suis occupé jusqu'à vendredi.",
     "nl": "Ik ben bezig tot vrijdag.",
     "es": "Estoy ocupado hasta el viernes.",
-    "ar": "أنا مشغول حتى يوم الجمعة."
+    "ar": "أنا مشغول حتى يوم الجمعة.",
+    "de": "Ich bin bis Freitag beschäftigt."
   },
   "I am fine, thank you.": {
     "fr": "Je vais bien, merci.",
     "nl": "Het gaat goed, dank je.",
     "es": "Estoy bien, gracias.",
-    "ar": "أنا بخير، شكراً."
+    "ar": "أنا بخير، شكراً.",
+    "de": "Mir geht es gut, danke."
   },
   "I am from Belgium.": {
     "fr": "Je viens de Belgique.",
     "nl": "Ik kom uit België.",
     "es": "Soy de Bélgica.",
-    "ar": "أنا من بلجيكا."
+    "ar": "أنا من بلجيكا.",
+    "de": "Ich komme aus Belgien."
   },
   "I am happy to help.": {
     "fr": "Je suis heureux de t'aider.",
     "nl": "Ik help graag.",
     "es": "Estoy feliz de ayudar.",
-    "ar": "يسعدني مساعدتك."
+    "ar": "يسعدني مساعدتك.",
+    "de": "Ich helfe dir gerne."
   },
   "I am hungry after class.": {
     "fr": "J'ai faim après le cours.",
     "nl": "Ik heb honger na de les.",
     "es": "Tengo hambre después de clase.",
-    "ar": "أشعر بالجوع بعد الحصة."
+    "ar": "أشعر بالجوع بعد الحصة.",
+    "de": "Ich habe nach dem Unterricht Hunger."
   },
   "I am looking for a cheap hotel.": {
     "fr": "Je cherche un hôtel bon marché.",
     "nl": "Ik zoek een goedkoop hotel.",
     "es": "Busco un hotel barato.",
-    "ar": "أبحث عن فندق رخيص."
+    "ar": "أبحث عن فندق رخيص.",
+    "de": "Ich suche ein günstiges Hotel."
   },
   "I am lost; can you help me?": {
     "fr": "Je suis perdu ; peux-tu m'aider ?",
     "nl": "Ik ben de weg kwijt; kun je me helpen?",
     "es": "Estoy perdido; ¿puedes ayudarme?",
-    "ar": "أنا تائه؛ هل يمكنك مساعدتي؟"
+    "ar": "أنا تائه؛ هل يمكنك مساعدتي؟",
+    "de": "Ich habe mich verlaufen; kannst du mir helfen?"
   },
   "I am thirsty; I need water.": {
     "fr": "J'ai soif ; j'ai besoin d'eau.",
     "nl": "Ik heb dorst; ik heb water nodig.",
     "es": "Tengo sed; necesito agua.",
-    "ar": "أنا عطشان؛ أحتاج ماء."
+    "ar": "أنا عطشان؛ أحتاج ماء.",
+    "de": "Ich habe Durst; ich brauche Wasser."
   },
   "I arrived early.": {
     "fr": "Je suis arrivé tôt.",
     "nl": "Ik kwam vroeg aan.",
     "es": "Llegué temprano.",
-    "ar": "وصلت مبكراً."
+    "ar": "وصلت مبكراً.",
+    "de": "Ich bin früh angekommen."
   },
   "I booked a doctor's appointment.": {
     "fr": "J'ai pris rendez-vous chez le médecin.",
     "nl": "Ik heb een doktersafspraak gemaakt.",
     "es": "Pedí cita con el médico.",
-    "ar": "حجزت موعداً عند الطبيب."
+    "ar": "حجزت موعداً عند الطبيب.",
+    "de": "Ich habe einen Arzttermin vereinbart."
   },
   "I booked a return ticket.": {
     "fr": "J'ai réservé un billet aller-retour.",
     "nl": "Ik heb een retourticket geboekt.",
     "es": "Reservé un billete de ida y vuelta.",
-    "ar": "حجزت تذكرة ذهاب وإياب."
+    "ar": "حجزت تذكرة ذهاب وإياب.",
+    "de": "Ich habe ein Hin- und Rückfahrtticket gebucht."
   },
   "I bought a new phone.": {
     "fr": "J'ai acheté un nouveau téléphone.",
     "nl": "Ik heb een nieuwe telefoon gekocht.",
     "es": "Compré un teléfono nuevo.",
-    "ar": "اشتريت هاتفاً جديداً."
+    "ar": "اشتريت هاتفاً جديداً.",
+    "de": "Ich habe ein neues Handy gekauft."
   },
   "I bought a small souvenir.": {
     "fr": "J'ai acheté un petit souvenir.",
     "nl": "Ik kocht een klein souvenir.",
     "es": "Compré un recuerdo pequeño.",
-    "ar": "اشتريت تذكاراً صغيراً."
+    "ar": "اشتريت تذكاراً صغيراً.",
+    "de": "Ich habe ein kleines Souvenir gekauft."
   },
   "I bought fresh bread.": {
     "fr": "J'ai acheté du pain frais.",
     "nl": "Ik heb vers brood gekocht.",
     "es": "Compré pan fresco.",
-    "ar": "اشتريت خبزاً طازجاً."
+    "ar": "اشتريت خبزاً طازجاً.",
+    "de": "Ich habe frisches Brot gekauft."
   },
   "I can help you with that.": {
     "fr": "Je peux t'aider avec ça.",
     "nl": "Ik kan je daarmee helpen.",
     "es": "Puedo ayudarte con eso.",
-    "ar": "يمكنني مساعدتك في ذلك."
+    "ar": "يمكنني مساعدتك في ذلك.",
+    "de": "Ich kann dir damit helfen."
   },
   "I can see real progress.": {
     "fr": "Je vois de vrais progrès.",
     "nl": "Ik zie echte vooruitgang.",
     "es": "Veo un progreso real.",
-    "ar": "أرى تقدماً حقيقياً."
+    "ar": "أرى تقدماً حقيقياً.",
+    "de": "Ich sehe echte Fortschritte."
   },
   "I can't come tomorrow.": {
     "fr": "Je ne peux pas venir demain.",
     "nl": "Ik kan morgen niet komen.",
     "es": "No puedo venir mañana.",
-    "ar": "لا أستطيع الحضور غداً."
+    "ar": "لا أستطيع الحضور غداً.",
+    "de": "Ich kann morgen nicht kommen."
   },
   "I commute by train.": {
     "fr": "Je vais au travail en train.",
     "nl": "Ik pendel met de trein.",
     "es": "Voy al trabajo en tren.",
-    "ar": "أتنقل بالقطار."
+    "ar": "أتنقل بالقطار.",
+    "de": "Ich fahre mit dem Zug zur Arbeit."
   },
   "I disagree, but I respect you.": {
     "fr": "Je ne suis pas d'accord, mais je te respecte.",
     "nl": "Ik ben het oneens, maar ik respecteer je.",
     "es": "No estoy de acuerdo, pero te respeto.",
-    "ar": "لا أوافق، لكنني أحترمك."
+    "ar": "لا أوافق، لكنني أحترمك.",
+    "de": "Ich bin anderer Meinung, aber ich respektiere dich."
   },
   "I do not need pepper.": {
     "fr": "Je n'ai pas besoin de poivre.",
     "nl": "Ik heb geen peper nodig.",
     "es": "No necesito pimienta.",
-    "ar": "لا أحتاج فلفلاً."
+    "ar": "لا أحتاج فلفلاً.",
+    "de": "Ich brauche keinen Pfeffer."
   },
   "I do not want to fail the exam.": {
     "fr": "Je ne veux pas rater l'examen.",
     "nl": "Ik wil niet zakken voor het examen.",
     "es": "No quiero suspender el examen.",
-    "ar": "لا أريد أن أرسب في الامتحان."
+    "ar": "لا أريد أن أرسب في الامتحان.",
+    "de": "Ich will die Prüfung nicht verfehlen."
   },
   "I don't understand; can you repeat?": {
     "fr": "Je ne comprends pas ; peux-tu répéter ?",
     "nl": "Ik begrijp het niet; kun je het herhalen?",
     "es": "No entiendo; ¿puedes repetir?",
-    "ar": "لا أفهم؛ هل يمكنك التكرار؟"
+    "ar": "لا أفهم؛ هل يمكنك التكرار؟",
+    "de": "Ich verstehe nicht; kannst du das wiederholen?"
   },
   "I feel tired tonight.": {
     "fr": "Je me sens fatigué ce soir.",
     "nl": "Ik voel me vanavond moe.",
     "es": "Me siento cansado esta noche.",
-    "ar": "أشعر بالتعب الليلة."
+    "ar": "أشعر بالتعب الليلة.",
+    "de": "Ich fühle mich heute Abend müde."
   },
   "I finished my homework.": {
     "fr": "J'ai fini mes devoirs.",
     "nl": "Ik heb mijn huiswerk af.",
     "es": "Terminé mi tarea.",
-    "ar": "أنهيت واجباتي."
+    "ar": "أنهيت واجباتي.",
+    "de": "Ich habe meine Hausaufgaben erledigt."
   },
   "I forgot my phone charger.": {
     "fr": "J'ai oublié mon chargeur.",
     "nl": "Ik ben mijn oplader vergeten.",
     "es": "Olvidé el cargador del móvil.",
-    "ar": "نسيت شاحن هاتفي."
+    "ar": "نسيت شاحن هاتفي.",
+    "de": "Ich habe mein Handyladegerät vergessen."
   },
   "I got a good grade.": {
     "fr": "J'ai eu une bonne note.",
     "nl": "Ik kreeg een goed cijfer.",
     "es": "Saqué buena nota.",
-    "ar": "حصلت على علامة جيدة."
+    "ar": "حصلت على علامة جيدة.",
+    "de": "Ich habe eine gute Note bekommen."
   },
   "I have a bad headache.": {
     "fr": "J'ai un mal de tête terrible.",
     "nl": "Ik heb erge hoofdpijn.",
     "es": "Tengo un dolor de cabeza fuerte.",
-    "ar": "لدي صداع شديد."
+    "ar": "لدي صداع شديد.",
+    "de": "Ich habe starke Kopfschmerzen."
   },
   "I have a job interview tomorrow.": {
     "fr": "J'ai un entretien d'embauche demain.",
     "nl": "Ik heb morgen een sollicitatiegesprek.",
     "es": "Tengo una entrevista de trabajo mañana.",
-    "ar": "لدي مقابلة عمل غداً."
+    "ar": "لدي مقابلة عمل غداً.",
+    "de": "Ich habe morgen ein Vorstellungsgespräch."
   },
   "I have a lot of questions.": {
     "fr": "J'ai beaucoup de questions.",
     "nl": "Ik heb veel vragen.",
     "es": "Tengo muchas preguntas.",
-    "ar": "لدي الكثير من الأسئلة."
+    "ar": "لدي الكثير من الأسئلة.",
+    "de": "Ich habe viele Fragen."
   },
   "I have a nut allergy.": {
     "fr": "Je suis allergique aux noix.",
     "nl": "Ik ben allergisch voor noten.",
     "es": "Soy alérgico a los frutos secos.",
-    "ar": "لدي حساسية من المكسرات."
+    "ar": "لدي حساسية من المكسرات.",
+    "de": "Ich habe eine Nussallergie."
   },
   "I have a reservation for two.": {
     "fr": "J'ai une réservation pour deux.",
     "nl": "Ik heb een reservering voor twee.",
     "es": "Tengo una reserva para dos.",
-    "ar": "لدي حجز لشخصين."
+    "ar": "لدي حجز لشخصين.",
+    "de": "Ich habe eine Reservierung für zwei."
   },
   "I have a reservation under Smith.": {
     "fr": "J'ai une réservation au nom de Smith.",
     "nl": "Ik heb een reservering op naam Smith.",
     "es": "Tengo una reserva a nombre de Smith.",
-    "ar": "لدي حجز باسم Smith."
+    "ar": "لدي حجز باسم Smith.",
+    "de": "Ich habe eine Reservierung auf den Namen Smith."
   },
   "I have a simple solution.": {
     "fr": "J'ai une solution simple.",
     "nl": "Ik heb een eenvoudige oplossing.",
     "es": "Tengo una solución simple.",
-    "ar": "لدي حل بسيط."
+    "ar": "لدي حل بسيط.",
+    "de": "Ich habe eine einfache Lösung."
   },
   "I have five years of experience.": {
     "fr": "J'ai cinq ans d'expérience.",
     "nl": "Ik heb vijf jaar ervaring.",
     "es": "Tengo cinco años de experiencia.",
-    "ar": "لدي خمس سنوات من الخبرة."
+    "ar": "لدي خمس سنوات من الخبرة.",
+    "de": "Ich habe fünf Jahre Erfahrung."
   },
   "I have not practised yet.": {
     "fr": "Je n'ai pas encore pratiqué.",
     "nl": "Ik heb nog niet geoefend.",
     "es": "Aún no he practicado.",
-    "ar": "لم أتدرب بعد."
+    "ar": "لم أتدرب بعد.",
+    "de": "Ich habe noch nicht geübt."
   },
   "I have pain in my back.": {
     "fr": "J'ai mal au dos.",
     "nl": "Ik heb pijn in mijn rug.",
     "es": "Me duele la espalda.",
-    "ar": "أشعر بألم في ظهري."
+    "ar": "أشعر بألم في ظهري.",
+    "de": "Ich habe Rückenschmerzen."
   },
   "I have to decline this invitation.": {
     "fr": "Je dois décliner cette invitation.",
     "nl": "Ik moet deze uitnodiging afslaan.",
     "es": "Tengo que rechazar esta invitación.",
-    "ar": "يجب أن أرفض هذه الدعوة."
+    "ar": "يجب أن أرفض هذه الدعوة.",
+    "de": "Ich muss diese Einladung ablehnen."
   },
   "I hope to pass the test.": {
     "fr": "J'espère réussir le test.",
     "nl": "Ik hoop te slagen voor de test.",
     "es": "Espero aprobar el examen.",
-    "ar": "آمل أن أنجح في الاختبار."
+    "ar": "آمل أن أنجح في الاختبار.",
+    "de": "Ich hoffe, den Test zu bestehen."
   },
   "I like languages, especially English.": {
     "fr": "J'aime les langues, surtout l'anglais.",
     "nl": "Ik houd van talen, vooral Engels.",
     "es": "Me gustan los idiomas, especialmente el inglés.",
-    "ar": "أحب اللغات، وخصوصاً الإنجليزية."
+    "ar": "أحب اللغات، وخصوصاً الإنجليزية.",
+    "de": "Ich mag Sprachen, besonders Englisch."
   },
   "I like my steak rare.": {
     "fr": "J'aime mon steak saignant.",
     "nl": "Ik eet mijn biefstuk graag rare.",
     "es": "Me gusta el bistec poco hecho.",
-    "ar": "أفضل شريحة اللحم نادرة."
+    "ar": "أفضل شريحة اللحم نادرة.",
+    "de": "Ich mag mein Steak blutig."
   },
   "I listen to music every day.": {
     "fr": "J'écoute de la musique chaque jour.",
     "nl": "Ik luister elke dag naar muziek.",
     "es": "Escucho música todos los días.",
-    "ar": "أستمع إلى الموسيقى كل يوم."
+    "ar": "أستمع إلى الموسيقى كل يوم.",
+    "de": "Ich höre jeden Tag Musik."
   },
   "I live in Brussels.": {
     "fr": "J'habite à Bruxelles.",
     "nl": "Ik woon in Brussel.",
     "es": "Vivo en Bruselas.",
-    "ar": "أسكن في بروكسل."
+    "ar": "أسكن في بروكسل.",
+    "de": "Ich wohne in Brüssel."
   },
   "I lost my phone at the station.": {
     "fr": "J'ai perdu mon téléphone à la gare.",
     "nl": "Ik ben mijn telefoon kwijt op het station.",
     "es": "Perdí mi móvil en la estación.",
-    "ar": "فقدت هاتفي في المحطة."
+    "ar": "فقدت هاتفي في المحطة.",
+    "de": "Ich habe mein Handy am Bahnhof verloren."
   },
   "I lost my room key.": {
     "fr": "J'ai perdu la clé de ma chambre.",
     "nl": "Ik ben mijn kamersleutel kwijt.",
     "es": "Perdí la llave de mi habitación.",
-    "ar": "فقدت مفتاح غرفتي."
+    "ar": "فقدت مفتاح غرفتي.",
+    "de": "Ich habe meinen Zimmerschlüssel verloren."
   },
   "I love to travel in summer.": {
     "fr": "J'adore voyager en été.",
     "nl": "Ik reis graag in de zomer.",
     "es": "Me encanta viajar en verano.",
-    "ar": "أحب السفر في الصيف."
+    "ar": "أحب السفر في الصيف.",
+    "de": "Ich reise im Sommer gerne."
   },
   "I made the booking online.": {
     "fr": "J'ai fait la réservation en ligne.",
     "nl": "Ik heb online geboekt.",
     "es": "Hice la reserva en línea.",
-    "ar": "أجريت الحجز عبر الإنترنت."
+    "ar": "أجريت الحجز عبر الإنترنت.",
+    "de": "Ich habe die Buchung online gemacht."
   },
   "I mean the second option.": {
     "fr": "Je veux dire la deuxième option.",
     "nl": "Ik bedoel de tweede optie.",
     "es": "Me refiero a la segunda opción.",
-    "ar": "أعني الخيار الثاني."
+    "ar": "أعني الخيار الثاني.",
+    "de": "Ich meine die zweite Option."
   },
   "I must leave now.": {
     "fr": "Je dois partir maintenant.",
     "nl": "Ik moet nu gaan.",
     "es": "Debo irme ahora.",
-    "ar": "يجب أن أغادر الآن."
+    "ar": "يجب أن أغادر الآن.",
+    "de": "Ich muss jetzt gehen."
   },
   "I need a black pen.": {
     "fr": "J'ai besoin d'un stylo noir.",
     "nl": "Ik heb een zwarte pen nodig.",
     "es": "Necesito un bolígrafo negro.",
-    "ar": "أحتاج قلماً أسود."
+    "ar": "أحتاج قلماً أسود.",
+    "de": "Ich brauche einen schwarzen Stift."
   },
   "I need a blue pen.": {
     "fr": "J'ai besoin d'un stylo bleu.",
     "nl": "Ik heb een blauwe pen nodig.",
     "es": "Necesito un bolígrafo azul.",
-    "ar": "أحتاج قلماً أزرق."
+    "ar": "أحتاج قلماً أزرق.",
+    "de": "Ich brauche einen blauen Stift."
   },
   "I need a city map.": {
     "fr": "J'ai besoin d'un plan de la ville.",
     "nl": "Ik heb een stadskaart nodig.",
     "es": "Necesito un mapa de la ciudad.",
-    "ar": "أحتاج خريطة المدينة."
+    "ar": "أحتاج خريطة المدينة.",
+    "de": "Ich brauche einen Stadtplan."
   },
   "I need a clean knife.": {
     "fr": "J'ai besoin d'un couteau propre.",
     "nl": "Ik heb een schoon mes nodig.",
     "es": "Necesito un cuchillo limpio.",
-    "ar": "أحتاج سكيناً نظيفاً."
+    "ar": "أحتاج سكيناً نظيفاً.",
+    "de": "Ich brauche ein sauberes Messer."
   },
   "I need a few minutes.": {
     "fr": "J'ai besoin de quelques minutes.",
     "nl": "Ik heb een paar minuten nodig.",
     "es": "Necesito unos minutos.",
-    "ar": "أحتاج بضع دقائق."
+    "ar": "أحتاج بضع دقائق.",
+    "de": "Ich brauche ein paar Minuten."
   },
   "I need a return ticket to Lyon.": {
     "fr": "J'ai besoin d'un billet retour pour Lyon.",
     "nl": "Ik heb een retourticket naar Lyon nodig.",
     "es": "Necesito un billete de vuelta a Lyon.",
-    "ar": "أحتاج تذكرة ذهاب وإياب إلى Lyon."
+    "ar": "أحتاج تذكرة ذهاب وإياب إلى Lyon.",
+    "de": "Ich brauche eine Rückfahrkarte nach Lyon."
   },
   "I need a shopping bag.": {
     "fr": "J'ai besoin d'un sac de courses.",
     "nl": "Ik heb een boodschappentas nodig.",
     "es": "Necesito una bolsa de la compra.",
-    "ar": "أحتاج حقيبة تسوق."
+    "ar": "أحتاج حقيبة تسوق.",
+    "de": "Ich brauche eine Einkaufstasche."
   },
   "I need a small bag.": {
     "fr": "J'ai besoin d'un petit sac.",
     "nl": "Ik heb een kleine tas nodig.",
     "es": "Necesito una bolsa pequeña.",
-    "ar": "أحتاج حقيبة صغيرة."
+    "ar": "أحتاج حقيبة صغيرة.",
+    "de": "Ich brauche eine kleine Tasche."
   },
   "I need another pillow.": {
     "fr": "J'ai besoin d'un oreiller supplémentaire.",
     "nl": "Ik heb nog een kussen nodig.",
     "es": "Necesito otra almohada.",
-    "ar": "أحتاج وسادة أخرى."
+    "ar": "أحتاج وسادة أخرى.",
+    "de": "Ich brauche ein weiteres Kissen."
   },
   "I need help now.": {
     "fr": "J'ai besoin d'aide maintenant.",
     "nl": "Ik heb nu hulp nodig.",
     "es": "Necesito ayuda ahora.",
-    "ar": "أحتاج مساعدة الآن."
+    "ar": "أحتاج مساعدة الآن.",
+    "de": "Ich brauche jetzt Hilfe."
   },
   "I need help, please.": {
     "fr": "J'ai besoin d'aide, s'il vous plaît.",
     "nl": "Ik heb hulp nodig, alsjeblieft.",
     "es": "Necesito ayuda, por favor.",
-    "ar": "أحتاج مساعدة، من فضلك."
+    "ar": "أحتاج مساعدة، من فضلك.",
+    "de": "Ich brauche Hilfe, bitte."
   },
   "I need more practice.": {
     "fr": "J'ai besoin de plus de pratique.",
     "nl": "Ik heb meer oefening nodig.",
     "es": "Necesito más práctica.",
-    "ar": "أحتاج مزيداً من التدريب."
+    "ar": "أحتاج مزيداً من التدريب.",
+    "de": "Ich brauche mehr Übung."
   },
   "I need one ticket, please.": {
     "fr": "Il me faut un billet, s'il vous plaît.",
     "nl": "Ik heb één ticket nodig, alsjeblieft.",
     "es": "Necesito un billete, por favor.",
-    "ar": "أحتاج تذكرة واحدة، من فضلك."
+    "ar": "أحتاج تذكرة واحدة، من فضلك.",
+    "de": "Ich brauche ein Ticket, bitte."
   },
   "I need to charge my phone.": {
     "fr": "Je dois charger mon téléphone.",
     "nl": "Ik moet mijn telefoon opladen.",
     "es": "Necesito cargar el móvil.",
-    "ar": "يجب أن أشحن هاتفي."
+    "ar": "يجب أن أشحن هاتفي.",
+    "de": "Ich muss mein Handy aufladen."
   },
   "I need to complain about the noise.": {
     "fr": "Je dois me plaindre du bruit.",
     "nl": "Ik moet klagen over het lawaai.",
     "es": "Necesito quejarme del ruido.",
-    "ar": "يجب أن أشتكي من الضوضاء."
+    "ar": "يجب أن أشتكي من الضوضاء.",
+    "de": "Ich muss mich über den Lärm beschweren."
   },
   "I need to pack tonight.": {
     "fr": "Je dois faire ma valise ce soir.",
     "nl": "Ik moet vanavond inpakken.",
     "es": "Necesito hacer la maleta esta noche.",
-    "ar": "يجب أن أحزم أمتعتي الليلة."
+    "ar": "يجب أن أحزم أمتعتي الليلة.",
+    "de": "Ich muss heute Abend packen."
   },
   "I need to report lost luggage.": {
     "fr": "Je dois signaler un bagage perdu.",
     "nl": "Ik moet verloren bagage melden.",
     "es": "Necesito denunciar equipaje perdido.",
-    "ar": "يجب أن أبلغ عن أمتعة مفقودة."
+    "ar": "يجب أن أبلغ عن أمتعة مفقودة.",
+    "de": "Ich muss verlorenes Gepäck melden."
   },
   "I need to see a doctor.": {
     "fr": "Je dois voir un médecin.",
     "nl": "Ik moet naar de dokter.",
     "es": "Necesito ver a un médico.",
-    "ar": "يجب أن أرى طبيباً."
+    "ar": "يجب أن أرى طبيباً.",
+    "de": "Ich muss zum Arzt."
   },
   "I need to withdraw money.": {
     "fr": "Je dois retirer de l'argent.",
     "nl": "Ik moet geld opnemen.",
     "es": "Necesito sacar dinero.",
-    "ar": "يجب أن أسحب نقوداً."
+    "ar": "يجب أن أسحب نقوداً.",
+    "de": "Ich muss Geld abheben."
   },
   "I never skip breakfast.": {
     "fr": "Je ne saute jamais le petit-déjeuner.",
     "nl": "Ik sla het ontbijt nooit over.",
     "es": "Nunca me salto el desayuno.",
-    "ar": "لا أتخطى الفطور أبداً."
+    "ar": "لا أتخطى الفطور أبداً.",
+    "de": "Ich lasse das Frühstück nie aus."
   },
   "I often practise English.": {
     "fr": "Je pratique souvent l'anglais.",
     "nl": "Ik oefen vaak Engels.",
     "es": "A menudo practico inglés.",
-    "ar": "أمارس الإنجليزية كثيراً."
+    "ar": "أمارس الإنجليزية كثيراً.",
+    "de": "Ich übe oft Englisch."
   },
   "I prefer a quiet street.": {
     "fr": "Je préfère une rue calme.",
     "nl": "Ik geef de voorkeur aan een rustige straat.",
     "es": "Prefiero una calle tranquila.",
-    "ar": "أفضل شارعاً هادئاً."
+    "ar": "أفضل شارعاً هادئاً.",
+    "de": "Ich bevorzuge eine ruhige Straße."
   },
   "I prefer a window seat.": {
     "fr": "Je préfère un siège côté fenêtre.",
     "nl": "Ik geef de voorkeur aan een raamplaats.",
     "es": "Prefiero un asiento junto a la ventana.",
-    "ar": "أفضل مقعداً بجانب النافذة."
+    "ar": "أفضل مقعداً بجانب النافذة.",
+    "de": "Ich bevorzuge einen Fensterplatz."
   },
   "I prefer food that is not spicy.": {
     "fr": "Je préfère la nourriture non épicée.",
     "nl": "Ik eet liever niet pittig eten.",
     "es": "Prefiero comida que no pique.",
-    "ar": "أفضل طعاماً غير حار."
+    "ar": "أفضل طعاماً غير حار.",
+    "de": "Ich bevorzuge Essen, das nicht scharf ist."
   },
   "I prefer remote work twice a week.": {
     "fr": "Je préfère le télétravail deux fois par semaine.",
     "nl": "Ik werk liever twee keer per week thuis.",
     "es": "Prefiero teletrabajar dos veces por semana.",
-    "ar": "أفضل العمل عن بُعد مرتين في الأسبوع."
+    "ar": "أفضل العمل عن بُعد مرتين في الأسبوع.",
+    "de": "Ich bevorzuge zweimal pro Woche Homeoffice."
   },
   "I prefer short, useful sentences.": {
     "fr": "Je préfère des phrases courtes et utiles.",
     "nl": "Ik geef de voorkeur aan korte, nuttige zinnen.",
     "es": "Prefiero frases cortas y útiles.",
-    "ar": "أفضل جملاً قصيرة ومفيدة."
+    "ar": "أفضل جملاً قصيرة ومفيدة.",
+    "de": "Ich bevorzuge kurze, nützliche Sätze."
   },
   "I prefer tea, whereas she likes coffee.": {
     "fr": "Je préfère le thé, tandis qu'elle aime le café.",
     "nl": "Ik houd van thee, terwijl zij van koffie houdt.",
     "es": "Prefiero el té, mientras que a ella le gusta el café.",
-    "ar": "أفضل الشاي، بينما هي تحب القهوة."
+    "ar": "أفضل الشاي، بينما هي تحب القهوة.",
+    "de": "Ich bevorzuge Tee, während sie Kaffee mag."
   },
   "I received a booking confirmation.": {
     "fr": "J'ai reçu une confirmation de réservation.",
     "nl": "Ik kreeg een boekingsbevestiging.",
     "es": "Recibí una confirmación de reserva.",
-    "ar": "استلمت تأكيد الحجز."
+    "ar": "استلمت تأكيد الحجز.",
+    "de": "Ich habe eine Buchungsbestätigung erhalten."
   },
   "I relax with a good book.": {
     "fr": "Je me détends avec un bon livre.",
     "nl": "Ik ontspan met een goed boek.",
     "es": "Me relajo con un buen libro.",
-    "ar": "أسترخي بكتاب جيد."
+    "ar": "أسترخي بكتاب جيد.",
+    "de": "Ich entspanne mich mit einem guten Buch."
   },
   "I run every morning.": {
     "fr": "Je cours tous les matins.",
     "nl": "Ik hard elke ochtend.",
     "es": "Corro todas las mañanas.",
-    "ar": "أركض كل صباح."
+    "ar": "أركض كل صباح.",
+    "de": "Ich laufe jeden Morgen."
   },
   "I sent you an email yesterday.": {
     "fr": "Je t'ai envoyé un e-mail hier.",
     "nl": "Ik stuurde je gisteren een e-mail.",
     "es": "Te envié un correo ayer.",
-    "ar": "أرسلت لك بريداً إلكترونياً أمس."
+    "ar": "أرسلت لك بريداً إلكترونياً أمس.",
+    "de": "Ich habe dir gestern eine E-Mail geschickt."
   },
   "I set an out of office reply.": {
     "fr": "J'ai activé une réponse d'absence.",
     "nl": "Ik heb een afwezigheidsmelding ingesteld.",
     "es": "Activé una respuesta automática fuera de la oficina.",
-    "ar": "فعّلت رداً تلقائياً خارج المكتب."
+    "ar": "فعّلت رداً تلقائياً خارج المكتب.",
+    "de": "Ich habe eine Abwesenheitsnotiz aktiviert."
   },
   "I should revise these words.": {
     "fr": "Je devrais réviser ces mots.",
     "nl": "Ik moet deze woorden herhalen.",
     "es": "Debería repasar estas palabras.",
-    "ar": "يجب أن أراجع هذه الكلمات."
+    "ar": "يجب أن أراجع هذه الكلمات.",
+    "de": "Ich sollte diese Wörter wiederholen."
   },
   "I stayed home because I was tired.": {
     "fr": "Je suis resté à la maison parce que j'étais fatigué.",
     "nl": "Ik bleef thuis omdat ik moe was.",
     "es": "Me quedé en casa porque estaba cansado.",
-    "ar": "بقيت في المنزل لأنني كنت متعباً."
+    "ar": "بقيت في المنزل لأنني كنت متعباً.",
+    "de": "Ich bin zu Hause geblieben, weil ich müde war."
   },
   "I study English every day.": {
     "fr": "J'étudie l'anglais chaque jour.",
     "nl": "Ik studeer elke dag Engels.",
     "es": "Estudio inglés todos los días.",
-    "ar": "أدرس الإنجليزية كل يوم."
+    "ar": "أدرس الإنجليزية كل يوم.",
+    "de": "Ich lerne jeden Tag Englisch."
   },
   "I study in the library.": {
     "fr": "J'étudie à la bibliothèque.",
     "nl": "Ik studeer in de bibliotheek.",
     "es": "Estudio en la biblioteca.",
-    "ar": "أدرس في المكتبة."
+    "ar": "أدرس في المكتبة.",
+    "de": "Ich lerne in der Bibliothek."
   },
   "I think that this idea works.": {
     "fr": "Je pense que cette idée fonctionne.",
     "nl": "Ik denk dat dit idee werkt.",
     "es": "Creo que esta idea funciona.",
-    "ar": "أعتقد أن هذه الفكرة ناجحة."
+    "ar": "أعتقد أن هذه الفكرة ناجحة.",
+    "de": "Ich denke, dass diese Idee funktioniert."
   },
   "I travel next week.": {
     "fr": "Je voyage la semaine prochaine.",
     "nl": "Ik reis volgende week.",
     "es": "Viajo la semana que viene.",
-    "ar": "أسافر الأسبوع المقبل."
+    "ar": "أسافر الأسبوع المقبل.",
+    "de": "Ich reise nächste Woche."
   },
   "I travel with a backpack.": {
     "fr": "Je voyage avec un sac à dos.",
     "nl": "Ik reis met een rugzak.",
     "es": "Viajo con una mochila.",
-    "ar": "أسافر بحقيبة ظهر."
+    "ar": "أسافر بحقيبة ظهر.",
+    "de": "Ich reise mit einem Rucksack."
   },
   "I wake up at five o'clock.": {
     "fr": "Je me réveille à cinq heures.",
     "nl": "Ik word om vijf uur wakker.",
     "es": "Me despierto a las cinco.",
-    "ar": "أستيقظ في الساعة الخامسة."
+    "ar": "أستيقظ في الساعة الخامسة.",
+    "de": "Ich wache um fünf Uhr auf."
   },
   "I want to apply for this job.": {
     "fr": "Je veux postuler à ce poste.",
     "nl": "Ik wil solliciteren op deze baan.",
     "es": "Quiero solicitar este trabajo.",
-    "ar": "أريد التقدم لهذه الوظيفة."
+    "ar": "أريد التقدم لهذه الوظيفة.",
+    "de": "Ich möchte mich auf diese Stelle bewerben."
   },
   "I want to change my booking.": {
     "fr": "Je veux modifier ma réservation.",
     "nl": "Ik wil mijn boeking wijzigen.",
     "es": "Quiero cambiar mi reserva.",
-    "ar": "أريد تغيير حجزي."
+    "ar": "أريد تغيير حجزي.",
+    "de": "Ich möchte meine Buchung ändern."
   },
   "I want to improve my English.": {
     "fr": "Je veux améliorer mon anglais.",
     "nl": "Ik wil mijn Engels verbeteren.",
     "es": "Quiero mejorar mi inglés.",
-    "ar": "أريد تحسين لغتي الإنجليزية."
+    "ar": "أريد تحسين لغتي الإنجليزية.",
+    "de": "Ich möchte mein Englisch verbessern."
   },
   "I want to learn useful phrases.": {
     "fr": "Je veux apprendre des phrases utiles.",
     "nl": "Ik wil nuttige zinnen leren.",
     "es": "Quiero aprender frases útiles.",
-    "ar": "أريد تعلم عبارات مفيدة."
+    "ar": "أريد تعلم عبارات مفيدة.",
+    "de": "Ich möchte nützliche Phrasen lernen."
   },
   "I want to make a complaint.": {
     "fr": "Je veux faire une réclamation.",
     "nl": "Ik wil een klacht indienen.",
     "es": "Quiero presentar una queja.",
-    "ar": "أريد تقديم شكوى."
+    "ar": "أريد تقديم شكوى.",
+    "de": "Ich möchte eine Beschwerde einreichen."
   },
   "I watch series on weekends.": {
     "fr": "Je regarde des séries le week-end.",
     "nl": "Ik kijk in het weekend series.",
     "es": "Veo series los fines de semana.",
-    "ar": "أشاهد المسلسلات في عطلة نهاية الأسبوع."
+    "ar": "أشاهد المسلسلات في عطلة نهاية الأسبوع.",
+    "de": "Ich schaue am Wochenende Serien."
   },
   "I will call you later.": {
     "fr": "Je t'appellerai plus tard.",
     "nl": "Ik bel je later.",
     "es": "Te llamaré más tarde.",
-    "ar": "سأتصل بك لاحقاً."
+    "ar": "سأتصل بك لاحقاً.",
+    "de": "Ich rufe dich später an."
   },
   "I will pay by card.": {
     "fr": "Je paierai par carte.",
     "nl": "Ik betaal met de kaart.",
     "es": "Pagaré con tarjeta.",
-    "ar": "سأدفع بالبطاقة."
+    "ar": "سأدفع بالبطاقة.",
+    "de": "Ich zahle mit Karte."
   },
   "I work the night shift.": {
     "fr": "Je travaille de nuit.",
     "nl": "Ik werk de nachtdienst.",
     "es": "Trabajo en turno de noche.",
-    "ar": "أعمل في وردية الليل."
+    "ar": "أعمل في وردية الليل.",
+    "de": "Ich arbeite in der Nachtschicht."
   },
   "I work with a new colleague.": {
     "fr": "Je travaille avec un nouveau collègue.",
     "nl": "Ik werk met een nieuwe collega.",
     "es": "Trabajo con un colega nuevo.",
-    "ar": "أعمل مع زميل جديد."
+    "ar": "أعمل مع زميل جديد.",
+    "de": "Ich arbeite mit einem neuen Kollegen."
   },
   "I worked overtime last week.": {
     "fr": "J'ai fait des heures supplémentaires la semaine dernière.",
     "nl": "Ik werkte vorige week overuren.",
     "es": "Hice horas extra la semana pasada.",
-    "ar": "عملت ساعات إضافية الأسبوع الماضي."
+    "ar": "عملت ساعات إضافية الأسبوع الماضي.",
+    "de": "Ich habe letzte Woche Überstunden gemacht."
   },
   "I would like a coffee.": {
     "fr": "Je voudrais un café.",
     "nl": "Ik zou graag een koffie willen.",
     "es": "Quisiera un café.",
-    "ar": "أود قهوة."
+    "ar": "أود قهوة.",
+    "de": "Ich hätte gerne einen Kaffee."
   },
   "I would like a quiet room.": {
     "fr": "Je voudrais une chambre calme.",
     "nl": "Ik zou graag een rustige kamer willen.",
     "es": "Quisiera una habitación tranquila.",
-    "ar": "أود غرفة هادئة."
+    "ar": "أود غرفة هادئة.",
+    "de": "Ich hätte gerne ein ruhiges Zimmer."
   },
   "I would like a refund.": {
     "fr": "Je voudrais un remboursement.",
     "nl": "Ik zou graag mijn geld terug willen.",
     "es": "Quisiera un reembolso.",
-    "ar": "أود استرداد المبلغ."
+    "ar": "أود استرداد المبلغ.",
+    "de": "Ich hätte gerne eine Rückerstattung."
   },
   "I would like more information.": {
     "fr": "Je voudrais plus d'informations.",
     "nl": "Ik zou graag meer informatie willen.",
     "es": "Quisiera más información.",
-    "ar": "أود مزيداً من المعلومات."
+    "ar": "أود مزيداً من المعلومات.",
+    "de": "Ich hätte gerne mehr Informationen."
   },
   "I would like to order now.": {
     "fr": "Je voudrais commander maintenant.",
     "nl": "Ik wil nu bestellen.",
     "es": "Quisiera pedir ahora.",
-    "ar": "أود الطلب الآن."
+    "ar": "أود الطلب الآن.",
+    "de": "Ich möchte jetzt bestellen."
   },
   "I'd like a coffee, please.": {
     "fr": "Un café, s'il vous plaît.",
     "nl": "Een koffie, alsjeblieft.",
     "es": "Un café, por favor.",
-    "ar": "قهوة، من فضلك."
+    "ar": "قهوة، من فضلك.",
+    "de": "Einen Kaffee, bitte."
   },
   "In addition, the service is free.": {
     "fr": "De plus, le service est gratuit.",
     "nl": "Bovendien is de service gratis.",
     "es": "Además, el servicio es gratuito.",
-    "ar": "بالإضافة إلى ذلك، الخدمة مجانية."
+    "ar": "بالإضافة إلى ذلك، الخدمة مجانية.",
+    "de": "Außerdem ist der Service kostenlos."
   },
   "In conclusion, practice every day.": {
     "fr": "En conclusion, pratique chaque jour.",
     "nl": "Kortom, oefen elke dag.",
     "es": "En conclusión, practica cada día.",
-    "ar": "في الختام، تدرب كل يوم."
+    "ar": "في الختام، تدرب كل يوم.",
+    "de": "Zusammenfassend: übe jeden Tag."
   },
   "In my opinion, we should wait.": {
     "fr": "À mon avis, nous devrions attendre.",
     "nl": "Naar mijn mening moeten we wachten.",
     "es": "En mi opinión, deberíamos esperar.",
-    "ar": "في رأيي، يجب أن ننتظر."
+    "ar": "في رأيي، يجب أن ننتظر.",
+    "de": "Meiner Meinung nach sollten wir warten."
   },
   "In other words, start sooner.": {
     "fr": "En d'autres termes, commence plus tôt.",
     "nl": "Met andere woorden, begin eerder.",
     "es": "En otras palabras, empieza antes.",
-    "ar": "بعبارة أخرى، ابدأ أبكر."
+    "ar": "بعبارة أخرى، ابدأ أبكر.",
+    "de": "Anders gesagt: fang früher an."
   },
   "Install the latest update.": {
     "fr": "Installe la dernière mise à jour.",
     "nl": "Installeer de nieuwste update.",
     "es": "Instala la última actualización.",
-    "ar": "ثبّت آخر تحديث."
+    "ar": "ثبّت آخر تحديث.",
+    "de": "Installiere das neueste Update."
   },
   "Is a table available at eight?": {
     "fr": "Une table est-elle disponible à huit heures ?",
     "nl": "Is er om acht uur een tafel vrij?",
     "es": "¿Hay mesa disponible a las ocho?",
-    "ar": "هل يوجد طاولة متاحة في الثامنة؟"
+    "ar": "هل يوجد طاولة متاحة في الثامنة؟",
+    "de": "Ist um acht Uhr ein Tisch frei?"
   },
   "Is anyone injured?": {
     "fr": "Quelqu'un est-il blessé ?",
     "nl": "Is iemand gewond?",
     "es": "¿Hay alguien herido?",
-    "ar": "هل أصيب أحد؟"
+    "ar": "هل أصيب أحد؟",
+    "de": "Ist jemand verletzt?"
   },
   "Is breakfast included?": {
     "fr": "Le petit-déjeuner est-il inclus ?",
     "nl": "Is ontbijt inbegrepen?",
     "es": "¿El desayuno está incluido?",
-    "ar": "هل الفطور مشمول؟"
+    "ar": "هل الفطور مشمول؟",
+    "de": "Ist das Frühstück inklusive?"
   },
   "Is takeaway available?": {
     "fr": "Les plats à emporter sont-ils disponibles ?",
     "nl": "Is afhalen mogelijk?",
     "es": "¿Hay comida para llevar?",
-    "ar": "هل الطعام الجاهز متاح؟"
+    "ar": "هل الطعام الجاهز متاح؟",
+    "de": "Gibt es Speisen zum Mitnehmen?"
   },
   "Is the museum far from here?": {
     "fr": "Le musée est-il loin d'ici ?",
     "nl": "Is het museum ver van hier?",
     "es": "¿El museo está lejos de aquí?",
-    "ar": "هل المتحف بعيد من هنا؟"
+    "ar": "هل المتحف بعيد من هنا؟",
+    "de": "Ist das Museum weit von hier?"
   },
   "Is the room clean?": {
     "fr": "La chambre est-elle propre ?",
     "nl": "Is de kamer schoon?",
     "es": "¿Está limpia la habitación?",
-    "ar": "هل الغرفة نظيفة؟"
+    "ar": "هل الغرفة نظيفة؟",
+    "de": "Ist das Zimmer sauber?"
   },
   "Is the tip included?": {
     "fr": "Le pourboire est-il inclus ?",
     "nl": "Is de fooi inbegrepen?",
     "es": "¿La propina está incluida?",
-    "ar": "هل البقشيش مشمول؟"
+    "ar": "هل البقشيش مشمول؟",
+    "de": "Ist das Trinkgeld inklusive?"
   },
   "Is there a pharmacy nearby?": {
     "fr": "Y a-t-il une pharmacie à proximité ?",
     "nl": "Is er een apotheek in de buurt?",
     "es": "¿Hay una farmacia cerca?",
-    "ar": "هل توجد صيدلية قريبة؟"
+    "ar": "هل توجد صيدلية قريبة؟",
+    "de": "Gibt es in der Nähe eine Apotheke?"
   },
   "Is there a service charge?": {
     "fr": "Y a-t-il des frais de service ?",
     "nl": "Is er servicekosten?",
     "es": "¿Hay cargo por servicio?",
-    "ar": "هل توجد رسوم خدمة؟"
+    "ar": "هل توجد رسوم خدمة؟",
+    "de": "Gibt es eine Servicegebühr?"
   },
   "Is there a student discount?": {
     "fr": "Y a-t-il une réduction étudiante ?",
     "nl": "Is er studentenkorting?",
     "es": "¿Hay descuento para estudiantes?",
-    "ar": "هل يوجد خصم للطلاب؟"
+    "ar": "هل يوجد خصم للطلاب؟",
+    "de": "Gibt es einen Studentenrabatt?"
   },
   "Is there a vegetarian option?": {
     "fr": "Y a-t-il une option végétarienne ?",
     "nl": "Is er een vegetarische optie?",
     "es": "¿Hay opción vegetariana?",
-    "ar": "هل يوجد خيار نباتي؟"
+    "ar": "هل يوجد خيار نباتي؟",
+    "de": "Gibt es eine vegetarische Option?"
   },
   "Is there an ATM nearby?": {
     "fr": "Y a-t-il un distributeur à proximité ?",
     "nl": "Is er een geldautomaat in de buurt?",
     "es": "¿Hay un cajero cerca?",
-    "ar": "هل يوجد صراف آلي قريب؟"
+    "ar": "هل يوجد صراف آلي قريب؟",
+    "de": "Gibt es in der Nähe einen Geldautomaten?"
   },
   "Is there enough time?": {
     "fr": "Y a-t-il assez de temps ?",
     "nl": "Is er genoeg tijd?",
     "es": "¿Hay suficiente tiempo?",
-    "ar": "هل يوجد وقت كافٍ؟"
+    "ar": "هل يوجد وقت كافٍ؟",
+    "de": "Ist genug Zeit?"
   },
   "Is this neighbourhood safe?": {
     "fr": "Ce quartier est-il sûr ?",
     "nl": "Is deze buurt veilig?",
     "es": "¿Es seguro este barrio?",
-    "ar": "هل هذا الحي آمن؟"
+    "ar": "هل هذا الحي آمن؟",
+    "de": "Ist diese Gegend sicher?"
   },
   "Is this timeline feasible?": {
     "fr": "Ce calendrier est-il réalisable ?",
     "nl": "Is deze planning haalbaar?",
     "es": "¿Es viable este calendario?",
-    "ar": "هل هذا الجدول الزمني ممكن؟"
+    "ar": "هل هذا الجدول الزمني ممكن؟",
+    "de": "Ist dieser Zeitplan machbar?"
   },
   "It costs ten euros.": {
     "fr": "Ça coûte dix euros.",
     "nl": "Het kost tien euro.",
     "es": "Cuesta diez euros.",
-    "ar": "ثمنه عشرة يورو."
+    "ar": "ثمنه عشرة يورو.",
+    "de": "Das kostet zehn Euro."
   },
   "It depends on the weather.": {
     "fr": "Ça dépend de la météo.",
     "nl": "Het hangt van het weer af.",
     "es": "Depende del tiempo.",
-    "ar": "يعتمد على الطقس."
+    "ar": "يعتمد على الطقس.",
+    "de": "Das hängt vom Wetter ab."
   },
   "It is cold; I need a blanket.": {
     "fr": "Il fait froid ; j'ai besoin d'une couverture.",
     "nl": "Het is koud; ik heb een deken nodig.",
     "es": "Hace frío; necesito una manta.",
-    "ar": "الجو بارد؛ أحتاج بطانية."
+    "ar": "الجو بارد؛ أحتاج بطانية.",
+    "de": "Es ist kalt; ich brauche eine Decke."
   },
   "It is hot outside.": {
     "fr": "Il fait chaud dehors.",
     "nl": "Het is warm buiten.",
     "es": "Hace calor afuera.",
-    "ar": "الجو حار في الخارج."
+    "ar": "الجو حار في الخارج.",
+    "de": "Es ist draußen heiß."
   },
   "It takes at most fifteen minutes.": {
     "fr": "Cela prend au maximum quinze minutes.",
     "nl": "Het duurt hoogstens vijftien minuten.",
     "es": "Tarda como máximo quince minutos.",
-    "ar": "يستغرق الأمر خمس عشرة دقيقة كحد أقصى."
+    "ar": "يستغرق الأمر خمس عشرة دقيقة كحد أقصى.",
+    "de": "Das dauert höchstens fünfzehn Minuten."
   },
   "Keep the receipt for returns.": {
     "fr": "Garde le reçu pour les retours.",
     "nl": "Bewaar de bon voor retour.",
     "es": "Guarda el recibo para devoluciones.",
-    "ar": "احتفظ بالإيصال للإرجاع."
+    "ar": "احتفظ بالإيصال للإرجاع.",
+    "de": "Bewahre den Beleg für Rückgaben auf."
   },
   "Keep your passport safe.": {
     "fr": "Garde ton passeport en sécurité.",
     "nl": "Bewaar je paspoort veilig.",
     "es": "Guarda tu pasaporte en un lugar seguro.",
-    "ar": "احفظ جواز سفرك في مكان آمن."
+    "ar": "احفظ جواز سفرك في مكان آمن.",
+    "de": "Bewahre deinen Pass sicher auf."
   },
   "Leaders must be accountable.": {
     "fr": "Les dirigeants doivent être responsables.",
     "nl": "Leiders moeten verantwoording afleggen.",
     "es": "Los líderes deben rendir cuentas.",
-    "ar": "يجب أن يكون القادة مسؤولين."
+    "ar": "يجب أن يكون القادة مسؤولين.",
+    "de": "Führungskräfte müssen verantwortlich sein."
   },
   "Let me clarify what I meant.": {
     "fr": "Laisse-moi clarifier ce que je voulais dire.",
     "nl": "Laat me verduidelijken wat ik bedoelde.",
     "es": "Déjame aclarar lo que quise decir.",
-    "ar": "دعني أوضح ما قصدته."
+    "ar": "دعني أوضح ما قصدته.",
+    "de": "Lass mich klarstellen, was ich meinte."
   },
   "Let's brainstorm new ideas.": {
     "fr": "Brainstormons de nouvelles idées.",
     "nl": "Laten we brainstormen over nieuwe ideeën.",
     "es": "Hagamos una lluvia de ideas.",
-    "ar": "لنناقش أفكاراً جديدة."
+    "ar": "لنناقش أفكاراً جديدة.",
+    "de": "Lass uns neue Ideen sammeln."
   },
   "Let's have lunch together.": {
     "fr": "Déjeunons ensemble.",
     "nl": "Laten we samen lunchen.",
     "es": "Almorcémos juntos.",
-    "ar": "لنتناول الغداء معاً."
+    "ar": "لنتناول الغداء معاً.",
+    "de": "Lass uns zusammen zu Mittag essen."
   },
   "Let's schedule a call for Monday.": {
     "fr": "Planifions un appel pour lundi.",
     "nl": "Laten we een gesprek inplannen voor maandag.",
     "es": "Programemos una llamada para el lunes.",
-    "ar": "لنجدول مكالمة يوم الاثنين."
+    "ar": "لنجدول مكالمة يوم الاثنين.",
+    "de": "Lass uns einen Anruf für Montag planen."
   },
   "Let's start the next lesson.": {
     "fr": "Commençons la prochaine leçon.",
     "nl": "Laten we met de volgende les beginnen.",
     "es": "Empecemos la siguiente lección.",
-    "ar": "لنبدأ الدرس التالي."
+    "ar": "لنبدأ الدرس التالي.",
+    "de": "Lass uns mit der nächsten Lektion beginnen."
   },
   "Let's walk in the park.": {
     "fr": "Promenons-nous dans le parc.",
     "nl": "Laten we in het park wandelen.",
     "es": "Paseemos por el parque.",
-    "ar": "لنتنزه في الحديقة."
+    "ar": "لنتنزه في الحديقة.",
+    "de": "Lass uns im Park spazieren gehen."
   },
   "Listen carefully to the audio.": {
     "fr": "Écoute attentivement l'audio.",
     "nl": "Luister aandachtig naar de audio.",
     "es": "Escucha atentamente el audio.",
-    "ar": "استمع جيداً إلى المقطع الصوتي."
+    "ar": "استمع جيداً إلى المقطع الصوتي.",
+    "de": "Hör dir das Audio sorgfältig an."
   },
   "Lock the door when you leave.": {
     "fr": "Ferme la porte à clé quand tu pars.",
     "nl": "Sluit de deur op slot als je weggaat.",
     "es": "Cierra la puerta con llave cuando te vayas.",
-    "ar": "اقفل الباب عند مغادرتك."
+    "ar": "اقفل الباب عند مغادرتك.",
+    "de": "Schließ die Tür ab, wenn du gehst."
   },
   "Log in with your email.": {
     "fr": "Connecte-toi avec ton e-mail.",
     "nl": "Log in met je e-mail.",
     "es": "Inicia sesión con tu correo.",
-    "ar": "سجّل الدخول ببريدك الإلكتروني."
+    "ar": "سجّل الدخول ببريدك الإلكتروني.",
+    "de": "Melde dich mit deiner E-Mail an."
   },
   "Look it up in a dictionary.": {
     "fr": "Cherche-le dans un dictionnaire.",
     "nl": "Zoek het op in een woordenboek.",
     "es": "Búscalo en un diccionario.",
-    "ar": "ابحث عنه في القاموس."
+    "ar": "ابحث عنه في القاموس.",
+    "de": "Schlag es in einem Wörterbuch nach."
   },
   "Make the steak well done.": {
     "fr": "Faites cuire le steak bien cuit.",
     "nl": "Bak de biefstuk doorbakken.",
     "es": "Haga el bistec bien hecho.",
-    "ar": "اطهِ شريحة اللحم مطهية جيداً."
+    "ar": "اطهِ شريحة اللحم مطهية جيداً.",
+    "de": "Machen Sie das Steak durchgebraten."
   },
   "Many people visit this city.": {
     "fr": "Beaucoup de gens visitent cette ville.",
     "nl": "Veel mensen bezoeken deze stad.",
     "es": "Mucha gente visita esta ciudad.",
-    "ar": "يزور كثير من الناس هذه المدينة."
+    "ar": "يزور كثير من الناس هذه المدينة.",
+    "de": "Viele Leute besuchen diese Stadt."
   },
   "Many tourists visit in summer.": {
     "fr": "Beaucoup de touristes visitent en été.",
     "nl": "Veel toeristen komen in de zomer.",
     "es": "Muchos turistas visitan en verano.",
-    "ar": "يزور كثير من السياح في الصيف."
+    "ar": "يزور كثير من السياح في الصيف.",
+    "de": "Viele Touristen kommen im Sommer."
   },
   "Math is my favourite subject.": {
     "fr": "Les maths sont ma matière préférée.",
     "nl": "Wiskunde is mijn favoriete vak.",
     "es": "Las matemáticas son mi asignatura favorita.",
-    "ar": "الرياضيات مادتي المفضلة."
+    "ar": "الرياضيات مادتي المفضلة.",
+    "de": "Mathe ist mein Lieblingsfach."
   },
   "May I have a spoon?": {
     "fr": "Puis-je avoir une cuillère ?",
     "nl": "Mag ik een lepel?",
     "es": "¿Me trae una cuchara?",
-    "ar": "هل يمكنني الحصول على ملعقة؟"
+    "ar": "هل يمكنني الحصول على ملعقة؟",
+    "de": "Darf ich einen Löffel haben?"
   },
   "May I see the menu?": {
     "fr": "Puis-je voir le menu ?",
     "nl": "Mag ik het menu zien?",
     "es": "¿Puedo ver el menú?",
-    "ar": "هل يمكنني رؤية قائمة الطعام؟"
+    "ar": "هل يمكنني رؤية قائمة الطعام؟",
+    "de": "Darf ich die Speisekarte sehen?"
   },
   "May I speak to the manager?": {
     "fr": "Puis-je parler au responsable ?",
     "nl": "Mag ik met de manager spreken?",
     "es": "¿Puedo hablar con el encargado?",
-    "ar": "هل يمكنني التحدث إلى المدير؟"
+    "ar": "هل يمكنني التحدث إلى المدير؟",
+    "de": "Darf ich mit dem Verantwortlichen sprechen?"
   },
   "Maybe we can meet later.": {
     "fr": "Peut-être pouvons-nous nous voir plus tard.",
     "nl": "Misschien kunnen we later afspreken.",
     "es": "Quizá podamos quedar más tarde.",
-    "ar": "ربما نلتقي لاحقاً."
+    "ar": "ربما نلتقي لاحقاً.",
+    "de": "Vielleicht können wir uns später treffen."
   },
   "Meet me outside the classroom.": {
     "fr": "Retrouve-moi devant la salle de classe.",
     "nl": "Ontmoet me buiten het klaslokaal.",
     "es": "Encuéntrame fuera del aula.",
-    "ar": "قابلني خارج الصف."
+    "ar": "قابلني خارج الصف.",
+    "de": "Triff mich vor dem Klassenzimmer."
   },
   "My bag was stolen.": {
     "fr": "On m'a volé mon sac.",
     "nl": "Mijn tas is gestolen.",
     "es": "Me robaron el bolso.",
-    "ar": "سُرق حقيبتي."
+    "ar": "سُرق حقيبتي.",
+    "de": "Meine Tasche wurde gestohlen."
   },
   "My battery is almost empty.": {
     "fr": "Ma batterie est presque vide.",
     "nl": "Mijn batterij is bijna leeg.",
     "es": "Mi batería está casi vacía.",
-    "ar": "بطاريتي على وشك النفاد."
+    "ar": "بطاريتي على وشك النفاد.",
+    "de": "Mein Akku ist fast leer."
   },
   "My brother works in London.": {
     "fr": "Mon frère travaille à Londres.",
     "nl": "Mijn broer werkt in Londen.",
     "es": "Mi hermano trabaja en Londres.",
-    "ar": "يعمل أخي في لندن."
+    "ar": "يعمل أخي في لندن.",
+    "de": "Mein Bruder arbeitet in London."
   },
   "My colleague prepared the slides.": {
     "fr": "Mon collègue a préparé les diapositives.",
     "nl": "Mijn collega heeft de slides voorbereid.",
     "es": "Mi colega preparó las diapositivas.",
-    "ar": "أعد زميلي الشرائح."
+    "ar": "أعد زميلي الشرائح.",
+    "de": "Mein Kollege hat die Folien vorbereitet."
   },
   "My family lives nearby.": {
     "fr": "Ma famille habite à proximité.",
     "nl": "Mijn familie woont in de buurt.",
     "es": "Mi familia vive cerca.",
-    "ar": "تعيش عائلتي قريباً."
+    "ar": "تعيش عائلتي قريباً.",
+    "de": "Meine Familie wohnt in der Nähe."
   },
   "My father speaks English well.": {
     "fr": "Mon père parle bien anglais.",
     "nl": "Mijn vader spreekt goed Engels.",
     "es": "Mi padre habla bien inglés.",
-    "ar": "يتحدث أبي الإنجليزية جيداً."
+    "ar": "يتحدث أبي الإنجليزية جيداً.",
+    "de": "Mein Vater spricht gut Englisch."
   },
   "My flight is delayed.": {
     "fr": "Mon vol est retardé.",
     "nl": "Mijn vlucht heeft vertraging.",
     "es": "Mi vuelo está retrasado.",
-    "ar": "رحلتي متأخرة."
+    "ar": "رحلتي متأخرة.",
+    "de": "Mein Flug hat Verspätung."
   },
   "My mother cooks every Sunday.": {
     "fr": "Ma mère cuisine tous les dimanches.",
     "nl": "Mijn moeder kookt elke zondag.",
     "es": "Mi madre cocina todos los domingos.",
-    "ar": "تطبخ أمي كل يوم أحد."
+    "ar": "تطبخ أمي كل يوم أحد.",
+    "de": "Meine Mutter kocht jeden Sonntag."
   },
   "My name is Alex.": {
     "fr": "Je m'appelle Alex.",
     "nl": "Mijn naam is Alex.",
     "es": "Me llamo Alex.",
-    "ar": "اسمي أليكس."
+    "ar": "اسمي أليكس.",
+    "de": "Ich heiße Alex."
   },
   "My notice period is one month.": {
     "fr": "Mon préavis est d'un mois.",
     "nl": "Mijn opzegtermijn is een maand.",
     "es": "Mi preaviso es de un mes.",
-    "ar": "مدة إشعار استقالتي شهر واحد."
+    "ar": "مدة إشعار استقالتي شهر واحد.",
+    "de": "Meine Kündigungsfrist beträgt einen Monat."
   },
   "My research focuses on climate.": {
     "fr": "Ma recherche porte sur le climat.",
     "nl": "Mijn onderzoek richt zich op het klimaat.",
     "es": "Mi investigación se centra en el clima.",
-    "ar": "يركز بحثي على المناخ."
+    "ar": "يركز بحثي على المناخ.",
+    "de": "Meine Forschung konzentriert sich auf das Klima."
   },
   "My sister studies medicine.": {
     "fr": "Ma sœur étudie la médecine.",
     "nl": "Mijn zus studeert geneeskunde.",
     "es": "Mi hermana estudia medicina.",
-    "ar": "تدرس أختي الطب."
+    "ar": "تدرس أختي الطب.",
+    "de": "Meine Schwester studiert Medizin."
   },
   "My suitcase is heavy.": {
     "fr": "Ma valise est lourde.",
     "nl": "Mijn koffer is zwaar.",
     "es": "Mi maleta es pesada.",
-    "ar": "حقيبتي ثقيلة."
+    "ar": "حقيبتي ثقيلة.",
+    "de": "Mein Koffer ist schwer."
   },
   "Neither option works for me.": {
     "fr": "Aucune des deux options ne me convient.",
     "nl": "Geen van beide opties werkt voor mij.",
     "es": "Ninguna opción me sirve.",
-    "ar": "لا يناسبني أي من الخيارين."
+    "ar": "لا يناسبني أي من الخيارين.",
+    "de": "Keine der beiden Optionen passt für mich."
   },
   "Never open the door to a stranger.": {
     "fr": "N'ouvre jamais la porte à un inconnu.",
     "nl": "Open nooit de deur voor een vreemde.",
     "es": "Nunca abras la puerta a un desconocido.",
-    "ar": "لا تفتح الباب أبداً لغريب."
+    "ar": "لا تفتح الباب أبداً لغريب.",
+    "de": "Öffne nie die Tür für einen Fremden."
   },
   "Never share your password.": {
     "fr": "Ne partage jamais ton mot de passe.",
     "nl": "Deel nooit je wachtwoord.",
     "es": "Nunca compartas tu contraseña.",
-    "ar": "لا تشارك كلمة مرورك أبداً."
+    "ar": "لا تشارك كلمة مرورك أبداً.",
+    "de": "Teile nie dein Passwort."
   },
   "Nevertheless, we continued.": {
     "fr": "Néanmoins, nous avons continué.",
     "nl": "Toch gingen we door.",
     "es": "Sin embargo, continuamos.",
-    "ar": "مع ذلك، واصلنا."
+    "ar": "مع ذلك، واصلنا.",
+    "de": "Trotzdem haben wir weitergemacht."
   },
   "Nice to meet you.": {
     "fr": "Enchanté.",
     "nl": "Leuk je te ontmoeten.",
     "es": "Encantado de conocerte.",
-    "ar": "تشرفت بلقائك."
+    "ar": "تشرفت بلقائك.",
+    "de": "Freut mich."
   },
   "No sugar in my tea, please.": {
     "fr": "Pas de sucre dans mon thé, s'il vous plaît.",
     "nl": "Geen suiker in mijn thee, alsjeblieft.",
     "es": "Sin azúcar en mi té, por favor.",
-    "ar": "بدون سكر في شاي، من فضلك."
+    "ar": "بدون سكر في شاي، من فضلك.",
+    "de": "Kein Zucker in meinem Tee, bitte."
   },
   "No, thank you.": {
     "fr": "Non, merci.",
     "nl": "Nee, bedankt.",
     "es": "No, gracias.",
-    "ar": "لا، شكراً."
+    "ar": "لا، شكراً.",
+    "de": "Nein, danke."
   },
   "Now I understand the rule.": {
     "fr": "Maintenant je comprends la règle.",
     "nl": "Nu begrijp ik de regel.",
     "es": "Ahora entiendo la regla.",
-    "ar": "الآن أفهم القاعدة."
+    "ar": "الآن أفهم القاعدة.",
+    "de": "Jetzt verstehe ich die Regel."
   },
   "Of course I can help.": {
     "fr": "Bien sûr, je peux aider.",
     "nl": "Natuurlijk kan ik helpen.",
     "es": "Por supuesto que puedo ayudar.",
-    "ar": "بالطبع يمكنني المساعدة."
+    "ar": "بالطبع يمكنني المساعدة.",
+    "de": "Natürlich kann ich helfen."
   },
   "On the one hand, it is cheaper.": {
     "fr": "D'une part, c'est moins cher.",
     "nl": "Enerzijds is het goedkoper.",
     "es": "Por un lado, es más barato.",
-    "ar": "من ناحية، إنه أرخص."
+    "ar": "من ناحية، إنه أرخص.",
+    "de": "Einerseits ist es günstiger."
   },
   "On the other hand, it takes longer.": {
     "fr": "D'autre part, cela prend plus de temps.",
     "nl": "Anderzijds duurt het langer.",
     "es": "Por otro lado, tarda más.",
-    "ar": "من ناحية أخرى، يستغرق وقتاً أطول."
+    "ar": "من ناحية أخرى، يستغرق وقتاً أطول.",
+    "de": "Andererseits dauert es länger."
   },
   "One beer and one water.": {
     "fr": "Une bière et une eau.",
     "nl": "Eén bier en één water.",
     "es": "Una cerveza y un agua.",
-    "ar": "بيرة واحدة وماء واحد."
+    "ar": "بيرة واحدة وماء واحد.",
+    "de": "Ein Bier und ein Wasser."
   },
   "One hundred people came.": {
     "fr": "Cent personnes sont venues.",
     "nl": "Honderd mensen kwamen.",
     "es": "Vinieron cien personas.",
-    "ar": "حضر مئة شخص."
+    "ar": "حضر مئة شخص.",
+    "de": "Hundert Leute sind gekommen."
   },
   "Online check-in opens 24 hours before.": {
     "fr": "L'enregistrement en ligne ouvre 24 heures avant.",
     "nl": "Online inchecken opent 24 uur van tevoren.",
     "es": "El check-in online abre 24 horas antes.",
-    "ar": "يفتح تسجيل الوصول عبر الإنترنت قبل 24 ساعة."
+    "ar": "يفتح تسجيل الوصول عبر الإنترنت قبل 24 ساعة.",
+    "de": "Der Online-Check-in öffnet 24 Stunden vorher."
   },
   "Orange juice for breakfast.": {
     "fr": "Du jus d'orange au petit-déjeuner.",
     "nl": "Sinaasappelsap bij het ontbijt.",
     "es": "Zumo de naranja para el desayuno.",
-    "ar": "عصير برتقال على الفطور."
+    "ar": "عصير برتقال على الفطور.",
+    "de": "Orangensaft zum Frühstück."
   },
   "Our goal is to improve quality.": {
     "fr": "Notre objectif est d'améliorer la qualité.",
     "nl": "Ons doel is de kwaliteit te verbeteren.",
     "es": "Nuestro objetivo es mejorar la calidad.",
-    "ar": "هدفنا تحسين الجودة."
+    "ar": "هدفنا تحسين الجودة.",
+    "de": "Unser Ziel ist es, die Qualität zu verbessern."
   },
   "Our hotel is in the west.": {
     "fr": "Notre hôtel est à l'ouest.",
     "nl": "Ons hotel ligt in het westen.",
     "es": "Nuestro hotel está al oeste.",
-    "ar": "فندقنا في الغرب."
+    "ar": "فندقنا في الغرب.",
+    "de": "Unser Hotel liegt im Westen."
   },
   "Our neighbour is very kind.": {
     "fr": "Notre voisin est très gentil.",
     "nl": "Onze buur is erg aardig.",
     "es": "Nuestro vecino es muy amable.",
-    "ar": "جارنا لطيف جداً."
+    "ar": "جارنا لطيف جداً.",
+    "de": "Unser Nachbar ist sehr nett."
   },
   "Our room has a small balcony.": {
     "fr": "Notre chambre a un petit balcon.",
     "nl": "Onze kamer heeft een klein balkon.",
     "es": "Nuestra habitación tiene un pequeño balcón.",
-    "ar": "غرفتنا لها شرفة صغيرة."
+    "ar": "غرفتنا لها شرفة صغيرة.",
+    "de": "Unser Zimmer hat einen kleinen Balkon."
   },
   "Our team finished the project.": {
     "fr": "Notre équipe a terminé le projet.",
     "nl": "Ons team heeft het project afgerond.",
     "es": "Nuestro equipo terminó el proyecto.",
-    "ar": "أنهى فريقنا المشروع."
+    "ar": "أنهى فريقنا المشروع.",
+    "de": "Unser Team hat das Projekt abgeschlossen."
   },
   "Paraphrase the sentence in your own words.": {
     "fr": "Reformule la phrase avec tes propres mots.",
     "nl": "Parafraseer de zin in je eigen woorden.",
     "es": "Parafrasea la frase con tus propias palabras.",
-    "ar": "أعد صياغة الجملة بكلماتك."
+    "ar": "أعد صياغة الجملة بكلماتك.",
+    "de": "Formuliere den Satz mit deinen eigenen Worten um."
   },
   "Passport control is this way.": {
     "fr": "Le contrôle des passeports est par ici.",
     "nl": "Paspoortcontrole is deze kant op.",
     "es": "El control de pasaportes es por aquí.",
-    "ar": "مراقبة الجوازات من هذا الطريق."
+    "ar": "مراقبة الجوازات من هذا الطريق.",
+    "de": "Die Passkontrolle ist hier entlang."
   },
   "Pay at the cashier.": {
     "fr": "Payez à la caisse.",
     "nl": "Betaal bij de kassa.",
     "es": "Pague en caja.",
-    "ar": "ادفع عند الصندوق."
+    "ar": "ادفع عند الصندوق.",
+    "de": "Zahlen Sie an der Kasse."
   },
   "Payment is due on Monday.": {
     "fr": "Le paiement est dû lundi.",
     "nl": "Betaling is verschuldigd op maandag.",
     "es": "El pago vence el lunes.",
-    "ar": "الدفع مستحق يوم الاثنين."
+    "ar": "الدفع مستحق يوم الاثنين.",
+    "de": "Die Zahlung ist am Montag fällig."
   },
-  "Please cc your manager.": {
-    "fr": "Mettez votre manager en copie, s'il vous plaît.",
+  "Please put your manager in cc.": {
+    "fr": "Mets ton manager en copie, s'il te plaît.",
     "nl": "Zet je manager in de cc, alsjeblieft.",
-    "es": "Por favor, ponga a su manager en copia.",
-    "ar": "من فضلك ضع مديرك في نسخة."
+    "es": "Pon a tu jefe en copia, por favor.",
+    "ar": "من فضلك ضع مديرك في نسخة.",
+    "de": "Setze bitte deinen Manager in CC."
   },
   "Please confirm your attendance.": {
     "fr": "Veuillez confirmer votre présence.",
     "nl": "Bevestig je aanwezigheid, alsjeblieft.",
     "es": "Por favor, confirme su asistencia.",
-    "ar": "يرجى تأكيد حضورك."
+    "ar": "يرجى تأكيد حضورك.",
+    "de": "Bitte bestätigen Sie Ihre Anwesenheit."
   },
   "Please open the attachment.": {
     "fr": "Veuillez ouvrir la pièce jointe.",
     "nl": "Open de bijlage, alsjeblieft.",
     "es": "Por favor, abra el archivo adjunto.",
-    "ar": "يرجى فتح المرفق."
+    "ar": "يرجى فتح المرفق.",
+    "de": "Bitte öffnen Sie den Anhang."
   },
   "Please prepare for landing.": {
     "fr": "Veuillez vous préparer à l'atterrissage.",
     "nl": "Bereid u voor op de landing.",
     "es": "Por favor, prepárense para el aterrizaje.",
-    "ar": "يرجى الاستعداد للهبوط."
+    "ar": "يرجى الاستعداد للهبوط.",
+    "de": "Bitte bereiten Sie sich auf die Landung vor."
   },
   "Please replace this broken lamp.": {
     "fr": "Veuillez remplacer cette lampe cassée.",
     "nl": "Vervang deze kapotte lamp, alsjeblieft.",
     "es": "Por favor, sustituya esta lámpara rota.",
-    "ar": "يرجى استبدال هذه المصباح المكسور."
+    "ar": "يرجى استبدال هذه المصباح المكسور.",
+    "de": "Bitte ersetzen Sie diese kaputte Lampe."
   },
   "Please reply asap.": {
     "fr": "Veuillez répondre dès que possible.",
     "nl": "Antwoord zo snel mogelijk, alsjeblieft.",
     "es": "Por favor, responda lo antes posible.",
-    "ar": "يرجى الرد في أقرب وقت."
+    "ar": "يرجى الرد في أقرب وقت.",
+    "de": "Bitte antworten Sie so schnell wie möglich."
   },
   "Please send your feedback today.": {
     "fr": "Veuillez envoyer vos commentaires aujourd'hui.",
     "nl": "Stuur je feedback vandaag, alsjeblieft.",
     "es": "Por favor, envíe sus comentarios hoy.",
-    "ar": "يرجى إرسال ملاحظاتك اليوم."
+    "ar": "يرجى إرسال ملاحظاتك اليوم.",
+    "de": "Bitte senden Sie Ihr Feedback heute."
   },
   "Please sign the contract.": {
     "fr": "Veuillez signer le contrat.",
     "nl": "Teken het contract, alsjeblieft.",
     "es": "Por favor, firme el contrato.",
-    "ar": "يرجى توقيع العقد."
+    "ar": "يرجى توقيع العقد.",
+    "de": "Bitte unterschreiben Sie den Vertrag."
   },
   "Please speak slowly.": {
     "fr": "Parlez lentement, s'il vous plaît.",
     "nl": "Spreek langzaam, alsjeblieft.",
     "es": "Por favor, hable despacio.",
-    "ar": "يرجى التحدث ببطء."
+    "ar": "يرجى التحدث ببطء.",
+    "de": "Sprechen Sie bitte langsam."
   },
   "Please turn on the air conditioning.": {
     "fr": "Allumez la climatisation, s'il vous plaît.",
     "nl": "Zet de airconditioning aan, alsjeblieft.",
     "es": "Por favor, encienda el aire acondicionado.",
-    "ar": "يرجى تشغيل التكييف."
+    "ar": "يرجى تشغيل التكييف.",
+    "de": "Schalten Sie bitte die Klimaanlage ein."
   },
   "Please wait a moment.": {
     "fr": "Un instant, s'il vous plaît.",
     "nl": "Een ogenblik geduld, alsjeblieft.",
     "es": "Un momento, por favor.",
-    "ar": "لحظة من فضلك."
+    "ar": "لحظة من فضلك.",
+    "de": "Einen Moment, bitte."
   },
   "Practice helps you succeed.": {
     "fr": "La pratique t'aide à réussir.",
     "nl": "Oefenen helpt je slagen.",
     "es": "Practicar te ayuda a tener éxito.",
-    "ar": "الممارسة تساعدك على النجاح."
+    "ar": "الممارسة تساعدك على النجاح.",
+    "de": "Üben hilft dir zum Erfolg."
   },
   "Practise speaking out loud.": {
     "fr": "Entraîne-toi à parler à voix haute.",
     "nl": "Oefen hardop spreken.",
     "es": "Practica hablar en voz alta.",
-    "ar": "تدرب على التحدث بصوت عالٍ."
+    "ar": "تدرب على التحدث بصوت عالٍ.",
+    "de": "Übe dich darin, laut zu sprechen."
   },
   "Prepare a five-minute presentation.": {
     "fr": "Prépare une présentation de cinq minutes.",
     "nl": "Bereid een presentatie van vijf minuten voor.",
     "es": "Prepara una presentación de cinco minutos.",
-    "ar": "حضّر عرضاً مدته خمس دقائق."
+    "ar": "حضّر عرضاً مدته خمس دقائق.",
+    "de": "Bereite eine fünfminütige Präsentation vor."
   },
   "Prepare useful phrases for travel.": {
     "fr": "Prépare des phrases utiles pour voyager.",
     "nl": "Bereid nuttige zinnen voor op reis.",
     "es": "Prepara frases útiles para viajar.",
-    "ar": "حضّر عبارات مفيدة للسفر."
+    "ar": "حضّر عبارات مفيدة للسفر.",
+    "de": "Bereite nützliche Phrasen fürs Reisen vor."
   },
   "Provide evidence for your claim.": {
     "fr": "Fournissez des preuves pour votre affirmation.",
     "nl": "Lever bewijs voor je bewering.",
     "es": "Aporte pruebas de su afirmación.",
-    "ar": "قدّم أدلة على ادعائك."
+    "ar": "قدّم أدلة على ادعائك.",
+    "de": "Legen Sie Beweise für Ihre Behauptung vor."
   },
   "Put the files in this folder.": {
     "fr": "Mets les fichiers dans ce dossier.",
     "nl": "Zet de bestanden in deze map.",
     "es": "Pon los archivos en esta carpeta.",
-    "ar": "ضع الملفات في هذا المجلد."
+    "ar": "ضع الملفات في هذا المجلد.",
+    "de": "Leg die Dateien in diesen Ordner."
   },
   "Put your bag in the overhead bin.": {
     "fr": "Mets ton sac dans le compartiment supérieur.",
     "nl": "Leg je tas in het bovenste vak.",
     "es": "Pon tu bolso en el compartimento superior.",
-    "ar": "ضع حقيبتك في الرف العلوي."
+    "ar": "ضع حقيبتك في الرف العلوي.",
+    "de": "Leg deine Tasche in das Gepäckfach oben."
   },
   "Quote your invoice number.": {
     "fr": "Indiquez votre numéro de facture.",
     "nl": "Vermeld je factuurnummer.",
     "es": "Indique su número de factura.",
-    "ar": "اذكر رقم فاتورتك."
+    "ar": "اذكر رقم فاتورتك.",
+    "de": "Geben Sie Ihre Rechnungsnummer an."
   },
   "Read each sentence carefully.": {
     "fr": "Lis chaque phrase attentivement.",
     "nl": "Lees elke zin aandachtig.",
     "es": "Lee cada frase con atención.",
-    "ar": "اقرأ كل جملة بعناية."
+    "ar": "اقرأ كل جملة بعناية.",
+    "de": "Lies jeden Satz sorgfältig."
   },
   "Read the instructions carefully.": {
     "fr": "Lis les instructions attentivement.",
     "nl": "Lees de instructies aandachtig.",
     "es": "Lee las instrucciones con atención.",
-    "ar": "اقرأ التعليمات بعناية."
+    "ar": "اقرأ التعليمات بعناية.",
+    "de": "Lies die Anweisungen sorgfältig."
   },
   "Read the text out loud.": {
     "fr": "Lis le texte à voix haute.",
     "nl": "Lees de tekst hardop.",
     "es": "Lee el texto en voz alta.",
-    "ar": "اقرأ النص بصوت عالٍ."
+    "ar": "اقرأ النص بصوت عالٍ.",
+    "de": "Lies den Text laut vor."
   },
   "Reading is my favourite hobby.": {
     "fr": "La lecture est mon hobby préféré.",
     "nl": "Lezen is mijn favoriete hobby.",
     "es": "Leer es mi hobby favorito.",
-    "ar": "القراءة هوايتي المفضلة."
+    "ar": "القراءة هوايتي المفضلة.",
+    "de": "Lesen ist mein Lieblingshobby."
   },
   "Remember to log out on shared computers.": {
     "fr": "Pense à te déconnecter sur les ordinateurs partagés.",
     "nl": "Vergeet niet uit te loggen op gedeelde computers.",
     "es": "Recuerda cerrar sesión en ordenadores compartidos.",
-    "ar": "تذكر تسجيل الخروج على الحواسيب المشتركة."
+    "ar": "تذكر تسجيل الخروج على الحواسيب المشتركة.",
+    "de": "Denk daran, dich an geteilten Computern abzumelden."
   },
   "Remove your laptop at security.": {
     "fr": "Retire ton ordinateur portable au contrôle de sécurité.",
     "nl": "Haal je laptop eruit bij de security.",
     "es": "Saca tu portátil en el control de seguridad.",
-    "ar": "أخرج حاسوبك المحمول عند الأمن."
+    "ar": "أخرج حاسوبك المحمول عند الأمن.",
+    "de": "Nimm deinen Laptop bei der Sicherheitskontrolle heraus."
   },
   "Report the issue to support.": {
     "fr": "Signale le problème au support.",
     "nl": "Meld het probleem aan support.",
     "es": "Informa del problema al soporte.",
-    "ar": "أبلغ الدعم عن المشكلة."
+    "ar": "أبلغ الدعم عن المشكلة.",
+    "de": "Melde das Problem dem Support."
   },
   "Review your notes before the quiz.": {
     "fr": "Relis tes notes avant le quiz.",
     "nl": "Bekijk je aantekeningen vóór de quiz.",
     "es": "Repasa tus apuntes antes del quiz.",
-    "ar": "راجع ملاحظاتك قبل الاختبار."
+    "ar": "راجع ملاحظاتك قبل الاختبار.",
+    "de": "Geh deine Notizen vor dem Quiz nochmal durch."
   },
   "Revise your text for mistakes.": {
     "fr": "Corrige ton texte pour les erreurs.",
     "nl": "Herzie je tekst op fouten.",
     "es": "Revisa tu texto en busca de errores.",
-    "ar": "راجع نصك لتصحيح الأخطاء."
+    "ar": "راجع نصك لتصحيح الأخطاء.",
+    "de": "Korrigiere deinen Text auf Fehler."
   },
   "Safety at the workplace matters.": {
     "fr": "La sécurité au travail compte.",
     "nl": "Veiligheid op het werk is belangrijk.",
     "es": "La seguridad en el trabajo importa.",
-    "ar": "السلامة في مكان العمل مهمة."
+    "ar": "السلامة في مكان العمل مهمة.",
+    "de": "Sicherheit am Arbeitsplatz ist wichtig."
   },
   "Save the file for offline use.": {
     "fr": "Enregistre le fichier pour une utilisation hors ligne.",
     "nl": "Sla het bestand op voor offline gebruik.",
     "es": "Guarda el archivo para usar sin conexión.",
-    "ar": "احفظ الملف للاستخدام دون اتصال."
+    "ar": "احفظ الملف للاستخدام دون اتصال.",
+    "de": "Speichere die Datei für die Offline-Nutzung."
   },
   "See you later at the café.": {
     "fr": "À plus tard au café.",
     "nl": "Tot later in het café.",
     "es": "Nos vemos luego en la cafetería.",
-    "ar": "أراك لاحقاً في المقهى."
+    "ar": "أراك لاحقاً في المقهى.",
+    "de": "Bis später im Café."
   },
   "See you soon!": {
     "fr": "À bientôt !",
     "nl": "Tot snel!",
     "es": "¡Hasta pronto!",
-    "ar": "إلى اللقاء قريباً!"
+    "ar": "إلى اللقاء قريباً!",
+    "de": "Bis bald!"
   },
   "Send a follow-up email tomorrow.": {
     "fr": "Envoie un e-mail de suivi demain.",
     "nl": "Stuur morgen een follow-up e-mail.",
     "es": "Envía un correo de seguimiento mañana.",
-    "ar": "أرسل بريداً متابعة غداً."
+    "ar": "أرسل بريداً متابعة غداً.",
+    "de": "Schick morgen eine Folge-E-Mail."
   },
   "Share the link with the team.": {
     "fr": "Partage le lien avec l'équipe.",
     "nl": "Deel de link met het team.",
     "es": "Comparte el enlace con el equipo.",
-    "ar": "شارك الرابط مع الفريق."
+    "ar": "شارك الرابط مع الفريق.",
+    "de": "Teile den Link mit dem Team."
   },
   "Share your itinerary with family.": {
     "fr": "Partage ton itinéraire avec ta famille.",
     "nl": "Deel je reisplan met je familie.",
     "es": "Comparte tu itinerario con la familia.",
-    "ar": "شارك خط سفرك مع عائلتك."
+    "ar": "شارك خط سفرك مع عائلتك.",
+    "de": "Teile deine Reiseroute mit der Familie."
   },
   "She advocates for equal access.": {
     "fr": "Elle défend l'accès égal pour tous.",
     "nl": "Ze pleit voor gelijke toegang.",
     "es": "Ella aboga por el acceso igualitario.",
-    "ar": "تدافع عن الوصول المتساوي."
+    "ar": "تدافع عن الوصول المتساوي.",
+    "de": "Sie setzt sich für gleichen Zugang ein."
   },
   "She has a high fever.": {
     "fr": "Elle a une forte fièvre.",
     "nl": "Ze heeft hoge koorts.",
     "es": "Tiene fiebre alta.",
-    "ar": "لديها حمى شديدة."
+    "ar": "لديها حمى شديدة.",
+    "de": "Sie hat hohes Fieber."
   },
   "She is a close friend.": {
     "fr": "C'est une amie proche.",
     "nl": "Ze is een goede vriendin.",
     "es": "Es una amiga íntima.",
-    "ar": "إنها صديقة مقربة."
+    "ar": "إنها صديقة مقربة.",
+    "de": "Sie ist eine enge Freundin."
   },
   "She is my business partner.": {
     "fr": "C'est mon associée.",
     "nl": "Ze is mijn zakenpartner.",
     "es": "Es mi socia de negocios.",
-    "ar": "إنها شريكة أعمالي."
+    "ar": "إنها شريكة أعمالي.",
+    "de": "Sie ist meine Geschäftspartnerin."
   },
   "She made a compelling argument.": {
     "fr": "Elle a présenté un argument convaincant.",
     "nl": "Ze maakte een overtuigend argument.",
     "es": "Presentó un argumento convincente.",
-    "ar": "قدمت حجة مقنعة."
+    "ar": "قدمت حجة مقنعة.",
+    "de": "Sie hat ein überzeugendes Argument vorgebracht."
   },
   "She received a promotion.": {
     "fr": "Elle a reçu une promotion.",
     "nl": "Ze kreeg een promotie.",
     "es": "Recibió un ascenso.",
-    "ar": "حصلت على ترقية."
+    "ar": "حصلت على ترقية.",
+    "de": "Sie hat eine Beförderung bekommen."
   },
   "She studies at university.": {
     "fr": "Elle étudie à l'université.",
     "nl": "Ze studeert aan de universiteit.",
     "es": "Estudia en la universidad.",
-    "ar": "تدرس في الجامعة."
+    "ar": "تدرس في الجامعة.",
+    "de": "Sie studiert an der Universität."
   },
   "She wears a red jacket.": {
     "fr": "Elle porte une veste rouge.",
     "nl": "Ze draagt een rood jasje.",
     "es": "Lleva una chaqueta roja.",
-    "ar": "ترتدي سترة حمراء."
+    "ar": "ترتدي سترة حمراء.",
+    "de": "Sie trägt eine rote Jacke."
   },
   "She won a scholarship.": {
     "fr": "Elle a gagné une bourse.",
     "nl": "Ze won een beurs.",
     "es": "Ganó una beca.",
-    "ar": "فازت بمنحة دراسية."
+    "ar": "فازت بمنحة دراسية.",
+    "de": "Sie hat ein Stipendium bekommen."
   },
   "Show your boarding pass at the gate.": {
     "fr": "Montrez votre carte d'embarquement à la porte.",
     "nl": "Toon je boardingpass bij de gate.",
     "es": "Muestre su tarjeta de embarque en la puerta.",
-    "ar": "اعرض بطاقة الصعود عند البوابة."
+    "ar": "اعرض بطاقة الصعود عند البوابة.",
+    "de": "Zeigen Sie Ihren Bordpass am Gate."
   },
   "Sometimes I work from home.": {
     "fr": "Parfois je travaille de chez moi.",
     "nl": "Soms werk ik thuis.",
     "es": "A veces trabajo desde casa.",
-    "ar": "أحياناً أعمل من المنزل."
+    "ar": "أحياناً أعمل من المنزل.",
+    "de": "Manchmal arbeite ich von zu Hause."
   },
   "Sorry I am late.": {
     "fr": "Désolé, je suis en retard.",
     "nl": "Sorry dat ik te laat ben.",
     "es": "Perdón por llegar tarde.",
-    "ar": "آسف على التأخر."
+    "ar": "آسف على التأخر.",
+    "de": "Entschuldigung, ich bin spät."
   },
   "Sorry, I am late.": {
     "fr": "Désolé, je suis en retard.",
     "nl": "Sorry, ik ben te laat.",
     "es": "Lo siento, llego tarde.",
-    "ar": "عذراً، أنا متأخر."
+    "ar": "عذراً، أنا متأخر.",
+    "de": "Entschuldigung, ich bin spät."
   },
   "Sparkling water, please.": {
     "fr": "De l'eau pétillante, s'il vous plaît.",
     "nl": "Bruiswater, alsjeblieft.",
     "es": "Agua con gas, por favor.",
-    "ar": "ماء فوار، من فضلك."
+    "ar": "ماء فوار، من فضلك.",
+    "de": "Sprudelwasser, bitte."
   },
   "Speak a little every day.": {
     "fr": "Parle un peu chaque jour.",
     "nl": "Spreek elke dag een beetje.",
     "es": "Habla un poco cada día.",
-    "ar": "تحدث قليلاً كل يوم."
+    "ar": "تحدث قليلاً كل يوم.",
+    "de": "Sprich jeden Tag ein bisschen."
   },
   "Speak clearly so that everyone hears.": {
     "fr": "Parle clairement pour que tout le monde entende.",
     "nl": "Spreek duidelijk zodat iedereen het hoort.",
     "es": "Habla claro para que todos oigan.",
-    "ar": "تحدث بوضوح ليسمعك الجميع."
+    "ar": "تحدث بوضوح ليسمعك الجميع.",
+    "de": "Sprich deutlich, damit alle dich hören."
   },
   "Speaking daily builds confidence.": {
     "fr": "Parler chaque jour renforce la confiance.",
     "nl": "Dagelijks spreken bouwt zelfvertrouwen op.",
     "es": "Hablar a diario da confianza.",
-    "ar": "التحدث يومياً يبني الثقة."
+    "ar": "التحدث يومياً يبني الثقة.",
+    "de": "Tägliches Sprechen stärkt das Selbstvertrauen."
   },
   "Start a new paragraph here.": {
     "fr": "Commence un nouveau paragraphe ici.",
     "nl": "Begin hier een nieuwe alinea.",
     "es": "Empieza un párrafo nuevo aquí.",
-    "ar": "ابدأ فقرة جديدة هنا."
+    "ar": "ابدأ فقرة جديدة هنا.",
+    "de": "Fang hier einen neuen Absatz an."
   },
   "Still water for me, please.": {
     "fr": "De l'eau plate pour moi, s'il vous plaît.",
     "nl": "Stilstaand water voor mij, alsjeblieft.",
     "es": "Agua sin gas para mí, por favor.",
-    "ar": "ماء عادي لي، من فضلك."
+    "ar": "ماء عادي لي، من فضلك.",
+    "de": "Stilles Wasser für mich, bitte."
   },
   "Stop at the traffic light.": {
     "fr": "Arrête-toi au feu rouge.",
     "nl": "Stop bij het verkeerslicht.",
     "es": "Para en el semáforo.",
-    "ar": "توقف عند إشارة المرور."
+    "ar": "توقف عند إشارة المرور.",
+    "de": "Halt an der Ampel."
   },
   "Stop if you feel unsure.": {
     "fr": "Arrête si tu n'es pas sûr.",
     "nl": "Stop als je je onzeker voelt.",
     "es": "Para si no estás seguro.",
-    "ar": "توقف إذا لم تكن متأكداً."
+    "ar": "توقف إذا لم تكن متأكداً.",
+    "de": "Hör auf, wenn du unsicher bist."
   },
   "Submit the assignment online.": {
     "fr": "Rends le devoir en ligne.",
     "nl": "Lever het werk online in.",
     "es": "Entrega la tarea en línea.",
-    "ar": "سلّم الواجب عبر الإنترنت."
+    "ar": "سلّم الواجب عبر الإنترنت.",
+    "de": "Gib die Aufgabe online ab."
   },
   "Submit your answers before the bell.": {
     "fr": "Rends tes réponses avant la cloche.",
     "nl": "Lever je antwoorden in vóór de bel.",
     "es": "Entrega tus respuestas antes del timbre.",
-    "ar": "سلّم إجاباتك قبل الجرس."
+    "ar": "سلّم إجاباتك قبل الجرس.",
+    "de": "Gib deine Antworten vor dem Klingeln ab."
   },
   "Submit your application online.": {
     "fr": "Envoie ta candidature en ligne.",
     "nl": "Dien je sollicitatie online in.",
     "es": "Envía tu solicitud en línea.",
-    "ar": "قدّم طلبك عبر الإنترنت."
+    "ar": "قدّم طلبك عبر الإنترنت.",
+    "de": "Schick deine Bewerbung online ab."
   },
   "Summarise the article in three lines.": {
     "fr": "Résume l'article en trois lignes.",
     "nl": "Vat het artikel samen in drie regels.",
     "es": "Resume el artículo en tres líneas.",
-    "ar": "لخّص المقال في ثلاث أسطر."
+    "ar": "لخّص المقال في ثلاث أسطر.",
+    "de": "Fasse den Artikel in drei Zeilen zusammen."
   },
   "Support your argument with examples.": {
     "fr": "Appuie ton argument avec des exemples.",
     "nl": "Ondersteun je argument met voorbeelden.",
     "es": "Apoya tu argumento con ejemplos.",
-    "ar": "ادعم حجتك بأمثلة."
+    "ar": "ادعم حجتك بأمثلة.",
+    "de": "Unterstütze dein Argument mit Beispielen."
   },
   "Take care on the way home.": {
     "fr": "Fais attention sur le chemin du retour.",
     "nl": "Pas op onderweg naar huis.",
     "es": "Ten cuidado al volver a casa.",
-    "ar": "كن حذراً في طريق العودة."
+    "ar": "كن حذراً في طريق العودة.",
+    "de": "Pass auf dem Heimweg auf."
   },
   "Take him to the hospital.": {
     "fr": "Emmène-le à l'hôpital.",
     "nl": "Breng hem naar het ziekenhuis.",
     "es": "Llévalo al hospital.",
-    "ar": "خذه إلى المستشفى."
+    "ar": "خذه إلى المستشفى.",
+    "de": "Bring ihn ins Krankenhaus."
   },
   "Take the bus instead of the taxi.": {
     "fr": "Prends le bus au lieu du taxi.",
     "nl": "Neem de bus in plaats van de taxi.",
     "es": "Coge el autobús en lugar del taxi.",
-    "ar": "خذ الحافلة بدلاً من التاكسي."
+    "ar": "خذ الحافلة بدلاً من التاكسي.",
+    "de": "Nimm den Bus statt des Taxis."
   },
   "Take the metro to the centre.": {
     "fr": "Prends le métro jusqu'au centre.",
     "nl": "Neem de metro naar het centrum.",
     "es": "Toma el metro hasta el centro.",
-    "ar": "خذ المترو إلى الوسط."
+    "ar": "خذ المترو إلى الوسط.",
+    "de": "Nimm die U-Bahn zum Zentrum."
   },
   "Take the second exit at the roundabout.": {
     "fr": "Prends la deuxième sortie au rond-point.",
     "nl": "Neem de tweede afslag op de rotonde.",
     "es": "Toma la segunda salida en la rotonda.",
-    "ar": "خذ المخرج الثاني عند الدوار."
+    "ar": "خذ المخرج الثاني عند الدوار.",
+    "de": "Nimm die zweite Ausfahrt am Kreisverkehr."
   },
   "Take this medicine twice a day.": {
     "fr": "Prends ce médicament deux fois par jour.",
     "nl": "Neem dit medicijn twee keer per dag.",
     "es": "Toma esta medicina dos veces al día.",
-    "ar": "خذ هذا الدواء مرتين في اليوم."
+    "ar": "خذ هذا الدواء مرتين في اليوم.",
+    "de": "Nimm dieses Medikament zweimal am Tag."
   },
   "Take your passport wherever you go.": {
     "fr": "Emporte ton passeport partout où tu vas.",
     "nl": "Neem je paspoort overal mee naartoe.",
     "es": "Lleva tu pasaporte donde vayas.",
-    "ar": "احمل جواز سفرك أينما ذهبت."
+    "ar": "احمل جواز سفرك أينما ذهبت.",
+    "de": "Nimm deinen Pass überall mit, wo du hingehst."
   },
   "Teamwork is our strength.": {
     "fr": "Le travail d'équipe est notre force.",
     "nl": "Teamwork is onze kracht.",
     "es": "El trabajo en equipo es nuestra fuerza.",
-    "ar": "العمل الجماعي قوتنا."
+    "ar": "العمل الجماعي قوتنا.",
+    "de": "Teamarbeit ist unsere Stärke."
   },
   "Test your hypothesis carefully.": {
     "fr": "Teste ton hypothèse avec soin.",
     "nl": "Test je hypothese zorgvuldig.",
     "es": "Prueba tu hipótesis con cuidado.",
-    "ar": "اختبر فرضيتك بعناية."
+    "ar": "اختبر فرضيتك بعناية.",
+    "de": "Teste deine Hypothese sorgfältig."
   },
   "Thank you for your help.": {
     "fr": "Merci pour ton aide.",
     "nl": "Bedankt voor je hulp.",
     "es": "Gracias por tu ayuda.",
-    "ar": "شكراً على مساعدتك."
+    "ar": "شكراً على مساعدتك.",
+    "de": "Danke für deine Hilfe."
   },
   "Thanks a lot!": {
     "fr": "Merci beaucoup !",
     "nl": "Heel erg bedankt!",
     "es": "¡Muchas gracias!",
-    "ar": "شكراً جزيلاً!"
+    "ar": "شكراً جزيلاً!",
+    "de": "Vielen Dank!"
   },
   "That date is unavailable.": {
     "fr": "Cette date n'est pas disponible.",
     "nl": "Die datum is niet beschikbaar.",
     "es": "Esa fecha no está disponible.",
-    "ar": "هذا التاريخ غير متاح."
+    "ar": "هذا التاريخ غير متاح.",
+    "de": "Dieses Datum ist nicht verfügbar."
   },
   "That is a good idea.": {
     "fr": "C'est une bonne idée.",
     "nl": "Dat is een goed idee.",
     "es": "Es una buena idea.",
-    "ar": "إنها فكرة جيدة."
+    "ar": "إنها فكرة جيدة.",
+    "de": "Das ist eine gute Idee."
   },
   "That is too much sugar.": {
     "fr": "C'est trop de sucre.",
     "nl": "Dat is te veel suiker.",
     "es": "Es demasiado azúcar.",
-    "ar": "هذا كثير من السكر."
+    "ar": "هذا كثير من السكر.",
+    "de": "Das ist zu viel Zucker."
   },
   "That jacket is too expensive.": {
     "fr": "Cette veste est trop chère.",
     "nl": "Dat jasje is te duur.",
     "es": "Esa chaqueta es demasiado cara.",
-    "ar": "تلك السترة غالية جداً."
+    "ar": "تلك السترة غالية جداً.",
+    "de": "Diese Jacke ist zu teuer."
   },
   "That joke was funny.": {
     "fr": "Cette blague était drôle.",
     "nl": "Die grap was grappig.",
     "es": "Ese chiste fue gracioso.",
-    "ar": "كانت تلك النكتة مضحكة."
+    "ar": "كانت تلك النكتة مضحكة.",
+    "de": "Der Witz war lustig."
   },
   "That man is waiting outside.": {
     "fr": "Cet homme attend dehors.",
     "nl": "Die man wacht buiten.",
     "es": "Ese hombre espera afuera.",
-    "ar": "ذلك الرجل ينتظر في الخارج."
+    "ar": "ذلك الرجل ينتظر في الخارج.",
+    "de": "Der Mann wartet draußen."
   },
   "That road is dangerous at night.": {
     "fr": "Cette route est dangereuse la nuit.",
     "nl": "Die weg is 's nachts gevaarlijk.",
     "es": "Esa carretera es peligrosa de noche.",
-    "ar": "ذلك الطريق خطر ليلاً."
+    "ar": "ذلك الطريق خطر ليلاً.",
+    "de": "Diese Straße ist nachts gefährlich."
   },
   "The agenda is in your inbox.": {
     "fr": "L'ordre du jour est dans votre boîte de réception.",
     "nl": "De agenda staat in je inbox.",
     "es": "La agenda está en tu bandeja de entrada.",
-    "ar": "جدول الأعمال في بريدك الوارد."
+    "ar": "جدول الأعمال في بريدك الوارد.",
+    "de": "Die Tagesordnung ist in Ihrem Posteingang."
   },
   "The airport is south of the city.": {
     "fr": "L'aéroport est au sud de la ville.",
     "nl": "De luchthaven ligt ten zuiden van de stad.",
     "es": "El aeropuerto está al sur de la ciudad.",
-    "ar": "المطار جنوب المدينة."
+    "ar": "المطار جنوب المدينة.",
+    "de": "Der Flughafen liegt südlich der Stadt."
   },
   "The bed is comfortable.": {
     "fr": "Le lit est confortable.",
     "nl": "Het bed is comfortabel.",
     "es": "La cama es cómoda.",
-    "ar": "السرير مريح."
+    "ar": "السرير مريح.",
+    "de": "Das Bett ist bequem."
   },
   "The café is near the park.": {
     "fr": "Le café est près du parc.",
     "nl": "Het café is bij het park.",
     "es": "La cafetería está cerca del parque.",
-    "ar": "المقهى قرب الحديقة."
+    "ar": "المقهى قرب الحديقة.",
+    "de": "Das Café ist in der Nähe des Parks."
   },
   "The child is learning English.": {
     "fr": "L'enfant apprend l'anglais.",
     "nl": "Het kind leert Engels.",
     "es": "El niño está aprendiendo inglés.",
-    "ar": "الطفل يتعلم الإنجليزية."
+    "ar": "الطفل يتعلم الإنجليزية.",
+    "de": "Das Kind lernt Englisch."
   },
   "The city is quiet at night.": {
     "fr": "La ville est calme la nuit.",
     "nl": "De stad is 's nachts rustig.",
     "es": "La ciudad está tranquila de noche.",
-    "ar": "المدينة هادئة ليلاً."
+    "ar": "المدينة هادئة ليلاً.",
+    "de": "Die Stadt ist nachts ruhig."
   },
   "The client asked for changes.": {
     "fr": "Le client a demandé des modifications.",
     "nl": "De klant vroeg om wijzigingen.",
     "es": "El cliente pidió cambios.",
-    "ar": "طلب العميل تعديلات."
+    "ar": "طلب العميل تعديلات.",
+    "de": "Der Kunde hat Änderungen gewünscht."
   },
   "The customer asked for help.": {
     "fr": "Le client a demandé de l'aide.",
     "nl": "De klant vroeg om hulp.",
     "es": "El cliente pidió ayuda.",
-    "ar": "طلب الزبون المساعدة."
+    "ar": "طلب الزبون المساعدة.",
+    "de": "Der Kunde hat um Hilfe gebeten."
   },
   "The deadline is Friday.": {
     "fr": "La date limite est vendredi.",
     "nl": "De deadline is vrijdag.",
     "es": "La fecha límite es el viernes.",
-    "ar": "الموعد النهائي يوم الجمعة."
+    "ar": "الموعد النهائي يوم الجمعة.",
+    "de": "Die Frist ist Freitag."
   },
   "The deliverable is due Friday.": {
     "fr": "Le livrable est dû vendredi.",
     "nl": "Het deliverable is vrijdag klaar.",
     "es": "La entrega vence el viernes.",
-    "ar": "التسليم مستحق يوم الجمعة."
+    "ar": "التسليم مستحق يوم الجمعة.",
+    "de": "Das Arbeitsergebnis ist am Freitag fällig."
   },
   "The elevator is out of order.": {
     "fr": "L'ascenseur est en panne.",
     "nl": "De lift is buiten gebruik.",
     "es": "El ascensor está fuera de servicio.",
-    "ar": "المصعد معطل."
+    "ar": "المصعد معطل.",
+    "de": "Der Aufzug ist außer Betrieb."
   },
   "The essay deadline is Monday.": {
     "fr": "La date limite de la dissertation est lundi.",
     "nl": "De deadline voor het essay is maandag.",
     "es": "La fecha límite del ensayo es el lunes.",
-    "ar": "موعد المقال النهائي يوم الاثنين."
+    "ar": "موعد المقال النهائي يوم الاثنين.",
+    "de": "Die Abgabefrist für den Aufsatz ist Montag."
   },
   "The exam starts at nine.": {
     "fr": "L'examen commence à neuf heures.",
     "nl": "Het examen begint om negen uur.",
     "es": "El examen empieza a las nueve.",
-    "ar": "يبدأ الامتحان في التاسعة."
+    "ar": "يبدأ الامتحان في التاسعة.",
+    "de": "Die Prüfung beginnt um neun."
   },
   "The film was a bit boring.": {
     "fr": "Le film était un peu ennuyeux.",
     "nl": "De film was een beetje saai.",
     "es": "La película fue un poco aburrida.",
-    "ar": "كان الفيلم مملاً قليلاً."
+    "ar": "كان الفيلم مملاً قليلاً.",
+    "de": "Der Film war etwas langweilig."
   },
   "The flight was cancelled.": {
     "fr": "Le vol a été annulé.",
     "nl": "De vlucht is geannuleerd.",
     "es": "El vuelo fue cancelado.",
-    "ar": "أُلغيت الرحلة."
+    "ar": "أُلغيت الرحلة.",
+    "de": "Der Flug wurde gestrichen."
   },
   "The food smells great.": {
     "fr": "La nourriture sent bon.",
     "nl": "Het eten ruikt heerlijk.",
     "es": "La comida huele muy bien.",
-    "ar": "رائحة الطعام رائعة."
+    "ar": "رائحة الطعام رائعة.",
+    "de": "Das Essen riecht großartig."
   },
   "The gate number is twelve.": {
     "fr": "Le numéro de porte est douze.",
     "nl": "Het gate-nummer is twaalf.",
     "es": "El número de puerta es doce.",
-    "ar": "رقم البوابة اثنا عشر."
+    "ar": "رقم البوابة اثنا عشر.",
+    "de": "Die Gate-Nummer ist zwölf."
   },
   "The heating does not work.": {
     "fr": "Le chauffage ne fonctionne pas.",
     "nl": "De verwarming werkt niet.",
     "es": "La calefacción no funciona.",
-    "ar": "التدفئة لا تعمل."
+    "ar": "التدفئة لا تعمل.",
+    "de": "Die Heizung funktioniert nicht."
   },
   "The host welcomed us warmly.": {
     "fr": "L'hôte nous a accueillis chaleureusement.",
     "nl": "De gastheer verwelkomde ons hartelijk.",
     "es": "El anfitrión nos recibió calurosamente.",
-    "ar": "رحّب بنا المضيف بحرارة."
+    "ar": "رحّب بنا المضيف بحرارة.",
+    "de": "Der Gastgeber hat uns herzlich begrüßt."
   },
   "The hotel is fully booked.": {
     "fr": "L'hôtel est complet.",
     "nl": "Het hotel is volgeboekt.",
     "es": "El hotel está completo.",
-    "ar": "الفندق محجوز بالكامل."
+    "ar": "الفندق محجوز بالكامل.",
+    "de": "Das Hotel ist ausgebucht."
   },
   "The instruction is ambiguous.": {
     "fr": "L'instruction est ambiguë.",
     "nl": "De instructie is dubbelzinnig.",
     "es": "La instrucción es ambigua.",
-    "ar": "التعليمات غامضة."
+    "ar": "التعليمات غامضة.",
+    "de": "Die Anweisung ist mehrdeutig."
   },
   "The introduction should be clear.": {
     "fr": "L'introduction doit être claire.",
     "nl": "De inleiding moet duidelijk zijn.",
     "es": "La introducción debe ser clara.",
-    "ar": "يجب أن تكون المقدمة واضحة."
+    "ar": "يجب أن تكون المقدمة واضحة.",
+    "de": "Die Einleitung sollte klar sein."
   },
   "The lecture was interesting.": {
     "fr": "La conférence était intéressante.",
     "nl": "Het college was interessant.",
     "es": "La clase magistral fue interesante.",
-    "ar": "كانت المحاضرة ممتعة."
+    "ar": "كانت المحاضرة ممتعة.",
+    "de": "Die Vorlesung war interessant."
   },
   "The main challenge is time.": {
     "fr": "Le principal défi est le temps.",
     "nl": "De grootste uitdaging is tijd.",
     "es": "El principal reto es el tiempo.",
-    "ar": "التحدي الرئيسي هو الوقت."
+    "ar": "التحدي الرئيسي هو الوقت.",
+    "de": "Die größte Herausforderung ist die Zeit."
   },
   "The main course is fish.": {
     "fr": "Le plat principal est du poisson.",
     "nl": "Het hoofdgerecht is vis.",
     "es": "El plato principal es pescado.",
-    "ar": "الطبق الرئيسي سمك."
+    "ar": "الطبق الرئيسي سمك.",
+    "de": "Der Hauptgang ist Fisch."
   },
   "The main entrance is on the left.": {
     "fr": "L'entrée principale est à gauche.",
     "nl": "De hoofdingang is links.",
     "es": "La entrada principal está a la izquierda.",
-    "ar": "المدخل الرئيسي على اليسار."
+    "ar": "المدخل الرئيسي على اليسار.",
+    "de": "Der Haupteingang ist links."
   },
   "The meeting is on floor four.": {
     "fr": "La réunion est au quatrième étage.",
     "nl": "De vergadering is op verdieping vier.",
     "es": "La reunión es en la planta cuatro.",
-    "ar": "الاجتماع في الطابق الرابع."
+    "ar": "الاجتماع في الطابق الرابع.",
+    "de": "Das Meeting ist im vierten Stock."
   },
   "The metro is crowded at rush hour.": {
     "fr": "Le métro est bondé aux heures de pointe.",
     "nl": "De metro is druk tijdens de spits.",
     "es": "El metro está lleno a hora punta.",
-    "ar": "المترو مزدحم في وقت الذروة."
+    "ar": "المترو مزدحم في وقت الذروة.",
+    "de": "Die U-Bahn ist in der Stoßzeit überfüllt."
   },
   "The museum is closed today.": {
     "fr": "Le musée est fermé aujourd'hui.",
     "nl": "Het museum is vandaag gesloten.",
     "es": "El museo está cerrado hoy.",
-    "ar": "المتحف مغلق اليوم."
+    "ar": "المتحف مغلق اليوم.",
+    "de": "Das Museum ist heute geschlossen."
   },
   "The museum opens at ten.": {
     "fr": "Le musée ouvre à dix heures.",
     "nl": "Het museum opent om tien uur.",
     "es": "El museo abre a las diez.",
-    "ar": "يفتح المتحف في العاشرة."
+    "ar": "يفتح المتحف في العاشرة.",
+    "de": "Das Museum öffnet um zehn."
   },
   "The office opens at nine.": {
     "fr": "Le bureau ouvre à neuf heures.",
     "nl": "Kantoor opent om negen uur.",
     "es": "La oficina abre a las nueve.",
-    "ar": "يفتح المكتب في التاسعة."
+    "ar": "يفتح المكتب في التاسعة.",
+    "de": "Das Büro öffnet um neun."
   },
   "The outcome surprised everyone.": {
     "fr": "Le résultat a surpris tout le monde.",
     "nl": "De uitkomst verraste iedereen.",
     "es": "El resultado sorprendió a todos.",
-    "ar": "فاجأت النتيجة الجميع."
+    "ar": "فاجأت النتيجة الجميع.",
+    "de": "Das Ergebnis hat alle überrascht."
   },
   "The pilot made an announcement.": {
     "fr": "Le pilote a fait une annonce.",
     "nl": "De piloot maakte een mededeling.",
     "es": "El piloto hizo un anuncio.",
-    "ar": "ألقى الطيار إعلاناً."
+    "ar": "ألقى الطيار إعلاناً.",
+    "de": "Der Pilot hat eine Durchsage gemacht."
   },
   "The plan is simple, albeit ambitious.": {
     "fr": "Le plan est simple, bien qu'ambitieux.",
     "nl": "Het plan is eenvoudig, al is het ambitieus.",
     "es": "El plan es simple, aunque ambicioso.",
-    "ar": "الخطة بسيطة، وإن كانت طموحة."
+    "ar": "الخطة بسيطة، وإن كانت طموحة.",
+    "de": "Der Plan ist einfach, wenn auch ehrgeizig."
   },
   "The price includes tax.": {
     "fr": "Le prix inclut la taxe.",
     "nl": "De prijs is inclusief btw.",
     "es": "El precio incluye impuestos.",
-    "ar": "السعر يشمل الضريبة."
+    "ar": "السعر يشمل الضريبة.",
+    "de": "Der Preis enthält die Steuer."
   },
   "The quality is excellent.": {
     "fr": "La qualité est excellente.",
     "nl": "De kwaliteit is uitstekend.",
     "es": "La calidad es excelente.",
-    "ar": "الجودة ممتازة."
+    "ar": "الجودة ممتازة.",
+    "de": "Die Qualität ist ausgezeichnet."
   },
   "The question is difficult.": {
     "fr": "La question est difficile.",
     "nl": "De vraag is moeilijk.",
     "es": "La pregunta es difícil.",
-    "ar": "السؤال صعب."
+    "ar": "السؤال صعب.",
+    "de": "Die Frage ist schwierig."
   },
   "The results look promising.": {
     "fr": "Les résultats semblent prometteurs.",
     "nl": "De resultaten zien er veelbelovend uit.",
     "es": "Los resultados parecen prometedores.",
-    "ar": "النتائج تبدو واعدة."
+    "ar": "النتائج تبدو واعدة.",
+    "de": "Die Ergebnisse sehen vielversprechend aus."
   },
   "The screen is cracked.": {
     "fr": "L'écran est fissuré.",
     "nl": "Het scherm is gebarsten.",
     "es": "La pantalla está rota.",
-    "ar": "الشاشة مكسورة."
+    "ar": "الشاشة مكسورة.",
+    "de": "Der Bildschirm ist gerissen."
   },
   "The shop is open until six.": {
     "fr": "Le magasin est ouvert jusqu'à six heures.",
     "nl": "De winkel is open tot zes uur.",
     "es": "La tienda abre hasta las seis.",
-    "ar": "المتجر مفتوح حتى السادسة."
+    "ar": "المتجر مفتوح حتى السادسة.",
+    "de": "Der Laden hat bis sechs geöffnet."
   },
   "The shower is broken.": {
     "fr": "La douche est en panne.",
     "nl": "De douche is kapot.",
     "es": "La ducha está rota.",
-    "ar": "الدش معطل."
+    "ar": "الدش معطل.",
+    "de": "Die Dusche ist kaputt."
   },
   "The sky is blue today.": {
     "fr": "Le ciel est bleu aujourd'hui.",
     "nl": "De lucht is vandaag blauw.",
     "es": "El cielo está azul hoy.",
-    "ar": "السماء زرقاء اليوم."
+    "ar": "السماء زرقاء اليوم.",
+    "de": "Der Himmel ist heute blau."
   },
   "The sun rises in the east.": {
     "fr": "Le soleil se lève à l'est.",
     "nl": "De zon komt op in het oosten.",
     "es": "El sol sale por el este.",
-    "ar": "تشرق الشمس من الشرق."
+    "ar": "تشرق الشمس من الشرق.",
+    "de": "Die Sonne geht im Osten auf."
   },
   "The teacher explains clearly.": {
     "fr": "Le professeur explique clairement.",
     "nl": "De leraar legt duidelijk uit.",
     "es": "El profesor explica con claridad.",
-    "ar": "يشرح المعلم بوضوح."
+    "ar": "يشرح المعلم بوضوح.",
+    "de": "Die Lehrkraft erklärt klar."
   },
   "The train arrived on time.": {
     "fr": "Le train est arrivé à l'heure.",
     "nl": "De trein kwam op tijd aan.",
     "es": "El tren llegó a tiempo.",
-    "ar": "وصل القطار في الوقت."
+    "ar": "وصل القطار في الوقت.",
+    "de": "Der Zug ist pünktlich angekommen."
   },
   "The train leaves from platform 3.": {
     "fr": "Le train part du quai 3.",
     "nl": "De trein vertrekt van spoor 3.",
     "es": "El tren sale del andén 3.",
-    "ar": "يغادر القطار من الرصيف 3."
+    "ar": "يغادر القطار من الرصيف 3.",
+    "de": "Der Zug fährt von Gleis 3 ab."
   },
   "The train leaves in twenty minutes.": {
     "fr": "Le train part dans vingt minutes.",
     "nl": "De trein vertrekt over twintig minuten.",
     "es": "El tren sale en veinte minutos.",
-    "ar": "يغادر القطار خلال عشرين دقيقة."
+    "ar": "يغادر القطار خلال عشرين دقيقة.",
+    "de": "Der Zug fährt in zwanzig Minuten ab."
   },
   "The train station is nearby.": {
     "fr": "La gare est à proximité.",
     "nl": "Het treinstation is dichtbij.",
     "es": "La estación de tren está cerca.",
-    "ar": "محطة القطار قريبة."
+    "ar": "محطة القطار قريبة.",
+    "de": "Der Bahnhof ist in der Nähe."
   },
   "The waiter took our order.": {
     "fr": "Le serveur a pris notre commande.",
     "nl": "De ober nam onze bestelling op.",
     "es": "El camarero tomó nuestro pedido.",
-    "ar": "أخذ النادل طلبنا."
+    "ar": "أخذ النادل طلبنا.",
+    "de": "Der Kellner hat unsere Bestellung aufgenommen."
   },
   "The walls are white.": {
     "fr": "Les murs sont blancs.",
     "nl": "De muren zijn wit.",
     "es": "Las paredes son blancas.",
-    "ar": "الجدران بيضاء."
+    "ar": "الجدران بيضاء.",
+    "de": "Die Wände sind weiß."
   },
   "The water is cold.": {
     "fr": "L'eau est froide.",
     "nl": "Het water is koud.",
     "es": "El agua está fría.",
-    "ar": "الماء بارد."
+    "ar": "الماء بارد.",
+    "de": "Das Wasser ist kalt."
   },
   "The woman ordered a coffee.": {
     "fr": "La femme a commandé un café.",
     "nl": "De vrouw bestelde een koffie.",
     "es": "La mujer pidió un café.",
-    "ar": "طلبت المرأة قهوة."
+    "ar": "طلبت المرأة قهوة.",
+    "de": "Die Frau hat einen Kaffee bestellt."
   },
   "There are too many people.": {
     "fr": "Il y a trop de monde.",
     "nl": "Er zijn te veel mensen.",
     "es": "Hay demasiada gente.",
-    "ar": "يوجد عدد كبير جداً من الناس."
+    "ar": "يوجد عدد كبير جداً من الناس.",
+    "de": "Es sind zu viele Leute da."
   },
   "There are two rooms left.": {
     "fr": "Il reste deux chambres.",
     "nl": "Er zijn nog twee kamers vrij.",
     "es": "Quedan dos habitaciones.",
-    "ar": "تبقى غرفتان."
+    "ar": "تبقى غرفتان.",
+    "de": "Es sind noch zwei Zimmer frei."
   },
   "There is a 40-minute time limit.": {
     "fr": "Il y a une limite de 40 minutes.",
     "nl": "Er is een tijdslimiet van 40 minuten.",
     "es": "Hay un límite de 40 minutos.",
-    "ar": "هناك حد زمني 40 دقيقة."
+    "ar": "هناك حد زمني 40 دقيقة.",
+    "de": "Es gibt ein Zeitlimit von 40 Minuten."
   },
   "There is a long queue.": {
     "fr": "Il y a une longue file d'attente.",
     "nl": "Er is een lange rij.",
     "es": "Hay una cola larga.",
-    "ar": "هناك طابور طويل."
+    "ar": "هناك طابور طويل.",
+    "de": "Es gibt eine lange Warteschlange."
   },
   "There is a one-hour delay.": {
     "fr": "Il y a un retard d'une heure.",
     "nl": "Er is een uur vertraging.",
     "es": "Hay un retraso de una hora.",
-    "ar": "هناك تأخير ساعة واحدة."
+    "ar": "هناك تأخير ساعة واحدة.",
+    "de": "Es gibt eine Stunde Verspätung."
   },
   "There is a subtle difference.": {
     "fr": "Il y a une différence subtile.",
     "nl": "Er is een subtiel verschil.",
     "es": "Hay una diferencia sutil.",
-    "ar": "هناك فرق دقيق."
+    "ar": "هناك فرق دقيق.",
+    "de": "Es gibt einen feinen Unterschied."
   },
   "There is no fork on the table.": {
     "fr": "Il n'y a pas de fourchette sur la table.",
     "nl": "Er ligt geen vork op tafel.",
     "es": "No hay tenedor en la mesa.",
-    "ar": "لا توجد شوكة على الطاولة."
+    "ar": "لا توجد شوكة على الطاولة.",
+    "de": "Es liegt keine Gabel auf dem Tisch."
   },
   "There is no milk left.": {
     "fr": "Il ne reste plus de lait.",
     "nl": "Er is geen melk meer.",
     "es": "No queda leche.",
-    "ar": "لم يبقَ حليب."
+    "ar": "لم يبقَ حليب.",
+    "de": "Es ist keine Milch mehr da."
   },
   "There is no signal here.": {
     "fr": "Il n'y a pas de signal ici.",
     "nl": "Er is hier geen bereik.",
     "es": "No hay señal aquí.",
-    "ar": "لا توجد إشارة هنا."
+    "ar": "لا توجد إشارة هنا.",
+    "de": "Es gibt hier kein Signal."
   },
   "There is too much noise outside.": {
     "fr": "Il y a trop de bruit dehors.",
     "nl": "Er is te veel lawaai buiten.",
     "es": "Hay demasiado ruido afuera.",
-    "ar": "هناك ضوضاء كثيرة في الخارج."
+    "ar": "هناك ضوضاء كثيرة في الخارج.",
+    "de": "Draußen ist es zu laut."
   },
   "There was a substantial improvement.": {
     "fr": "Il y a eu une amélioration notable.",
     "nl": "Er was een aanzienlijke verbetering.",
     "es": "Hubo una mejora considerable.",
-    "ar": "كان هناك تحسن كبير."
+    "ar": "كان هناك تحسن كبير.",
+    "de": "Es gab eine erhebliche Verbesserung."
   },
   "Therefore, we must prepare.": {
     "fr": "Par conséquent, nous devons nous préparer.",
     "nl": "Daarom moeten we ons voorbereiden.",
     "es": "Por lo tanto, debemos prepararnos.",
-    "ar": "لذلك يجب أن نستعد."
+    "ar": "لذلك يجب أن نستعد.",
+    "de": "Deshalb müssen wir uns vorbereiten."
   },
   "These results underscore the need for change.": {
     "fr": "Ces résultats soulignent le besoin de changement.",
     "nl": "Deze resultaten benadrukken de behoefte aan verandering.",
     "es": "Estos resultados subrayan la necesidad de cambio.",
-    "ar": "تؤكد هذه النتائج الحاجة إلى التغيير."
+    "ar": "تؤكد هذه النتائج الحاجة إلى التغيير.",
+    "de": "Diese Ergebnisse unterstreichen den Bedarf an Veränderung."
   },
   "These towels are dirty.": {
     "fr": "Ces serviettes sont sales.",
     "nl": "Deze handdoeken zijn vies.",
     "es": "Estas toallas están sucias.",
-    "ar": "هذه المناشف متسخة."
+    "ar": "هذه المناشف متسخة.",
+    "de": "Diese Handtücher sind schmutzig."
   },
   "They asked for a deposit.": {
     "fr": "Ils ont demandé un acompte.",
     "nl": "Ze vroegen om een borg.",
     "es": "Pidieron un depósito.",
-    "ar": "طلبوا وديعة."
+    "ar": "طلبوا وديعة.",
+    "de": "Sie haben eine Anzahlung verlangt."
   },
   "They offered a higher salary.": {
     "fr": "Ils ont proposé un salaire plus élevé.",
     "nl": "Ze boden een hoger salaris.",
     "es": "Ofrecieron un salario más alto.",
-    "ar": "عرضوا راتباً أعلى."
+    "ar": "عرضوا راتباً أعلى.",
+    "de": "Sie haben ein höheres Gehalt angeboten."
   },
   "They play football after school.": {
     "fr": "Ils jouent au football après l'école.",
     "nl": "Ze voetballen na school.",
     "es": "Juegan al fútbol después del colegio.",
-    "ar": "يلعبون كرة القدم بعد المدرسة."
+    "ar": "يلعبون كرة القدم بعد المدرسة.",
+    "de": "Sie spielen nach der Schule Fußball."
   },
   "They warn tourists about pickpockets.": {
     "fr": "Ils avertissent les touristes des pickpockets.",
     "nl": "Ze waarschuwen toeristen voor zakkenrollers.",
     "es": "Advierten a los turistas sobre carteristas.",
-    "ar": "يحذرون السياح من النشالين."
+    "ar": "يحذرون السياح من النشالين.",
+    "de": "Sie warnen Touristen vor Taschendieben."
   },
   "They will hire two people.": {
     "fr": "Ils vont embaucher deux personnes.",
     "nl": "Ze gaan twee mensen aannemen.",
     "es": "Van a contratar a dos personas.",
-    "ar": "سيوظفون شخصين."
+    "ar": "سيوظفون شخصين.",
+    "de": "Sie werden zwei Personen einstellen."
   },
   "This app is very useful.": {
     "fr": "Cette application est très utile.",
     "nl": "Deze app is erg handig.",
     "es": "Esta app es muy útil.",
-    "ar": "هذا التطبيق مفيد جداً."
+    "ar": "هذا التطبيق مفيد جداً.",
+    "de": "Diese App ist sehr nützlich."
   },
   "This chair is uncomfortable.": {
     "fr": "Cette chaise est inconfortable.",
     "nl": "Deze stoel is oncomfortabel.",
     "es": "Esta silla es incómoda.",
-    "ar": "هذا الكرسي غير مريح."
+    "ar": "هذا الكرسي غير مريح.",
+    "de": "Dieser Stuhl ist unbequem."
   },
   "This exercise is easy.": {
     "fr": "Cet exercice est facile.",
     "nl": "Deze oefening is makkelijk.",
     "es": "Este ejercicio es fácil.",
-    "ar": "هذا التمرين سهل."
+    "ar": "هذا التمرين سهل.",
+    "de": "Diese Übung ist einfach."
   },
   "This guidebook is useful.": {
     "fr": "Ce guide est utile.",
     "nl": "Deze reisgids is nuttig.",
     "es": "Esta guía es útil.",
-    "ar": "هذا الدليل مفيد."
+    "ar": "هذا الدليل مفيد.",
+    "de": "Dieser Reiseführer ist nützlich."
   },
   "This is a bad password.": {
     "fr": "C'est un mauvais mot de passe.",
     "nl": "Dit is een slecht wachtwoord.",
     "es": "Esta es una mala contraseña.",
-    "ar": "هذه كلمة مرور سيئة."
+    "ar": "هذه كلمة مرور سيئة.",
+    "de": "Das ist ein schlechtes Passwort."
   },
   "This is a big city.": {
     "fr": "C'est une grande ville.",
     "nl": "Dit is een grote stad.",
     "es": "Esta es una ciudad grande.",
-    "ar": "هذه مدينة كبيرة."
+    "ar": "هذه مدينة كبيرة.",
+    "de": "Das ist eine große Stadt."
   },
   "This is a great opportunity.": {
     "fr": "C'est une excellente opportunité.",
     "nl": "Dit is een geweldige kans.",
     "es": "Es una gran oportunidad.",
-    "ar": "هذه فرصة رائعة."
+    "ar": "هذه فرصة رائعة.",
+    "de": "Das ist eine großartige Gelegenheit."
   },
   "This is a multiple choice question.": {
     "fr": "C'est une question à choix multiples.",
     "nl": "Dit is een meerkeuzevraag.",
     "es": "Es una pregunta de opción múltiple.",
-    "ar": "هذا سؤال اختيار من متعدد."
+    "ar": "هذا سؤال اختيار من متعدد.",
+    "de": "Das ist eine Multiple-Choice-Frage."
   },
   "This is an old building.": {
     "fr": "C'est un vieux bâtiment.",
     "nl": "Dit is een oud gebouw.",
     "es": "Es un edificio antiguo.",
-    "ar": "هذا مبنى قديم."
+    "ar": "هذا مبنى قديم.",
+    "de": "Das ist ein altes Gebäude."
   },
   "This meeting is important.": {
     "fr": "Cette réunion est importante.",
     "nl": "Deze vergadering is belangrijk.",
     "es": "Esta reunión es importante.",
-    "ar": "هذا الاجتماع مهم."
+    "ar": "هذا الاجتماع مهم.",
+    "de": "Dieses Meeting ist wichtig."
   },
   "This message is urgent.": {
     "fr": "Ce message est urgent.",
     "nl": "Dit bericht is dringend.",
     "es": "Este mensaje es urgente.",
-    "ar": "هذه الرسالة عاجلة."
+    "ar": "هذه الرسالة عاجلة.",
+    "de": "Diese Nachricht ist dringend."
   },
   "This method is more efficient.": {
     "fr": "Cette méthode est plus efficace.",
     "nl": "Deze methode is efficiënter.",
     "es": "Este método es más eficiente.",
-    "ar": "هذه الطريقة أكثر فعالية."
+    "ar": "هذه الطريقة أكثر فعالية.",
+    "de": "Diese Methode ist effizienter."
   },
   "This month is important.": {
     "fr": "Ce mois est important.",
     "nl": "Deze maand is belangrijk.",
     "es": "Este mes es importante.",
-    "ar": "هذا الشهر مهم."
+    "ar": "هذا الشهر مهم.",
+    "de": "Dieser Monat ist wichtig."
   },
   "This path is for pedestrians only.": {
     "fr": "Ce chemin est réservé aux piétons.",
     "nl": "Dit pad is alleen voor voetgangers.",
     "es": "Este camino es solo para peatones.",
-    "ar": "هذا المسار للمشاة فقط."
+    "ar": "هذا المسار للمشاة فقط.",
+    "de": "Dieser Weg ist nur für Fußgänger."
   },
   "This phone is a bargain.": {
     "fr": "Ce téléphone est une bonne affaire.",
     "nl": "Deze telefoon is een koopje.",
     "es": "Este teléfono es una ganga.",
-    "ar": "هذا الهاتف صفقة جيدة."
+    "ar": "هذا الهاتف صفقة جيدة.",
+    "de": "Dieses Handy ist ein Schnäppchen."
   },
   "This podcast is interesting.": {
     "fr": "Ce podcast est intéressant.",
     "nl": "Deze podcast is interessant.",
     "es": "Este pódcast es interesante.",
-    "ar": "هذا البودكاست ممتع."
+    "ar": "هذا البودكاست ممتع.",
+    "de": "Dieser Podcast ist interessant."
   },
   "This project takes three months.": {
     "fr": "Ce projet dure trois mois.",
     "nl": "Dit project duurt drie maanden.",
     "es": "Este proyecto dura tres meses.",
-    "ar": "هذا المشروع يستغرق ثلاثة أشهر."
+    "ar": "هذا المشروع يستغرق ثلاثة أشهر.",
+    "de": "Dieses Projekt dauert drei Monate."
   },
   "This room has a sea view.": {
     "fr": "Cette chambre a vue sur la mer.",
     "nl": "Deze kamer heeft zeezicht.",
     "es": "Esta habitación tiene vistas al mar.",
-    "ar": "هذه الغرفة مطلة على البحر."
+    "ar": "هذه الغرفة مطلة على البحر.",
+    "de": "Dieses Zimmer hat Meerblick."
   },
   "This soup is delicious.": {
     "fr": "Cette soupe est délicieuse.",
     "nl": "Deze soep is heerlijk.",
     "es": "Esta sopa está deliciosa.",
-    "ar": "هذا الحساء لذيذ."
+    "ar": "هذا الحساء لذيذ.",
+    "de": "Diese Suppe ist köstlich."
   },
   "This task is our top priority.": {
     "fr": "Cette tâche est notre priorité absolue.",
     "nl": "Deze taak heeft onze hoogste prioriteit.",
     "es": "Esta tarea es nuestra máxima prioridad.",
-    "ar": "هذه المهمة أولويتنا القصوى."
+    "ar": "هذه المهمة أولويتنا القصوى.",
+    "de": "Diese Aufgabe hat für uns höchste Priorität."
   },
   "This tool can enhance your writing.": {
     "fr": "Cet outil peut améliorer ton écriture.",
     "nl": "Deze tool kan je schrijven verbeteren.",
     "es": "Esta herramienta puede mejorar tu escritura.",
-    "ar": "يمكن لهذه الأداة تحسين كتابتك."
+    "ar": "يمكن لهذه الأداة تحسين كتابتك.",
+    "de": "Dieses Tool kann dein Schreiben verbessern."
   },
   "This year I learn English.": {
     "fr": "Cette année j'apprends l'anglais.",
     "nl": "Dit jaar leer ik Engels.",
     "es": "Este año aprendo inglés.",
-    "ar": "هذا العام أتعلم الإنجليزية."
+    "ar": "هذا العام أتعلم الإنجليزية.",
+    "de": "Dieses Jahr lerne ich Englisch."
   },
   "Today we start a new lesson.": {
     "fr": "Aujourd'hui nous commençons une nouvelle leçon.",
     "nl": "Vandaag beginnen we een nieuwe les.",
     "es": "Hoy empezamos una lección nueva.",
-    "ar": "اليوم نبدأ درساً جديداً."
+    "ar": "اليوم نبدأ درساً جديداً.",
+    "de": "Heute beginnen wir eine neue Lektion."
   },
   "Today's lesson is about travel.": {
     "fr": "La leçon d'aujourd'hui porte sur le voyage.",
     "nl": "De les van vandaag gaat over reizen.",
     "es": "La lección de hoy trata del viaje.",
-    "ar": "درس اليوم عن السفر."
+    "ar": "درس اليوم عن السفر.",
+    "de": "Die heutige Lektion handelt vom Reisen."
   },
   "Tomorrow I fly to Paris.": {
     "fr": "Demain je vole pour Paris.",
     "nl": "Morgen vlieg ik naar Parijs.",
     "es": "Mañana vuelo a París.",
-    "ar": "غداً أطير إلى باريس."
+    "ar": "غداً أطير إلى باريس.",
+    "de": "Morgen fliege ich nach Paris."
   },
   "Try again without fear.": {
     "fr": "Réessaie sans crainte.",
     "nl": "Probeer opnieuw zonder angst.",
     "es": "Inténtalo de nuevo sin miedo.",
-    "ar": "حاول مرة أخرى بلا خوف."
+    "ar": "حاول مرة أخرى بلا خوف.",
+    "de": "Versuch es noch einmal ohne Angst."
   },
   "Try to remember this phrase.": {
     "fr": "Essaie de te souvenir de cette phrase.",
     "nl": "Probeer deze zin te onthouden.",
     "es": "Intenta recordar esta frase.",
-    "ar": "حاول تذكر هذه العبارة."
+    "ar": "حاول تذكر هذه العبارة.",
+    "de": "Versuch, dich an diesen Satz zu erinnern."
   },
   "Turn left at the lights.": {
     "fr": "Tourne à gauche aux feux.",
     "nl": "Sla linksaf bij de verkeerslichten.",
     "es": "Gira a la izquierda en el semáforo.",
-    "ar": "انعطف يساراً عند الإشارة."
+    "ar": "انعطف يساراً عند الإشارة.",
+    "de": "Bieg an der Ampel links ab."
   },
   "Turn right after the bridge.": {
     "fr": "Tourne à droite après le pont.",
     "nl": "Sla rechtsaf na de brug.",
     "es": "Gira a la derecha después del puente.",
-    "ar": "انعطف يميناً بعد الجسر."
+    "ar": "انعطف يميناً بعد الجسر.",
+    "de": "Bieg nach der Brücke rechts ab."
   },
   "Unlock your phone carefully.": {
     "fr": "Déverrouille ton téléphone avec précaution.",
     "nl": "Ontgrendel je telefoon voorzichtig.",
     "es": "Desbloquea tu teléfono con cuidado.",
-    "ar": "افتح هاتفك بحذر."
+    "ar": "افتح هاتفك بحذر.",
+    "de": "Entsperre dein Handy vorsichtig."
   },
   "Update every stakeholder.": {
     "fr": "Informe toutes les parties prenantes.",
     "nl": "Werk alle belanghebbenden bij.",
     "es": "Actualiza a todas las partes interesadas.",
-    "ar": "حدّث جميع أصحاب المصلحة."
+    "ar": "حدّث جميع أصحاب المصلحة.",
+    "de": "Informiere alle Beteiligten."
   },
   "Update your resume before applying.": {
     "fr": "Mets ton CV à jour avant de postuler.",
     "nl": "Werk je cv bij voordat je solliciteert.",
     "es": "Actualiza tu currículum antes de solicitar.",
-    "ar": "حدّث سيرتك الذاتية قبل التقديم."
+    "ar": "حدّث سيرتك الذاتية قبل التقديم.",
+    "de": "Aktualisiere deinen Lebenslauf, bevor du dich bewirbst."
   },
   "Upload the document before noon.": {
     "fr": "Téléverse le document avant midi.",
     "nl": "Upload het document vóór twaalf uur.",
     "es": "Sube el documento antes del mediodía.",
-    "ar": "ارفع المستند قبل الظهر."
+    "ar": "ارفع المستند قبل الظهر.",
+    "de": "Lade das Dokument vor mittags hoch."
   },
   "Use the pedestrian crossing.": {
     "fr": "Utilise le passage piéton.",
     "nl": "Gebruik het zebrapad.",
     "es": "Usa el paso de peatones.",
-    "ar": "استخدم ممر المشاة."
+    "ar": "استخدم ممر المشاة.",
+    "de": "Benutze den Fußgängerüberweg."
   },
   "Use the stairs in an emergency.": {
     "fr": "Utilise les escaliers en cas d'urgence.",
     "nl": "Gebruik de trappen in noodgevallen.",
     "es": "Usa las escaleras en emergencias.",
-    "ar": "استخدم السلالم في حالات الطوارئ."
+    "ar": "استخدم السلالم في حالات الطوارئ.",
+    "de": "Benutze im Notfall die Treppe."
   },
   "Wait at the bus stop.": {
     "fr": "Attends à l'arrêt de bus.",
     "nl": "Wacht bij de bushalte.",
     "es": "Espera en la parada de autobús.",
-    "ar": "انتظر عند محطة الحافلة."
+    "ar": "انتظر عند محطة الحافلة.",
+    "de": "Warte an der Bushaltestelle."
   },
   "Wait one hour, please.": {
     "fr": "Attends une heure, s'il vous plaît.",
     "nl": "Wacht een uur, alsjeblieft.",
     "es": "Espere una hora, por favor.",
-    "ar": "انتظر ساعة واحدة، من فضلك."
+    "ar": "انتظر ساعة واحدة، من فضلك.",
+    "de": "Warte bitte eine Stunde."
   },
   "Watch your bag; there are pickpockets.": {
     "fr": "Surveille ton sac ; il y a des pickpockets.",
     "nl": "Let op je tas; er zijn zakkenrollers.",
     "es": "Cuida tu bolso; hay carteristas.",
-    "ar": "احترس على حقيبتك؛ يوجد نشالون."
+    "ar": "احترس على حقيبتك؛ يوجد نشالون.",
+    "de": "Pass auf deine Tasche auf; es gibt Taschendiebe."
   },
   "We are over budget this month.": {
     "fr": "Nous dépassons le budget ce mois-ci.",
     "nl": "We zitten deze maand over budget.",
     "es": "Este mes nos pasamos del presupuesto.",
-    "ar": "تجاوزنا الميزانية هذا الشهر."
+    "ar": "تجاوزنا الميزانية هذا الشهر.",
+    "de": "Wir liegen diesen Monat über dem Budget."
   },
   "We arrive at the airport early.": {
     "fr": "Nous arrivons tôt à l'aéroport.",
     "nl": "We komen vroeg op de luchthaven aan.",
     "es": "Llegamos pronto al aeropuerto.",
-    "ar": "نصل المطار مبكراً."
+    "ar": "نصل المطار مبكراً.",
+    "de": "Wir kommen früh am Flughafen an."
   },
   "We booked a quiet hotel.": {
     "fr": "Nous avons réservé un hôtel calme.",
     "nl": "We hebben een rustig hotel geboekt.",
     "es": "Reservamos un hotel tranquilo.",
-    "ar": "حجزنا فندقاً هادئاً."
+    "ar": "حجزنا فندقاً هادئاً.",
+    "de": "Wir haben ein ruhiges Hotel gebucht."
   },
   "We bought tickets for a concert.": {
     "fr": "Nous avons acheté des billets pour un concert.",
     "nl": "We kochten tickets voor een concert.",
     "es": "Compramos entradas para un concierto.",
-    "ar": "اشترينا تذاكر لحفلة."
+    "ar": "اشترينا تذاكر لحفلة.",
+    "de": "Wir haben Tickets für ein Konzert gekauft."
   },
   "We did group work in class.": {
     "fr": "Nous avons fait un travail de groupe en classe.",
     "nl": "We deden groepswerk in de klas.",
     "es": "Hicimos trabajo en grupo en clase.",
-    "ar": "أنجزنا عملاً جماعياً في الصف."
+    "ar": "أنجزنا عملاً جماعياً في الصف.",
+    "de": "Wir haben in der Klasse Gruppenarbeit gemacht."
   },
   "We found a bug in the app.": {
     "fr": "Nous avons trouvé un bug dans l'app.",
     "nl": "We vonden een bug in de app.",
     "es": "Encontramos un error en la app.",
-    "ar": "وجدنا خللاً في التطبيق."
+    "ar": "وجدنا خللاً في التطبيق.",
+    "de": "Wir haben einen Bug in der App gefunden."
   },
   "We had to cancel the meeting.": {
     "fr": "Nous avons dû annuler la réunion.",
     "nl": "We moesten de vergadering annuleren.",
     "es": "Tuvimos que cancelar la reunión.",
-    "ar": "اضطررنا لإلغاء الاجتماع."
+    "ar": "اضطررنا لإلغاء الاجتماع.",
+    "de": "Wir mussten das Meeting absagen."
   },
   "We have a guest tonight.": {
     "fr": "Nous avons un invité ce soir.",
     "nl": "We hebben vanavond een gast.",
     "es": "Tenemos un invitado esta noche.",
-    "ar": "لدينا ضيف الليلة."
+    "ar": "لدينا ضيف الليلة.",
+    "de": "Wir haben heute Abend einen Gast."
   },
   "We have a meeting at ten.": {
     "fr": "Nous avons une réunion à dix heures.",
     "nl": "We hebben om tien uur een vergadering.",
     "es": "Tenemos una reunión a las diez.",
-    "ar": "لدينا اجتماع في العاشرة."
+    "ar": "لدينا اجتماع في العاشرة.",
+    "de": "Wir haben um zehn ein Meeting."
   },
   "We have a two-hour layover in Dubai.": {
     "fr": "Nous avons une escale de deux heures à Dubaï.",
     "nl": "We hebben een tussenstop van twee uur in Dubai.",
     "es": "Tenemos una escala de dos horas en Dubái.",
-    "ar": "لدينا توقف ساعتين في دبي."
+    "ar": "لدينا توقف ساعتين في دبي.",
+    "de": "Wir haben eine Zwischenlandung von zwei Stunden in Dubai."
   },
   "We have a vocabulary test.": {
     "fr": "Nous avons un test de vocabulaire.",
     "nl": "We hebben een woordenschattoets.",
     "es": "Tenemos un examen de vocabulario.",
-    "ar": "لدينا اختبار مفردات."
+    "ar": "لدينا اختبار مفردات.",
+    "de": "Wir haben einen Vokabeltest."
   },
   "We leave in three minutes.": {
     "fr": "Nous partons dans trois minutes.",
     "nl": "We vertrekken over drie minuten.",
     "es": "Salimos en tres minutos.",
-    "ar": "نغادر خلال ثلاث دقائق."
+    "ar": "نغادر خلال ثلاث دقائق.",
+    "de": "Wir gehen in drei Minuten."
   },
   "We may experience turbulence.": {
     "fr": "Nous pouvons rencontrer des turbulences.",
     "nl": "We kunnen turbulentie ervaren.",
     "es": "Podemos experimentar turbulencias.",
-    "ar": "قد نواجه اضطرابات جوية."
+    "ar": "قد نواجه اضطرابات جوية.",
+    "de": "Wir können Turbulenzen bekommen."
   },
   "We meet in the evening.": {
     "fr": "Nous nous retrouvons le soir.",
     "nl": "We spreken 's avonds af.",
     "es": "Quedamos por la tarde-noche.",
-    "ar": "نلتقي في المساء."
+    "ar": "نلتقي في المساء.",
+    "de": "Wir treffen uns am Abend."
   },
   "We must mitigate the risks.": {
     "fr": "Nous devons atténuer les risques.",
     "nl": "We moeten de risico's beperken.",
     "es": "Debemos mitigar los riesgos.",
-    "ar": "يجب أن نخفف المخاطر."
+    "ar": "يجب أن نخفف المخاطر.",
+    "de": "Wir müssen die Risiken mindern."
   },
   "We must prioritise safety.": {
     "fr": "Nous devons prioriser la sécurité.",
     "nl": "We moeten veiligheid prioriteren.",
     "es": "Debemos priorizar la seguridad.",
-    "ar": "يجب أن نعطي الأولوية للسلامة."
+    "ar": "يجب أن نعطي الأولوية للسلامة.",
+    "de": "Wir müssen die Sicherheit priorisieren."
   },
   "We must reduce this risk.": {
     "fr": "Nous devons réduire ce risque.",
     "nl": "We moeten dit risico verlagen.",
     "es": "Debemos reducir este riesgo.",
-    "ar": "يجب أن نقلل هذا الخطر."
+    "ar": "يجب أن نقلل هذا الخطر.",
+    "de": "Wir müssen dieses Risiko verringern."
   },
   "We need a comprehensive plan.": {
     "fr": "Nous avons besoin d'un plan complet.",
     "nl": "We hebben een uitgebreid plan nodig.",
     "es": "Necesitamos un plan integral.",
-    "ar": "نحتاج خطة شاملة."
+    "ar": "نحتاج خطة شاملة.",
+    "de": "Wir brauchen einen umfassenden Plan."
   },
   "We need a double room for two nights.": {
     "fr": "Nous avons besoin d'une chambre double pour deux nuits.",
     "nl": "We hebben een tweepersoonskamer voor twee nachten nodig.",
     "es": "Necesitamos una habitación doble por dos noches.",
-    "ar": "نحتاج غرفة مزدوجة لليلتين."
+    "ar": "نحتاج غرفة مزدوجة لليلتين.",
+    "de": "Wir brauchen ein Doppelzimmer für zwei Nächte."
   },
   "We need a reliable partner.": {
     "fr": "Nous avons besoin d'un partenaire fiable.",
     "nl": "We hebben een betrouwbare partner nodig.",
     "es": "Necesitamos un socio fiable.",
-    "ar": "نحتاج شريكاً موثوقاً."
+    "ar": "نحتاج شريكاً موثوقاً.",
+    "de": "Wir brauchen einen zuverlässigen Partner."
   },
   "We need a robust solution.": {
     "fr": "Nous avons besoin d'une solution robuste.",
     "nl": "We hebben een robuuste oplossing nodig.",
     "es": "Necesitamos una solución sólida.",
-    "ar": "نحتاج حلاً قوياً."
+    "ar": "نحتاج حلاً قوياً.",
+    "de": "Wir brauchen eine robuste Lösung."
   },
   "We need to negotiate the price.": {
     "fr": "Nous devons négocier le prix.",
     "nl": "We moeten over de prijs onderhandelen.",
     "es": "Tenemos que negociar el precio.",
-    "ar": "يجب أن نتفاوض على السعر."
+    "ar": "يجب أن نتفاوض على السعر.",
+    "de": "Wir müssen den Preis verhandeln."
   },
   "We need to solve this problem.": {
     "fr": "Nous devons résoudre ce problème.",
     "nl": "We moeten dit probleem oplossen.",
     "es": "Tenemos que resolver este problema.",
-    "ar": "يجب أن نحل هذه المشكلة."
+    "ar": "يجب أن نحل هذه المشكلة.",
+    "de": "Wir müssen dieses Problem lösen."
   },
   "We reached an important milestone.": {
     "fr": "Nous avons atteint une étape importante.",
     "nl": "We bereikten een belangrijke mijlpaal.",
     "es": "Alcanzamos un hito importante.",
-    "ar": "بلغنا محطة مهمة."
+    "ar": "بلغنا محطة مهمة.",
+    "de": "Wir haben einen wichtigen Meilenstein erreicht."
   },
   "We share a starter.": {
     "fr": "Nous partageons une entrée.",
     "nl": "We delen een voorgerecht.",
     "es": "Compartimos un entrante.",
-    "ar": "نتشارك مقبلات."
+    "ar": "نتشارك مقبلات.",
+    "de": "Wir teilen uns eine Vorspeise."
   },
   "We spent the day at the beach.": {
     "fr": "Nous avons passé la journée à la plage.",
     "nl": "We brachten de dag op het strand door.",
     "es": "Pasamos el día en la playa.",
-    "ar": "قضينا اليوم على الشاطئ."
+    "ar": "قضينا اليوم على الشاطئ.",
+    "de": "Wir haben den Tag am Strand verbracht."
   },
   "We use a hybrid work model.": {
     "fr": "Nous utilisons un modèle de travail hybride.",
     "nl": "We werken volgens een hybride model.",
     "es": "Usamos un modelo de trabajo híbrido.",
-    "ar": "نستخدم نموذج عمل هجين."
+    "ar": "نستخدم نموذج عمل هجين.",
+    "de": "Wir nutzen ein hybrides Arbeitsmodell."
   },
   "We want to improve our service.": {
     "fr": "Nous voulons améliorer notre service.",
     "nl": "We willen onze service verbeteren.",
     "es": "Queremos mejorar nuestro servicio.",
-    "ar": "نريد تحسين خدمتنا."
+    "ar": "نريد تحسين خدمتنا.",
+    "de": "Wir wollen unseren Service verbessern."
   },
   "We watched a great film.": {
     "fr": "Nous avons regardé un excellent film.",
     "nl": "We keken een geweldige film.",
     "es": "Vimos una gran película.",
-    "ar": "شاهدنا فيلماً رائعاً."
+    "ar": "شاهدنا فيلماً رائعاً.",
+    "de": "Wir haben einen großartigen Film gesehen."
   },
   "We work within a clear framework.": {
     "fr": "Nous travaillons dans un cadre clair.",
     "nl": "We werken binnen een duidelijk kader.",
     "es": "Trabajamos dentro de un marco claro.",
-    "ar": "نعمل ضمن إطار واضح."
+    "ar": "نعمل ضمن إطار واضح.",
+    "de": "Wir arbeiten in einem klaren Rahmen."
   },
   "Welcome to our school.": {
     "fr": "Bienvenue dans notre école.",
     "nl": "Welkom op onze school.",
     "es": "Bienvenido a nuestra escuela.",
-    "ar": "مرحباً بك في مدرستنا."
+    "ar": "مرحباً بك في مدرستنا.",
+    "de": "Willkommen an unserer Schule."
   },
   "What are the open hours?": {
     "fr": "Quelles sont les heures d'ouverture ?",
     "nl": "Wat zijn de openingstijden?",
     "es": "¿Cuál es el horario de apertura?",
-    "ar": "ما ساعات العمل؟"
+    "ar": "ما ساعات العمل؟",
+    "de": "Was sind die Öffnungszeiten?"
   },
   "What are your weekend plans?": {
     "fr": "Quels sont tes plans pour le week-end ?",
     "nl": "Wat zijn je plannen voor het weekend?",
     "es": "¿Qué planes tienes para el fin de semana?",
-    "ar": "ما خططك لعطلة نهاية الأسبوع؟"
+    "ar": "ما خططك لعطلة نهاية الأسبوع؟",
+    "de": "Was hast du am Wochenende vor?"
   },
   "What currency do you accept?": {
     "fr": "Quelle monnaie acceptez-vous ?",
     "nl": "Welke valuta accepteert u?",
     "es": "¿Qué moneda aceptan?",
-    "ar": "ما العملة التي تقبلونها؟"
+    "ar": "ما العملة التي تقبلونها؟",
+    "de": "Welche Währung akzeptieren Sie?"
   },
   "What desserts do you have?": {
     "fr": "Quels desserts avez-vous ?",
     "nl": "Welke desserts hebben jullie?",
     "es": "¿Qué postres tienen?",
-    "ar": "ما الحلويات لديكم؟"
+    "ar": "ما الحلويات لديكم؟",
+    "de": "Welche Desserts haben Sie?"
   },
   "What does this word mean?": {
     "fr": "Que signifie ce mot ?",
     "nl": "Wat betekent dit woord?",
     "es": "¿Qué significa esta palabra?",
-    "ar": "ماذا تعني هذه الكلمة؟"
+    "ar": "ماذا تعني هذه الكلمة؟",
+    "de": "Was bedeutet dieses Wort?"
   },
   "What is the hotel address?": {
     "fr": "Quelle est l'adresse de l'hôtel ?",
     "nl": "Wat is het hoteladres?",
     "es": "¿Cuál es la dirección del hotel?",
-    "ar": "ما عنوان الفندق؟"
+    "ar": "ما عنوان الفندق؟",
+    "de": "Wie lautet die Adresse des Hotels?"
   },
   "What is the implication of this rule?": {
     "fr": "Quelle est l'implication de cette règle ?",
     "nl": "Wat is de implicatie van deze regel?",
     "es": "¿Cuál es la implicación de esta regla?",
-    "ar": "ما دلالة هذه القاعدة؟"
+    "ar": "ما دلالة هذه القاعدة؟",
+    "de": "Was ist die Bedeutung dieser Regel?"
   },
   "What is the wifi password?": {
     "fr": "Quel est le mot de passe wifi ?",
     "nl": "Wat is het wifi-wachtwoord?",
     "es": "¿Cuál es la contraseña del wifi?",
-    "ar": "ما كلمة مرور الواي فاي؟"
+    "ar": "ما كلمة مرور الواي فاي؟",
+    "de": "Wie lautet das WLAN-Passwort?"
   },
   "What is your favourite book?": {
     "fr": "Quel est ton livre préféré ?",
     "nl": "Wat is je favoriete boek?",
     "es": "¿Cuál es tu libro favorito?",
-    "ar": "ما كتابك المفضل؟"
+    "ar": "ما كتابك المفضل؟",
+    "de": "Was ist dein Lieblingsbuch?"
   },
   "What is your name?": {
     "fr": "Comment tu t'appelles ?",
     "nl": "Hoe heet je?",
     "es": "¿Cómo te llamas?",
-    "ar": "ما اسمك؟"
+    "ar": "ما اسمك؟",
+    "de": "Wie heißt du?"
   },
   "Whatever happens, stay calm.": {
     "fr": "Quoi qu'il arrive, reste calme.",
     "nl": "Wat er ook gebeurt, blijf kalm.",
     "es": "Pase lo que pase, mantén la calma.",
-    "ar": "مهما حدث، ابق هادئاً."
+    "ar": "مهما حدث، ابق هادئاً.",
+    "de": "Egal was passiert, bleib ruhig."
   },
   "Where can I collect my luggage?": {
     "fr": "Où puis-je récupérer mes bagages ?",
     "nl": "Waar kan ik mijn bagage ophalen?",
     "es": "¿Dónde puedo recoger mi equipaje?",
-    "ar": "أين أستلم أمتعتي؟"
+    "ar": "أين أستلم أمتعتي؟",
+    "de": "Wo kann ich mein Gepäck abholen?"
   },
   "Where is the bathroom?": {
     "fr": "Où sont les toilettes ?",
     "nl": "Waar is het toilet?",
     "es": "¿Dónde está el baño?",
-    "ar": "أين الحمام؟"
+    "ar": "أين الحمام؟",
+    "de": "Wo ist die Toilette?"
   },
   "Where is the nearest police station?": {
     "fr": "Où est le commissariat le plus proche ?",
     "nl": "Waar is het dichtstbijzijnde politiebureau?",
     "es": "¿Dónde está la comisaría más cercana?",
-    "ar": "أين أقرب مركز شرطة؟"
+    "ar": "أين أقرب مركز شرطة؟",
+    "de": "Wo ist die nächste Polizeistation?"
   },
   "Where is the power socket?": {
     "fr": "Où est la prise électrique ?",
     "nl": "Waar is het stopcontact?",
     "es": "¿Dónde está el enchufe?",
-    "ar": "أين مقبس الكهرباء؟"
+    "ar": "أين مقبس الكهرباء؟",
+    "de": "Wo ist die Steckdose?"
   },
   "Which brand do you prefer?": {
     "fr": "Quelle marque préfères-tu ?",
     "nl": "Welk merk heb je liever?",
     "es": "¿Qué marca prefieres?",
-    "ar": "أي علامة تفضل؟"
+    "ar": "أي علامة تفضل؟",
+    "de": "Welche Marke bevorzugst du?"
   },
   "Which sport do you like?": {
     "fr": "Quel sport aimes-tu ?",
     "nl": "Welke sport vind je leuk?",
     "es": "¿Qué deporte te gusta?",
-    "ar": "أي رياضة تحب؟"
+    "ar": "أي رياضة تحب؟",
+    "de": "Welchen Sport magst du?"
   },
   "Whoever arrives first can start.": {
     "fr": "Celui qui arrive en premier peut commencer.",
     "nl": "Wie het eerst komt, mag beginnen.",
     "es": "Quien llegue primero puede empezar.",
-    "ar": "من يصل أولاً يمكنه البدء."
+    "ar": "من يصل أولاً يمكنه البدء.",
+    "de": "Wer zuerst ankommt, kann anfangen."
   },
   "Why do you look sad?": {
     "fr": "Pourquoi as-tu l'air triste ?",
     "nl": "Waarom zie je er verdrietig uit?",
     "es": "¿Por qué pareces triste?",
-    "ar": "لماذا تبدو حزيناً؟"
+    "ar": "لماذا تبدو حزيناً؟",
+    "de": "Warum siehst du traurig aus?"
   },
   "Would you mind repeating that?": {
     "fr": "Pourriez-vous répéter cela ?",
     "nl": "Zou je dat willen herhalen?",
     "es": "¿Podría repetir eso?",
-    "ar": "هل يمكنك إعادة ذلك؟"
+    "ar": "هل يمكنك إعادة ذلك؟",
+    "de": "Könnten Sie das bitte wiederholen?"
   },
   "Write a clear subject line.": {
     "fr": "Écris un objet de mail clair.",
     "nl": "Schrijf een duidelijke onderwerpregel.",
     "es": "Escribe un asunto claro.",
-    "ar": "اكتب سطر موضوع واضحاً."
+    "ar": "اكتب سطر موضوع واضحاً.",
+    "de": "Schreib eine klare Betreffzeile."
   },
   "Write a rough draft first.": {
     "fr": "Écris d'abord un brouillon.",
     "nl": "Schrijf eerst een ruwe versie.",
     "es": "Escribe primero un borrador.",
-    "ar": "اكتب مسودة أولاً."
+    "ar": "اكتب مسودة أولاً.",
+    "de": "Schreib zuerst einen Entwurf."
   },
   "Write a short cover letter.": {
     "fr": "Écris une courte lettre de motivation.",
     "nl": "Schrijf een korte sollicitatiebrief.",
     "es": "Escribe una carta de presentación breve.",
-    "ar": "اكتب خطاب تغطية قصيراً."
+    "ar": "اكتب خطاب تغطية قصيراً.",
+    "de": "Schreib ein kurzes Anschreiben."
   },
   "Write a short essay about travel.": {
     "fr": "Écris un court essai sur le voyage.",
     "nl": "Schrijf een kort essay over reizen.",
     "es": "Escribe un breve ensayo sobre viajes.",
-    "ar": "اكتب مقالاً قصيراً عن السفر."
+    "ar": "اكتب مقالاً قصيراً عن السفر.",
+    "de": "Schreib einen kurzen Aufsatz über das Reisen."
   },
   "Write a short sentence.": {
     "fr": "Écris une phrase courte.",
     "nl": "Schrijf een korte zin.",
     "es": "Escribe una frase corta.",
-    "ar": "اكتب جملة قصيرة."
+    "ar": "اكتب جملة قصيرة.",
+    "de": "Schreib einen kurzen Satz."
   },
   "Write a short summary of the text.": {
     "fr": "Écris un court résumé du texte.",
     "nl": "Schrijf een korte samenvatting van de tekst.",
     "es": "Escribe un breve resumen del texto.",
-    "ar": "اكتب ملخصاً قصيراً للنص."
+    "ar": "اكتب ملخصاً قصيراً للنص.",
+    "de": "Schreib eine kurze Zusammenfassung des Textes."
   },
   "Write the sentence in your notebook.": {
     "fr": "Écris la phrase dans ton cahier.",
     "nl": "Schrijf de zin in je schrift.",
     "es": "Escribe la frase en tu cuaderno.",
-    "ar": "اكتب الجملة في دفترك."
+    "ar": "اكتب الجملة في دفترك.",
+    "de": "Schreib den Satz in dein Heft."
   },
   "Yes, I understand.": {
     "fr": "Oui, je comprends.",
     "nl": "Ja, ik begrijp het.",
     "es": "Sí, entiendo.",
-    "ar": "نعم، أفهم."
+    "ar": "نعم، أفهم.",
+    "de": "Ja, ich verstehe."
   },
   "Yesterday was very busy.": {
     "fr": "Hier était très chargé.",
     "nl": "Gisteren was erg druk.",
     "es": "Ayer estuvo muy ocupado.",
-    "ar": "كان أمس مزدحماً جداً."
+    "ar": "كان أمس مزدحماً جداً.",
+    "de": "Gestern war sehr viel los."
   },
   "You can choose either seat.": {
     "fr": "Tu peux choisir l'un ou l'autre siège.",
     "nl": "Je mag een van beide stoelen kiezen.",
     "es": "Puedes elegir cualquiera de los asientos.",
-    "ar": "يمكنك اختيار أي مقعد."
+    "ar": "يمكنك اختيار أي مقعد.",
+    "de": "Du kannst einen der beiden Sitze wählen."
   },
   "You improve by reviewing mistakes.": {
     "fr": "Tu t'améliores en revoyant tes erreurs.",
     "nl": "Je verbetert door fouten na te kijken.",
     "es": "Mejoras repasando los errores.",
-    "ar": "تتحسن بمراجعة الأخطاء."
+    "ar": "تتحسن بمراجعة الأخطاء.",
+    "de": "Du verbesserst dich, indem du Fehler noch einmal durchgehst."
   },
   "You're welcome.": {
     "fr": "De rien.",
     "nl": "Graag gedaan.",
     "es": "De nada.",
-    "ar": "على الرحب والسعة."
+    "ar": "على الرحب والسعة.",
+    "de": "Gern geschehen."
   },
   "Your answer must be accurate.": {
     "fr": "Ta réponse doit être exacte.",
     "nl": "Je antwoord moet accuraat zijn.",
     "es": "Tu respuesta debe ser precisa.",
-    "ar": "يجب أن تكون إجابتك دقيقة."
+    "ar": "يجب أن تكون إجابتك دقيقة.",
+    "de": "Deine Antwort muss genau sein."
   },
   "Your key card opens room 214.": {
     "fr": "Ta carte ouvre la chambre 214.",
     "nl": "Je keycard opent kamer 214.",
     "es": "Tu tarjeta abre la habitación 214.",
-    "ar": "بطاقتك تفتح الغرفة 214."
+    "ar": "بطاقتك تفتح الغرفة 214.",
+    "de": "Deine Schlüsselkarte öffnet Zimmer 214."
   },
   "Your refund will arrive in 5 days.": {
     "fr": "Ton remboursement arrivera dans 5 jours.",
     "nl": "Je terugbetaling komt binnen 5 dagen.",
     "es": "Tu reembolso llegará en 5 días.",
-    "ar": "سيصل استردادك خلال 5 أيام."
+    "ar": "سيصل استردادك خلال 5 أيام.",
+    "de": "Deine Rückerstattung kommt in 5 Tagen."
   }
 }

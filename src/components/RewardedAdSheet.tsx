@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { AdSenseSlot } from './AdSenseSlot';
-import { waitForAdStorageConsent } from '../lib/ads/consent';
-import { WEB_REWARDED_VIEW_SECONDS, getAdSenseRewardSlot, isWebRewardedAdLive } from '../lib/ads/config';
+import { WEB_REWARDED_VIEW_SECONDS } from '../lib/ads/config';
 import { t } from '../lib/i18n';
+import { AD_REWARD_COINS } from '../lib/wallet';
 import type { Locale } from '../types';
 
 interface RewardedAdSheetProps {
@@ -12,54 +11,25 @@ interface RewardedAdSheetProps {
   onReward: () => void;
 }
 
+/**
+ * Attente locale avant crédit ScanCoins.
+ * Pas d’unité AdSense ici (politique : pas de pubs Google sur écran sans contenu éditeur).
+ */
 export function RewardedAdSheet({ open, locale, onClose, onReward }: RewardedAdSheetProps) {
   const [secondsLeft, setSecondsLeft] = useState(WEB_REWARDED_VIEW_SECONDS);
-  const [adsReady, setAdsReady] = useState(false);
-  const [adFilled, setAdFilled] = useState(false);
-  const [adChecked, setAdChecked] = useState(false);
-  const slotId = getAdSenseRewardSlot();
-  const live = isWebRewardedAdLive();
   const onRewardRef = useRef(onReward);
   const onCloseRef = useRef(onClose);
   onRewardRef.current = onReward;
   onCloseRef.current = onClose;
 
-  const handleFillChange = (filled: boolean) => {
-    setAdFilled(filled);
-    setAdChecked(true);
-  };
-
   useEffect(() => {
     if (!open) {
       setSecondsLeft(WEB_REWARDED_VIEW_SECONDS);
-      setAdsReady(false);
-      setAdFilled(false);
-      setAdChecked(false);
       return;
     }
 
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-
-    if (!live) {
-      return () => {
-        document.body.style.overflow = prevOverflow;
-      };
-    }
-
-    let cancelled = false;
-    void waitForAdStorageConsent().then((ok) => {
-      if (!cancelled) setAdsReady(ok);
-    });
-
-    return () => {
-      cancelled = true;
-      document.body.style.overflow = prevOverflow;
-    };
-  }, [open, live]);
-
-  useEffect(() => {
-    if (!open || !live || !adsReady) return;
 
     setSecondsLeft(WEB_REWARDED_VIEW_SECONDS);
     let remaining = WEB_REWARDED_VIEW_SECONDS;
@@ -73,8 +43,11 @@ export function RewardedAdSheet({ open, locale, onClose, onReward }: RewardedAdS
       }
     }, 1000);
 
-    return () => window.clearInterval(id);
-  }, [open, live, adsReady]);
+    return () => {
+      window.clearInterval(id);
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [open]);
 
   if (!open) return null;
 
@@ -97,28 +70,10 @@ export function RewardedAdSheet({ open, locale, onClose, onReward }: RewardedAdS
         <p className="rewarded-ad-hint">
           {secondsLeft > 0
             ? t('shopAdRewardHint', locale).replace('{sec}', String(secondsLeft))
-            : t('shopAdRewardDone', locale)}
+            : t('shopAdRewardDone', locale).replace('{coins}', String(AD_REWARD_COINS))}
         </p>
 
-        {adsReady && slotId && (
-          <AdSenseSlot
-            key={`reward-${slotId}-${open}`}
-            slotId={slotId}
-            format="rectangle"
-            label={t('shopAdLabel', locale)}
-            consentHint={t('shopAdCmpWait', locale)}
-            emptyHint={t('shopAdEmptyFill', locale)}
-            onFillChange={handleFillChange}
-          />
-        )}
-
-        {!adsReady && <p className="rewarded-ad-hint">{t('shopAdCmpWait', locale)}</p>}
-
-        {adsReady && adChecked && !adFilled && (
-          <p className="rewarded-ad-empty">{t('shopAdEmptyFill', locale)}</p>
-        )}
-
-        {adsReady && secondsLeft > 0 && (
+        {secondsLeft > 0 && (
           <div className="rewarded-ad-timer" aria-live="polite">
             {t('shopAdRewardWait', locale).replace('{sec}', String(secondsLeft))}
           </div>

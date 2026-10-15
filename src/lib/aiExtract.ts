@@ -29,7 +29,7 @@ export interface AiExtractResponse {
   warnings?: string[];
 }
 
-const LANGS = new Set<LangCode>(['nl', 'fr', 'en', 'es', 'unknown']);
+const LANGS = new Set<LangCode>(['nl', 'fr', 'en', 'es', 'de', 'unknown']);
 
 function normalizeLang(value: unknown): LangCode | undefined {
   if (typeof value !== 'string') return undefined;

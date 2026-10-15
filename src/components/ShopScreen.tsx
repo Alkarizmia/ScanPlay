@@ -1,25 +1,15 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { AdSenseSlot } from './AdSenseSlot';
 import { BrandDecor } from './BrandDecor';
 import { DailyChestOverlay } from './DailyChestOverlay';
 import { ScanPlayChest } from './ScanPlayChest';
 import { AchievementGlyph } from './icons/AchievementGlyph';
 import { EconomyGlyph, LootCoin, LootGem, LootScan, LootXp } from './icons/EconomyIcons';
-import { RewardedAdSheet } from './RewardedAdSheet';
-import { grantAdConsent } from '../lib/ads/consent';
-import {
-  ADSENSE_UI_PAUSED,
-  getAdSenseShopSlot,
-  isAdSenseEnabled,
-  isAdSimulationMode,
-} from '../lib/ads/config';
 import { getPlan } from '../lib/planLimits';
 import {
   buyExtraScan,
   buyMegaXpPotion,
   buyStreakFreeze,
   buyStreakRestore,
-  buySynthesisCredit,
   buyTranslateHint,
   buyXpPack,
   buyUniverseHeart,
@@ -27,22 +17,17 @@ import {
   canBuyExtraScanInShop,
   convertGemToCoins,
   GEM_COIN_RATE,
-  getAdWatchesLeftToday,
   getCoins,
   getGems,
   getRestorableStreak,
   getStreakFreezeCharges,
   getStreakRestoreShopPrice,
-  getSynthesisBonusCredits,
   canClaimDailyChest,
-  canWatchAdForCoins,
-  watchAdForCoins,
   SHOP_XP_POTION_PRICE,
   SHOP_XP_PACK_PRICE,
   SHOP_XP_PACK_AMOUNT,
   SHOP_MEGA_POTION_PRICE,
   SHOP_MEGA_POTION_MINUTES,
-  SHOP_SYNTHESIS_CREDIT_PRICE,
   SHOP_STREAK_FREEZE_PRICE,
   SHOP_STREAK_FREEZE_MAX,
   SHOP_TRANSLATE_HINT_PRICE,
@@ -64,6 +49,7 @@ import { notifyShopPurchase } from '../lib/notifications';
 import { t, type TranslationKey } from '../lib/i18n';
 import type { Locale } from '../types';
 import { NotificationCenter } from './NotificationCenter';
+import { ProfileCosmeticShop } from './ProfileCosmeticShop';
 
 interface ShopScreenProps {
   locale: Locale;
@@ -72,6 +58,8 @@ interface ShopScreenProps {
   onNewUnlocks?: (unlocks: import('../lib/achievements').AchievementDef[]) => void;
   onToast?: (message: string) => void;
   onSocialChange?: () => void;
+  focusCosmeticId?: string | null;
+  onFocusCosmeticConsumed?: () => void;
 }
 
 interface ShopItemRowProps {
@@ -176,21 +164,26 @@ const SHOP_NOTIF_ICON: Record<string, string> = {
   xppack: 'xp',
   streak: 'streak',
   scan: 'scan',
-  synthesis: 'synthesis',
   hint: 'hint',
   freeze: 'freeze',
   heart: 'path',
-  ad: 'coin',
 };
 
-export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToast, onSocialChange }: ShopScreenProps) {
+export function ShopScreen({
+  locale,
+  refreshKey,
+  onRefresh,
+  onNewUnlocks,
+  onToast,
+  onSocialChange,
+  focusCosmeticId,
+  onFocusCosmeticConsumed,
+}: ShopScreenProps) {
   void refreshKey;
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
   const [chestReward, setChestReward] = useState<ChestReward | null>(null);
   const [chestOverlayOpen, setChestOverlayOpen] = useState(false);
-  const [adLoading, setAdLoading] = useState(false);
-  const [rewardedOpen, setRewardedOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
   const [popId, setPopId] = useState<string | null>(null);
   const mountedRef = useRef(true);
@@ -204,9 +197,6 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
     };
   }, []);
 
-  const shopAdSlot = getAdSenseShopSlot();
-  const adsLive = isAdSenseEnabled() && shopAdSlot != null;
-
   const coins = getCoins();
   const gems = getGems();
   const plan = getPlan();
@@ -216,13 +206,12 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
   const boostActive = isXpBoostActive();
   const boostMin = getXpBoostMinutesLeft();
   const chestReady = canClaimDailyChest();
-  const adsLeft = getAdWatchesLeftToday();
   const freezeCharges = getStreakFreezeCharges();
   const translateHints = getTranslateHints();
-  const synthesisBonus = getSynthesisBonusCredits();
   const extraScanOk = canBuyExtraScanInShop();
+  const infiniteUniverseHearts = hasInfiniteUniverseHearts();
   const universeHearts = getUniverseHearts().hearts;
-  const universeHeartsFull = hasInfiniteUniverseHearts() || universeHearts >= getUniverseHeartCap();
+  const universeHeartsFull = infiniteUniverseHearts || universeHearts >= getUniverseHeartCap();
 
   const run = async (id: string, fn: () => ShopPurchaseResult | Promise<ShopPurchaseResult>, successKey?: TranslationKey) => {
     setError(null);
@@ -279,27 +268,6 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
 
   const closeChestOverlay = () => {
     setChestOverlayOpen(false);
-  };
-
-  const handleAd = async () => {
-    if (adLoading || busy === 'ad' || rewardedOpen || !canWatchAdForCoins()) return;
-
-    if (isAdSimulationMode()) {
-      setAdLoading(true);
-      try {
-        await new Promise<void>((resolve) => window.setTimeout(resolve, 1500));
-        await run('ad', () => watchAdForCoins(), 'shopAdRewardDone');
-      } finally {
-        if (mountedRef.current) setAdLoading(false);
-      }
-      return;
-    }
-    grantAdConsent();
-    setRewardedOpen(true);
-  };
-
-  const handleAdReward = () => {
-    void run('ad', () => watchAdForCoins(), 'shopAdRewardDone');
   };
 
   return (
@@ -363,6 +331,15 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
             </button>
           </div>
         </section>
+
+        <ProfileCosmeticShop
+          locale={locale}
+          refreshKey={refreshKey}
+          onRefresh={onRefresh}
+          onToast={onToast}
+          focusCosmeticId={focusCosmeticId}
+          onFocusCosmeticConsumed={onFocusCosmeticConsumed}
+        />
 
         <section className="shop-section">
           <h2 className="shop-section-title">{t('shopExchange', locale)}</h2>
@@ -484,26 +461,6 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
 
           <ShopItemRow
             locale={locale}
-            icon={<EconomyGlyph id="synthesis" size={44} />}
-            nameKey="shopSynthesisCredit"
-            desc={t('shopSynthesisCreditDesc', locale)}
-            price={SHOP_SYNTHESIS_CREDIT_PRICE}
-            buyId="synthesis"
-            busy={busy}
-            popping={popId === 'synthesis'}
-            tone="synth"
-            onBuy={() => void run('synthesis', () => buySynthesisCredit(), 'shopSynthesisCreditOk')}
-            extra={
-              synthesisBonus > 0 ? (
-                <p className="shop-item-active">
-                  {t('shopSynthesisBonusOwned', locale).replace('{n}', String(synthesisBonus))}
-                </p>
-              ) : undefined
-            }
-          />
-
-          <ShopItemRow
-            locale={locale}
             icon={<EconomyGlyph id="hint" size={44} />}
             nameKey="shopTranslateHint"
             desc={t('shopTranslateHintDesc', locale)}
@@ -543,72 +500,30 @@ export function ShopScreen({ locale, refreshKey, onRefresh, onNewUnlocks, onToas
             }
           />
 
-          <ShopItemRow
-            locale={locale}
-            icon={<span className="shop-heart-icon" aria-hidden="true">❤</span>}
-            nameKey="shopUniverseHeart"
-            desc={t('shopUniverseHeartDesc', locale)}
-            price={SHOP_UNIVERSE_HEART_PRICE}
-            buyId="heart"
-            busy={busy}
-            popping={popId === 'heart'}
-            tone="heart"
-            highlight={!universeHeartsFull && universeHearts === 0}
-            disabled={universeHeartsFull}
-            onBuy={() => void run('heart', () => buyUniverseHeart(), 'shopUniverseHeartOk')}
-            extra={
-              <p className="shop-item-active">
-                {t('shopUniverseHeartOwned', locale).replace('{n}', String(universeHearts))}
-              </p>
-            }
-          />
-          </div>
-        </section>
-
-        {!ADSENSE_UI_PAUSED && (
-        <section className="shop-section">
-          <h2 className="shop-section-title">{t('shopFreeCoins', locale)}</h2>
-          {adsLive && <p className="shop-ad-support-hint">{t('shopAdSupportHint', locale)}</p>}
-          {isAdSimulationMode() && <p className="shop-ad-dev-hint">{t('shopAdDevHint', locale)}</p>}
-          <div className={`shop-item shop-item--ad${popId === 'ad' ? ' shop-item--pop' : ''}`}>
-            <div className="shop-item-info">
-              <span className="shop-item-icon">
-                <EconomyGlyph id="coin" size={28} />
-              </span>
-              <div>
-                <p className="shop-item-name">{t('shopWatchAd', locale)}</p>
-                <p className="shop-item-desc">
-                  {t('shopWatchAdDesc', locale).replace('{left}', String(adsLeft))}
+          {!infiniteUniverseHearts && (
+            <ShopItemRow
+              locale={locale}
+              icon={<span className="shop-heart-icon" aria-hidden="true">❤</span>}
+              nameKey="shopUniverseHeart"
+              desc={t('shopUniverseHeartDesc', locale)}
+              price={SHOP_UNIVERSE_HEART_PRICE}
+              buyId="heart"
+              busy={busy}
+              popping={popId === 'heart'}
+              tone="heart"
+              highlight={!universeHeartsFull && universeHearts === 0}
+              disabled={universeHeartsFull}
+              onBuy={() => void run('heart', () => buyUniverseHeart(), 'shopUniverseHeartOk')}
+              extra={
+                <p className="shop-item-active">
+                  {t('shopUniverseHeartOwned', locale).replace('{n}', String(universeHearts))}
                 </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="btn-primary shop-buy-btn"
-              disabled={!canWatchAdForCoins() || adLoading || busy === 'ad' || rewardedOpen}
-              onClick={handleAd}
-            >
-              {adLoading ? t('shopAdLoading', locale) : t('shopWatchAdBtn', locale)}
-            </button>
-          </div>
-          {adsLive && shopAdSlot && !rewardedOpen && (
-            <AdSenseSlot
-              slotId={shopAdSlot}
-              label={t('shopAdLabel', locale)}
-              consentHint={t('shopAdCmpWait', locale)}
-              emptyHint={t('shopAdEmptyFill', locale)}
+              }
             />
           )}
+          </div>
         </section>
-        )}
       </main>
-
-      <RewardedAdSheet
-        open={rewardedOpen}
-        locale={locale}
-        onClose={() => setRewardedOpen(false)}
-        onReward={handleAdReward}
-      />
 
       <DailyChestOverlay
         open={chestOverlayOpen}

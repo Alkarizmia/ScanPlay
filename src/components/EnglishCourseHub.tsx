@@ -63,7 +63,12 @@ export function EnglishCourseHub({
   const current = getCurrentEnglishLesson();
   const path = listEnglishPathLessons();
   const chapters = listChaptersForGoal(profile.goal);
-  const titleLang = locale === 'en' ? 'en' : locale === 'nl' || locale === 'es' || locale === 'ar' ? locale : 'fr';
+  const titleLang =
+    locale === 'en'
+      ? 'en'
+      : locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de'
+        ? locale
+        : 'fr';
   const lockedHearts = !canPlayUniverse();
   const doneCount = profile.completedLessonIds.filter((id) => path.some((l) => l.id === id)).length;
   const pct = path.length > 0 ? Math.round((doneCount / path.length) * 100) : 0;

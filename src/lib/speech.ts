@@ -12,6 +12,8 @@ function speechLangTag(lang?: LangCode): string {
       return 'en-GB';
     case 'es':
       return 'es-ES';
+    case 'de':
+      return 'de-DE';
     default:
       return 'fr-FR';
   }
@@ -33,6 +35,7 @@ const VOICE_HINTS: Record<string, string[]> = {
     'Microsoft Zira',
   ],
   'es-ES': ['Google español', 'es-ES', 'Spanish', 'Jorge', 'Monica'],
+  'de-DE': ['Google Deutsch', 'de-DE', 'German', 'Anna', 'Helena', 'Microsoft Katja'],
 };
 
 const SILENCE_WAV =
@@ -74,6 +77,107 @@ function pickVoice(langTag: string, voices: SpeechSynthesisVoice[]): SpeechSynth
     voices.find((v) => v.lang.startsWith(prefix) && v.localService) ??
     voices.find((v) => v.lang.startsWith(prefix))
   );
+}
+
+const FEMALE_VOICE_HINTS = [
+  'Female',
+  'Samantha',
+  'Zira',
+  'Sonia',
+  'Karen',
+  'Moira',
+  'Susan',
+  'Hazel',
+  'Emma',
+  'Google UK English Female',
+];
+const MALE_VOICE_HINTS = [
+  'Male',
+  'Daniel',
+  'David',
+  'Mark',
+  'Tom',
+  'Alex',
+  'Fred',
+  'Google UK English Male',
+  'Microsoft David',
+  'Microsoft Mark',
+];
+
+function voiceLooksFemale(name: string): boolean {
+  const n = name.toLowerCase();
+  if (/\bmale\b/.test(n)) return false;
+  return FEMALE_VOICE_HINTS.some((h) => n.includes(h.toLowerCase()));
+}
+
+function voiceLooksMale(name: string): boolean {
+  const n = name.toLowerCase();
+  if (/\bfemale\b/.test(n)) return false;
+  return MALE_VOICE_HINTS.some((h) => n.includes(h.toLowerCase()));
+}
+
+/** Two contrasting English (or lang) voices so dialogue turns are easy to tell apart. */
+function pickDialogueVoices(
+  langTag: string,
+  voices: SpeechSynthesisVoice[],
+): [SpeechSynthesisVoice | undefined, SpeechSynthesisVoice | undefined] {
+  const prefix = langTag.slice(0, 2);
+  const pool = voices.filter(
+    (v) => v.lang === langTag || v.lang.startsWith(prefix) || v.lang.startsWith(`${prefix}-`),
+  );
+  const list = pool.length ? pool : voices;
+  const female =
+    list.find((v) => voiceLooksFemale(v.name)) ??
+    list.find((v) => /female/i.test(v.name));
+  const male =
+    list.find((v) => voiceLooksMale(v.name) && v !== female) ??
+    list.find((v) => /male/i.test(v.name) && v !== female);
+
+  if (female && male) return [female, male];
+
+  // Fallback: two different accents / names when gender labels are missing (common on Android).
+  const primary = pickVoice(langTag, voices) ?? list[0];
+  const altAccent =
+    list.find(
+      (v) =>
+        v !== primary &&
+        primary &&
+        v.lang.slice(0, 2) === primary.lang.slice(0, 2) &&
+        v.lang !== primary.lang,
+    ) ??
+    list.find((v) => v !== primary && v.name !== primary?.name) ??
+    voices.find((v) => v !== primary && v.lang.startsWith(prefix));
+  return [primary, altAccent ?? primary];
+}
+
+/** Soft expressiveness from punctuation (browser TTS has no real emotion API). */
+function dialogueLineProsody(text: string, speakerIndex: number, baseRate: number): {
+  rate: number;
+  pitch: number;
+} {
+  const trimmed = text.trim();
+  const isQuestion = /\?\s*$/.test(trimmed);
+  const isExclaim = /!\s*$/.test(trimmed);
+  const short = trimmed.split(/\s+/).length <= 4;
+
+  // Speaker 0: brighter / a bit quicker. Speaker 1: deeper / steadier.
+  let pitch = speakerIndex % 2 === 0 ? 1.14 : 0.86;
+  let rate = speakerIndex % 2 === 0 ? baseRate * 1.04 : baseRate * 0.94;
+
+  if (isQuestion) {
+    pitch *= speakerIndex % 2 === 0 ? 1.08 : 1.06;
+    rate *= 0.96;
+  } else if (isExclaim) {
+    pitch *= 1.1;
+    rate *= 1.06;
+  } else if (short) {
+    rate *= 0.97;
+  }
+
+  return {
+    rate: Math.min(1.35, Math.max(0.55, rate)),
+    pitch: Math.min(1.45, Math.max(0.65, pitch)),
+  };
 }
 
 export function canSpeak(): boolean {
@@ -251,14 +355,15 @@ async function speakBrowser(
   lang: LangCode | undefined,
   rate?: number,
   pitch = 1,
+  voiceOverride?: SpeechSynthesisVoice,
 ): Promise<void> {
   if (typeof window === 'undefined' || !('speechSynthesis' in window)) return;
   const langTag = speechLangTag(lang);
   const voices = await loadVoices();
-  const voice = pickVoice(langTag, voices);
+  const voice = voiceOverride ?? pickVoice(langTag, voices);
   window.speechSynthesis.cancel();
   const utterance = new SpeechSynthesisUtterance(spoken);
-  utterance.lang = langTag;
+  utterance.lang = voice?.lang || langTag;
   if (voice) utterance.voice = voice;
   utterance.rate = Math.min(1.5, Math.max(0.4, rate ?? 0.84));
   utterance.pitch = pitch;
@@ -273,7 +378,8 @@ async function speakBrowser(
     utterance.onerror = finish;
     window.speechSynthesis.speak(utterance);
     // Some engines never fire onend — don't block the dialogue forever.
-    window.setTimeout(finish, Math.min(12000, 800 + spoken.length * 80));
+    const ms = Math.min(14000, (900 + spoken.length * 85) / Math.max(0.5, rate ?? 0.84));
+    window.setTimeout(finish, ms);
   });
 }
 
@@ -301,7 +407,7 @@ function estimateUtteranceMs(text: string, rate: number): number {
   return Math.min(12000, (650 + text.length * 70) / safeRate);
 }
 
-/** Play short A1/A2 dialogue lines locally, alternating pitch for two speakers. */
+/** Play dialogue lines locally with two distinct voices + light prosody. */
 export async function speakDialogueLocal(
   lines: { text: string }[],
   lang: LangCode = 'en',
@@ -311,12 +417,17 @@ export async function speakDialogueLocal(
   speakGen += 1;
   const gen = speakGen;
   stopPlaying();
-  const rate = options?.rate ?? 0.86;
+  const baseRate = options?.rate ?? 0.88;
   const spokenLines = lines
     .map((line) => sanitizeTextForSpeech(line.text))
     .filter(Boolean);
+  const langTag = speechLangTag(lang);
+  const voices = await loadVoices();
+  const [voiceA, voiceB] = pickDialogueVoices(langTag, voices);
+  const pairGapMs = 320;
   const totalMs =
-    spokenLines.reduce((sum, text) => sum + estimateUtteranceMs(text, rate) + 200, 0) || 1;
+    spokenLines.reduce((sum, text) => sum + estimateUtteranceMs(text, baseRate) + pairGapMs, 0) ||
+    1;
   const startedAt = Date.now();
   let raf = 0;
   const pump = () => {
@@ -331,11 +442,12 @@ export async function speakDialogueLocal(
     for (let i = 0; i < spokenLines.length; i += 1) {
       if (gen !== speakGen) return;
       const spoken = spokenLines[i]!;
-      /* Slight pitch gap helps hear two speakers without rushing A1 words. */
-      const pitch = i % 2 === 0 ? 1.02 : 0.94;
-      await speakBrowser(spoken, lang, rate, pitch);
+      const speaker = i % 2;
+      const { rate, pitch } = dialogueLineProsody(spoken, speaker, baseRate);
+      const voice = speaker === 0 ? voiceA : voiceB;
+      await speakBrowser(spoken, lang, rate, pitch, voice);
       if (gen !== speakGen) return;
-      await new Promise((r) => window.setTimeout(r, 200));
+      await new Promise((r) => window.setTimeout(r, pairGapMs));
     }
     options?.onProgress?.(1);
   } finally {

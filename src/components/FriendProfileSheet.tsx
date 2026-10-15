@@ -112,6 +112,7 @@ export function FriendProfileSheet({
                 <PlayerAvatar
                   avatarId={profile.avatarId}
                   avatarUrl={profile.avatarUrl}
+                  avatarFrame={profile.avatarFrame}
                   className="friend-avatar friend-avatar--lg"
                   imgClassName="friend-avatar-img friend-avatar-img--lg"
                 />
@@ -193,6 +194,7 @@ export function FriendProfileSheet({
                 <PlayerAvatar
                   avatarId={seed.avatarId}
                   avatarUrl={seed.avatarUrl}
+                  avatarFrame={seed.avatarFrame}
                   className="friend-avatar friend-avatar--lg"
                   imgClassName="friend-avatar-img friend-avatar-img--lg"
                 />

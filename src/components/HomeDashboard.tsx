@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 
 import { DailyChestOverlay } from './DailyChestOverlay';
 import { StreakFlame } from './icons/StreakFlame';
-import { EconomyGlyph, LootCoin, LootGem, LootMedal, LootQuiz, LootScan, LootXp } from './icons/EconomyIcons';
+import { EconomyGlyph, LootCoin, LootGem, LootMedal, LootQuiz, LootScan } from './icons/EconomyIcons';
 import { MascotCoach } from './mascot/MascotCoach';
 import { ScanPlayChest } from './ScanPlayChest';
 import { getUnlockedCount } from '../lib/achievements';
@@ -118,7 +118,7 @@ export function HomeDashboard({
   const badges = getUnlockedCount();
   const chestReady = canClaimDailyChest();
   const missions = getDailyMissions();
-  const [missionsOpen, setMissionsOpen] = useState(true);
+  const [missionsOpen, setMissionsOpen] = useState(false);
   const [chestOverlayOpen, setChestOverlayOpen] = useState(false);
   const [missionTick, setMissionTick] = useState(0);
   const [streakClaimBurst, setStreakClaimBurst] = useState(false);
@@ -289,22 +289,9 @@ export function HomeDashboard({
                       />
                     </div>
                   </div>
-                  <div className={`dash-mission-reward${mission.reward.type === 'coins' ? ' dash-mission-reward--coins' : ' dash-mission-reward--xp'}`}>
-                    {mission.reward.type === 'coins' ? (
-                      <>
-                        <span className="dash-mission-reward-xp">+{mission.reward.amount}</span>
-                        <span className="dash-mission-reward-xp-icon" aria-hidden="true">
-                          <LootCoin size={16} />
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span className="dash-mission-reward-xp">+{mission.reward.amount}</span>
-                        <span className="dash-mission-reward-xp-icon" aria-hidden="true">
-                          <LootXp size={16} />
-                        </span>
-                      </>
-                    )}
+                  <div className="dash-mission-reward dash-mission-reward--chest">
+                    <ScanPlayChest open={false} size={18} idle={false} />
+                    <span className="dash-mission-reward-xp">{t('missionRewardChestBadge', locale)}</span>
                   </div>
                 </li>
               );

@@ -21,7 +21,6 @@ interface TrainingFocusPickerProps {
 export function TrainingFocusPicker({ locale, value, onChange, compact = false }: TrainingFocusPickerProps) {
   const toggle = (id: TrainingFocus) => {
     const active = value.includes(id);
-    if (active && value.length === 1) return;
     onChange(active ? value.filter((f) => f !== id) : [...value, id]);
   };
 

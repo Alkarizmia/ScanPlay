@@ -1,0 +1,2370 @@
+{
+  "hello": {
+    "de": "hallo",
+    "sentenceDe": "Hallo! Wie geht es dir heute?"
+  },
+  "hi": {
+    "de": "hi",
+    "sentenceDe": "Hi, schön dich zu sehen."
+  },
+  "goodbye": {
+    "de": "auf Wiedersehen",
+    "sentenceDe": "Auf Wiedersehen, bis morgen."
+  },
+  "bye": {
+    "de": "tschüss",
+    "sentenceDe": "Tschüss! Pass auf dich auf."
+  },
+  "please": {
+    "de": "bitte",
+    "sentenceDe": "Könntest du mir bitte helfen?"
+  },
+  "thank you": {
+    "de": "danke",
+    "sentenceDe": "Danke für deine Hilfe."
+  },
+  "thanks": {
+    "de": "danke",
+    "sentenceDe": "Vielen Dank!"
+  },
+  "you're welcome": {
+    "de": "gern geschehen",
+    "sentenceDe": "Gern geschehen."
+  },
+  "sorry": {
+    "de": "es tut mir leid",
+    "sentenceDe": "Es tut mir leid, ich bin zu spät."
+  },
+  "excuse me": {
+    "de": "entschuldigung",
+    "sentenceDe": "Entschuldigung, wo ist der Ausgang?"
+  },
+  "yes": {
+    "de": "ja",
+    "sentenceDe": "Ja, ich verstehe."
+  },
+  "no": {
+    "de": "nein",
+    "sentenceDe": "Nein, danke."
+  },
+  "maybe": {
+    "de": "vielleicht",
+    "sentenceDe": "Vielleicht können wir uns später treffen."
+  },
+  "of course": {
+    "de": "natürlich",
+    "sentenceDe": "Natürlich kann ich helfen."
+  },
+  "good morning": {
+    "de": "guten Morgen",
+    "sentenceDe": "Guten Morgen allerseits."
+  },
+  "good afternoon": {
+    "de": "guten Nachmittag",
+    "sentenceDe": "Guten Nachmittag, mein Herr."
+  },
+  "good evening": {
+    "de": "guten Abend",
+    "sentenceDe": "Guten Abend und willkommen."
+  },
+  "good night": {
+    "de": "gute Nacht",
+    "sentenceDe": "Gute Nacht, schlaf gut."
+  },
+  "how are you?": {
+    "de": "wie geht's?",
+    "sentenceDe": "Wie fühlst du dich heute?"
+  },
+  "I am fine": {
+    "de": "mir geht's gut",
+    "sentenceDe": "Mir geht's gut, danke."
+  },
+  "nice to meet you": {
+    "de": "freut mich",
+    "sentenceDe": "Freut mich, dich kennenzulernen."
+  },
+  "what is your name?": {
+    "de": "wie heißt du?",
+    "sentenceDe": "Wie heißt du?"
+  },
+  "my name is": {
+    "de": "ich heiße",
+    "sentenceDe": "Ich heiße Alex."
+  },
+  "I am from": {
+    "de": "ich komme aus",
+    "sentenceDe": "Ich komme aus Belgien."
+  },
+  "I live in": {
+    "de": "ich wohne in",
+    "sentenceDe": "Ich wohne in Brüssel."
+  },
+  "see you later": {
+    "de": "bis später",
+    "sentenceDe": "Bis später im Café."
+  },
+  "see you soon": {
+    "de": "bis bald",
+    "sentenceDe": "Bis bald!"
+  },
+  "take care": {
+    "de": "pass auf dich auf",
+    "sentenceDe": "Pass auf dem Heimweg auf dich auf."
+  },
+  "congratulations": {
+    "de": "Glückwunsch",
+    "sentenceDe": "Herzlichen Glückwunsch zu deinem Erfolg!"
+  },
+  "happy birthday": {
+    "de": "alles Gute zum Geburtstag",
+    "sentenceDe": "Alles Gute zum Geburtstag!"
+  },
+  "welcome": {
+    "de": "willkommen",
+    "sentenceDe": "Willkommen an unserer Schule."
+  },
+  "how old are you?": {
+    "de": "wie alt bist du?",
+    "sentenceDe": "Wie alt bist du?"
+  },
+  "friend": {
+    "de": "Freund",
+    "sentenceDe": "Sie ist eine enge Freundin."
+  },
+  "family": {
+    "de": "Familie",
+    "sentenceDe": "Meine Familie wohnt in der Nähe."
+  },
+  "brother": {
+    "de": "Bruder",
+    "sentenceDe": "Mein Bruder arbeitet in London."
+  },
+  "sister": {
+    "de": "Schwester",
+    "sentenceDe": "Meine Schwester studiert Medizin."
+  },
+  "mother": {
+    "de": "Mutter",
+    "sentenceDe": "Meine Mutter kocht jeden Sonntag."
+  },
+  "father": {
+    "de": "Vater",
+    "sentenceDe": "Mein Vater spricht gut Englisch."
+  },
+  "child": {
+    "de": "Kind",
+    "sentenceDe": "Das Kind lernt Englisch."
+  },
+  "man": {
+    "de": "Mann",
+    "sentenceDe": "Der Mann wartet draußen."
+  },
+  "woman": {
+    "de": "Frau",
+    "sentenceDe": "Die Frau hat einen Kaffee bestellt."
+  },
+  "people": {
+    "de": "Leute",
+    "sentenceDe": "Viele Leute besuchen diese Stadt."
+  },
+  "neighbour": {
+    "de": "Nachbar",
+    "sentenceDe": "Unser Nachbar ist sehr nett."
+  },
+  "colleague": {
+    "de": "Kollege",
+    "sentenceDe": "Mein Kollege hat die Folien vorbereitet."
+  },
+  "partner": {
+    "de": "Partner",
+    "sentenceDe": "Sie ist meine Geschäftspartnerin."
+  },
+  "stranger": {
+    "de": "Fremder",
+    "sentenceDe": "Öffne nie die Tür für einen Fremden."
+  },
+  "guest": {
+    "de": "Gast",
+    "sentenceDe": "Wir haben heute Abend einen Gast."
+  },
+  "host": {
+    "de": "Gastgeber",
+    "sentenceDe": "Der Gastgeber hat uns herzlich begrüßt."
+  },
+  "one": {
+    "de": "eins",
+    "sentenceDe": "Ich brauche bitte ein Ticket."
+  },
+  "two": {
+    "de": "zwei",
+    "sentenceDe": "Es sind noch zwei Zimmer frei."
+  },
+  "three": {
+    "de": "drei",
+    "sentenceDe": "Wir fahren in drei Minuten."
+  },
+  "four": {
+    "de": "vier",
+    "sentenceDe": "Das Meeting ist im vierten Stock."
+  },
+  "five": {
+    "de": "fünf",
+    "sentenceDe": "Ich stehe um fünf Uhr auf."
+  },
+  "ten": {
+    "de": "zehn",
+    "sentenceDe": "Es kostet zehn Euro."
+  },
+  "twenty": {
+    "de": "zwanzig",
+    "sentenceDe": "Der Zug fährt in zwanzig Minuten ab."
+  },
+  "hundred": {
+    "de": "hundert",
+    "sentenceDe": "Hundert Leute sind gekommen."
+  },
+  "red": {
+    "de": "rot",
+    "sentenceDe": "Sie trägt eine rote Jacke."
+  },
+  "blue": {
+    "de": "blau",
+    "sentenceDe": "Der Himmel ist heute blau."
+  },
+  "green": {
+    "de": "grün",
+    "sentenceDe": "Geh, wenn die Ampel grün ist."
+  },
+  "black": {
+    "de": "schwarz",
+    "sentenceDe": "Ich brauche einen schwarzen Stift."
+  },
+  "white": {
+    "de": "weiß",
+    "sentenceDe": "Die Wände sind weiß."
+  },
+  "today": {
+    "de": "heute",
+    "sentenceDe": "Heute beginnen wir eine neue Lektion."
+  },
+  "tomorrow": {
+    "de": "morgen",
+    "sentenceDe": "Morgen fliege ich nach Paris."
+  },
+  "yesterday": {
+    "de": "gestern",
+    "sentenceDe": "Gestern war sehr stressig."
+  },
+  "now": {
+    "de": "jetzt",
+    "sentenceDe": "Ich brauche jetzt Hilfe."
+  },
+  "later": {
+    "de": "später",
+    "sentenceDe": "Ich rufe dich später an."
+  },
+  "morning": {
+    "de": "Morgen",
+    "sentenceDe": "Ich jogge jeden Morgen."
+  },
+  "evening": {
+    "de": "Abend",
+    "sentenceDe": "Wir treffen uns am Abend."
+  },
+  "night": {
+    "de": "Nacht",
+    "sentenceDe": "Die Stadt ist nachts ruhig."
+  },
+  "week": {
+    "de": "Woche",
+    "sentenceDe": "Nächste Woche reise ich."
+  },
+  "month": {
+    "de": "Monat",
+    "sentenceDe": "Dieser Monat ist wichtig."
+  },
+  "year": {
+    "de": "Jahr",
+    "sentenceDe": "Dieses Jahr lerne ich Englisch."
+  },
+  "hour": {
+    "de": "Stunde",
+    "sentenceDe": "Warte bitte eine Stunde."
+  },
+  "minute": {
+    "de": "Minute",
+    "sentenceDe": "Gib mir eine Minute."
+  },
+  "early": {
+    "de": "früh",
+    "sentenceDe": "Ich bin früh angekommen."
+  },
+  "late": {
+    "de": "zu spät",
+    "sentenceDe": "Entschuldigung, ich bin zu spät."
+  },
+  "on time": {
+    "de": "pünktlich",
+    "sentenceDe": "Der Zug ist pünktlich angekommen."
+  },
+  "always": {
+    "de": "immer",
+    "sentenceDe": "Ich trinke immer Wasser."
+  },
+  "often": {
+    "de": "oft",
+    "sentenceDe": "Ich übe oft Englisch."
+  },
+  "sometimes": {
+    "de": "manchmal",
+    "sentenceDe": "Manchmal arbeite ich von zu Hause."
+  },
+  "never": {
+    "de": "nie",
+    "sentenceDe": "Ich lasse nie das Frühstück aus."
+  },
+  "water": {
+    "de": "Wasser",
+    "sentenceDe": "Könnte ich etwas Wasser haben?"
+  },
+  "food": {
+    "de": "Essen",
+    "sentenceDe": "Das Essen riecht toll."
+  },
+  "bread": {
+    "de": "Brot",
+    "sentenceDe": "Ich habe frisches Brot gekauft."
+  },
+  "coffee": {
+    "de": "Kaffee",
+    "sentenceDe": "Ich hätte gerne einen Kaffee."
+  },
+  "tea": {
+    "de": "Tee",
+    "sentenceDe": "Trinkst du lieber Tee oder Kaffee?"
+  },
+  "milk": {
+    "de": "Milch",
+    "sentenceDe": "Es ist keine Milch mehr da."
+  },
+  "breakfast": {
+    "de": "Frühstück",
+    "sentenceDe": "Das Frühstück ist fertig."
+  },
+  "lunch": {
+    "de": "Mittagessen",
+    "sentenceDe": "Lass uns zusammen zu Mittag essen."
+  },
+  "dinner": {
+    "de": "Abendessen",
+    "sentenceDe": "Das Abendessen ist um sieben."
+  },
+  "hungry": {
+    "de": "hungrig",
+    "sentenceDe": "Nach dem Unterricht bin ich hungrig."
+  },
+  "thirsty": {
+    "de": "durstig",
+    "sentenceDe": "Ich habe Durst; ich brauche Wasser."
+  },
+  "tired": {
+    "de": "müde",
+    "sentenceDe": "Ich fühle mich heute Abend müde."
+  },
+  "happy": {
+    "de": "glücklich",
+    "sentenceDe": "Ich bin froh, helfen zu können."
+  },
+  "sad": {
+    "de": "traurig",
+    "sentenceDe": "Warum siehst du traurig aus?"
+  },
+  "hot": {
+    "de": "heiß",
+    "sentenceDe": "Es ist heiß draußen."
+  },
+  "cold": {
+    "de": "kalt",
+    "sentenceDe": "Das Wasser ist kalt."
+  },
+  "open": {
+    "de": "offen",
+    "sentenceDe": "Der Laden ist bis sechs offen."
+  },
+  "closed": {
+    "de": "geschlossen",
+    "sentenceDe": "Das Museum ist heute geschlossen."
+  },
+  "big": {
+    "de": "groß",
+    "sentenceDe": "Das ist eine große Stadt."
+  },
+  "small": {
+    "de": "klein",
+    "sentenceDe": "Ich brauche eine kleine Tasche."
+  },
+  "new": {
+    "de": "neu",
+    "sentenceDe": "Ich habe ein neues Handy gekauft."
+  },
+  "old": {
+    "de": "alt",
+    "sentenceDe": "Das ist ein altes Gebäude."
+  },
+  "good": {
+    "de": "gut",
+    "sentenceDe": "Das ist eine gute Idee."
+  },
+  "bad": {
+    "de": "schlecht",
+    "sentenceDe": "Das ist ein schlechtes Passwort."
+  },
+  "easy": {
+    "de": "einfach",
+    "sentenceDe": "Diese Übung ist einfach."
+  },
+  "difficult": {
+    "de": "schwierig",
+    "sentenceDe": "Die Frage ist schwierig."
+  },
+  "important": {
+    "de": "wichtig",
+    "sentenceDe": "Dieses Meeting ist wichtig."
+  },
+  "useful": {
+    "de": "nützlich",
+    "sentenceDe": "Diese App ist sehr nützlich."
+  },
+  "airport": {
+    "de": "Flughafen",
+    "sentenceDe": "Wir kommen früh am Flughafen an."
+  },
+  "flight": {
+    "de": "Flug",
+    "sentenceDe": "Mein Flug hat Verspätung."
+  },
+  "boarding pass": {
+    "de": "Bordkarte",
+    "sentenceDe": "Zeig deine Bordkarte am Gate."
+  },
+  "gate": {
+    "de": "Gate",
+    "sentenceDe": "Die Gate-Nummer ist zwölf."
+  },
+  "passport": {
+    "de": "Reisepass",
+    "sentenceDe": "Bewahre deinen Reisepass sicher auf."
+  },
+  "passport control": {
+    "de": "Passkontrolle",
+    "sentenceDe": "Die Passkontrolle ist hier entlang."
+  },
+  "luggage": {
+    "de": "Gepäck",
+    "sentenceDe": "Wo kann ich mein Gepäck abholen?"
+  },
+  "suitcase": {
+    "de": "Koffer",
+    "sentenceDe": "Mein Koffer ist schwer."
+  },
+  "backpack": {
+    "de": "Rucksack",
+    "sentenceDe": "Ich reise mit einem Rucksack."
+  },
+  "delay": {
+    "de": "Verspätung",
+    "sentenceDe": "Es gibt eine Stunde Verspätung."
+  },
+  "cancelled": {
+    "de": "gestrichen",
+    "sentenceDe": "Der Flug wurde gestrichen."
+  },
+  "departure": {
+    "de": "Abflug",
+    "sentenceDe": "Abflug ist um 9:40."
+  },
+  "arrival": {
+    "de": "Ankunft",
+    "sentenceDe": "Die Ankunftszeit ist 14:20."
+  },
+  "ticket": {
+    "de": "Ticket",
+    "sentenceDe": "Ich habe ein Hin- und Rückflugticket gebucht."
+  },
+  "check-in": {
+    "de": "Check-in",
+    "sentenceDe": "Der Check-in beginnt um 15 Uhr."
+  },
+  "security": {
+    "de": "Sicherheitskontrolle",
+    "sentenceDe": "Nimm deinen Laptop an der Sicherheitskontrolle raus."
+  },
+  "customs": {
+    "de": "Zoll",
+    "sentenceDe": "Etwas zu verzollen am Zoll?"
+  },
+  "visa": {
+    "de": "Visum",
+    "sentenceDe": "Brauche ich ein Visum für diese Reise?"
+  },
+  "layover": {
+    "de": "Zwischenstopp",
+    "sentenceDe": "Wir haben einen Zwischenstopp von zwei Stunden in Dubai."
+  },
+  "window seat": {
+    "de": "Fensterplatz",
+    "sentenceDe": "Ich bevorzuge einen Fensterplatz."
+  },
+  "aisle seat": {
+    "de": "Gangplatz",
+    "sentenceDe": "Kann ich einen Gangplatz bekommen?"
+  },
+  "overhead bin": {
+    "de": "Gepäckfach",
+    "sentenceDe": "Leg deine Tasche ins Gepäckfach oben."
+  },
+  "turbulence": {
+    "de": "Turbulenzen",
+    "sentenceDe": "Es kann Turbulenzen geben."
+  },
+  "pilot": {
+    "de": "Pilot",
+    "sentenceDe": "Der Pilot hat eine Durchsage gemacht."
+  },
+  "cabin crew": {
+    "de": "Kabinenpersonal",
+    "sentenceDe": "Frag das Kabinenpersonal nach Wasser."
+  },
+  "landing": {
+    "de": "Landung",
+    "sentenceDe": "Bitte bereitet euch auf die Landung vor."
+  },
+  "take-off": {
+    "de": "Start",
+    "sentenceDe": "Schnallt euch für den Start an."
+  },
+  "baggage claim": {
+    "de": "Gepäckausgabe",
+    "sentenceDe": "Die Gepäckausgabe ist unten."
+  },
+  "lost luggage": {
+    "de": "verlorenes Gepäck",
+    "sentenceDe": "Ich muss verlorenes Gepäck melden."
+  },
+  "travel insurance": {
+    "de": "Reiseversicherung",
+    "sentenceDe": "Kauf eine Reiseversicherung, bevor du abfliegst."
+  },
+  "hotel": {
+    "de": "Hotel",
+    "sentenceDe": "Wir haben ein ruhiges Hotel gebucht."
+  },
+  "reservation": {
+    "de": "Reservierung",
+    "sentenceDe": "Ich habe eine Reservierung auf den Namen Smith."
+  },
+  "check-out": {
+    "de": "Check-out",
+    "sentenceDe": "Der Check-out ist vor 11 Uhr."
+  },
+  "room": {
+    "de": "Zimmer",
+    "sentenceDe": "Ich hätte gerne ein ruhiges Zimmer."
+  },
+  "key card": {
+    "de": "Schlüsselkarte",
+    "sentenceDe": "Deine Schlüsselkarte öffnet Zimmer 214."
+  },
+  "reception": {
+    "de": "Rezeption",
+    "sentenceDe": "Frag an der Rezeption nach einem Stadtplan."
+  },
+  "single room": {
+    "de": "Einzelzimmer",
+    "sentenceDe": "Haben Sie ein Einzelzimmer?"
+  },
+  "double room": {
+    "de": "Doppelzimmer",
+    "sentenceDe": "Wir brauchen ein Doppelzimmer für zwei Nächte."
+  },
+  "breakfast included": {
+    "de": "Frühstück inklusive",
+    "sentenceDe": "Ist Frühstück inklusive?"
+  },
+  "wifi": {
+    "de": "WLAN",
+    "sentenceDe": "Wie lautet das WLAN-Passwort?"
+  },
+  "elevator": {
+    "de": "Aufzug",
+    "sentenceDe": "Der Aufzug ist außer Betrieb."
+  },
+  "stairs": {
+    "de": "Treppe",
+    "sentenceDe": "Benutze im Notfall die Treppe."
+  },
+  "towel": {
+    "de": "Handtuch",
+    "sentenceDe": "Könnte ich ein extra Handtuch haben?"
+  },
+  "pillow": {
+    "de": "Kissen",
+    "sentenceDe": "Ich brauche noch ein Kissen."
+  },
+  "blanket": {
+    "de": "Decke",
+    "sentenceDe": "Es ist kalt; ich brauche eine Decke."
+  },
+  "air conditioning": {
+    "de": "Klimaanlage",
+    "sentenceDe": "Bitte schalte die Klimaanlage ein."
+  },
+  "heating": {
+    "de": "Heizung",
+    "sentenceDe": "Die Heizung funktioniert nicht."
+  },
+  "noise": {
+    "de": "Lärm",
+    "sentenceDe": "Draußen ist zu viel Lärm."
+  },
+  "quiet": {
+    "de": "ruhig",
+    "sentenceDe": "Ich bevorzuge eine ruhige Straße."
+  },
+  "view": {
+    "de": "Aussicht",
+    "sentenceDe": "Dieses Zimmer hat Meerblick."
+  },
+  "balcony": {
+    "de": "Balkon",
+    "sentenceDe": "Unser Zimmer hat einen kleinen Balkon."
+  },
+  "booking": {
+    "de": "Buchung",
+    "sentenceDe": "Ich habe online gebucht."
+  },
+  "cancel a booking": {
+    "de": "eine Buchung stornieren",
+    "sentenceDe": "Wie kann ich eine Buchung stornieren?"
+  },
+  "deposit": {
+    "de": "Anzahlung",
+    "sentenceDe": "Sie haben eine Anzahlung verlangt."
+  },
+  "invoice": {
+    "de": "Rechnung",
+    "sentenceDe": "Könnten Sie mir die Rechnung per E-Mail schicken?"
+  },
+  "housekeeping": {
+    "de": "Zimmerreinigung",
+    "sentenceDe": "Die Zimmerreinigung hat das Zimmer geputzt."
+  },
+  "do not disturb": {
+    "de": "Bitte nicht stören",
+    "sentenceDe": "Hänge das Schild „Bitte nicht stören“ auf."
+  },
+  "late check-out": {
+    "de": "später Check-out",
+    "sentenceDe": "Kann ich einen späteren Check-out beantragen?"
+  },
+  "turn left": {
+    "de": "links abbiegen",
+    "sentenceDe": "Biege an der Ampel links ab."
+  },
+  "turn right": {
+    "de": "rechts abbiegen",
+    "sentenceDe": "Biege nach der Brücke rechts ab."
+  },
+  "straight ahead": {
+    "de": "geradeaus",
+    "sentenceDe": "Geh 200 Meter geradeaus."
+  },
+  "train station": {
+    "de": "Bahnhof",
+    "sentenceDe": "Der Bahnhof ist in der Nähe."
+  },
+  "bus stop": {
+    "de": "Bushaltestelle",
+    "sentenceDe": "Warte an der Bushaltestelle."
+  },
+  "metro": {
+    "de": "U-Bahn",
+    "sentenceDe": "Nimm die U-Bahn ins Zentrum."
+  },
+  "taxi": {
+    "de": "Taxi",
+    "sentenceDe": "Ruf ein Taxi zum Hotel."
+  },
+  "map": {
+    "de": "Karte",
+    "sentenceDe": "Ich brauche einen Stadtplan."
+  },
+  "near": {
+    "de": "nahe",
+    "sentenceDe": "Das Café ist nahe am Park."
+  },
+  "far": {
+    "de": "weit",
+    "sentenceDe": "Ist das Museum weit von hier?"
+  },
+  "how far is it?": {
+    "de": "wie weit ist es?",
+    "sentenceDe": "Wie weit ist es zum Strand?"
+  },
+  "cross the street": {
+    "de": "die Straße überqueren",
+    "sentenceDe": "Überquere die Straße vorsichtig."
+  },
+  "traffic light": {
+    "de": "Ampel",
+    "sentenceDe": "Halte an der Ampel."
+  },
+  "roundabout": {
+    "de": "Kreisverkehr",
+    "sentenceDe": "Nimm die zweite Ausfahrt im Kreisverkehr."
+  },
+  "platform": {
+    "de": "Gleis",
+    "sentenceDe": "Der Zug fährt von Gleis 3 ab."
+  },
+  "timetable": {
+    "de": "Fahrplan",
+    "sentenceDe": "Schau im Fahrplan nach Verspätungen."
+  },
+  "ticket machine": {
+    "de": "Fahrkartenautomat",
+    "sentenceDe": "Kauf ein Ticket am Fahrkartenautomaten."
+  },
+  "return ticket": {
+    "de": "Rückfahrkarte",
+    "sentenceDe": "Ich brauche eine Rückfahrkarte nach Lyon."
+  },
+  "single ticket": {
+    "de": "Einfache Fahrt",
+    "sentenceDe": "Eine einfache Fahrt ist heute günstiger."
+  },
+  "miss the train": {
+    "de": "den Zug verpassen",
+    "sentenceDe": "Beeil dich, sonst verpasst du den Zug."
+  },
+  "pedestrian": {
+    "de": "Fußgänger",
+    "sentenceDe": "Dieser Weg ist nur für Fußgänger."
+  },
+  "crossing": {
+    "de": "Fußgängerüberweg",
+    "sentenceDe": "Benutze den Fußgängerüberweg."
+  },
+  "north": {
+    "de": "Norden",
+    "sentenceDe": "Fahr zehn Kilometer nach Norden."
+  },
+  "south": {
+    "de": "Süden",
+    "sentenceDe": "Der Flughafen liegt südlich der Stadt."
+  },
+  "east": {
+    "de": "Osten",
+    "sentenceDe": "Die Sonne geht im Osten auf."
+  },
+  "west": {
+    "de": "Westen",
+    "sentenceDe": "Unser Hotel liegt im Westen."
+  },
+  "entrance": {
+    "de": "Eingang",
+    "sentenceDe": "Der Haupteingang ist links."
+  },
+  "exit": {
+    "de": "Ausgang",
+    "sentenceDe": "Folge den Schildern zum Ausgang."
+  },
+  "lost": {
+    "de": "verloren",
+    "sentenceDe": "Ich habe mich verlaufen; kannst du mir helfen?"
+  },
+  "address": {
+    "de": "Adresse",
+    "sentenceDe": "Wie lautet die Adresse des Hotels?"
+  },
+  "I'd like a coffee": {
+    "de": "ich hätte gerne einen Kaffee",
+    "sentenceDe": "Ich hätte gerne einen Kaffee, bitte."
+  },
+  "the bill please": {
+    "de": "die Rechnung bitte",
+    "sentenceDe": "Könnten wir bitte die Rechnung bekommen?"
+  },
+  "menu": {
+    "de": "Speisekarte",
+    "sentenceDe": "Darf ich die Speisekarte sehen?"
+  },
+  "delicious": {
+    "de": "lecker",
+    "sentenceDe": "Diese Suppe ist lecker."
+  },
+  "waiter": {
+    "de": "Kellner",
+    "sentenceDe": "Der Kellner hat unsere Bestellung aufgenommen."
+  },
+  "order": {
+    "de": "bestellen",
+    "sentenceDe": "Ich möchte jetzt bestellen."
+  },
+  "starter": {
+    "de": "Vorspeise",
+    "sentenceDe": "Wir teilen uns eine Vorspeise."
+  },
+  "main course": {
+    "de": "Hauptgericht",
+    "sentenceDe": "Das Hauptgericht ist Fisch."
+  },
+  "dessert": {
+    "de": "Nachtisch",
+    "sentenceDe": "Welche Desserts habt ihr?"
+  },
+  "vegetarian": {
+    "de": "vegetarisch",
+    "sentenceDe": "Gibt es eine vegetarische Option?"
+  },
+  "spicy": {
+    "de": "scharf",
+    "sentenceDe": "Ich esse lieber nichts Scharfes."
+  },
+  "allergy": {
+    "de": "Allergie",
+    "sentenceDe": "Ich habe eine Nussallergie."
+  },
+  "gluten-free": {
+    "de": "glutenfrei",
+    "sentenceDe": "Habt ihr glutenfreies Brot?"
+  },
+  "reservation for two": {
+    "de": "Reservierung für zwei",
+    "sentenceDe": "Ich habe eine Reservierung für zwei."
+  },
+  "table": {
+    "de": "Tisch",
+    "sentenceDe": "Einen Tisch am Fenster, bitte."
+  },
+  "tip": {
+    "de": "Trinkgeld",
+    "sentenceDe": "Ist das Trinkgeld inklusive?"
+  },
+  "cash": {
+    "de": "Bargeld",
+    "sentenceDe": "Akzeptieren Sie Bargeld?"
+  },
+  "card": {
+    "de": "Karte",
+    "sentenceDe": "Ich zahle mit Karte."
+  },
+  "receipt": {
+    "de": "Kassenbon",
+    "sentenceDe": "Bewahre den Kassenbon für Rückgaben auf."
+  },
+  "still water": {
+    "de": "stilles Wasser",
+    "sentenceDe": "Stilles Wasser für mich, bitte."
+  },
+  "sparkling water": {
+    "de": "Sprudelwasser",
+    "sentenceDe": "Sprudelwasser, bitte."
+  },
+  "wine": {
+    "de": "Wein",
+    "sentenceDe": "Ein Glas Rotwein, bitte."
+  },
+  "beer": {
+    "de": "Bier",
+    "sentenceDe": "Ein Bier und ein Wasser."
+  },
+  "juice": {
+    "de": "Saft",
+    "sentenceDe": "Orangensaft zum Frühstück."
+  },
+  "salt": {
+    "de": "Salz",
+    "sentenceDe": "Könntest du mir das Salz reichen?"
+  },
+  "pepper": {
+    "de": "Pfeffer",
+    "sentenceDe": "Ich brauche keinen Pfeffer."
+  },
+  "sugar": {
+    "de": "Zucker",
+    "sentenceDe": "Bitte keinen Zucker in meinen Tee."
+  },
+  "knife": {
+    "de": "Messer",
+    "sentenceDe": "Ich brauche ein sauberes Messer."
+  },
+  "fork": {
+    "de": "Gabel",
+    "sentenceDe": "Auf dem Tisch liegt keine Gabel."
+  },
+  "spoon": {
+    "de": "Löffel",
+    "sentenceDe": "Darf ich einen Löffel haben?"
+  },
+  "plate": {
+    "de": "Teller",
+    "sentenceDe": "Räum bitte die leeren Teller ab."
+  },
+  "glass": {
+    "de": "Glas",
+    "sentenceDe": "Füll mein Glas mit Wasser."
+  },
+  "rare": {
+    "de": "blutig",
+    "sentenceDe": "Ich mag mein Steak blutig."
+  },
+  "well done": {
+    "de": "durchgebraten",
+    "sentenceDe": "Mach das Steak durchgebraten."
+  },
+  "takeaway": {
+    "de": "zum Mitnehmen",
+    "sentenceDe": "Gibt es etwas zum Mitnehmen?"
+  },
+  "service charge": {
+    "de": "Servicegebühr",
+    "sentenceDe": "Gibt es eine Servicegebühr?"
+  },
+  "how much is it?": {
+    "de": "wie viel kostet das?",
+    "sentenceDe": "Wie viel kostet das?"
+  },
+  "expensive": {
+    "de": "teuer",
+    "sentenceDe": "Diese Jacke ist zu teuer."
+  },
+  "cheap": {
+    "de": "günstig",
+    "sentenceDe": "Ich suche ein günstiges Hotel."
+  },
+  "discount": {
+    "de": "Rabatt",
+    "sentenceDe": "Gibt es einen Studentenrabatt?"
+  },
+  "sale": {
+    "de": "Schlussverkauf",
+    "sentenceDe": "Alles ist im Schlussverkauf."
+  },
+  "size": {
+    "de": "Größe",
+    "sentenceDe": "Haben Sie das in Größe M?"
+  },
+  "fit": {
+    "de": "passen",
+    "sentenceDe": "Passt mir dieses Hemd?"
+  },
+  "try on": {
+    "de": "anprobieren",
+    "sentenceDe": "Kann ich diese Schuhe anprobieren?"
+  },
+  "refund": {
+    "de": "Rückerstattung",
+    "sentenceDe": "Ich hätte gerne eine Rückerstattung."
+  },
+  "exchange": {
+    "de": "umtauschen",
+    "sentenceDe": "Kann ich das gegen eine andere Größe umtauschen?"
+  },
+  "cashier": {
+    "de": "Kassierer",
+    "sentenceDe": "Bezahle an der Kasse."
+  },
+  "shopping bag": {
+    "de": "Einkaufstüte",
+    "sentenceDe": "Ich brauche eine Einkaufstüte."
+  },
+  "price": {
+    "de": "Preis",
+    "sentenceDe": "Der Preis enthält die Steuer."
+  },
+  "bargain": {
+    "de": "Schnäppchen",
+    "sentenceDe": "Dieses Handy ist ein Schnäppchen."
+  },
+  "brand": {
+    "de": "Marke",
+    "sentenceDe": "Welche Marke bevorzugst du?"
+  },
+  "quality": {
+    "de": "Qualität",
+    "sentenceDe": "Die Qualität ist ausgezeichnet."
+  },
+  "customer": {
+    "de": "Kunde",
+    "sentenceDe": "Der Kunde hat um Hilfe gebeten."
+  },
+  "queue": {
+    "de": "Warteschlange",
+    "sentenceDe": "Es gibt eine lange Warteschlange."
+  },
+  "open hours": {
+    "de": "Öffnungszeiten",
+    "sentenceDe": "Was sind die Öffnungszeiten?"
+  },
+  "help": {
+    "de": "Hilfe",
+    "sentenceDe": "Ich brauche bitte Hilfe."
+  },
+  "emergency": {
+    "de": "Notfall",
+    "sentenceDe": "Ruf im Notfall diese Nummer an."
+  },
+  "police": {
+    "de": "Polizei",
+    "sentenceDe": "Wo ist die nächste Polizeistation?"
+  },
+  "hospital": {
+    "de": "Krankenhaus",
+    "sentenceDe": "Bring ihn ins Krankenhaus."
+  },
+  "pharmacy": {
+    "de": "Apotheke",
+    "sentenceDe": "Gibt es in der Nähe eine Apotheke?"
+  },
+  "doctor": {
+    "de": "Arzt",
+    "sentenceDe": "Ich muss zum Arzt."
+  },
+  "pain": {
+    "de": "Schmerz",
+    "sentenceDe": "Ich habe Schmerzen im Rücken."
+  },
+  "headache": {
+    "de": "Kopfschmerzen",
+    "sentenceDe": "Ich habe starke Kopfschmerzen."
+  },
+  "fever": {
+    "de": "Fieber",
+    "sentenceDe": "Sie hat hohes Fieber."
+  },
+  "medicine": {
+    "de": "Medikament",
+    "sentenceDe": "Nimm dieses Medikament zweimal am Tag."
+  },
+  "appointment": {
+    "de": "Termin",
+    "sentenceDe": "Ich habe einen Arzttermin gebucht."
+  },
+  "insurance": {
+    "de": "Versicherung",
+    "sentenceDe": "Akzeptieren Sie eine Reiseversicherung?"
+  },
+  "ambulance": {
+    "de": "Krankenwagen",
+    "sentenceDe": "Ruf sofort einen Krankenwagen."
+  },
+  "injured": {
+    "de": "verletzt",
+    "sentenceDe": "Ist jemand verletzt?"
+  },
+  "lost my phone": {
+    "de": "mein Handy verloren",
+    "sentenceDe": "Ich habe mein Handy am Bahnhof verloren."
+  },
+  "stolen": {
+    "de": "gestohlen",
+    "sentenceDe": "Meine Tasche wurde gestohlen."
+  },
+  "I don't understand": {
+    "de": "ich verstehe nicht",
+    "sentenceDe": "Ich verstehe nicht; kannst du das wiederholen?"
+  },
+  "speak slowly": {
+    "de": "langsam sprechen",
+    "sentenceDe": "Bitte sprich langsam."
+  },
+  "can you repeat?": {
+    "de": "kannst du das wiederholen?",
+    "sentenceDe": "Kannst du das bitte wiederholen?"
+  },
+  "where is...?": {
+    "de": "wo ist...?",
+    "sentenceDe": "Wo ist die Toilette?"
+  },
+  "bathroom": {
+    "de": "Toilette",
+    "sentenceDe": "Wo ist die Toilette?"
+  },
+  "deadline": {
+    "de": "Frist",
+    "sentenceDe": "Die Frist ist Freitag."
+  },
+  "meeting": {
+    "de": "Besprechung",
+    "sentenceDe": "Wir haben um zehn eine Besprechung."
+  },
+  "to negotiate": {
+    "de": "verhandeln",
+    "sentenceDe": "Wir müssen über den Preis verhandeln."
+  },
+  "remote work": {
+    "de": "Homeoffice",
+    "sentenceDe": "Ich arbeite lieber zweimal die Woche im Homeoffice."
+  },
+  "feedback": {
+    "de": "Feedback",
+    "sentenceDe": "Schick bitte heute dein Feedback."
+  },
+  "manager": {
+    "de": "Vorgesetzter",
+    "sentenceDe": "Frag deinen Vorgesetzten um Freigabe."
+  },
+  "team": {
+    "de": "Team",
+    "sentenceDe": "Unser Team hat das Projekt fertiggestellt."
+  },
+  "project": {
+    "de": "Projekt",
+    "sentenceDe": "Dieses Projekt dauert drei Monate."
+  },
+  "task": {
+    "de": "Aufgabe",
+    "sentenceDe": "Erledige diese Aufgabe vor Mittag."
+  },
+  "email": {
+    "de": "E-Mail",
+    "sentenceDe": "Ich habe dir gestern eine E-Mail geschickt."
+  },
+  "attachment": {
+    "de": "Anhang",
+    "sentenceDe": "Bitte öffne den Anhang."
+  },
+  "agenda": {
+    "de": "Tagesordnung",
+    "sentenceDe": "Die Tagesordnung ist in deinem Posteingang."
+  },
+  "presentation": {
+    "de": "Präsentation",
+    "sentenceDe": "Ihre Präsentation war klar."
+  },
+  "to postpone": {
+    "de": "verschieben",
+    "sentenceDe": "Können wir den Anruf verschieben?"
+  },
+  "to cancel": {
+    "de": "absagen",
+    "sentenceDe": "Wir mussten die Besprechung absagen."
+  },
+  "budget": {
+    "de": "Budget",
+    "sentenceDe": "Wir liegen diesen Monat über dem Budget."
+  },
+  "client": {
+    "de": "Kunde",
+    "sentenceDe": "Der Kunde hat Änderungen verlangt."
+  },
+  "contract": {
+    "de": "Vertrag",
+    "sentenceDe": "Bitte unterschreibe den Vertrag."
+  },
+  "salary": {
+    "de": "Gehalt",
+    "sentenceDe": "Sie haben ein höheres Gehalt angeboten."
+  },
+  "interview": {
+    "de": "Vorstellungsgespräch",
+    "sentenceDe": "Ich habe morgen ein Vorstellungsgespräch."
+  },
+  "resume": {
+    "de": "Lebenslauf",
+    "sentenceDe": "Aktualisiere deinen Lebenslauf vor der Bewerbung."
+  },
+  "skill": {
+    "de": "Fähigkeit",
+    "sentenceDe": "Kommunikation ist eine wichtige Fähigkeit."
+  },
+  "experience": {
+    "de": "Erfahrung",
+    "sentenceDe": "Ich habe fünf Jahre Erfahrung."
+  },
+  "promotion": {
+    "de": "Beförderung",
+    "sentenceDe": "Sie hat eine Beförderung bekommen."
+  },
+  "overtime": {
+    "de": "Überstunden",
+    "sentenceDe": "Ich habe letzte Woche Überstunden gemacht."
+  },
+  "shift": {
+    "de": "Schicht",
+    "sentenceDe": "Ich arbeite in der Nachtschicht."
+  },
+  "office": {
+    "de": "Büro",
+    "sentenceDe": "Das Büro öffnet um neun."
+  },
+  "laptop": {
+    "de": "Laptop",
+    "sentenceDe": "Bring deinen Laptop zum Meeting mit."
+  },
+  "password": {
+    "de": "Passwort",
+    "sentenceDe": "Teile nie dein Passwort."
+  },
+  "to schedule": {
+    "de": "planen",
+    "sentenceDe": "Lass uns für Montag einen Anruf planen."
+  },
+  "follow-up": {
+    "de": "Nachfassung",
+    "sentenceDe": "Schick morgen eine Nachfass-E-Mail."
+  },
+  "priority": {
+    "de": "Priorität",
+    "sentenceDe": "Diese Aufgabe hat für uns höchste Priorität."
+  },
+  "goal": {
+    "de": "Ziel",
+    "sentenceDe": "Unser Ziel ist es, die Qualität zu verbessern."
+  },
+  "result": {
+    "de": "Ergebnis",
+    "sentenceDe": "Die Ergebnisse sehen vielversprechend aus."
+  },
+  "problem": {
+    "de": "Problem",
+    "sentenceDe": "Wir müssen dieses Problem lösen."
+  },
+  "solution": {
+    "de": "Lösung",
+    "sentenceDe": "Ich habe eine einfache Lösung."
+  },
+  "to improve": {
+    "de": "verbessern",
+    "sentenceDe": "Wir wollen unseren Service verbessern."
+  },
+  "efficient": {
+    "de": "effizient",
+    "sentenceDe": "Diese Methode ist effizienter."
+  },
+  "reliable": {
+    "de": "zuverlässig",
+    "sentenceDe": "Wir brauchen einen zuverlässigen Partner."
+  },
+  "classroom": {
+    "de": "Klassenzimmer",
+    "sentenceDe": "Triff mich vor dem Klassenzimmer."
+  },
+  "teacher": {
+    "de": "Lehrer",
+    "sentenceDe": "Der Lehrer erklärt klar und deutlich."
+  },
+  "student": {
+    "de": "Schüler",
+    "sentenceDe": "Jeder Schüler braucht ein Heft."
+  },
+  "homework": {
+    "de": "Hausaufgaben",
+    "sentenceDe": "Ich habe meine Hausaufgaben fertig."
+  },
+  "exam": {
+    "de": "Prüfung",
+    "sentenceDe": "Die Prüfung beginnt um neun."
+  },
+  "test": {
+    "de": "Test",
+    "sentenceDe": "Wir haben einen Vokabeltest."
+  },
+  "grade": {
+    "de": "Note",
+    "sentenceDe": "Ich habe eine gute Note bekommen."
+  },
+  "subject": {
+    "de": "Fach",
+    "sentenceDe": "Mathe ist mein Lieblingsfach."
+  },
+  "lesson": {
+    "de": "Lektion",
+    "sentenceDe": "Die heutige Lektion handelt vom Reisen."
+  },
+  "to study": {
+    "de": "lernen",
+    "sentenceDe": "Ich lerne jeden Tag Englisch."
+  },
+  "to learn": {
+    "de": "lernen",
+    "sentenceDe": "Ich möchte nützliche Redewendungen lernen."
+  },
+  "to practise": {
+    "de": "üben",
+    "sentenceDe": "Übe laut zu sprechen."
+  },
+  "dictionary": {
+    "de": "Wörterbuch",
+    "sentenceDe": "Schlag es in einem Wörterbuch nach."
+  },
+  "notebook": {
+    "de": "Heft",
+    "sentenceDe": "Schreib den Satz in dein Heft."
+  },
+  "pen": {
+    "de": "Kugelschreiber",
+    "sentenceDe": "Ich brauche einen blauen Kugelschreiber."
+  },
+  "library": {
+    "de": "Bibliothek",
+    "sentenceDe": "Ich lerne in der Bibliothek."
+  },
+  "university": {
+    "de": "Universität",
+    "sentenceDe": "Sie studiert an der Universität."
+  },
+  "degree": {
+    "de": "Abschluss",
+    "sentenceDe": "Er hat einen Abschluss in Jura gemacht."
+  },
+  "essay": {
+    "de": "Aufsatz",
+    "sentenceDe": "Schreib einen kurzen Aufsatz über das Reisen."
+  },
+  "research": {
+    "de": "Forschung",
+    "sentenceDe": "Meine Forschung konzentriert sich auf das Klima."
+  },
+  "deadline (school)": {
+    "de": "Abgabetermin",
+    "sentenceDe": "Der Abgabetermin für den Aufsatz ist Montag."
+  },
+  "presentation (school)": {
+    "de": "Referat",
+    "sentenceDe": "Bereite ein fünfminütiges Referat vor."
+  },
+  "group work": {
+    "de": "Gruppenarbeit",
+    "sentenceDe": "Wir haben in der Klasse Gruppenarbeit gemacht."
+  },
+  "to fail": {
+    "de": "durchfallen",
+    "sentenceDe": "Ich will bei der Prüfung nicht durchfallen."
+  },
+  "to pass": {
+    "de": "bestehen",
+    "sentenceDe": "Ich hoffe, den Test zu bestehen."
+  },
+  "scholarship": {
+    "de": "Stipendium",
+    "sentenceDe": "Sie hat ein Stipendium bekommen."
+  },
+  "lecture": {
+    "de": "Vorlesung",
+    "sentenceDe": "Die Vorlesung war interessant."
+  },
+  "semester": {
+    "de": "Semester",
+    "sentenceDe": "Die Prüfungen sind am Ende des Semesters."
+  },
+  "assignment": {
+    "de": "Aufgabe",
+    "sentenceDe": "Gib die Aufgabe online ab."
+  },
+  "notes": {
+    "de": "Notizen",
+    "sentenceDe": "Geh deine Notizen vor dem Quiz noch einmal durch."
+  },
+  "instructions": {
+    "de": "Anweisungen",
+    "sentenceDe": "Lies die Anweisungen sorgfältig."
+  },
+  "multiple choice": {
+    "de": "Multiple Choice",
+    "sentenceDe": "Das ist eine Multiple-Choice-Frage."
+  },
+  "true or false": {
+    "de": "richtig oder falsch",
+    "sentenceDe": "Antworte mit richtig oder falsch."
+  },
+  "fill in the blank": {
+    "de": "Lücke ausfüllen",
+    "sentenceDe": "Fülle die Lücke mit einem Wort aus."
+  },
+  "essay question": {
+    "de": "Aufsatzfrage",
+    "sentenceDe": "Beantworte die Aufsatzfrage in 200 Wörtern."
+  },
+  "time limit": {
+    "de": "Zeitlimit",
+    "sentenceDe": "Es gibt ein Zeitlimit von 40 Minuten."
+  },
+  "to submit": {
+    "de": "abgeben",
+    "sentenceDe": "Gib deine Antworten vor dem Gong ab."
+  },
+  "rough draft": {
+    "de": "Rohfassung",
+    "sentenceDe": "Schreib zuerst eine Rohfassung."
+  },
+  "to revise": {
+    "de": "überarbeiten",
+    "sentenceDe": "Überarbeite deinen Text auf Fehler."
+  },
+  "criterion": {
+    "de": "Kriterium",
+    "sentenceDe": "Klarheit ist ein wichtiges Kriterium."
+  },
+  "argument": {
+    "de": "Argument",
+    "sentenceDe": "Stütze dein Argument mit Beispielen."
+  },
+  "evidence": {
+    "de": "Beweis",
+    "sentenceDe": "Liefere Beweise für deine Behauptung."
+  },
+  "summary": {
+    "de": "Zusammenfassung",
+    "sentenceDe": "Schreib eine kurze Zusammenfassung des Textes."
+  },
+  "paragraph": {
+    "de": "Absatz",
+    "sentenceDe": "Fang hier einen neuen Absatz an."
+  },
+  "introduction": {
+    "de": "Einleitung",
+    "sentenceDe": "Die Einleitung sollte klar sein."
+  },
+  "conclusion": {
+    "de": "Schluss",
+    "sentenceDe": "Schließ mit einem starken Schluss ab."
+  },
+  "to paraphrase": {
+    "de": "paraphrasieren",
+    "sentenceDe": "Paraphrasiere den Satz in deinen eigenen Worten."
+  },
+  "plagiarism": {
+    "de": "Plagiat",
+    "sentenceDe": "Vermeide Plagiate und gib deine Quellen an."
+  },
+  "source": {
+    "de": "Quelle",
+    "sentenceDe": "Nenne immer deine Quelle."
+  },
+  "accurate": {
+    "de": "genau",
+    "sentenceDe": "Deine Antwort muss genau sein."
+  },
+  "hobby": {
+    "de": "Hobby",
+    "sentenceDe": "Lesen ist mein Lieblingshobby."
+  },
+  "music": {
+    "de": "Musik",
+    "sentenceDe": "Ich höre jeden Tag Musik."
+  },
+  "film": {
+    "de": "Film",
+    "sentenceDe": "Wir haben einen tollen Film gesehen."
+  },
+  "to watch": {
+    "de": "schauen",
+    "sentenceDe": "Am Wochenende schaue ich Serien."
+  },
+  "to play": {
+    "de": "spielen",
+    "sentenceDe": "Sie spielen nach der Schule Fußball."
+  },
+  "sport": {
+    "de": "Sport",
+    "sentenceDe": "Welchen Sport magst du?"
+  },
+  "to dance": {
+    "de": "tanzen",
+    "sentenceDe": "Möchtest du tanzen?"
+  },
+  "party": {
+    "de": "Party",
+    "sentenceDe": "Kommst du zur Party?"
+  },
+  "weekend": {
+    "de": "Wochenende",
+    "sentenceDe": "Was hast du am Wochenende vor?"
+  },
+  "to travel": {
+    "de": "reisen",
+    "sentenceDe": "Ich reise im Sommer gerne."
+  },
+  "beach": {
+    "de": "Strand",
+    "sentenceDe": "Wir haben den Tag am Strand verbracht."
+  },
+  "park": {
+    "de": "Park",
+    "sentenceDe": "Lass uns im Park spazieren gehen."
+  },
+  "museum": {
+    "de": "Museum",
+    "sentenceDe": "Das Museum öffnet um zehn."
+  },
+  "concert": {
+    "de": "Konzert",
+    "sentenceDe": "Wir haben Tickets für ein Konzert gekauft."
+  },
+  "to invite": {
+    "de": "einladen",
+    "sentenceDe": "Darf ich dich zum Essen einladen?"
+  },
+  "funny": {
+    "de": "lustig",
+    "sentenceDe": "Der Witz war lustig."
+  },
+  "boring": {
+    "de": "langweilig",
+    "sentenceDe": "Der Film war etwas langweilig."
+  },
+  "interesting": {
+    "de": "interessant",
+    "sentenceDe": "Dieser Podcast ist interessant."
+  },
+  "favourite": {
+    "de": "Lieblings-",
+    "sentenceDe": "Was ist dein Lieblingsbuch?"
+  },
+  "to relax": {
+    "de": "sich entspannen",
+    "sentenceDe": "Ich entspanne mich mit einem guten Buch."
+  },
+  "I think that": {
+    "de": "ich denke, dass",
+    "sentenceDe": "Ich denke, dass diese Idee funktioniert."
+  },
+  "in my opinion": {
+    "de": "meiner Meinung nach",
+    "sentenceDe": "Meiner Meinung nach sollten wir warten."
+  },
+  "I agree": {
+    "de": "ich stimme zu",
+    "sentenceDe": "Ich stimme deinem Punkt zu."
+  },
+  "I disagree": {
+    "de": "ich bin anderer Meinung",
+    "sentenceDe": "Ich bin anderer Meinung, aber ich respektiere dich."
+  },
+  "it depends": {
+    "de": "es kommt darauf an",
+    "sentenceDe": "Es kommt auf das Wetter an."
+  },
+  "for example": {
+    "de": "zum Beispiel",
+    "sentenceDe": "Probiere zum Beispiel diese Redewendung."
+  },
+  "however": {
+    "de": "jedoch",
+    "sentenceDe": "Jedoch brauchen wir mehr Zeit."
+  },
+  "therefore": {
+    "de": "deshalb",
+    "sentenceDe": "Deshalb müssen wir uns vorbereiten."
+  },
+  "although": {
+    "de": "obwohl",
+    "sentenceDe": "Obwohl es geregnet hat, sind wir rausgegangen."
+  },
+  "because": {
+    "de": "weil",
+    "sentenceDe": "Ich bin zu Hause geblieben, weil ich müde war."
+  },
+  "so that": {
+    "de": "damit",
+    "sentenceDe": "Sprich klar, damit alle dich hören."
+  },
+  "on the one hand": {
+    "de": "einerseits",
+    "sentenceDe": "Einerseits ist es günstiger."
+  },
+  "on the other hand": {
+    "de": "andererseits",
+    "sentenceDe": "Andererseits dauert es länger."
+  },
+  "as a result": {
+    "de": "dadurch",
+    "sentenceDe": "Dadurch sind die Verkäufe gestiegen."
+  },
+  "in addition": {
+    "de": "außerdem",
+    "sentenceDe": "Außerdem ist der Service kostenlos."
+  },
+  "in conclusion": {
+    "de": "zusammenfassend",
+    "sentenceDe": "Zusammenfassend: Übe jeden Tag."
+  },
+  "nevertheless": {
+    "de": "dennoch",
+    "sentenceDe": "Dennoch haben wir weitergemacht."
+  },
+  "whereas": {
+    "de": "wohingegen",
+    "sentenceDe": "Ich mag lieber Tee, wohingegen sie Kaffee mag."
+  },
+  "to convey": {
+    "de": "vermitteln",
+    "sentenceDe": "Seine Worte vermitteln tiefen Respekt."
+  },
+  "subtle": {
+    "de": "subtil",
+    "sentenceDe": "Es gibt einen subtilen Unterschied."
+  },
+  "compelling": {
+    "de": "überzeugend",
+    "sentenceDe": "Sie hat ein überzeugendes Argument vorgebracht."
+  },
+  "to underscore": {
+    "de": "unterstreichen",
+    "sentenceDe": "Diese Ergebnisse unterstreichen den Bedarf an Veränderung."
+  },
+  "albeit": {
+    "de": "wenn auch",
+    "sentenceDe": "Der Plan ist einfach, wenn auch ambitioniert."
+  },
+  "nuanced": {
+    "de": "nuanciert",
+    "sentenceDe": "Gib eine nuancierte Antwort."
+  },
+  "eloquent": {
+    "de": "eloquent",
+    "sentenceDe": "Er hat eine eloquente Rede gehalten."
+  },
+  "to distill": {
+    "de": "zusammenfassen",
+    "sentenceDe": "Kannst du die Hauptidee zusammenfassen?"
+  },
+  "to mitigate": {
+    "de": "abmildern",
+    "sentenceDe": "Wir müssen die Risiken abmildern."
+  },
+  "to jeopardise": {
+    "de": "gefährden",
+    "sentenceDe": "Eine Verzögerung könnte den Deal gefährden."
+  },
+  "inevitable": {
+    "de": "unvermeidlich",
+    "sentenceDe": "Veränderung ist unvermeidlich."
+  },
+  "comprehensive": {
+    "de": "umfassend",
+    "sentenceDe": "Wir brauchen einen umfassenden Plan."
+  },
+  "feasible": {
+    "de": "machbar",
+    "sentenceDe": "Ist dieser Zeitplan machbar?"
+  },
+  "substantial": {
+    "de": "erheblich",
+    "sentenceDe": "Es gab eine erhebliche Verbesserung."
+  },
+  "scarce": {
+    "de": "knapp",
+    "sentenceDe": "Sauberes Wasser ist hier knapp."
+  },
+  "to advocate": {
+    "de": "sich einsetzen für",
+    "sentenceDe": "Sie setzt sich für gleichen Zugang ein."
+  },
+  "to escalate": {
+    "de": "eskalieren",
+    "sentenceDe": "Lass den Konflikt nicht eskalieren."
+  },
+  "to prioritise": {
+    "de": "priorisieren",
+    "sentenceDe": "Wir müssen die Sicherheit priorisieren."
+  },
+  "ambiguous": {
+    "de": "mehrdeutig",
+    "sentenceDe": "Die Anweisung ist mehrdeutig."
+  },
+  "precise": {
+    "de": "präzise",
+    "sentenceDe": "Sei präzise in deiner Formulierung."
+  },
+  "to elaborate": {
+    "de": "ausführen",
+    "sentenceDe": "Könntest du diesen Punkt näher ausführen?"
+  },
+  "to clarify": {
+    "de": "klarstellen",
+    "sentenceDe": "Lass mich klarstellen, was ich gemeint habe."
+  },
+  "to summarise": {
+    "de": "zusammenfassen",
+    "sentenceDe": "Fasse den Artikel in drei Zeilen zusammen."
+  },
+  "hypothesis": {
+    "de": "Hypothese",
+    "sentenceDe": "Teste deine Hypothese sorgfältig."
+  },
+  "implication": {
+    "de": "Implikation",
+    "sentenceDe": "Was ist die Implikation dieser Regel?"
+  },
+  "framework": {
+    "de": "Rahmen",
+    "sentenceDe": "Wir arbeiten in einem klaren Rahmen."
+  },
+  "outcome": {
+    "de": "Ergebnis",
+    "sentenceDe": "Das Ergebnis hat alle überrascht."
+  },
+  "to assess": {
+    "de": "einschätzen",
+    "sentenceDe": "Schätze die Lage ein, bevor du handelst."
+  },
+  "to enhance": {
+    "de": "verbessern",
+    "sentenceDe": "Dieses Tool kann dein Schreiben verbessern."
+  },
+  "to sustain": {
+    "de": "aufrechterhalten",
+    "sentenceDe": "Können wir dieses Tempo aufrechterhalten?"
+  },
+  "robust": {
+    "de": "robust",
+    "sentenceDe": "Wir brauchen eine robuste Lösung."
+  },
+  "transparent": {
+    "de": "transparent",
+    "sentenceDe": "Sei transparent bei den Kosten."
+  },
+  "accountable": {
+    "de": "verantwortlich",
+    "sentenceDe": "Führungskräfte müssen verantwortlich sein."
+  },
+  "currency": {
+    "de": "Währung",
+    "sentenceDe": "Welche Währung akzeptiert ihr?"
+  },
+  "exchange rate": {
+    "de": "Wechselkurs",
+    "sentenceDe": "Prüfe zuerst den Wechselkurs."
+  },
+  "ATM": {
+    "de": "Geldautomat",
+    "sentenceDe": "Gibt es hier in der Nähe einen Geldautomaten?"
+  },
+  "to withdraw money": {
+    "de": "Geld abheben",
+    "sentenceDe": "Ich muss Geld abheben."
+  },
+  "SIM card": {
+    "de": "SIM-Karte",
+    "sentenceDe": "Kauf eine lokale SIM-Karte."
+  },
+  "charger": {
+    "de": "Ladegerät",
+    "sentenceDe": "Ich habe mein Handy-Ladegerät vergessen."
+  },
+  "adapter": {
+    "de": "Adapter",
+    "sentenceDe": "Brauche ich einen Stromadapter?"
+  },
+  "socket": {
+    "de": "Steckdose",
+    "sentenceDe": "Wo ist die Steckdose?"
+  },
+  "luggage tag": {
+    "de": "Gepäckanhänger",
+    "sentenceDe": "Befestige einen Gepäckanhänger."
+  },
+  "to pack": {
+    "de": "packen",
+    "sentenceDe": "Ich muss heute Abend packen."
+  },
+  "souvenir": {
+    "de": "Souvenir",
+    "sentenceDe": "Ich habe ein kleines Souvenir gekauft."
+  },
+  "guidebook": {
+    "de": "Reiseführer",
+    "sentenceDe": "Dieser Reiseführer ist nützlich."
+  },
+  "tourist": {
+    "de": "Tourist",
+    "sentenceDe": "Im Sommer kommen viele Touristen."
+  },
+  "local": {
+    "de": "Einheimischer",
+    "sentenceDe": "Frag einen Einheimischen um Rat."
+  },
+  "crowded": {
+    "de": "überfüllt",
+    "sentenceDe": "Die U-Bahn ist in der Stoßzeit überfüllt."
+  },
+  "rush hour": {
+    "de": "Stoßzeit",
+    "sentenceDe": "Meide die Straßen in der Stoßzeit."
+  },
+  "itinerary": {
+    "de": "Reiseroute",
+    "sentenceDe": "Teile deine Reiseroute mit der Familie."
+  },
+  "to book": {
+    "de": "buchen",
+    "sentenceDe": "Buche deine Tickets früh."
+  },
+  "confirmation": {
+    "de": "Bestätigung",
+    "sentenceDe": "Ich habe eine Buchungsbestätigung bekommen."
+  },
+  "available": {
+    "de": "verfügbar",
+    "sentenceDe": "Ist um acht ein Tisch verfügbar?"
+  },
+  "unavailable": {
+    "de": "nicht verfügbar",
+    "sentenceDe": "Dieses Datum ist nicht verfügbar."
+  },
+  "fully booked": {
+    "de": "ausgebucht",
+    "sentenceDe": "Das Hotel ist ausgebucht."
+  },
+  "to recommend": {
+    "de": "empfehlen",
+    "sentenceDe": "Kannst du ein Restaurant empfehlen?"
+  },
+  "suggestion": {
+    "de": "Vorschlag",
+    "sentenceDe": "Hast du einen Vorschlag?"
+  },
+  "to complain": {
+    "de": "sich beschweren",
+    "sentenceDe": "Ich muss mich über den Lärm beschweren."
+  },
+  "complaint": {
+    "de": "Beschwerde",
+    "sentenceDe": "Ich möchte eine Beschwerde einreichen."
+  },
+  "manager (hotel)": {
+    "de": "Manager",
+    "sentenceDe": "Darf ich mit dem Manager sprechen?"
+  },
+  "to replace": {
+    "de": "ersetzen",
+    "sentenceDe": "Bitte ersetze diese kaputte Lampe."
+  },
+  "broken": {
+    "de": "kaputt",
+    "sentenceDe": "Die Dusche ist kaputt."
+  },
+  "to fix": {
+    "de": "reparieren",
+    "sentenceDe": "Kannst du das heute reparieren?"
+  },
+  "clean": {
+    "de": "sauber",
+    "sentenceDe": "Ist das Zimmer sauber?"
+  },
+  "dirty": {
+    "de": "schmutzig",
+    "sentenceDe": "Diese Handtücher sind schmutzig."
+  },
+  "comfortable": {
+    "de": "bequem",
+    "sentenceDe": "Das Bett ist bequem."
+  },
+  "uncomfortable": {
+    "de": "unbequem",
+    "sentenceDe": "Dieser Stuhl ist unbequem."
+  },
+  "safe": {
+    "de": "sicher",
+    "sentenceDe": "Ist diese Gegend sicher?"
+  },
+  "dangerous": {
+    "de": "gefährlich",
+    "sentenceDe": "Diese Straße ist nachts gefährlich."
+  },
+  "to warn": {
+    "de": "warnen",
+    "sentenceDe": "Sie warnen Touristen vor Taschendieben."
+  },
+  "pickpocket": {
+    "de": "Taschendieb",
+    "sentenceDe": "Pass auf deine Tasche auf, es gibt Taschendiebe."
+  },
+  "to lock": {
+    "de": "abschließen",
+    "sentenceDe": "Schließe die Tür ab, wenn du gehst."
+  },
+  "key": {
+    "de": "Schlüssel",
+    "sentenceDe": "Ich habe meinen Zimmerschlüssel verloren."
+  },
+  "to unlock": {
+    "de": "entsperren",
+    "sentenceDe": "Entsperre dein Handy vorsichtig."
+  },
+  "screen": {
+    "de": "Bildschirm",
+    "sentenceDe": "Der Bildschirm ist gesprungen."
+  },
+  "to charge": {
+    "de": "aufladen",
+    "sentenceDe": "Ich muss mein Handy aufladen."
+  },
+  "battery": {
+    "de": "Akku",
+    "sentenceDe": "Mein Akku ist fast leer."
+  },
+  "signal": {
+    "de": "Signal",
+    "sentenceDe": "Hier gibt es kein Signal."
+  },
+  "to download": {
+    "de": "herunterladen",
+    "sentenceDe": "Lade die Karte offline herunter."
+  },
+  "offline": {
+    "de": "offline",
+    "sentenceDe": "Speichere die Datei für die Offline-Nutzung."
+  },
+  "online": {
+    "de": "online",
+    "sentenceDe": "Buche online, um Geld zu sparen."
+  },
+  "account": {
+    "de": "Konto",
+    "sentenceDe": "Erstelle ein Konto, um fortzufahren."
+  },
+  "to log in": {
+    "de": "sich anmelden",
+    "sentenceDe": "Melde dich mit deiner E-Mail an."
+  },
+  "to log out": {
+    "de": "sich abmelden",
+    "sentenceDe": "Denk daran, dich an gemeinsamen Computern abzumelden."
+  },
+  "to upload": {
+    "de": "hochladen",
+    "sentenceDe": "Lade das Dokument vor Mittag hoch."
+  },
+  "to download (file)": {
+    "de": "herunterladen",
+    "sentenceDe": "Lade den Bericht als PDF herunter."
+  },
+  "folder": {
+    "de": "Ordner",
+    "sentenceDe": "Leg die Dateien in diesen Ordner."
+  },
+  "to share": {
+    "de": "teilen",
+    "sentenceDe": "Teile den Link mit dem Team."
+  },
+  "update": {
+    "de": "Aktualisierung",
+    "sentenceDe": "Installiere die neueste Aktualisierung."
+  },
+  "bug": {
+    "de": "Bug",
+    "sentenceDe": "Wir haben einen Bug in der App gefunden."
+  },
+  "to report": {
+    "de": "melden",
+    "sentenceDe": "Melde das Problem dem Support."
+  },
+  "support": {
+    "de": "Support",
+    "sentenceDe": "Kontaktiere den Support, wenn du Hilfe brauchst."
+  },
+  "customer service": {
+    "de": "Kundenservice",
+    "sentenceDe": "Ruf den Kundenservice für eine Rückerstattung an."
+  },
+  "invoice number": {
+    "de": "Rechnungsnummer",
+    "sentenceDe": "Gib deine Rechnungsnummer an."
+  },
+  "payment": {
+    "de": "Zahlung",
+    "sentenceDe": "Die Zahlung ist am Montag fällig."
+  },
+  "refund (money)": {
+    "de": "Rückerstattung",
+    "sentenceDe": "Deine Rückerstattung kommt in 5 Tagen."
+  },
+  "to confirm": {
+    "de": "bestätigen",
+    "sentenceDe": "Bitte bestätige deine Teilnahme."
+  },
+  "to decline": {
+    "de": "ablehnen",
+    "sentenceDe": "Ich muss diese Einladung ablehnen."
+  },
+  "available (person)": {
+    "de": "verfügbar",
+    "sentenceDe": "Bist du um drei verfügbar?"
+  },
+  "busy": {
+    "de": "beschäftigt",
+    "sentenceDe": "Ich bin bis Freitag beschäftigt."
+  },
+  "urgent": {
+    "de": "dringend",
+    "sentenceDe": "Diese Nachricht ist dringend."
+  },
+  "asap": {
+    "de": "so schnell wie möglich",
+    "sentenceDe": "Bitte antworte so schnell wie möglich."
+  },
+  "to forward": {
+    "de": "weiterleiten",
+    "sentenceDe": "Leite diese E-Mail an die Finanzabteilung weiter."
+  },
+  "carbon copy": {
+    "de": "Durchschlag / CC",
+    "sentenceDe": "Setze bitte deinen Manager in CC."
+  },
+  "subject line": {
+    "de": "Betreffzeile",
+    "sentenceDe": "Schreibe eine klare Betreffzeile."
+  },
+  "out of office": {
+    "de": "außer Haus",
+    "sentenceDe": "Ich habe eine Abwesenheitsnotiz eingerichtet."
+  },
+  "to brainstorm": {
+    "de": "brainstormen",
+    "sentenceDe": "Lass uns neue Ideen brainstormen."
+  },
+  "milestone": {
+    "de": "Meilenstein",
+    "sentenceDe": "Wir haben einen wichtigen Meilenstein erreicht."
+  },
+  "stakeholder": {
+    "de": "Stakeholder",
+    "sentenceDe": "Informiere jeden Stakeholder."
+  },
+  "deliverable": {
+    "de": "Liefergegenstand",
+    "sentenceDe": "Der Liefergegenstand ist am Freitag fällig."
+  },
+  "scope": {
+    "de": "Umfang",
+    "sentenceDe": "Erweitere den Projektumfang nicht."
+  },
+  "risk": {
+    "de": "Risiko",
+    "sentenceDe": "Wir müssen dieses Risiko verringern."
+  },
+  "opportunity": {
+    "de": "Gelegenheit",
+    "sentenceDe": "Das ist eine tolle Gelegenheit."
+  },
+  "challenge": {
+    "de": "Herausforderung",
+    "sentenceDe": "Die größte Herausforderung ist die Zeit."
+  },
+  "strength": {
+    "de": "Stärke",
+    "sentenceDe": "Teamarbeit ist unsere Stärke."
+  },
+  "weakness": {
+    "de": "Schwäche",
+    "sentenceDe": "Ehrlich über eine Schwäche zu sein hilft."
+  },
+  "to apply": {
+    "de": "sich bewerben",
+    "sentenceDe": "Ich möchte mich für diesen Job bewerben."
+  },
+  "application": {
+    "de": "Bewerbung",
+    "sentenceDe": "Reiche deine Bewerbung online ein."
+  },
+  "reference": {
+    "de": "Referenz",
+    "sentenceDe": "Kannst du meine Referenz sein?"
+  },
+  "cover letter": {
+    "de": "Anschreiben",
+    "sentenceDe": "Schreibe ein kurzes Anschreiben."
+  },
+  "to hire": {
+    "de": "einstellen",
+    "sentenceDe": "Sie werden zwei Personen einstellen."
+  },
+  "to resign": {
+    "de": "kündigen",
+    "sentenceDe": "Er hat beschlossen zu kündigen."
+  },
+  "notice period": {
+    "de": "Kündigungsfrist",
+    "sentenceDe": "Meine Kündigungsfrist beträgt einen Monat."
+  },
+  "workplace": {
+    "de": "Arbeitsplatz",
+    "sentenceDe": "Sicherheit am Arbeitsplatz ist wichtig."
+  },
+  "hybrid": {
+    "de": "hybrid",
+    "sentenceDe": "Wir nutzen ein hybrides Arbeitsmodell."
+  },
+  "to commute": {
+    "de": "pendeln",
+    "sentenceDe": "Ich pendle mit dem Zug."
+  },
+  "I need": {
+    "de": "ich brauche",
+    "sentenceDe": "Ich brauche mehr Übung."
+  },
+  "I want": {
+    "de": "ich will",
+    "sentenceDe": "Ich will mein Englisch verbessern."
+  },
+  "I can": {
+    "de": "ich kann",
+    "sentenceDe": "Ich kann dir dabei helfen."
+  },
+  "I can't": {
+    "de": "ich kann nicht",
+    "sentenceDe": "Ich kann morgen nicht kommen."
+  },
+  "I must": {
+    "de": "ich muss",
+    "sentenceDe": "Ich muss jetzt gehen."
+  },
+  "I should": {
+    "de": "ich sollte",
+    "sentenceDe": "Ich sollte diese Wörter wiederholen."
+  },
+  "would like": {
+    "de": "würde gerne",
+    "sentenceDe": "Ich hätte gerne mehr Informationen."
+  },
+  "could you...?": {
+    "de": "könntest du...?",
+    "sentenceDe": "Könntest du das Fenster öffnen?"
+  },
+  "would you mind...?": {
+    "de": "würde es dich stören...?",
+    "sentenceDe": "Würde es dich stören, das zu wiederholen?"
+  },
+  "how do you say...?": {
+    "de": "wie sagt man...?",
+    "sentenceDe": "Wie sagt man das auf Englisch?"
+  },
+  "what does ... mean?": {
+    "de": "was bedeutet ...?",
+    "sentenceDe": "Was bedeutet dieses Wort?"
+  },
+  "I mean": {
+    "de": "ich meine",
+    "sentenceDe": "Ich meine die zweite Option."
+  },
+  "in other words": {
+    "de": "mit anderen Worten",
+    "sentenceDe": "Mit anderen Worten: fang früher an."
+  },
+  "by the way": {
+    "de": "übrigens",
+    "sentenceDe": "Übrigens, hast du später Zeit?"
+  },
+  "actually": {
+    "de": "eigentlich",
+    "sentenceDe": "Eigentlich habe ich schon gebucht."
+  },
+  "especially": {
+    "de": "besonders",
+    "sentenceDe": "Ich mag Sprachen, besonders Englisch."
+  },
+  "at least": {
+    "de": "mindestens",
+    "sentenceDe": "Komm mindestens zehn Minuten früher."
+  },
+  "at most": {
+    "de": "höchstens",
+    "sentenceDe": "Es dauert höchstens fünfzehn Minuten."
+  },
+  "instead": {
+    "de": "stattdessen",
+    "sentenceDe": "Nimm den Bus statt des Taxis."
+  },
+  "already": {
+    "de": "schon",
+    "sentenceDe": "Ich habe die Lektion schon beendet."
+  },
+  "still": {
+    "de": "noch",
+    "sentenceDe": "Lernst du noch?"
+  },
+  "yet": {
+    "de": "noch",
+    "sentenceDe": "Ich habe noch nicht geübt."
+  },
+  "enough": {
+    "de": "genug",
+    "sentenceDe": "Ist genug Zeit?"
+  },
+  "too much": {
+    "de": "zu viel",
+    "sentenceDe": "Das ist zu viel Zucker."
+  },
+  "too many": {
+    "de": "zu viele",
+    "sentenceDe": "Es sind zu viele Leute."
+  },
+  "a few": {
+    "de": "ein paar",
+    "sentenceDe": "Ich brauche ein paar Minuten."
+  },
+  "a lot of": {
+    "de": "viele",
+    "sentenceDe": "Ich habe viele Fragen."
+  },
+  "each": {
+    "de": "jeder",
+    "sentenceDe": "Lies jeden Satz sorgfältig."
+  },
+  "both": {
+    "de": "beide",
+    "sentenceDe": "Beide Antworten können richtig sein."
+  },
+  "neither": {
+    "de": "keiner von beiden",
+    "sentenceDe": "Keine der beiden Optionen passt für mich."
+  },
+  "either": {
+    "de": "einer von beiden",
+    "sentenceDe": "Du kannst einen der beiden Plätze wählen."
+  },
+  "whoever": {
+    "de": "wer auch immer",
+    "sentenceDe": "Wer auch immer zuerst kommt, kann anfangen."
+  },
+  "whenever": {
+    "de": "wann immer",
+    "sentenceDe": "Ruf mich an, wann immer du Hilfe brauchst."
+  },
+  "wherever": {
+    "de": "wo auch immer",
+    "sentenceDe": "Nimm deinen Pass mit, wo auch immer du hingehst."
+  },
+  "whatever": {
+    "de": "was auch immer",
+    "sentenceDe": "Was auch immer passiert, bleib ruhig."
+  },
+  "to succeed": {
+    "de": "Erfolg haben",
+    "sentenceDe": "Üben hilft dir, Erfolg zu haben."
+  },
+  "to fail (general)": {
+    "de": "scheitern",
+    "sentenceDe": "Hab keine Angst zu scheitern, lern daraus."
+  },
+  "progress": {
+    "de": "Fortschritt",
+    "sentenceDe": "Ich kann echten Fortschritt sehen."
+  },
+  "confidence": {
+    "de": "Selbstvertrauen",
+    "sentenceDe": "Täglich sprechen baut Selbstvertrauen auf."
+  },
+  "mistake": {
+    "de": "Fehler",
+    "sentenceDe": "Ein Fehler hilft dir zu lernen."
+  },
+  "to correct": {
+    "de": "korrigieren",
+    "sentenceDe": "Korrigiere den Satz sorgfältig."
+  },
+  "to remember": {
+    "de": "sich erinnern",
+    "sentenceDe": "Versuch, dich an diesen Satz zu erinnern."
+  },
+  "to forget": {
+    "de": "vergessen",
+    "sentenceDe": "Vergiss deinen Pass nicht."
+  },
+  "to explain": {
+    "de": "erklären",
+    "sentenceDe": "Kannst du das nochmal erklären?"
+  },
+  "to understand": {
+    "de": "verstehen",
+    "sentenceDe": "Jetzt verstehe ich die Regel."
+  },
+  "to listen": {
+    "de": "zuhören",
+    "sentenceDe": "Hör dem Audio sorgfältig zu."
+  },
+  "to speak": {
+    "de": "sprechen",
+    "sentenceDe": "Sprich jeden Tag ein bisschen."
+  },
+  "to read": {
+    "de": "lesen",
+    "sentenceDe": "Lies den Text laut vor."
+  },
+  "to write": {
+    "de": "schreiben",
+    "sentenceDe": "Schreibe einen kurzen Satz."
+  },
+  "to ask": {
+    "de": "fragen",
+    "sentenceDe": "Frag, wenn du Hilfe brauchst."
+  },
+  "to answer": {
+    "de": "antworten",
+    "sentenceDe": "Antworte in ganzen Sätzen."
+  },
+  "to wait": {
+    "de": "warten",
+    "sentenceDe": "Bitte warte einen Moment."
+  },
+  "to start": {
+    "de": "anfangen",
+    "sentenceDe": "Lass uns mit der nächsten Lektion anfangen."
+  },
+  "to finish": {
+    "de": "beenden",
+    "sentenceDe": "Beende die Übung sorgfältig."
+  },
+  "to continue": {
+    "de": "weitermachen",
+    "sentenceDe": "Mach mit dem nächsten Kapitel weiter."
+  },
+  "to stop": {
+    "de": "aufhören",
+    "sentenceDe": "Hör auf, wenn du unsicher bist."
+  },
+  "to try": {
+    "de": "versuchen",
+    "sentenceDe": "Versuch es nochmal ohne Angst."
+  },
+  "to choose": {
+    "de": "wählen",
+    "sentenceDe": "Wähle die beste Antwort."
+  },
+  "to change": {
+    "de": "ändern",
+    "sentenceDe": "Ich möchte meine Buchung ändern."
+  },
+  "to check": {
+    "de": "überprüfen",
+    "sentenceDe": "Überprüfe deine Rechtschreibung."
+  },
+  "to prepare": {
+    "de": "vorbereiten",
+    "sentenceDe": "Bereite nützliche Sätze fürs Reisen vor."
+  },
+  "to decide": {
+    "de": "entscheiden",
+    "sentenceDe": "Entscheide, welches Ziel am wichtigsten ist."
+  },
+  "to prefer": {
+    "de": "bevorzugen",
+    "sentenceDe": "Ich bevorzuge kurze, nützliche Sätze."
+  },
+  "to avoid": {
+    "de": "vermeiden",
+    "sentenceDe": "Vermeide es, Wort für Wort zu übersetzen."
+  },
+  "to focus": {
+    "de": "sich konzentrieren",
+    "sentenceDe": "Konzentriere dich auf die Bedeutung, nicht auf die Angst."
+  },
+  "to improve (self)": {
+    "de": "sich verbessern",
+    "sentenceDe": "Du verbesserst dich, indem du Fehler nochmal durchgehst."
+  }
+}

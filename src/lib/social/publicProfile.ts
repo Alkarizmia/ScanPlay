@@ -34,17 +34,17 @@ export async function pullPublicProfileFromCloud(): Promise<void> {
 
   const { data } = await supabase
     .from('scanplay_public_profiles')
-    .select('display_name, avatar_id, avatar_url, banner_theme, updated_at')
+    .select('display_name, avatar_id, avatar_url, banner_theme, avatar_frame, banner_frame, updated_at')
     .eq('user_id', userId)
     .maybeSingle();
 
   if (!data) return;
 
+  // Identité only: ne pas tirer banner_* ici (souvent "green" stale → écrase le fond).
   mergeProfileFromCloud({
     displayName: data.display_name as string | null,
     avatarId: data.avatar_id as string | null,
     avatarUrl: data.avatar_url as string | null,
-    bannerTheme: (data as { banner_theme?: string | null }).banner_theme ?? null,
     updatedAt: data.updated_at as string | null,
   });
 }
@@ -63,6 +63,14 @@ export async function syncPublicProfileWithDisplayName(displayName: string): Pro
     typeof profile.bannerTheme === 'string' && profile.bannerTheme.trim()
       ? profile.bannerTheme.trim()
       : 'green';
+  const avatarFrame =
+    typeof profile.avatarFrame === 'string' && profile.avatarFrame.trim()
+      ? profile.avatarFrame.trim()
+      : null;
+  const bannerFrame =
+    typeof profile.bannerFrame === 'string' && profile.bannerFrame.trim()
+      ? profile.bannerFrame.trim()
+      : null;
 
   const { error } = await supabase.rpc('sync_public_profile_stats', {
     p_display_name: trimmed,
@@ -73,10 +81,12 @@ export async function syncPublicProfileWithDisplayName(displayName: string): Pro
     p_plan: getPlan(),
     p_avatar_url: profileAvatarUrl(profile),
     p_banner_theme: bannerTheme,
+    p_avatar_frame: avatarFrame,
+    p_banner_frame: bannerFrame,
   });
 
   if (error) {
-    // Fallback if RPC not yet patched with p_banner_theme
+    // Fallback si RPC pas encore patché (banner / frames)
     const retry = await supabase.rpc('sync_public_profile_stats', {
       p_display_name: trimmed,
       p_avatar_id: profile.avatar,
@@ -85,15 +95,46 @@ export async function syncPublicProfileWithDisplayName(displayName: string): Pro
       p_deck_count: deckCount,
       p_plan: getPlan(),
       p_avatar_url: profileAvatarUrl(profile),
+      p_banner_theme: bannerTheme,
+      p_avatar_frame: avatarFrame,
     });
-    if (retry.error) return mapSyncError(retry.error.message);
-    const userId = getUserId();
-    if (userId) {
-      await supabase
-        .from('scanplay_public_profiles')
-        .update({ banner_theme: bannerTheme })
-        .eq('user_id', userId);
+    if (retry.error) {
+      const retry2 = await supabase.rpc('sync_public_profile_stats', {
+        p_display_name: trimmed,
+        p_avatar_id: profile.avatar,
+        p_xp: xp,
+        p_streak: streak,
+        p_deck_count: deckCount,
+        p_plan: getPlan(),
+        p_avatar_url: profileAvatarUrl(profile),
+        p_banner_theme: bannerTheme,
+      });
+      if (retry2.error) {
+        const retry3 = await supabase.rpc('sync_public_profile_stats', {
+          p_display_name: trimmed,
+          p_avatar_id: profile.avatar,
+          p_xp: xp,
+          p_streak: streak,
+          p_deck_count: deckCount,
+          p_plan: getPlan(),
+          p_avatar_url: profileAvatarUrl(profile),
+        });
+        if (retry3.error) return mapSyncError(retry3.error.message);
+      }
     }
+  }
+
+  // Réécrire les colonnes cosmétiques (RPC ancienne peut sanitizer les fonds boutique).
+  const userId = getUserId();
+  if (userId) {
+    await supabase
+      .from('scanplay_public_profiles')
+      .update({
+        banner_theme: bannerTheme,
+        avatar_frame: avatarFrame,
+        banner_frame: bannerFrame,
+      })
+      .eq('user_id', userId);
   }
 
   const { syncPublicAchievements } = await import('./publicAchievements');

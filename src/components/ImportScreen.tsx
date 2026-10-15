@@ -33,8 +33,6 @@ interface ImportScreenProps {
 
 type ImportStep = 'pick' | 'photos' | 'configure';
 
-const DEFAULT_FOCUS: TrainingFocus[] = ['written', 'oral'];
-
 export function ImportScreen({
   locale,
   sheetType,
@@ -60,7 +58,7 @@ export function ImportScreen({
   const [picked, setPicked] = useState<File[]>(initialFiles ?? []);
   const [photoUrls, setPhotoUrls] = useState<string[]>([]);
   const [step, setStep] = useState<ImportStep>(initialFiles?.length ? 'photos' : 'pick');
-  const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>(DEFAULT_FOCUS);
+  const [trainingFocus, setTrainingFocus] = useState<TrainingFocus[]>([]);
   const [examWanted, setExamWanted] = useState(false);
   const [showJoinCode, setShowJoinCode] = useState(false);
   const [joinCode, setJoinCode] = useState('');
@@ -159,13 +157,13 @@ export function ImportScreen({
 
   const handleSheetTypeChange = (type: SheetType) => {
     onSheetTypeChange(type);
-    if (!isTrainingFocusApplicable(type)) {
-      setTrainingFocus(['written']);
-    }
   };
 
+  const canStartScan =
+    picked.length > 0 && (!showTrainingFocus || trainingFocus.length > 0);
+
   const startScan = () => {
-    if (picked.length === 0) return;
+    if (!canStartScan) return;
     const focus = showTrainingFocus ? trainingFocus : (['written'] as TrainingFocus[]);
     onFile(picked.length === 1 ? picked[0] : picked, focus, examWanted, sheetType);
   };
@@ -452,9 +450,17 @@ export function ImportScreen({
               onUpgrade={() => onUpgrade?.('exam')}
             />
 
-            <button type="button" className="btn-primary btn-lg import-scan-btn import-config-scan" onClick={startScan}>
+            <button
+              type="button"
+              className="btn-primary btn-lg import-scan-btn import-config-scan"
+              disabled={!canStartScan}
+              onClick={startScan}
+            >
               {t('importStart', locale)}
             </button>
+            {showTrainingFocus && trainingFocus.length === 0 && (
+              <p className="import-config-focus-hint">{t('trainingFocusNeedOne', locale)}</p>
+            )}
           </div>
         </main>
       )}

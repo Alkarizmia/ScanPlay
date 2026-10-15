@@ -32,14 +32,48 @@ export interface DrivingQuestion {
   choices: [string, string, string];
   /** 0 | 1 | 2 */
   correct: 0 | 1 | 2;
-  /** Official code or legacy slug. */
+  /** Official code or legacy slug → panneau PNG. */
   signId?: string;
+  /** Illustrated scene (SVG) when no / besides the sign. */
+  sceneId?: DrivingSceneId;
   topic: string;
+  /** Infraction grave : −5 points à l’examen blanc. */
+  grave?: boolean;
 }
 
-export const DRIVING_EXAM_SIZE = 30;
-export const DRIVING_EXAM_MAX_WRONG = 5;
+/** Scènes illustrées pour l’examen / exercices (voir DrivingSceneArt). */
+export type DrivingSceneId =
+  | 'triangle-autoroute'
+  | 'feu-rouge'
+  | 'passage-pietons'
+  | 'ceinture'
+  | 'telephone'
+  | 'alcool'
+  | 'priorite-droite'
+  | 'distance-securite'
+  | 'bande-urgence'
+  | 'rond-point';
+
+/** Examen blanc belge (simulation stricte). */
+export const DRIVING_EXAM_SIZE = 50;
+export const DRIVING_EXAM_PASS_SCORE = 41;
+export const DRIVING_EXAM_ANSWER_SECONDS = 15;
+export const DRIVING_EXAM_GRAVE_PENALTY = 5;
+/** @deprecated kept for older callers; exam no longer uses a max-wrong hearts rule */
+export const DRIVING_EXAM_MAX_WRONG = 9;
 export const DRIVING_EXERCISE_SIZE = 10;
+
+export function scoreDrivingExam(input: {
+  total: number;
+  correct: number;
+  graveWrong: number;
+}): { score: number; passed: boolean; normalWrong: number } {
+  const answeredWrong = input.total - input.correct;
+  const normalWrong = Math.max(0, answeredWrong - input.graveWrong);
+  const score = input.total - normalWrong - input.graveWrong * DRIVING_EXAM_GRAVE_PENALTY;
+  const passed = score >= DRIVING_EXAM_PASS_SCORE;
+  return { score, passed, normalWrong };
+}
 
 /** Full illustrated catalog (typically 100+ official Belgian signs). */
 export const DRIVING_SIGNS: DrivingSign[] = DRIVING_SIGNS_CATALOG.map((s) => ({
@@ -109,6 +143,8 @@ export const DRIVING_QUESTIONS: DrivingQuestion[] = [
     ],
     correct: 1,
     topic: 'agents',
+    grave: true,
+    sceneId: 'feu-rouge',
   },
   {
     id: 'q-agent-profil',
@@ -200,6 +236,7 @@ export const DRIVING_QUESTIONS: DrivingQuestion[] = [
     correct: 1,
     signId: 'B5',
     topic: 'priorite',
+    grave: true,
   },
   {
     id: 'q-priorite-droite',
@@ -311,6 +348,8 @@ export const DRIVING_QUESTIONS: DrivingQuestion[] = [
     ],
     correct: 0,
     topic: 'autoroute',
+    grave: true,
+    sceneId: 'bande-urgence',
   },
   {
     id: 'q-croisement',
@@ -733,6 +772,263 @@ export const DRIVING_QUESTIONS: DrivingQuestion[] = [
     correct: 1,
     signId: 'B5',
     topic: 'priorite',
+    grave: true,
+  },
+  {
+    id: 'q-triangle-autoroute',
+    prompt:
+      'Je suis en panne sur cette autoroute et me suis rangé sur la bande d’arrêt d’urgence. J’ai enclenché mes feux de détresse. Dois-je également utiliser mon triangle ?',
+    choices: [
+      'Oui, posé à 30 m',
+      'Oui, posé à 50 m',
+      'Oui, posé à 100 m',
+    ],
+    correct: 2,
+    topic: 'autoroute',
+    grave: true,
+    sceneId: 'triangle-autoroute',
+  },
+  {
+    id: 'q-feu-rouge',
+    prompt: 'Au feu rouge, tu dois :',
+    choices: [
+      'Passer si la voie paraît libre',
+      'T’arrêter avant la ligne d’arrêt / le feu',
+      'Ralentir puis continuer',
+    ],
+    correct: 1,
+    topic: 'feux',
+    grave: true,
+    sceneId: 'feu-rouge',
+  },
+  {
+    id: 'q-pieton-passage',
+    prompt: 'Un piéton s’engage sur un passage pour piétons :',
+    choices: [
+      'Tu klaxonnes pour qu’il accélère',
+      'Tu dois lui céder le passage',
+      'Tu as priorité si tu es déjà engagé depuis longtemps',
+    ],
+    correct: 1,
+    signId: 'A21',
+    topic: 'usagers',
+    grave: true,
+    sceneId: 'passage-pietons',
+  },
+  {
+    id: 'q-ceinture',
+    prompt: 'La ceinture de sécurité :',
+    choices: [
+      'Est obligatoire pour le conducteur et les passagers (sauf exceptions légales)',
+      'Est facultative en agglomération',
+      'N’est obligatoire que sur autoroute',
+    ],
+    correct: 0,
+    topic: 'securite',
+    grave: true,
+    sceneId: 'ceinture',
+  },
+  {
+    id: 'q-telephone-volant',
+    prompt: 'Tenir un téléphone en main au volant :',
+    choices: [
+      'Est autorisé à l’arrêt au feu rouge',
+      'Est interdit (même à l’arrêt dans la circulation, sauf exceptions strictes)',
+      'Est autorisé avec une seule oreille libre',
+    ],
+    correct: 1,
+    topic: 'securite',
+    grave: true,
+    sceneId: 'telephone',
+  },
+  {
+    id: 'q-alcool-taux',
+    prompt: 'Le taux d’alcoolémie maximum autorisé pour un conducteur privé (règle générale) est :',
+    choices: ['0,2 g/l de sang', '0,5 g/l de sang', '0,8 g/l de sang'],
+    correct: 1,
+    topic: 'alcool',
+    grave: true,
+    sceneId: 'alcool',
+  },
+  {
+    id: 'q-priorite-droite-carrefour',
+    prompt: 'À un carrefour sans signalisation, un véhicule arrive à ta droite :',
+    choices: [
+      'Tu as toujours priorité',
+      'Tu dois lui céder le passage (priorité de droite)',
+      'Le plus rapide passe',
+    ],
+    correct: 1,
+    signId: 'B17',
+    topic: 'priorite',
+    grave: true,
+    sceneId: 'priorite-droite',
+  },
+  {
+    id: 'q-distance-secu',
+    prompt: 'La distance de sécurité avec le véhicule devant toi doit permettre :',
+    choices: [
+      'De le dépasser immédiatement',
+      'De t’arrêter sans le heurter si il freine brusquement',
+      'D’une seule longueur de voiture en toutes circonstances',
+    ],
+    correct: 1,
+    topic: 'securite',
+    sceneId: 'distance-securite',
+  },
+  {
+    id: 'q-rond-point-sortie',
+    prompt: 'Dans un rond-point, pour sortir :',
+    choices: [
+      'Tu mets le clignotant gauche juste avant de sortir',
+      'Tu mets le clignotant droit avant de sortir',
+      'Tu ne clignotes jamais',
+    ],
+    correct: 1,
+    signId: 'D5',
+    topic: 'manoeuvres',
+    sceneId: 'rond-point',
+  },
+  {
+    id: 'q-enfant-siege',
+    prompt: 'Un enfant de moins de 1,35 m en voiture :',
+    choices: [
+      'Peut voyager sans dispositif si ceinture adulte bouclée',
+      'Doit être installé dans un dispositif de retenue adapté (sauf exceptions)',
+      'Doit toujours être à l’avant',
+    ],
+    correct: 1,
+    topic: 'securite',
+    grave: true,
+    sceneId: 'ceinture',
+  },
+  {
+    id: 'q-sens-interdit',
+    prompt: 'Face à un panneau « sens interdit » (C1) :',
+    choices: [
+      'Tu peux entrer si tu habites dans la rue',
+      'Tu ne peux pas t’engager dans ce sens',
+      'Tu peux entrer à moins de 20 km/h',
+    ],
+    correct: 1,
+    signId: 'C1',
+    topic: 'interdiction',
+    grave: true,
+  },
+  {
+    id: 'q-depassement-ligne-continue',
+    prompt: 'Franchir une ligne blanche continue pour dépasser :',
+    choices: [
+      'Est autorisé s’il n’y a personne en face',
+      'Est en principe interdit',
+      'Est obligatoire si le véhicule devant va trop lentement',
+    ],
+    correct: 1,
+    topic: 'marquages',
+    grave: true,
+  },
+  {
+    id: 'q-zone-30',
+    prompt: 'Dans une zone 30 :',
+    choices: [
+      'La vitesse max est 30 km/h',
+      'La vitesse max est 50 km/h',
+      'Il n’y a pas de limitation particulière',
+    ],
+    correct: 0,
+    signId: 'C46',
+    topic: 'vitesse',
+  },
+  {
+    id: 'q-agglomeration-vitesse',
+    prompt: 'En agglomération (sauf signalisation contraire), la vitesse max est :',
+    choices: ['30 km/h', '50 km/h', '70 km/h'],
+    correct: 1,
+    signId: 'F1',
+    topic: 'vitesse',
+  },
+  {
+    id: 'q-autoroute-bande-urgence-panne',
+    prompt: 'En panne sur autoroute, tu te ranges de préférence :',
+    choices: [
+      'Sur la bande d’arrêt d’urgence, feux de détresse, gilet, triangle si possible',
+      'Sur la voie de gauche pour être vu',
+      'Au milieu de la chaussée',
+    ],
+    correct: 0,
+    topic: 'autoroute',
+    grave: true,
+    sceneId: 'triangle-autoroute',
+  },
+  {
+    id: 'q-cedez-passage',
+    prompt: 'Panneau « céder le passage » (B1) :',
+    choices: [
+      'Tu marques l’arrêt complet comme un STOP',
+      'Tu cèdes le passage sans obligation d’arrêt s’il n’y a personne',
+      'Tu as priorité',
+    ],
+    correct: 1,
+    signId: 'B1',
+    topic: 'priorite',
+  },
+  {
+    id: 'q-travaux-orange',
+    prompt: 'Une signalisation temporaire orange/jaune :',
+    choices: [
+      'Est moins prioritaire que la signalisation permanente',
+      'Prévaut sur la signalisation permanente qu’elle remplace',
+      'N’a aucune valeur',
+    ],
+    correct: 1,
+    topic: 'travaux',
+  },
+  {
+    id: 'q-pieton-trottoir',
+    prompt: 'Sur le trottoir, en général :',
+    choices: [
+      'Les voitures peuvent y circuler pour gagner du temps',
+      'La circulation des véhicules à moteur y est interdite (sauf exceptions)',
+      'Le stationnement y est toujours libre',
+    ],
+    correct: 1,
+    topic: 'usagers',
+    grave: true,
+  },
+  {
+    id: 'q-eclairage-nuit',
+    prompt: 'De nuit hors agglomération mal éclairée, tu utilises en principe :',
+    choices: [
+      'Les feux de position seulement',
+      'Les feux de croisement ou de route selon les circonstances',
+      'Aucun feu si la lune est pleine',
+    ],
+    correct: 1,
+    topic: 'eclairage',
+  },
+  {
+    id: 'q-pluie-vitesse',
+    prompt: 'Par temps de pluie, tu dois :',
+    choices: [
+      'Garder exactement la même vitesse qu’à sec',
+      'Adapter ton allure et augmenter les distances',
+      'Allumer uniquement le gyrophare',
+    ],
+    correct: 1,
+    signId: 'A7b',
+    topic: 'meteo',
+  },
+  {
+    id: 'q-manoeuvre-cede',
+    prompt: 'Celui qui exécute une manœuvre (stationnement, demi-tour, quitter un lieu…) :',
+    choices: [
+      'A toujours priorité',
+      'Doit céder le passage aux autres usagers',
+      'Ne cède que s’il y a un panneau',
+    ],
+    correct: 1,
+    topic: 'manoeuvres',
+    grave: true,
   },
 ];
 
@@ -752,6 +1048,12 @@ export function pickDrivingQuestions(count: number, seed: string): DrivingQuesti
     list[i] = list[j]!;
     list[j] = tmp;
   }
+  // Prefer illustrated items (scene or sign) first so exam decks look like real PEB screens.
+  list.sort((a, b) => {
+    const av = a.sceneId || a.signId ? 0 : 1;
+    const bv = b.sceneId || b.signId ? 0 : 1;
+    return av - bv;
+  });
   return list.slice(0, Math.min(count, list.length));
 }
 

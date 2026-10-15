@@ -8,10 +8,11 @@ const LANG_LABEL: Record<Exclude<LangCode, 'unknown'>, string> = {
   nl: 'Dutch (Netherlands)',
   en: 'British English',
   es: 'Spanish (Spain)',
+  de: 'German (Germany)',
 };
 
 export function ttsLang(lang?: LangCode): Exclude<LangCode, 'unknown'> {
-  if (lang === 'nl' || lang === 'en' || lang === 'es' || lang === 'fr') return lang;
+  if (lang === 'nl' || lang === 'en' || lang === 'es' || lang === 'fr' || lang === 'de') return lang;
   return 'fr';
 }
 
@@ -23,6 +24,8 @@ export function ttsVoiceForLang(lang?: LangCode): string {
       return 'verse';
     case 'es':
       return 'nova';
+    case 'de':
+      return 'onyx';
     default:
       return 'coral';
   }

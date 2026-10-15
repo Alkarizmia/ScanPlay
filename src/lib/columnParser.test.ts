@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   NL_FR_FIXTURE,
+  detectLang,
   parseColumnText,
   runColumnParserSelfTest,
   reconcileWordListPairs,
@@ -26,6 +27,13 @@ de moeder\tla mère
 `.trim();
 
 describe('columnParser', () => {
+  it('detects German distinctly from Dutch/French', () => {
+    expect(detectLang('der Hund und die Katze')).toBe('de');
+    expect(detectLang('Schönheit und Freiheit')).toBe('de');
+    expect(detectLang('een ervaring van de kust')).toBe('nl');
+    expect(detectLang("c'est le père et la mère")).toBe('fr');
+  });
+
   it('parses NL↔FR fixture with at least 10 pairs', () => {
     const pairs = parseColumnText(NL_FR_FIXTURE);
     expect(pairs.length).toBeGreaterThanOrEqual(10);

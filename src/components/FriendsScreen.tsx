@@ -187,6 +187,7 @@ export function FriendsScreen({
           <FriendPresenceAvatar
             avatarId={player.avatarId}
             avatarUrl={player.avatarUrl}
+            avatarFrame={player.avatarFrame}
             isOnline={isUserOnline(player.lastSeenAt)}
             locale={locale}
           />
@@ -277,6 +278,7 @@ export function FriendsScreen({
         <FriendPresenceAvatar
           avatarId={player.avatarId}
           avatarUrl={player.avatarUrl}
+          avatarFrame={player.avatarFrame}
           isOnline={isUserOnline(player.lastSeenAt)}
           locale={locale}
         />

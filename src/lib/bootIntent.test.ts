@@ -36,7 +36,7 @@ describe('boot locale', () => {
   });
 
   it('preserves every supported landing language', () => {
-    for (const lang of ['fr', 'en', 'nl', 'es', 'ar'] as const) {
+    for (const lang of ['fr', 'en', 'nl', 'es', 'ar', 'de'] as const) {
       clearBootLocale();
       setBootLocale(lang);
       expect(consumeBootLocale()).toBe(lang);

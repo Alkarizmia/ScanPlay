@@ -347,7 +347,6 @@ function AudioCard({
           </button>
         </div>
       </div>
-      <p className="listen-audio-hint">{t('engDialogueHint', locale)}</p>
     </div>
   );
 }

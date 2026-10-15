@@ -19,20 +19,24 @@ interface EnglishOnboardingProps {
 }
 
 const GOALS: EnglishGoal[] = ['travel', 'work', 'school', 'exam', 'fun', 'other'];
-const NATIVES: EnglishNativeLang[] = ['fr', 'nl', 'es', 'ar'];
+const NATIVES: EnglishNativeLang[] = ['fr', 'nl', 'es', 'de', 'ar'];
 
 export function EnglishOnboarding({ locale, onDone }: EnglishOnboardingProps) {
   const [step, setStep] = useState<Step>('path');
   const [level, setLevel] = useState<CefrLevel>('A1');
   const [goal, setGoal] = useState<EnglishGoal>('travel');
   const [nativeLang, setNativeLang] = useState<EnglishNativeLang>(
-    locale === 'nl' || locale === 'es' || locale === 'ar' ? locale : 'fr',
+    locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de' ? locale : 'fr',
   );
   const [testIndex, setTestIndex] = useState(0);
   const [testLog, setTestLog] = useState<{ correct: boolean; levelHint: CefrLevel }[]>([]);
 
   const uiLang: EnglishNativeLang =
-    locale === 'en' ? 'fr' : locale === 'nl' || locale === 'es' || locale === 'ar' ? locale : 'fr';
+    locale === 'en'
+      ? 'fr'
+      : locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de'
+        ? locale
+        : 'fr';
 
   const placement = useMemo(() => PLACEMENT_ITEMS[testIndex], [testIndex]);
 

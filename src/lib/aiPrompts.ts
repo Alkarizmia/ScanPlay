@@ -19,7 +19,7 @@ RÈGLES ABSOLUES :
 - Même si la qualité est mauvaise : fais de ton mieux pour lire mot par mot, colonne par colonne, ligne par ligne, zone par zone.
 - Ignore : titres de page seuls, numéros seuls, consignes ("Let op", "Attention", "Exercice", "Page 12"), logos, tampons, marges vides.
 - Chaque paire doit avoir un "term" et une "definition" distincts (pas identiques).
-- Langues fréquentes : nl, fr, en, es. Détecte-les ; ne traduis pas sauf si la fiche le fait déjà.
+- Langues fréquentes : nl, fr, en, es, de. Détecte-les ; ne traduis pas sauf si la fiche le fait déjà.
 - Manuscrit : lis lettre par lettre. Ne "corrige" pas un mot étranger, un prénom ou une graphie scolaire inhabituelle.
 - Photocopie / photo d'écran / PDF : lis le texte net ; ignore artefacts, filigranes, UI de l'appareil photo.
 
@@ -70,8 +70,8 @@ FORMAT DE SORTIE (strict) :
     {
       "term": "string",
       "definition": "string",
-      "termLang": "nl|fr|en|es|unknown",
-      "defLang": "nl|fr|en|es|unknown",
+      "termLang": "nl|fr|en|es|de|unknown",
+      "defLang": "nl|fr|en|es|de|unknown",
       "confidence": "high|medium|low"
     }
   ],

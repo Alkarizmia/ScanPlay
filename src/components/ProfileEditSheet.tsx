@@ -3,17 +3,21 @@ import {
   DISPLAY_NAME_MAX,
   DISPLAY_NAME_MIN,
   getDisplayNameCooldownMsLeft,
-  setAvatar,
-  trySetDisplayName,
   type UserProfileData,
 } from '../lib/profile';
 import {
   PROFILE_BANNERS,
   canUseBanner,
-  getProfileBanner,
-  setProfileBanner,
   type ProfileBannerId,
 } from '../lib/profileBanner';
+import {
+  PROFILE_COSMETICS,
+  canUseBannerFrame,
+  canUseFrame,
+  ownsCosmetic,
+  type AvatarRingId,
+  type BannerFrameId,
+} from '../lib/profileCosmetics';
 import { isDisplayNameAvailable, isSocialAvailable } from '../lib/social/publicProfile';
 import { createProfileAvatar } from '../lib/thumbnail';
 import { t } from '../lib/i18n';
@@ -21,50 +25,61 @@ import { playSound } from '../lib/sounds';
 import { usePlan } from '../hooks/usePlan';
 import type { Locale } from '../types';
 
-interface ProfileEditSheetProps {
-  open: boolean;
-  locale: Locale;
-  profile: UserProfileData;
-  onClose: () => void;
-  onRefresh: () => void;
-  onUpgrade?: () => void;
+export type ProfileEditZone = 'photo' | 'name' | 'banner' | 'bannerFrame' | 'avatar';
+
+export interface ProfileEditDraft {
+  name: string;
+  banner: ProfileBannerId;
+  bannerFrame: BannerFrameId | null;
+  avatarFrame: AvatarRingId | null;
+  /** null = inchangé ; string = data URL custom ; 'default' = avatar mascotte */
+  photo: string | null | 'default';
 }
 
+interface ProfileEditSheetProps {
+  zone: ProfileEditZone | null;
+  locale: Locale;
+  profile: UserProfileData;
+  draft: ProfileEditDraft;
+  onDraftChange: (patch: Partial<ProfileEditDraft>) => void;
+  onCloseZone: () => void;
+  onUpgrade?: () => void;
+  onOpenShop?: (cosmeticId?: string) => void;
+}
+
+const SHOP_BANNERS = PROFILE_COSMETICS.filter((c) => c.type === 'banner');
+const SHOP_BANNER_FRAMES = PROFILE_COSMETICS.filter((c) => c.type === 'bannerFrame');
+const SHOP_AVATAR_RINGS = PROFILE_COSMETICS.filter((c) => c.type === 'avatar');
+
 export function ProfileEditSheet({
-  open,
+  zone,
   locale,
   profile,
-  onClose,
-  onRefresh,
+  draft,
+  onDraftChange,
+  onCloseZone,
   onUpgrade,
+  onOpenShop,
 }: ProfileEditSheetProps) {
   const fileRef = useRef<HTMLInputElement>(null);
   const plan = usePlan();
-  const [mode, setMode] = useState<'menu' | 'name' | 'banner'>('menu');
-  const [bannerId, setBannerId] = useState<ProfileBannerId>(() => getProfileBanner(plan));
-  const [nameDraft, setNameDraft] = useState(profile.displayName);
   const [nameError, setNameError] = useState<string | null>(null);
   const [nameTaken, setNameTaken] = useState(false);
-  const [saving, setSaving] = useState(false);
   const [photoError, setPhotoError] = useState<string | null>(null);
-  const hasCustom = profile.avatar === 'custom' && Boolean(profile.customAvatarData);
 
   useEffect(() => {
-    if (!open) return;
-    setMode('menu');
-    setNameDraft(profile.displayName);
+    if (!zone) return;
     setNameError(null);
     setNameTaken(false);
     setPhotoError(null);
-    setBannerId(getProfileBanner(plan));
-  }, [open, profile.displayName, plan]);
+  }, [zone]);
 
   useEffect(() => {
-    if (!open || mode !== 'name' || !isSocialAvailable()) {
+    if (zone !== 'name' || !isSocialAvailable()) {
       setNameTaken(false);
       return;
     }
-    const trimmed = nameDraft.trim();
+    const trimmed = draft.name.trim();
     if (
       trimmed.length < DISPLAY_NAME_MIN ||
       trimmed.length > DISPLAY_NAME_MAX ||
@@ -75,29 +90,45 @@ export function ProfileEditSheet({
     }
     const timer = window.setTimeout(() => {
       void isDisplayNameAvailable(trimmed).then((available) => {
-        // Uniquement true "pris" quand le RPC dit explicitement non disponible.
         setNameTaken(available === false);
       });
     }, 350);
     return () => window.clearTimeout(timer);
-  }, [open, mode, nameDraft, profile.displayName]);
+  }, [zone, draft.name, profile.displayName]);
 
-  if (!open) return null;
+  if (!zone) return null;
 
+  const cooldownLeft = getDisplayNameCooldownMsLeft(profile);
   const formatCooldownDays = (ms: number) => {
     const days = Math.max(1, Math.ceil(ms / (24 * 60 * 60 * 1000)));
     return t('profileNameCooldown', locale).replace('{days}', String(days));
   };
+
+  const goShop = (cosmeticId?: string) => {
+    playSound('tap');
+    onCloseZone();
+    onOpenShop?.(cosmeticId);
+  };
+
+  const title =
+    zone === 'photo'
+      ? t('profileEditZonePhoto', locale)
+      : zone === 'name'
+        ? t('profileEditZoneName', locale)
+        : zone === 'banner'
+          ? t('profileEditZoneBanner', locale)
+          : zone === 'bannerFrame'
+            ? t('profileEditZoneBannerFrame', locale)
+            : t('profileEditZoneAvatar', locale);
 
   const handleFile = (file: File | null) => {
     if (!file) return;
     setPhotoError(null);
     void createProfileAvatar(file)
       .then((data) => {
-        setAvatar('custom', data);
+        onDraftChange({ photo: data });
         playSound('profileUpdated');
-        onRefresh();
-        onClose();
+        onCloseZone();
       })
       .catch((err: Error) => {
         if (err.message === 'too_large') setPhotoError(t('profilePhotoTooLarge', locale));
@@ -106,87 +137,85 @@ export function ProfileEditSheet({
       });
   };
 
-  const removePhoto = () => {
-    setAvatar('avatar1');
-    playSound('profileUpdated');
-    onRefresh();
-    onClose();
-  };
-
-  const saveName = () => {
-    setNameError(null);
-    const trimmed = nameDraft.trim();
-    if (trimmed.length < DISPLAY_NAME_MIN) {
-      setNameError(t('profileNameTooShort', locale));
-      return;
-    }
-    if (trimmed.length > DISPLAY_NAME_MAX) {
-      setNameError(t('profileNameTooLong', locale));
-      return;
-    }
-    if (nameTaken) {
-      setNameError(t('profileNameTaken', locale));
-      return;
-    }
-    setSaving(true);
-    void trySetDisplayName(nameDraft).then((result) => {
-      setSaving(false);
-      if (!result.ok) {
-        if (result.error === 'display_name_taken') setNameError(t('profileNameTaken', locale));
-        else if (result.error === 'too_short') setNameError(t('profileNameTooShort', locale));
-        else if (result.error === 'too_long') setNameError(t('profileNameTooLong', locale));
-        else if (result.error === 'cooldown') setNameError(formatCooldownDays(result.cooldownMsLeft ?? 0));
-        else setNameError(t('profileNameSaveError', locale));
-        return;
-      }
-      playSound('profileUpdated');
-      onRefresh();
-      onClose();
-    });
-  };
-
-  const cooldownLeft = getDisplayNameCooldownMsLeft(profile);
-
   return (
-    <div className="profile-edit-backdrop" role="presentation" onClick={onClose}>
+    <div className="profile-edit-backdrop" role="presentation" onClick={onCloseZone}>
       <div
         className="profile-edit-sheet"
         role="dialog"
-        aria-label={t('profileEditTitle', locale)}
+        aria-label={title}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="profile-edit-handle" aria-hidden="true" />
-        <p className="profile-edit-title">{t('profileEditTitle', locale)}</p>
+        <p className="profile-edit-title">{title}</p>
 
-        {mode === 'menu' ? (
+        {zone === 'photo' && (
           <div className="profile-edit-actions">
-            <button type="button" className="profile-edit-action" onClick={() => fileRef.current?.click()}>
+            <button
+              type="button"
+              className="profile-edit-action"
+              onClick={() => fileRef.current?.click()}
+            >
               {t('profileChangePhoto', locale)}
             </button>
-            {hasCustom && (
-              <button type="button" className="profile-edit-action profile-edit-action--danger" onClick={removePhoto}>
+            {(profile.avatar === 'custom' || draft.photo) && draft.photo !== 'default' && (
+              <button
+                type="button"
+                className="profile-edit-action profile-edit-action--danger"
+                onClick={() => {
+                  onDraftChange({ photo: 'default' });
+                  playSound('profileUpdated');
+                  onCloseZone();
+                }}
+              >
                 {t('profileRemovePhoto', locale)}
               </button>
             )}
-            <button type="button" className="profile-edit-action" onClick={() => setMode('name')}>
-              {t('profileChangeName', locale)}
-            </button>
-            <button type="button" className="profile-edit-action" onClick={() => setMode('banner')}>
-              {t('profileChangeBanner', locale)}
-            </button>
-            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onClose}>
-              {t('cancel', locale)}
-            </button>
             {photoError && <p className="profile-upload-error">{photoError}</p>}
+            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onCloseZone}>
+              {t('back', locale)}
+            </button>
           </div>
-        ) : mode === 'banner' ? (
+        )}
+
+        {zone === 'name' && (
+          <div className="profile-edit-name">
+            <label className="profile-name-label" htmlFor="profile-edit-display-name">
+              {t('profileDisplayName', locale)}
+            </label>
+            <div className="profile-name-row">
+              <input
+                id="profile-edit-display-name"
+                className="profile-name-input"
+                value={draft.name}
+                maxLength={DISPLAY_NAME_MAX}
+                onChange={(e) => {
+                  setNameError(null);
+                  onDraftChange({ name: e.target.value });
+                }}
+                placeholder={profile.displayName}
+                autoFocus
+              />
+            </div>
+            <p className="profile-name-hint">{t('profileDisplayNameHint', locale)}</p>
+            {cooldownLeft > 0 && !nameError && (
+              <p className="profile-name-hint">{formatCooldownDays(cooldownLeft)}</p>
+            )}
+            {nameTaken && !nameError && (
+              <p className="profile-upload-error">{t('profileNameTaken', locale)}</p>
+            )}
+            {nameError && <p className="profile-upload-error">{nameError}</p>}
+            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onCloseZone}>
+              {t('back', locale)}
+            </button>
+          </div>
+        )}
+
+        {zone === 'banner' && (
           <div className="profile-edit-banner">
-            <p className="profile-picker-label">{t('profileBannerTitle', locale)}</p>
-            <p className="profile-name-hint">{t('profileBannerHint', locale)}</p>
-            <div className="profile-banner-grid" role="listbox" aria-label={t('profileBannerTitle', locale)}>
+            <div className="profile-banner-grid" role="listbox" aria-label={title}>
               {PROFILE_BANNERS.map((b) => {
                 const locked = !canUseBanner(b.id, plan);
-                const active = bannerId === b.id;
+                const active = draft.banner === b.id;
                 return (
                   <button
                     key={b.id}
@@ -200,11 +229,8 @@ export function ProfileEditSheet({
                         onUpgrade?.();
                         return;
                       }
-                      if (setProfileBanner(b.id)) {
-                        setBannerId(b.id);
-                        playSound('profileUpdated');
-                        onRefresh();
-                      }
+                      onDraftChange({ banner: b.id });
+                      playSound('tap');
                     }}
                   >
                     <span className="profile-banner-swatch-preview" aria-hidden="true" />
@@ -214,36 +240,149 @@ export function ProfileEditSheet({
                 );
               })}
             </div>
-            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={() => setMode('menu')}>
+            <p className="profile-name-hint">{t('profileBannerShopHint', locale)}</p>
+            <div className="profile-banner-grid" role="listbox">
+              {SHOP_BANNERS.map((b) => {
+                const locked = !ownsCosmetic(b.id);
+                const active = draft.banner === b.id;
+                return (
+                  <button
+                    key={b.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`profile-banner-swatch profile-banner-swatch--${b.id}${active ? ' active' : ''}${locked ? ' locked' : ''}`}
+                    onClick={() => {
+                      if (locked) {
+                        goShop(b.id);
+                        return;
+                      }
+                      onDraftChange({ banner: b.id as ProfileBannerId });
+                      playSound('tap');
+                    }}
+                  >
+                    <span className="profile-banner-swatch-preview" aria-hidden="true" />
+                    <span className="profile-banner-swatch-label">{t(b.nameKey, locale)}</span>
+                    {locked && (
+                      <span className="profile-banner-lock profile-banner-lock--shop">
+                        {t('profileCosmeticLockedShop', locale)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onCloseZone}>
               {t('back', locale)}
             </button>
           </div>
-        ) : (
-          <div className="profile-edit-name">
-            <label className="profile-name-label" htmlFor="profile-edit-display-name">
-              {t('profileDisplayName', locale)}
-            </label>
-            <div className="profile-name-row">
-              <input
-                id="profile-edit-display-name"
-                className="profile-name-input"
-                value={nameDraft}
-                maxLength={DISPLAY_NAME_MAX}
-                onChange={(e) => setNameDraft(e.target.value)}
-                placeholder={profile.displayName}
-                autoFocus
-              />
-              <button type="button" className="btn-secondary btn-sm" onClick={saveName} disabled={saving || nameTaken}>
-                {saving ? '…' : 'OK'}
+        )}
+
+        {zone === 'bannerFrame' && (
+          <div className="profile-edit-banner">
+            <div className="profile-banner-grid" role="listbox" aria-label={title}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={draft.bannerFrame == null}
+                className={`profile-banner-swatch${draft.bannerFrame == null ? ' active' : ''}`}
+                onClick={() => {
+                  onDraftChange({ bannerFrame: null });
+                  playSound('tap');
+                }}
+              >
+                <span className="profile-banner-swatch-preview profile-frame-swatch-none" aria-hidden="true" />
+                <span className="profile-banner-swatch-label">{t('profileBannerFrameNone', locale)}</span>
               </button>
+              {SHOP_BANNER_FRAMES.map((f) => {
+                const locked = !canUseBannerFrame(f.id);
+                const active = draft.bannerFrame === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`profile-banner-swatch${active ? ' active' : ''}${locked ? ' locked' : ''}`}
+                    onClick={() => {
+                      if (locked) {
+                        goShop(f.id);
+                        return;
+                      }
+                      onDraftChange({ bannerFrame: f.id as BannerFrameId });
+                      playSound('tap');
+                    }}
+                  >
+                    <span
+                      className={`profile-banner-swatch-preview sp-profile-hero-frame sp-profile-hero-frame--${f.id} profile-bframe-swatch-preview`}
+                      aria-hidden="true"
+                    />
+                    <span className="profile-banner-swatch-label">{t(f.nameKey, locale)}</span>
+                    {locked && (
+                      <span className="profile-banner-lock profile-banner-lock--shop">
+                        {t('profileCosmeticLockedShop', locale)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-            <p className="profile-name-hint">{t('profileDisplayNameHint', locale)}</p>
-            {cooldownLeft > 0 && !nameError && (
-              <p className="profile-name-hint">{formatCooldownDays(cooldownLeft)}</p>
-            )}
-            {nameTaken && !nameError && <p className="profile-upload-error">{t('profileNameTaken', locale)}</p>}
-            {nameError && <p className="profile-upload-error">{nameError}</p>}
-            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={() => setMode('menu')}>
+            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onCloseZone}>
+              {t('back', locale)}
+            </button>
+          </div>
+        )}
+
+        {zone === 'avatar' && (
+          <div className="profile-edit-banner">
+            <div className="profile-banner-grid" role="listbox" aria-label={title}>
+              <button
+                type="button"
+                role="option"
+                aria-selected={draft.avatarFrame == null}
+                className={`profile-banner-swatch${draft.avatarFrame == null ? ' active' : ''}`}
+                onClick={() => {
+                  onDraftChange({ avatarFrame: null });
+                  playSound('tap');
+                }}
+              >
+                <span className="profile-banner-swatch-preview profile-frame-swatch-none" aria-hidden="true" />
+                <span className="profile-banner-swatch-label">{t('profileFrameNone', locale)}</span>
+              </button>
+              {SHOP_AVATAR_RINGS.map((f) => {
+                const locked = !canUseFrame(f.id);
+                const active = draft.avatarFrame === f.id;
+                return (
+                  <button
+                    key={f.id}
+                    type="button"
+                    role="option"
+                    aria-selected={active}
+                    className={`profile-banner-swatch${active ? ' active' : ''}${locked ? ' locked' : ''}`}
+                    onClick={() => {
+                      if (locked) {
+                        goShop(f.id);
+                        return;
+                      }
+                      onDraftChange({ avatarFrame: f.id as AvatarRingId });
+                      playSound('tap');
+                    }}
+                  >
+                    <span
+                      className={`profile-banner-swatch-preview sp-profile-frame sp-profile-frame--${f.id} profile-frame-swatch-preview`}
+                      aria-hidden="true"
+                    />
+                    <span className="profile-banner-swatch-label">{t(f.nameKey, locale)}</span>
+                    {locked && (
+                      <span className="profile-banner-lock profile-banner-lock--shop">
+                        {t('profileCosmeticLockedShop', locale)}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+            <button type="button" className="profile-edit-action profile-edit-action--cancel" onClick={onCloseZone}>
               {t('back', locale)}
             </button>
           </div>
@@ -254,7 +393,10 @@ export function ProfileEditSheet({
           type="file"
           accept="image/*"
           className="profile-file-input"
-          onChange={(e) => handleFile(e.target.files?.[0] ?? null)}
+          onChange={(e) => {
+            handleFile(e.target.files?.[0] ?? null);
+            e.target.value = '';
+          }}
         />
       </div>
     </div>

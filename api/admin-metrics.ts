@@ -49,10 +49,142 @@ type TestimonialRow = {
 
 type AdminClient = NonNullable<ReturnType<typeof tryGetSupabaseAdmin>>;
 
+const MAX_COINS = 999_999;
+const MAX_GEMS = 99_999;
+
 function cors(res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'content-type, x-admin-secret, authorization');
+}
+
+function parseAmount(raw: unknown, max: number): number | null {
+  if (raw == null || raw === '') return null;
+  const n = typeof raw === 'number' ? raw : Number(String(raw).trim());
+  if (!Number.isFinite(n) || n < 0 || n > max || !Number.isInteger(n)) return null;
+  return n;
+}
+
+async function saveAdminNote(req: VercelRequest, res: VercelResponse, admin: AdminClient) {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const userId = String(body.userId ?? body.user_id ?? '').trim();
+  if (!userId || userId.length < 10) {
+    return res.status(400).json({ error: 'user_id_required' });
+  }
+  const notes = String(body.notes ?? '');
+  if (notes.length > 20_000) {
+    return res.status(400).json({ error: 'notes_too_long' });
+  }
+
+  const { error } = await admin.from('scanplay_admin_user_notes').upsert(
+    {
+      user_id: userId,
+      notes,
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' },
+  );
+  if (error) {
+    return res.status(500).json({
+      error: 'notes_save_failed',
+      detail: error.message,
+      hint: 'Exécute supabase/patch-admin-user-notes.sql',
+    });
+  }
+  return res.status(200).json({ ok: true, user_id: userId, notes });
+}
+
+async function grantWallet(req: VercelRequest, res: VercelResponse, admin: AdminClient) {
+  const body = (req.body ?? {}) as Record<string, unknown>;
+  const displayName = String(body.displayName ?? body.display_name ?? '').trim();
+  if (displayName.length < 2) {
+    return res.status(400).json({ error: 'display_name_required' });
+  }
+
+  const coins = parseAmount(body.coins, MAX_COINS);
+  const gems = parseAmount(body.gems, MAX_GEMS);
+  if (coins == null && gems == null) {
+    return res.status(400).json({ error: 'coins_or_gems_required' });
+  }
+  if (body.coins != null && body.coins !== '' && coins == null) {
+    return res.status(400).json({ error: 'invalid_coins' });
+  }
+  if (body.gems != null && body.gems !== '' && gems == null) {
+    return res.status(400).json({ error: 'invalid_gems' });
+  }
+
+  const { data: profile, error: findErr } = await admin
+    .from('scanplay_public_profiles')
+    .select('user_id, display_name')
+    .ilike('display_name', displayName)
+    .limit(5);
+
+  if (findErr) return res.status(500).json({ error: findErr.message });
+
+  const rows = (profile ?? []) as { user_id: string; display_name: string }[];
+  const exact = rows.filter(
+    (r) => r.display_name.trim().toLowerCase() === displayName.toLowerCase(),
+  );
+  if (exact.length === 0) {
+    return res.status(404).json({ error: 'user_not_found', query: displayName });
+  }
+  if (exact.length > 1) {
+    return res.status(409).json({
+      error: 'ambiguous_name',
+      matches: exact.map((r) => r.display_name),
+    });
+  }
+
+  const userId = exact[0]!.user_id;
+  const resolvedName = exact[0]!.display_name;
+
+  if (coins != null) {
+    const { error: walletErr } = await admin.from('scanplay_wallets').upsert(
+      { user_id: userId, coins, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' },
+    );
+    if (walletErr) return res.status(500).json({ error: walletErr.message });
+  }
+
+  const { data: statsRow, error: statsReadErr } = await admin
+    .from('scanplay_user_stats')
+    .select('data')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (statsReadErr) return res.status(500).json({ error: statsReadErr.message });
+
+  const prevData =
+    statsRow?.data && typeof statsRow.data === 'object' && !Array.isArray(statsRow.data)
+      ? (statsRow.data as Record<string, unknown>)
+      : {};
+  const prevWallet =
+    prevData.wallet && typeof prevData.wallet === 'object' && !Array.isArray(prevData.wallet)
+      ? (prevData.wallet as Record<string, unknown>)
+      : {};
+
+  const nextWallet: Record<string, unknown> = { ...prevWallet };
+  if (coins != null) nextWallet.coins = coins;
+  if (gems != null) nextWallet.gems = gems;
+
+  const { error: statsWriteErr } = await admin.from('scanplay_user_stats').upsert(
+    {
+      user_id: userId,
+      data: { ...prevData, wallet: nextWallet },
+      updated_at: new Date().toISOString(),
+    },
+    { onConflict: 'user_id' },
+  );
+  if (statsWriteErr) return res.status(500).json({ error: statsWriteErr.message });
+
+  return res.status(200).json({
+    ok: true,
+    user_id: userId,
+    display_name: resolvedName,
+    coins: coins ?? Number(prevWallet.coins ?? 0),
+    gems: gems ?? Number(prevWallet.gems ?? 0),
+    updated: { coins: coins != null, gems: gems != null },
+  });
 }
 
 function adminOk(req: VercelRequest): boolean {
@@ -88,13 +220,18 @@ function authProvider(user: User): string {
   return 'unknown';
 }
 
-function parisYmd(date = new Date()): string {
+/** Calendar YYYY-MM-DD in Belgium (Europe/Brussels). Same offset as Paris. */
+function brusselsYmd(date = new Date()): string {
   return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Europe/Paris',
+    timeZone: 'Europe/Brussels',
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
   }).format(date);
+}
+
+function parisYmd(date = new Date()): string {
+  return brusselsYmd(date);
 }
 
 function addCalendarDays(ymd: string, delta: number): string {
@@ -109,16 +246,11 @@ function isStreakActive(lastPlayDate: string | null, streak: number): boolean {
   return lastPlayDate === today || lastPlayDate === yesterday;
 }
 
-function dayKey(iso: string): string {
-  return iso.slice(0, 10);
-}
-
 function emptyDayBuckets(days: number): { date: string; count: number }[] {
   const out: { date: string; count: number }[] = [];
-  const today = new Date();
+  const today = brusselsYmd();
   for (let i = days - 1; i >= 0; i -= 1) {
-    const d = new Date(today.getTime() - i * MS_DAY);
-    out.push({ date: d.toISOString().slice(0, 10), count: 0 });
+    out.push({ date: addCalendarDays(today, -i), count: 0 });
   }
   return out;
 }
@@ -126,16 +258,25 @@ function emptyDayBuckets(days: number): { date: string; count: number }[] {
 function fillBuckets(users: User[], days: number): { date: string; count: number }[] {
   const buckets = emptyDayBuckets(days);
   const index = new Map(buckets.map((b, i) => [b.date, i]));
-  const cutoff = Date.now() - days * MS_DAY;
+  const oldest = buckets[0]?.date;
+  if (!oldest) return buckets;
   for (const u of users) {
     if (!u.created_at) continue;
-    const t = new Date(u.created_at).getTime();
-    if (t < cutoff) continue;
-    const key = dayKey(u.created_at);
+    const key = brusselsYmd(new Date(u.created_at));
+    if (key < oldest) continue;
     const i = index.get(key);
     if (i != null) buckets[i].count += 1;
   }
   return buckets;
+}
+
+function mapSignup(u: User, nameById: Map<string, string>) {
+  return {
+    email: u.email ?? '(sans email)',
+    display_name: nameById.get(u.id) || null,
+    created_at: u.created_at ?? null,
+    provider: authProvider(u),
+  };
 }
 
 async function listAllUsers(admin: AdminClient): Promise<User[]> {
@@ -150,43 +291,106 @@ async function listAllUsers(admin: AdminClient): Promise<User[]> {
   return users;
 }
 
-async function listAllDeckUserIds(admin: AdminClient): Promise<string[]> {
-  const ids: string[] = [];
-  const pageSize = 1000;
+type DeckLite = {
+  id: string;
+  user_id: string;
+  title: string;
+  created_at: string;
+  notion_count: number;
+};
+
+async function listAllDecksLite(admin: AdminClient): Promise<DeckLite[]> {
+  const out: DeckLite[] = [];
+  const pageSize = 500;
   for (let from = 0; from < 100_000; from += pageSize) {
     const to = from + pageSize - 1;
     const { data, error } = await admin
       .from('scanplay_decks')
-      .select('user_id')
+      .select('id, user_id, title, pairs, created_at')
+      .order('created_at', { ascending: true })
       .range(from, to);
     if (error) throw new Error(error.message);
-    const batch = (data ?? []) as { user_id: string }[];
+    const batch = (data ?? []) as DeckRow[];
     for (const row of batch) {
-      if (row.user_id) ids.push(row.user_id);
+      if (!row.user_id) continue;
+      out.push({
+        id: String(row.id),
+        user_id: row.user_id,
+        title: String(row.title ?? ''),
+        created_at: String(row.created_at ?? ''),
+        notion_count: pairCount(row.pairs),
+      });
     }
     if (batch.length < pageSize) break;
   }
-  return ids;
+  return out;
+}
+
+function neverReturnedUser(u: User): boolean {
+  if (!u.last_sign_in_at) return true;
+  if (!u.created_at) return false;
+  return (
+    Math.abs(new Date(u.last_sign_in_at).getTime() - new Date(u.created_at).getTime()) <
+    5 * 60 * 1000
+  );
+}
+
+function buildUserInsights(input: {
+  neverReturned: boolean;
+  scanCount: number;
+  firstNotionCount: number | null;
+  activityDays: number;
+}): string[] {
+  const insights: string[] = [];
+  const first = input.firstNotionCount;
+  if (input.neverReturned && input.scanCount === 0) {
+    insights.push('Jamais revenu · aucun scan effectué.');
+  } else if (input.neverReturned && first != null && first <= 2) {
+    insights.push(
+      `Jamais revenu · 1er scan = ${first} notion${first === 1 ? '' : 's'} seulement (sous-extraction).`,
+    );
+  } else if (input.neverReturned && first != null && first < THIN_DECK_THRESHOLD) {
+    insights.push(
+      `Jamais revenu · 1er scan mince (${first} notions, seuil ${THIN_DECK_THRESHOLD}).`,
+    );
+  } else if (input.neverReturned) {
+    insights.push('Jamais revenu après inscription (last_sign_in ≈ created_at).');
+  }
+  if (!input.neverReturned && first != null && first <= 2) {
+    insights.push(`1er scan très faible (${first} notions) : risque de frustration au début.`);
+  }
+  if (input.activityDays <= 1 && input.scanCount > 0 && !input.neverReturned) {
+    insights.push('Activité concentrée sur 1 seul jour (peu de retours mesurés via scans).');
+  }
+  return insights;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(204).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
   if (!adminOk(req)) return res.status(401).json({ error: 'unauthorized' });
 
   const admin = tryGetSupabaseAdmin();
   if (!admin) return res.status(503).json({ error: 'not_configured' });
+
+  if (req.method === 'POST') {
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    const action = String(body.action ?? 'grant');
+    if (action === 'save_note') return saveAdminNote(req, res, admin);
+    return grantWallet(req, res, admin);
+  }
+  if (req.method !== 'GET') return res.status(405).json({ error: 'method_not_allowed' });
 
   try {
     const [
       users,
       profilesRes,
       publicProfilesRes,
-      deckUserIds,
+      allDecks,
       recentDecksRes,
       candidateDecksRes,
       testimonialsRes,
+      notesRes,
     ] = await Promise.all([
       listAllUsers(admin),
       admin
@@ -195,7 +399,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           'user_id, plan, xp, streak, last_play_date, stripe_subscription_id, stripe_price_id, billing_cycle, subscription_period_end, subscription_cancel_at_period_end',
         ),
       admin.from('scanplay_public_profiles').select('user_id, display_name'),
-      listAllDeckUserIds(admin),
+      listAllDecksLite(admin),
       admin
         .from('scanplay_decks')
         .select('id, user_id, title, pairs, created_at')
@@ -213,7 +417,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         )
         .order('created_at', { ascending: false })
         .limit(30),
+      admin.from('scanplay_admin_user_notes').select('user_id, notes, updated_at'),
     ]);
+
+    const notesById = new Map<string, { notes: string; updated_at: string | null }>();
+    const notesError = notesRes.error;
+    if (!notesError && Array.isArray(notesRes.data)) {
+      for (const row of notesRes.data as { user_id: string; notes: string; updated_at: string | null }[]) {
+        notesById.set(row.user_id, {
+          notes: String(row.notes ?? ''),
+          updated_at: row.updated_at ?? null,
+        });
+      }
+    }
+
+    const decksByUser = new Map<string, DeckLite[]>();
+    for (const d of allDecks) {
+      const list = decksByUser.get(d.user_id);
+      if (list) list.push(d);
+      else decksByUser.set(d.user_id, [d]);
+    }
+    const deckUserIds = allDecks.map((d) => d.user_id);
 
     if (profilesRes.error) throw new Error(profilesRes.error.message);
     if (publicProfilesRes.error) throw new Error(publicProfilesRes.error.message);
@@ -242,14 +466,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       (u) => u.last_sign_in_at && now - new Date(u.last_sign_in_at).getTime() <= 7 * MS_DAY,
     ).length;
 
-    const neverReturned = users.filter((u) => {
-      if (!u.last_sign_in_at) return true;
-      if (!u.created_at) return false;
-      return (
-        Math.abs(new Date(u.last_sign_in_at).getTime() - new Date(u.created_at).getTime()) <
-        5 * 60 * 1000
-      );
-    });
+    const neverReturned = users.filter((u) => neverReturnedUser(u));
 
     const cohort1d = users.filter(
       (u) => u.created_at && now - new Date(u.created_at).getTime() >= MS_DAY,
@@ -339,15 +556,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         cancel_at_period_end: Boolean(p.subscription_cancel_at_period_end),
       }));
 
-    const recentSignups = [...users]
-      .sort((a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime())
-      .slice(0, 25)
-      .map((u) => ({
-        email: u.email ?? '(sans email)',
-        display_name: nameById.get(u.id) || null,
-        created_at: u.created_at ?? null,
-        provider: authProvider(u),
-      }));
+    const todayBe = brusselsYmd();
+    const cutoff48h = now - 2 * MS_DAY;
+    const sortedByCreated = [...users].sort(
+      (a, b) => new Date(b.created_at ?? 0).getTime() - new Date(a.created_at ?? 0).getTime(),
+    );
+    const recentSignups = sortedByCreated.slice(0, 25).map((u) => mapSignup(u, nameById));
+    const signupsToday = sortedByCreated
+      .filter((u) => u.created_at && brusselsYmd(new Date(u.created_at)) === todayBe)
+      .map((u) => mapSignup(u, nameById));
+    const signups48h = sortedByCreated
+      .filter((u) => u.created_at && new Date(u.created_at).getTime() >= cutoff48h)
+      .map((u) => mapSignup(u, nameById));
 
     const recentSignIns = [...users]
       .filter((u) => u.last_sign_in_at)
@@ -362,19 +582,85 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         last_sign_in_at: u.last_sign_in_at ?? null,
       }));
 
+    const profileById = new Map(profiles.map((p) => [p.user_id, p] as const));
+
     const userDetails = users
       .map((u) => {
         const scans = scanCountById.get(u.id) ?? 0;
         const plan = planById.get(u.id) ?? 'free';
+        const profile = profileById.get(u.id);
+        const decks = decksByUser.get(u.id) ?? [];
+        const first = decks[0] ?? null;
+        const activityDays = new Set(
+          decks
+            .map((d) => (d.created_at ? brusselsYmd(new Date(d.created_at)) : ''))
+            .filter(Boolean),
+        ).size;
+        const signupDay = u.created_at ? brusselsYmd(new Date(u.created_at)) : null;
+        const never = neverReturnedUser(u);
+        const createdMs = u.created_at ? new Date(u.created_at).getTime() : 0;
+        const lastMs = u.last_sign_in_at ? new Date(u.last_sign_in_at).getTime() : 0;
+        const daysSinceSignup =
+          createdMs > 0 ? Math.max(0, Math.floor((now - createdMs) / MS_DAY)) : null;
+        const daysSinceLastSignIn =
+          lastMs > 0 ? Math.max(0, Math.floor((now - lastMs) / MS_DAY)) : null;
+        // Jours d'activité scan hors jour d'inscription ≈ retours mesurés
+        const returnVisitsApprox = Math.max(
+          0,
+          [...new Set(
+            decks
+              .map((d) => (d.created_at ? brusselsYmd(new Date(d.created_at)) : ''))
+              .filter((d) => d && d !== signupDay),
+          )].length,
+        );
+        const firstNotion = first ? first.notion_count : null;
+        const insights = buildUserInsights({
+          neverReturned: never,
+          scanCount: scans,
+          firstNotionCount: firstNotion,
+          activityDays,
+        });
+        const note = notesById.get(u.id);
         return {
           user_id: u.id,
           email: u.email ?? '(sans email)',
           display_name: nameById.get(u.id) || null,
           created_at: u.created_at ?? null,
           last_sign_in_at: u.last_sign_in_at ?? null,
+          provider: authProvider(u),
           plan,
+          xp: profile?.xp ?? 0,
+          level: levelFromXp(profile?.xp ?? 0),
+          streak: profile?.streak ?? 0,
+          last_play_date: profile?.last_play_date ?? null,
           scan_count: scans,
           cost_eur_est: roundEur(scans * SCAN_COST_EUR),
+          never_returned: never,
+          days_since_signup: daysSinceSignup,
+          days_since_last_sign_in: daysSinceLastSignIn,
+          activity_days: activityDays,
+          return_visits_approx: returnVisitsApprox,
+          first_scan: first
+            ? {
+                id: first.id,
+                title: first.title,
+                created_at: first.created_at,
+                notion_count: first.notion_count,
+              }
+            : null,
+          decks: decks
+            .slice()
+            .reverse()
+            .slice(0, 25)
+            .map((d) => ({
+              id: d.id,
+              title: d.title,
+              created_at: d.created_at,
+              notion_count: d.notion_count,
+            })),
+          insights,
+          admin_notes: note?.notes ?? '',
+          admin_notes_updated_at: note?.updated_at ?? null,
         };
       })
       .sort((a, b) => b.scan_count - a.scan_count);
@@ -394,7 +680,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       email_quota: emailQuota,
       notes: {
         acquisition_source:
-          'Pas de colonne source marketing. provider = auth (email/google/…).',
+          'Pas de colonne source marketing. provider = auth (email/google/...). Jours et listes en heure Belgique (Europe/Brussels).',
         retention:
           'Approximation via last_sign_in_at vs created_at (pas d historique de sessions).',
         thin_deck_threshold: THIN_DECK_THRESHOLD,
@@ -409,8 +695,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         real_openai_logged: false,
       },
       acquisition: {
+        timezone: 'Europe/Brussels',
+        today_ymd: todayBe,
         signups_7d: fillBuckets(users, 7),
         signups_30d: fillBuckets(users, 30),
+        signups_today_count: signupsToday.length,
+        signups_48h_count: signups48h.length,
+        signups_today: signupsToday,
+        signups_48h: signups48h,
         recent_signups: recentSignups,
       },
       connections: {
@@ -454,6 +746,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       },
       users: {
         details: userDetails,
+        notes_table_ok: !notesError,
+        notes_table_error: notesError?.message ?? null,
       },
       costs: {
         total_scans: totalScans,

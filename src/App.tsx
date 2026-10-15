@@ -115,6 +115,7 @@ import {
   truncatePairs,
 } from './lib/planLimits';
 import { hasMinimumForGames, parseContent } from './lib/parser';
+import { isThinScanNotionCount } from './lib/thinScan';
 import { getNextGameForStep, getResumeGameIndex, isNodeAllGold, pickPathStepGames, resolveStepMode } from './lib/pathGamePlan';
 import { isOralAllowedForDeck, setPathSheetType } from './lib/pathSheetType';
 import {
@@ -206,6 +207,9 @@ const DailyMissionRewardScreen = lazy(() =>
 const ExamOffConfirmModal = lazy(() =>
   import('./components/ExamOffConfirmModal').then((m) => ({ default: m.ExamOffConfirmModal })),
 );
+const ThinScanAlertSheet = lazy(() =>
+  import('./components/ThinScanAlertSheet').then((m) => ({ default: m.ThinScanAlertSheet })),
+);
 const GoldReplayConfirmModal = lazy(() =>
   import('./components/GoldReplayConfirmModal').then((m) => ({
     default: m.GoldReplayConfirmModal,
@@ -291,7 +295,14 @@ function saveBest(mode: GameMode, score: number) {
 }
 
 function isLocale(value: unknown): value is Locale {
-  return value === 'fr' || value === 'en' || value === 'nl' || value === 'es' || value === 'ar';
+  return (
+    value === 'fr' ||
+    value === 'en' ||
+    value === 'nl' ||
+    value === 'es' ||
+    value === 'ar' ||
+    value === 'de'
+  );
 }
 
 function resolveInitialLocale(preferred?: Locale): Locale {
@@ -333,8 +344,16 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
   const [examElapsed, setExamElapsed] = useState(0);
   const [rawPairCount, setRawPairCount] = useState(0);
   const [toast, setToast] = useState<string | null>(null);
+  const [shopFocusCosmeticId, setShopFocusCosmeticId] = useState<string | null>(null);
   const [showStreakLost, setShowStreakLost] = useState(false);
   const [showExamOffConfirm, setShowExamOffConfirm] = useState(false);
+  const [thinScanAlert, setThinScanAlert] = useState<{
+    pairs: WordPair[];
+    thumbnail?: string;
+    ignored: WordPair[];
+  } | null>(null);
+  const thinAlertShownRef = useRef(false);
+  const thinRetryRef = useRef(false);
   const [goldReplayPending, setGoldReplayPending] = useState<{
     stepIndex: number;
     mode: GameMode;
@@ -780,6 +799,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       setScanProgress(0);
       setScanStatus('');
       setPendingImportFiles(null);
+      setThinScanAlert(null);
       setImportError(message);
       setFlow('import');
       clearImportErrorSoon();
@@ -854,6 +874,18 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
     [locale, failImport, ensurePathRoomForDeck, sheetType],
   );
 
+  const openReviewAfterExtract = useCallback(
+    (parsed: WordPair[], thumbnail: string | undefined, ignored: WordPair[]) => {
+      setPairs(parsed);
+      setIgnoredScanPairs(ignored);
+      setDeckThumbnail(thumbnail);
+      setManualDeckMode(false);
+      markNavReplace();
+      setFlow('reviewCards');
+    },
+    [],
+  );
+
   const finishExtracted = useCallback(
     (parsed: WordPair[], thumbnail?: string, usedSample = false, ignored: WordPair[] = []) => {
       if (parsed.length === 0) {
@@ -891,14 +923,15 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
         return;
       }
 
-      setPairs(parsed);
-      setIgnoredScanPairs(ignored);
-      setDeckThumbnail(thumbnail);
-      setManualDeckMode(false);
-      markNavReplace();
-      setFlow('reviewCards');
+      if (isThinScanNotionCount(parsed.length) && !thinAlertShownRef.current) {
+        thinAlertShownRef.current = true;
+        setThinScanAlert({ pairs: parsed, thumbnail, ignored });
+        return;
+      }
+
+      openReviewAfterExtract(parsed, thumbnail, ignored);
     },
-    [goModes, locale, failImport, sheetType],
+    [goModes, locale, failImport, sheetType, openReviewAfterExtract],
   );
 
   const startManualCards = useCallback(() => {
@@ -944,12 +977,18 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
   );
 
   const startScanFlow = (files?: File[]) => {
+    const thinRetry = thinRetryRef.current;
+    if (!thinRetry) {
+      thinAlertShownRef.current = false;
+      setThinScanAlert(null);
+    }
     const guestScan = !isLoggedIn();
     trackEvent('clic_scanner_cours', {
       depuis: guestScan ? 'page_de_garde' : 'accueil',
     });
     if (guestScan) {
-      if (!canGuestScan()) {
+      // thinRetry: slot déjà brûlé, on laisse réessayer sans rebloquer.
+      if (!thinRetry && !canGuestScan()) {
         showToast(t('guestScanUsed', locale));
         trackEvent('ouverture_inscription', { etape: 'scan_deja_utilise' });
         setFlow('auth');
@@ -959,7 +998,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       return;
     }
 
-    if (!guestScan) {
+    if (!guestScan && !thinRetry) {
       const reason = getUpgradeReasonForScan();
       if (reason) {
         setUpgradeReason(reason);
@@ -1003,12 +1042,16 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       examRequested = false,
       scanSheetType?: SheetType,
     ) => {
+      const thinRetry = thinRetryRef.current;
+      thinRetryRef.current = false;
+
       const activeSheetType = scanSheetType ?? sheetType;
       if (scanSheetType) setSheetType(scanSheetType);
       const isFormulaScan = activeSheetType === 'math' || activeSheetType === 'definitions';
       const guestScan = !isLoggedIn();
       if (guestScan) {
-        if (!canGuestScan()) {
+        // thinRetry: le slot gratuit a déjà été brûlé au 1er essai.
+        if (!thinRetry && !canGuestScan()) {
           showToast(t('guestScanUsed', locale));
           setFlow('auth');
           return;
@@ -1030,7 +1073,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       }
 
       // Burn the free guest slot as soon as a photo is submitted (survives refresh / quit).
-      if (guestScan) recordGuestScan();
+      if (guestScan && !thinRetry) recordGuestScan();
 
       setTrainingFocus(focus);
       if (examRequested && hasFeature('exam')) {
@@ -1044,7 +1087,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       }
 
       if (!guestScan) {
-        if (!canScan()) {
+        if (!thinRetry && !canScan()) {
           setUpgradeReason(getUpgradeReasonForScan() ?? 'aiBudget');
           return;
         }
@@ -1055,7 +1098,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
               .replace('{dropped}', String(dropped)),
           );
         }
-        if (files.length > 1) recordMultiScan();
+        if (files.length > 1 && !thinRetry) recordMultiScan();
       } else {
         if (dropped > 0 || files.length > 1) {
           showToast(t('guestScanSingleOnly', locale));
@@ -1064,6 +1107,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
 
       const scanFiles = guestScan ? files.slice(0, 1) : files;
       setPendingImportFiles(null);
+      setThinScanAlert(null);
 
       scanAbortRef.current?.abort();
       const ac = new AbortController();
@@ -1134,8 +1178,8 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
         const playable = coercePlayablePairs(allPairs, mathOpts);
         if (canOpenGamePath(playable, mathOpts)) {
           // Guest trial scan is free: does NOT bill the AI envelope (0% after signup).
-          // Only logged-in scans increment usage. Guest slot was already burned at start.
-          if (!guestScan) {
+          // thinRetry: déjà décompté au 1er essai (guest burn / recordScan).
+          if (!guestScan && !thinRetry) {
             for (let s = 0; s < scanFiles.length; s += 1) recordScan();
           }
         }
@@ -2100,6 +2144,22 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
         />
       )}
 
+      {thinScanAlert && (
+        <ThinScanAlertSheet
+          locale={locale}
+          onRetry={() => {
+            setThinScanAlert(null);
+            thinRetryRef.current = true;
+            startScanFlow();
+          }}
+          onContinue={() => {
+            const pending = thinScanAlert;
+            setThinScanAlert(null);
+            openReviewAfterExtract(pending.pairs, pending.thumbnail, pending.ignored);
+          }}
+        />
+      )}
+
       {goldReplayPending && (
         <GoldReplayConfirmModal
           locale={locale}
@@ -2223,6 +2283,8 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
           onNewUnlocks={celebrateAchievements}
           onToast={showToast}
           onSocialChange={handleSocialChange}
+          focusCosmeticId={shopFocusCosmeticId}
+          onFocusCosmeticConsumed={() => setShopFocusCosmeticId(null)}
         />
       )}
       {flow === null && tab === 'profile' && (
@@ -2236,6 +2298,10 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
           onOpenFriends={() => handleTabChange('friends')}
           onOpenAchievements={() => handleTabChange('achievements')}
           onOpenSettings={() => handleTabChange('settings')}
+          onOpenShop={(cosmeticId) => {
+            if (cosmeticId) setShopFocusCosmeticId(cosmeticId);
+            handleTabChange('shop');
+          }}
         />
       )}
       {flow === null && tab === 'mistakes' && !mistakeSession && (

@@ -141,7 +141,9 @@ export function getUnclaimedCompletedMissions(): DailyMission[] {
   return getDailyMissions().filter((m) => m.current >= m.goal && !claimed.has(m.id));
 }
 
-export function claimPendingMissionChest():
+export function claimPendingMissionChest(
+  rarity: ChestRarity = 'common',
+):
   | { ok: true; reward: ChestReward; rarity: ChestRarity }
   | { ok: false; reason: string } {
   const pending = getUnclaimedCompletedMissions();
@@ -154,11 +156,11 @@ export function claimPendingMissionChest():
     .reduce((sum, p) => sum + p.reward.amount, 0);
   settleDailyMissionRewards();
   if (coins > 0 && coins >= xp) {
-    return { ok: true, reward: { type: 'coins', amount: coins, labelKey: 'chestRewardCoins' }, rarity: 'common' };
+    return { ok: true, reward: { type: 'coins', amount: coins, labelKey: 'chestRewardCoins' }, rarity };
   }
   return {
     ok: true,
     reward: { type: 'xp', amount: xp || pending[0]!.reward.amount, labelKey: 'chestRewardXp' },
-    rarity: 'common',
+    rarity,
   };
 }

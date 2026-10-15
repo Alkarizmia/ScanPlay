@@ -1091,8 +1091,8 @@ export const DRIVING_SIGNS_CATALOG: DrivingCatalogSign[] = [
     "code": "F5",
     "category": "indication",
     "family": "F",
-    "title": "Autoroute",
-    "meaning": "Début d’autoroute. Max 120 km/h sauf indication.",
+    "title": "C24a - Entrée d'autoroute",
+    "meaning": "Début d'une autoroute. La vitesse maximale autorisée est de 120 km/h, sauf signalisation contraire. La vitesse minimale obligatoire y est de 70 km/h.",
     "src": "/universe/signs/F5.png"
   },
   {

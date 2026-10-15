@@ -327,8 +327,9 @@ function escapeRegExp(text: string): string {
   return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-function isNativeLang(lang: LangCode): lang is Exclude<LangCode, 'en' | 'unknown'> {
-  return lang === 'fr' || lang === 'nl' || lang === 'es';
+/** Langues avec glossaires Univers anglais (ar/de résolus via item[lang]). */
+function isNativeLang(lang: LangCode): lang is 'fr' | 'nl' | 'es' | 'de' {
+  return lang === 'fr' || lang === 'nl' || lang === 'es' || lang === 'de';
 }
 
 /**

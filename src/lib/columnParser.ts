@@ -74,17 +74,30 @@ export function scoreSpanish(text: string): number {
   return score;
 }
 
+export function scoreGerman(text: string): number {
+  let score = 0;
+  if (/[äöüßÄÖÜ]/.test(text)) score += 4;
+  if (/\b(der|die|das|dem|den|des|ein|eine|einen|einem|einer)\b/i.test(text)) score += 3;
+  if (/\b(und|nicht|auch|sich|mit|von|für|auf|ist|sind|wird|werden|haben|oder|aber)\b/i.test(text)) {
+    score += 2;
+  }
+  if (/\w+(ung|heit|keit|lich|isch|schaft)\b/i.test(text)) score += 1;
+  return score;
+}
+
 export function detectLang(text: string): LangCode {
   const nl = scoreDutch(text);
   const fr = scoreFrench(text);
   const es = scoreSpanish(text);
   const en = scoreEnglish(text);
-  const best = Math.max(nl, fr, es, en);
+  const de = scoreGerman(text);
+  const best = Math.max(nl, fr, es, en, de);
   if (best === 0) return 'unknown';
-  if (es === best && es > fr + 1 && es > nl + 1) return 'es';
-  if (nl > fr + 1 && nl >= es && nl >= en) return 'nl';
-  if (fr > nl + 1 && fr >= es && fr >= en) return 'fr';
-  if (en === best && en >= fr && en >= nl) return 'en';
+  if (de === best && de > nl + 1 && de > fr + 1 && de >= es && de >= en) return 'de';
+  if (es === best && es > fr + 1 && es > nl + 1 && es >= de) return 'es';
+  if (nl > fr + 1 && nl >= es && nl >= en && nl >= de) return 'nl';
+  if (fr > nl + 1 && fr >= es && fr >= en && fr >= de) return 'fr';
+  if (en === best && en >= fr && en >= nl && en >= de) return 'en';
   return 'unknown';
 }
 

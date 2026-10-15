@@ -7,7 +7,13 @@ import { EnglishChapterSkip } from './EnglishChapterSkip';
 import { EnglishLessonPlay } from './EnglishLessonPlay';
 import { DrivingLicenseScreen } from './DrivingLicenseScreen';
 import { isLoggedIn } from '../lib/auth';
-import { canPlayUniverse, getUniverseHearts } from '../lib/universeHearts';
+import {
+  canPlayUniverse,
+  getUniverseHeartCap,
+  getUniverseHearts,
+  hasInfiniteUniverseHearts,
+} from '../lib/universeHearts';
+import { getPlan } from '../lib/planLimits';
 import { isUniverseEnglishOnboarded, getUniverseEnglish } from '../lib/universeEnglish';
 import { getUniverseDriving } from '../lib/universeDriving';
 import {
@@ -64,7 +70,10 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
   const [skipChapterId, setSkipChapterId] = useState<string | null>(null);
   const [drivingPlay, setDrivingPlay] = useState(false);
   const [syncTick, setSyncTick] = useState(0);
+  const plan = getPlan();
+  const infiniteHearts = hasInfiniteUniverseHearts(plan);
   const hearts = getUniverseHearts().hearts;
+  const heartCap = getUniverseHeartCap(plan);
   const locked = !canPlayUniverse();
   const guest = !isLoggedIn();
   const driving = getUniverseDriving();
@@ -170,7 +179,12 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
     const profile = getUniverseEnglish();
     const chapters = listChaptersForGoal(profile.goal);
     const ch = chapters.find((c) => c.id === skipChapterId);
-    const titleLang = locale === 'en' ? 'en' : locale === 'nl' || locale === 'es' || locale === 'ar' ? locale : 'fr';
+    const titleLang =
+      locale === 'en'
+        ? 'en'
+        : locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de'
+          ? locale
+          : 'fr';
     return (
       <div className="screen flow-screen pix-universe-screen pix-universe-screen--play">
         <EnglishChapterSkip
@@ -298,7 +312,7 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
             disabled={locked}
             onClick={openEnglish}
           >
-            <span className="pix-universe-card-media" aria-hidden="true">
+            <div className="pix-universe-card-media" aria-hidden="true">
               <img
                 src="/universe/english-cover.jpg"
                 alt=""
@@ -309,8 +323,8 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
                 decoding="async"
                 fetchPriority="high"
               />
-            </span>
-            <span className="pix-universe-card-body">
+            </div>
+            <div className="pix-universe-card-body">
               <span className="pix-universe-card-meta">{t('engCourseLevels', locale)}</span>
               <span className="pix-universe-card-title">{t('engCourseTitle', locale)}</span>
               <span className="pix-universe-card-sub">{t('engCourseCardSub', locale)}</span>
@@ -318,7 +332,7 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
               <span className="pix-universe-card-cta">
                 {isUniverseEnglishOnboarded() ? t('engOpenContinue', locale) : t('engOpenStart', locale)}
               </span>
-            </span>
+            </div>
           </button>
 
           <button
@@ -327,7 +341,7 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
             disabled={locked}
             onClick={openDriving}
           >
-            <span className="pix-universe-card-media" aria-hidden="true">
+            <div className="pix-universe-card-media" aria-hidden="true">
               <img
                 src="/universe/driving-cover.jpg"
                 alt=""
@@ -337,8 +351,8 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
                 loading="eager"
                 decoding="async"
               />
-            </span>
-            <span className="pix-universe-card-body">
+            </div>
+            <div className="pix-universe-card-body">
               <span className="pix-universe-card-meta">{t('driveCourseMeta', locale)}</span>
               <span className="pix-universe-card-title">{t('driveCourseTitle', locale)}</span>
               <span className="pix-universe-card-sub">{t('driveCourseCardSub', locale)}</span>
@@ -346,12 +360,16 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
               <span className="pix-universe-card-cta">
                 {drivingStarted ? t('driveOpenContinue', locale) : t('driveOpenStart', locale)}
               </span>
-            </span>
+            </div>
           </button>
 
-          <p className="pix-universe-hearts-legend">
-            {t('universeHeartsLegend', locale).replace('{n}', String(hearts))}
-          </p>
+          {!infiniteHearts && Number.isFinite(heartCap) && (
+            <p className="pix-universe-hearts-legend">
+              {t('universeHeartsLegend', locale)
+                .replace('{n}', String(hearts))
+                .replace('{cap}', String(heartCap))}
+            </p>
+          )}
         </section>
       </main>
     </div>

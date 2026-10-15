@@ -195,6 +195,14 @@ function mergeWalletFromCloud(cloud: Record<string, unknown>): void {
     streakFreezeCharges: Math.max(local.streakFreezeCharges, Number(cloud.streakFreezeCharges ?? 0)),
     translateHints: Math.max(local.translateHints, Number(cloud.translateHints ?? 0)),
     welcomeHintsGranted: Boolean(local.welcomeHintsGranted || cloud.welcomeHintsGranted),
+    ownedCosmetics: [
+      ...new Set([
+        ...(Array.isArray(local.ownedCosmetics) ? local.ownedCosmetics : []),
+        ...(Array.isArray(cloud.ownedCosmetics)
+          ? cloud.ownedCosmetics.filter((x): x is string => typeof x === 'string')
+          : []),
+      ]),
+    ],
   };
   if (merged.lostStreakAt === 0) merged.lostStreakAt = null;
   if (merged.lostStreakAckAt === 0) merged.lostStreakAckAt = null;
@@ -481,23 +489,7 @@ export async function pullUserData(options?: {
     const statsRow = statsRes.data;
 
     if (statsRow?.data && typeof statsRow.data === 'object') {
-      const statsData = statsRow.data as Record<string, unknown>;
-      applyStatsBlob(statsData);
-
-      const statsProfile = statsData.profile;
-      if (statsProfile && typeof statsProfile === 'object') {
-        const p = statsProfile as Record<string, unknown>;
-        const { mergeProfileFromCloud } = await import('./profile');
-        mergeProfileFromCloud({
-          displayName: typeof p.displayName === 'string' ? p.displayName : null,
-          avatarId: typeof p.avatar === 'string' ? p.avatar : null,
-          avatarUrl: typeof p.customAvatarData === 'string' ? p.customAvatarData : null,
-          updatedAt:
-            typeof p.profileUpdatedAt === 'number'
-              ? new Date(p.profileUpdatedAt).toISOString()
-              : null,
-        });
-      }
+      applyStatsBlob(statsRow.data as Record<string, unknown>);
     }
 
     if (profile) {
@@ -547,20 +539,54 @@ export async function pullUserData(options?: {
       saveMistakesRaw([]);
     }
 
+    const { mergeProfileFromCloud } = await import('./profile');
+
+    // Public first (name/avatar), then stats blob wins for cosmetics (banner / frames).
     const { data: publicProfile } = await supabase
       .from('scanplay_public_profiles')
-      .select('display_name, avatar_id, avatar_url, updated_at')
+      .select('display_name, avatar_id, avatar_url, banner_theme, avatar_frame, banner_frame, updated_at')
       .eq('user_id', userId)
       .maybeSingle();
 
+    // Public = identité (nom / photo). Cosmétiques uniquement depuis le blob stats
+    // (banner_theme public est souvent resté à "green" et écrasait le vrai fond).
     if (publicProfile) {
-      const { mergeProfileFromCloud } = await import('./profile');
       mergeProfileFromCloud({
         displayName: publicProfile.display_name as string | null,
         avatarId: publicProfile.avatar_id as string | null,
         avatarUrl: publicProfile.avatar_url as string | null,
         updatedAt: publicProfile.updated_at as string | null,
       });
+    }
+
+    if (statsRow?.data && typeof statsRow.data === 'object') {
+      const statsData = statsRow.data as Record<string, unknown>;
+      const statsProfile = statsData.profile;
+      if (statsProfile && typeof statsProfile === 'object') {
+        const p = statsProfile as Record<string, unknown>;
+        mergeProfileFromCloud({
+          displayName: typeof p.displayName === 'string' ? p.displayName : null,
+          avatarId: typeof p.avatar === 'string' ? p.avatar : null,
+          avatarUrl: typeof p.customAvatarData === 'string' ? p.customAvatarData : null,
+          bannerTheme: typeof p.bannerTheme === 'string' ? p.bannerTheme : null,
+          avatarFrame:
+            p.avatarFrame === null
+              ? null
+              : typeof p.avatarFrame === 'string'
+                ? p.avatarFrame
+                : undefined,
+          bannerFrame:
+            p.bannerFrame === null
+              ? null
+              : typeof p.bannerFrame === 'string'
+                ? p.bannerFrame
+                : undefined,
+          updatedAt:
+            typeof p.profileUpdatedAt === 'number'
+              ? new Date(p.profileUpdatedAt).toISOString()
+              : null,
+        });
+      }
     }
 
     const { data: walletRows } = await supabase.rpc('get_my_wallet');

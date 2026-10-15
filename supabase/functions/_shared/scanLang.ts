@@ -2,7 +2,7 @@
  * Shared language heuristics for scan (keep in sync with src/lib/scanLang.ts).
  */
 
-export type ScanLang = 'nl' | 'fr' | 'en' | 'es' | 'unknown';
+export type ScanLang = 'nl' | 'fr' | 'en' | 'es' | 'de' | 'unknown';
 
 export function looksFr(text: string): boolean {
   return (
@@ -20,12 +20,20 @@ export function looksEn(text: string): boolean {
   );
 }
 
+export function looksDe(text: string): boolean {
+  return (
+    /[äöüßÄÖÜ]/.test(text) ||
+    /\b(der|die|das|dem|den|und|nicht|auch|sich|mit|ist|sind|wird|werden)\b/i.test(text)
+  );
+}
+
 export function detectScanLang(text: string): ScanLang {
   const t = text.trim();
   let fr = 0;
   let en = 0;
   let nl = 0;
   let es = 0;
+  let de = 0;
   if (/[àâäéèêëïîôùûüç]/i.test(t)) fr += 2;
   if (/\b\w+['’]\w+/u.test(t)) fr += 2;
   if (/\b(le|la|les|des|du|je|tu|nous|vous|qui|c'est|ça|pas|très|mal|tête|avance|retard)\b/i.test(t)) {
@@ -37,11 +45,15 @@ export function detectScanLang(text: string): ScanLang {
   if (/\b(the|and|with|every|someone|before|after|without)\b/i.test(t)) en += 2;
   if (/[áéíóúñ¿¡]/i.test(t)) es += 2;
   if (/\b(el|la|los|las|un|una|que|con|por|para)\b/i.test(t) && fr === 0) es += 1;
-  const best = Math.max(fr, en, nl, es);
+  if (looksDe(t)) de += 2;
+  if (/[äöüßÄÖÜ]/.test(t)) de += 2;
+  if (/\b(der|die|das|ein|eine|und|nicht)\b/i.test(t) && fr === 0) de += 1;
+  const best = Math.max(fr, en, nl, es, de);
   if (best === 0) return 'unknown';
+  if (de === best && de > fr && de > en && de >= nl) return 'de';
   if (fr === best && fr > en) return 'fr';
   if (en === best && en > fr) return 'en';
-  if (nl === best && nl > fr && nl > en) return 'nl';
+  if (nl === best && nl > fr && nl > en && nl >= de) return 'nl';
   if (es === best && es > fr && es > en) return 'es';
   return 'unknown';
 }
