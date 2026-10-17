@@ -216,6 +216,47 @@ function tone(
   }
 }
 
+/**
+ * Soft padded chime (sine + gentle attack). Feels musical, not 8-bit / "pixel".
+ * delayMs is scheduled on the audio clock (no setTimeout jitter).
+ */
+function softChime(
+  freq: number,
+  duration: number,
+  volume: number,
+  opts?: { delayMs?: number; harm?: number },
+): void {
+  const audio = getCtx();
+  if (!audio) return;
+  const t0 = audio.currentTime + (opts?.delayMs ?? 0) / 1000;
+  const attack = Math.min(0.028, duration * 0.22);
+  const release = duration;
+
+  const play = (f: number, gainVal: number) => {
+    const osc = audio.createOscillator();
+    const filter = audio.createBiquadFilter();
+    const gain = audio.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = f;
+    filter.type = 'lowpass';
+    filter.frequency.value = Math.min(f * 3.2, 2800);
+    filter.Q.value = 0.55;
+    gain.gain.setValueAtTime(0.001, t0);
+    gain.gain.linearRampToValueAtTime(vol(gainVal), t0 + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0 + release);
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audio.destination);
+    osc.start(t0);
+    osc.stop(t0 + release + 0.04);
+  };
+
+  play(freq, volume);
+  if (opts?.harm && opts.harm > 0) {
+    play(opts.harm, volume * 0.32);
+  }
+}
+
 function playNotes(notes: Note[]): void {
   notes.forEach((n) => {
     window.setTimeout(() => {
@@ -305,23 +346,23 @@ const SOUND_MAP: Record<SoundId, () => void> = {
       { f: 659.25, d: 0.12, v: 0.065, delay: 150 },
     ]);
   },
+  // Warm major chime — soft attack, no square/triangle "pixel" bite.
   correct: () => {
-    playNotes([
-      { f: 659.25, d: 0.07, v: 0.065, delay: 0 },
-      { f: 880, d: 0.1, v: 0.058, delay: 70 },
-      { f: 1046.5, d: 0.12, v: 0.05, t: 'sine', delay: 140 },
-    ]);
+    softChime(523.25, 0.14, 0.052, { harm: 1046.5 }); // C5
+    softChime(659.25, 0.15, 0.055, { delayMs: 95, harm: 1318.51 }); // E5
+    softChime(783.99, 0.26, 0.058, { delayMs: 195, harm: 1567.98 }); // G5 linger
   },
   perfect: () => {
-    playNotes([
-      { f: 523.25, d: 0.07, v: 0.06, delay: 0 },
-      { f: 659.25, d: 0.07, v: 0.062, delay: 60 },
-      { f: 783.99, d: 0.08, v: 0.064, delay: 120 },
-      { f: 987.77, d: 0.1, v: 0.066, delay: 180 },
-      { f: 1174.66, d: 0.16, v: 0.06, t: 'sine', delay: 260 },
-    ]);
+    softChime(523.25, 0.12, 0.05, { harm: 1046.5 });
+    softChime(659.25, 0.12, 0.052, { delayMs: 85, harm: 1318.51 });
+    softChime(783.99, 0.13, 0.054, { delayMs: 170, harm: 1567.98 });
+    softChime(1046.5, 0.28, 0.056, { delayMs: 265, harm: 2093 });
   },
-  wrong: () => tone(246.94, 0.16, 'triangle', 0.038),
+  // Soft descending sigh — clear feedback, never a buzz or scare tone.
+  wrong: () => {
+    softChime(392, 0.11, 0.036); // G4
+    softChime(329.63, 0.18, 0.03, { delayMs: 95 }); // E4
+  },
   cardFlip: () => playSweep(520, 780, 0.07, 0.035, 'triangle'),
   matchSnap: () => {
     playNoiseBurst(0.04, 0.028, 1600);
@@ -443,16 +484,12 @@ const SOUND_MAP: Record<SoundId, () => void> = {
     ]);
   },
   miniWin: () => {
-    playNotes([
-      { f: 523.25, d: 0.05, v: 0.048, delay: 0 },
-      { f: 659.25, d: 0.07, v: 0.046, delay: 50 },
-    ]);
+    softChime(587.33, 0.11, 0.048, { harm: 1174.66 }); // D5
+    softChime(783.99, 0.2, 0.05, { delayMs: 80, harm: 1567.98 }); // G5
   },
   nearMiss: () => {
-    playNotes([
-      { f: 493.88, d: 0.08, v: 0.052, delay: 0 },
-      { f: 587.33, d: 0.1, v: 0.048, t: 'sine', delay: 70 },
-    ]);
+    softChime(440, 0.1, 0.038); // A4
+    softChime(493.88, 0.14, 0.034, { delayMs: 85 }); // B4 nudge up (almost!)
   },
   nodeStep: () => {
     playNotes([

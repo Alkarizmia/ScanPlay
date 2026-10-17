@@ -14,6 +14,12 @@ import { hasEnoughImagePickPairs } from '../lib/imagePickRounds';
 import { buildListenPickRounds } from '../lib/listenPickRounds';
 import { buildLocalTranslateRounds } from '../lib/translateRounds';
 import { canPlayUniverse, loseUniverseHeart } from '../lib/universeHearts';
+import { applyXpDelta } from '../lib/gamification';
+import {
+  getGameHudSnapshot,
+  resetGameHud,
+  setGameHudPracticeMode,
+} from '../lib/gameFeedback';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { CefrLevel, EnglishGoal } from '../lib/englishCurriculum';
@@ -48,6 +54,19 @@ type StepKind =
   | 'story'
   | 'mood'
   | 'fact';
+
+/** Review formats: typing first, then MCQ, then listen-pick if still missed. */
+type ReviewMode = 'type' | 'quiz' | 'listen';
+
+function reviewModeForFails(fails: number): ReviewMode {
+  if (fails <= 0) return 'type';
+  if (fails === 1) return 'quiz';
+  return 'listen';
+}
+
+function pairKey(pair: WordPair): string {
+  return pair.term.trim().toLowerCase();
+}
 
 interface MixStep {
   kind: StepKind;
@@ -102,7 +121,7 @@ function fallbackKind(
   level?: CefrLevel,
   goal?: EnglishGoal,
 ): StepKind {
-  const candidates: StepKind[] = ['quiz', 'type', 'translate', 'speak', 'listen', 'image'];
+  const candidates: StepKind[] = ['image', 'quiz', 'type', 'translate', 'speak', 'listen'];
   for (const kind of candidates) {
     if (kind === prev) continue;
     if (canPlayKind(kind, focus, pool, level, goal)) return kind;
@@ -117,13 +136,22 @@ function buildMixedSteps(
   level: CefrLevel,
   goal: EnglishGoal,
 ): MixStep[] {
-  const rotation: StepKind[] = ['quiz', 'listen', 'translate', 'speak', 'image', 'type', 'quiz', 'listen'];
+  /* Image pick (Fluent emoji) early in the mix so everyday vocab gets the 4-choice game. */
+  const rotation: StepKind[] = ['quiz', 'image', 'listen', 'translate', 'speak', 'type', 'image', 'quiz'];
   const steps: MixStep[] = [];
   let rot = lessonId.length % rotation.length;
+  let pictureableSeen = 0;
 
   for (const focus of pairs) {
+    const pictureable = hasEnoughImagePickPairs([focus]);
     let attempts = 0;
     let kind = rotation[rot % rotation.length]!;
+
+    /* Prefer Image Pick for ~half of pictureable words (Univers English). */
+    if (pictureable && pictureableSeen % 2 === 0 && steps[steps.length - 1]?.kind !== 'image') {
+      kind = 'image';
+    }
+
     while (attempts < rotation.length && !canPlayKind(kind, focus, pairs, level, goal)) {
       rot += 1;
       kind = rotation[rot % rotation.length]!;
@@ -140,11 +168,12 @@ function buildMixedSteps(
         kind = fallbackKind(prev, focus, pairs, level, goal);
       }
     }
+    if (pictureable) pictureableSeen += 1;
     steps.push({ kind, focus });
     rot += 1;
   }
 
-  const extraKinds: StepKind[] = ['type', 'quiz', 'listen'];
+  const extraKinds: StepKind[] = ['image', 'type', 'quiz'];
   for (let i = 0; i < Math.min(3, pairs.length); i += 1) {
     const focus = pairs[(i * 3) % pairs.length]!;
     let kind = extraKinds[i % extraKinds.length]!;
@@ -192,16 +221,35 @@ export function EnglishLessonPlay({
     return Math.max(0, saved.lessonStepIndex || 0);
   });
   const [phase, setPhase] = useState<'play' | 'review' | 'done'>('play');
-  const [reviewPairs, setReviewPairs] = useState<WordPair[]>([]);
+  /** Snapshot of every missed word for this lesson (order preserved). */
+  const [reviewQueue, setReviewQueue] = useState<WordPair[]>([]);
+  const [reviewIndex, setReviewIndex] = useState(0);
+  /** Extra fails during review → switch game format (type → quiz → listen). */
+  const [reviewFails, setReviewFails] = useState<Record<string, number>>({});
+  /** Remount key when format or item changes. */
+  const [reviewNonce, setReviewNonce] = useState(0);
   const [nextLessonId, setNextLessonId] = useState<string | null>(null);
-  const [nextLessonTitle, setNextLessonTitle] = useState('');
+  /** Unique words missed on the main path (review retries do not add to this). */
+  const playMissKeysRef = useRef<Set<string>>(new Set());
+  const [resultStats, setResultStats] = useState<{
+    total: number;
+    errors: number;
+    xpDelta: number;
+    bestCombo: number;
+  }>({
+    total: 0,
+    errors: 0,
+    xpDelta: 0,
+    bestCombo: 0,
+  });
   const weakRef = useRef<WordPair[]>([]);
-  const titleLang =
-    locale === 'en'
-      ? 'en'
-      : locale === 'nl' || locale === 'es' || locale === 'ar' || locale === 'de'
-        ? locale
-        : 'fr';
+
+  useEffect(() => {
+    resetGameHud();
+    return () => {
+      setGameHudPracticeMode(false);
+    };
+  }, [lessonId]);
 
   useEffect(() => {
     const saved = getUniverseEnglish();
@@ -219,10 +267,14 @@ export function EnglishLessonPlay({
     if (lost) onHeartLost();
   };
 
-  const markWrong = (pair: WordPair) => {
+  const markWrong = (pair: WordPair, opts?: { review?: boolean }) => {
     weakRef.current = uniqPairs([...weakRef.current, pair]);
     recordUniverseWeakWord(pair.term);
-    loseHeart();
+    // Hearts + grade only during the main path — review is practice, not a second penalty.
+    if (!opts?.review) {
+      playMissKeysRef.current.add(pairKey(pair));
+      loseHeart();
+    }
   };
 
   const markRight = (pair: WordPair) => {
@@ -230,14 +282,35 @@ export function EnglishLessonPlay({
   };
 
   const finishLesson = () => {
+    setGameHudPracticeMode(false);
+    const total = Math.max(1, steps.length);
+    const errors = Math.min(playMissKeysRef.current.size, total);
+    const hud = getGameHudSnapshot();
+    // Credit the live HUD total once (combo gains + level-scaled misses). Never during play.
+    const { applied } = applyXpDelta(hud.xp);
+    setResultStats({
+      total,
+      errors,
+      xpDelta: applied,
+      bestCombo: hud.bestCombo,
+    });
     setEnglishCurrentLesson(lessonId);
     const after = completeEnglishLesson(lessonId);
     const nextId = after.currentLessonId !== lessonId ? after.currentLessonId : null;
-    const nextLesson = nextId ? ENGLISH_LESSONS.find((l) => l.id === nextId) : undefined;
     setNextLessonId(nextId);
-    setNextLessonTitle(nextLesson?.title[titleLang] ?? '');
-    playSound('perfect');
+    playSound(applied >= 0 ? 'perfect' : 'whoosh');
     setPhase('done');
+  };
+
+  const startReview = (weak: WordPair[]) => {
+    // Review is practice: keep the path HUD score frozen for the final grant.
+    setGameHudPracticeMode(true);
+    playSound('whoosh');
+    setReviewQueue(weak);
+    setReviewIndex(0);
+    setReviewFails({});
+    setReviewNonce((n) => n + 1);
+    setPhase('review');
   };
 
   const advanceStep = () => {
@@ -247,14 +320,74 @@ export function EnglishLessonPlay({
         finishLesson();
         return;
       }
-      setReviewPairs(weak);
-      setPhase('review');
+      startReview(weak);
       return;
     }
-    playSound('correct');
+    // Continuer / Terminer: whoosh only (correct/wrong already played on the answer).
+    playSound('whoosh');
     const next = stepIndex + 1;
     setStepIndex(next);
     setEnglishLessonStep(lessonId, next);
+  };
+
+  /** Set on the latest review grade so Continuer can switch format without remounting mid-feedback. */
+  const reviewMissedRef = useRef(false);
+
+  const onReviewAnswer = (pair: WordPair, correct: boolean) => {
+    const expected = reviewQueue[reviewIndex];
+    // Only grade the word currently under review — never swap in another lemma.
+    if (expected && pairKey(pair) !== pairKey(expected)) {
+      reviewMissedRef.current = true;
+      return;
+    }
+    if (correct) {
+      reviewMissedRef.current = false;
+      markRight(pair);
+      weakRef.current = weakRef.current.filter((p) => pairKey(p) !== pairKey(pair));
+      return;
+    }
+    reviewMissedRef.current = true;
+    // Hearts already lost in the main path — review never costs another heart.
+    markWrong(pair, { review: true });
+  };
+
+  /** After Continuer on a review item: retry same word with a new format, or go next. */
+  const onReviewItemComplete = () => {
+    const current = reviewQueue[reviewIndex];
+    if (!current) {
+      finishLesson();
+      return;
+    }
+    if (reviewMissedRef.current) {
+      reviewMissedRef.current = false;
+      const key = pairKey(current);
+      // Same word, different game — helps stick the correction.
+      playSound('whoosh');
+      setReviewFails((prev) => ({ ...prev, [key]: (prev[key] ?? 0) + 1 }));
+      setReviewNonce((n) => n + 1);
+      return;
+    }
+    // Cleared this word — advance through the original miss list, skipping already fixed.
+    let nextIdx = reviewIndex + 1;
+    while (
+      nextIdx < reviewQueue.length &&
+      !weakRef.current.some((p) => pairKey(p) === pairKey(reviewQueue[nextIdx]!))
+    ) {
+      nextIdx += 1;
+    }
+    if (nextIdx >= reviewQueue.length) {
+      const leftover = uniqPairs(weakRef.current);
+      if (leftover.length === 0) {
+        finishLesson();
+        return;
+      }
+      // Safety: anything still weak (shouldn't happen often) gets another pass.
+      startReview(leftover);
+      return;
+    }
+    playSound('whoosh');
+    setReviewIndex(nextIdx);
+    setReviewNonce((n) => n + 1);
   };
 
   const onStepScored = (focus: WordPair, score: number, total: number, meta?: GameCompleteMeta) => {
@@ -278,7 +411,8 @@ export function EnglishLessonPlay({
     );
   }
 
-  if (!canPlayUniverse() && phase !== 'done') {
+  /* Review is practice: never block it when hearts are empty (no second penalty). */
+  if (!canPlayUniverse() && phase === 'play') {
     return (
       <div className="english-play english-play--game">
         <UniverseOutOfHearts locale={locale} onBack={onExit} />
@@ -287,9 +421,21 @@ export function EnglishLessonPlay({
   }
 
   if (phase === 'done') {
+    const totalEx = Math.max(1, resultStats.total || steps.length);
+    const errors = Math.min(resultStats.errors, totalEx);
+    const ok = Math.max(0, totalEx - errors);
+    const scorePct = Math.round((ok / totalEx) * 100);
+    const band = errors === 0 ? 'great' : scorePct >= 75 ? 'pass' : scorePct >= 50 ? 'close' : 'fail';
+    const noteText =
+      errors === 0
+        ? t('engResultNoteOk', locale).replace('{total}', String(totalEx))
+        : t('engResultNote', locale)
+            .replace('{bad}', String(errors))
+            .replace('{total}', String(totalEx));
+
     return (
       <div className="english-play english-play--game">
-        <div className="english-lesson-done" role="status">
+        <div className={`english-lesson-done english-lesson-done--${band}`} role="status">
           <div className="english-lesson-done-bg" aria-hidden="true">
             <span className="english-lesson-done-orb english-lesson-done-orb--a" />
             <span className="english-lesson-done-orb english-lesson-done-orb--b" />
@@ -297,27 +443,49 @@ export function EnglishLessonPlay({
           </div>
           <div className="english-lesson-done-panel">
             <div className="english-lesson-done-mascot" aria-hidden="true">
-              <ScanPlayMascot expression="celebrating" size={132} idle celebrate preferAsset />
+              <ScanPlayMascot
+                expression={band === 'fail' || band === 'close' ? 'encouraging' : 'celebrating'}
+                size={132}
+                idle
+                celebrate={band === 'great' || band === 'pass'}
+                preferAsset
+              />
             </div>
-            <p className="english-lesson-done-xp">+25 XP</p>
+            <p
+              className={`english-lesson-done-xp${resultStats.xpDelta < 0 ? ' english-lesson-done-xp--loss' : ''}`}
+            >
+              {resultStats.xpDelta > 0 ? '+' : ''}
+              {resultStats.xpDelta} XP
+            </p>
+            {resultStats.bestCombo >= 2 && (
+              <span className="game-hud-chip game-hud-chip--combo english-lesson-done-combo">
+                ×{resultStats.bestCombo}
+              </span>
+            )}
             <h3 className="english-lesson-done-title">{t('engLessonComplete', locale)}</h3>
-            <p className="english-lesson-done-sub">{lesson.title[titleLang]}</p>
+            <div
+              className="english-lesson-done-score-ring"
+              style={{ ['--score-pct' as string]: `${scorePct}%` }}
+            >
+              <div className="english-lesson-done-score-inner">
+                <p className="english-lesson-done-score-text">
+                  <span className="english-lesson-done-score-num">{ok}</span>
+                  <span className="english-lesson-done-score-den">/{totalEx}</span>
+                </p>
+              </div>
+            </div>
+            <p className={`english-lesson-done-note english-lesson-done-note--${band}`}>{noteText}</p>
             {nextLessonId ? (
-              <>
-                {nextLessonTitle ? (
-                  <p className="english-lesson-done-next-label">{nextLessonTitle}</p>
-                ) : null}
-                <button
-                  type="button"
-                  className="btn-primary btn-lg english-lesson-done-cta"
-                  onClick={() => {
-                    playSound('tap');
-                    onPlayNext(nextLessonId);
-                  }}
-                >
-                  {t('engContinueNextLesson', locale)}
-                </button>
-              </>
+              <button
+                type="button"
+                className="btn-primary btn-lg english-lesson-done-cta"
+                onClick={() => {
+                  playSound('tap');
+                  onPlayNext(nextLessonId);
+                }}
+              >
+                {t('engContinueNextLesson', locale)}
+              </button>
             ) : (
               <p className="english-lesson-done-next-label">{t('engPathCaughtUp', locale)}</p>
             )}
@@ -339,13 +507,49 @@ export function EnglishLessonPlay({
 
   const step = steps[stepIndex];
   const totalUnits = steps.length + 1;
-  const progress = gameProgressPct(phase === 'review' ? steps.length : stepIndex, totalUnits);
+  const reviewPair = reviewQueue[reviewIndex];
+  const reviewFailCount = reviewPair ? (reviewFails[pairKey(reviewPair)] ?? 0) : 0;
+  const reviewPool = reviewPair ? uniqPairs([reviewPair, ...pairs]) : pairs;
+  let reviewMode = reviewModeForFails(reviewFailCount);
+  // Listen-pick for THIS word only; otherwise keep drilling with MCQ.
+  if (
+    reviewMode === 'listen' &&
+    reviewPair &&
+    buildListenPickRounds(reviewPool, {
+      maxRounds: 1,
+      answerField: 'term',
+      focusPair: reviewPair,
+    }).length < 1
+  ) {
+    reviewMode = 'quiz';
+  }
+  const progress =
+    phase === 'review'
+      ? gameProgressPct(reviewIndex, Math.max(reviewQueue.length, 1))
+      : gameProgressPct(stepIndex, totalUnits);
   const stepPool = step ? uniqPairs([step.focus, ...pairs]) : pairs;
 
   return (
     <div className="english-play english-play--game">
       {/* One ScanPlay ✕ + one chromatic bar; games are embedded (no second chrome). */}
       <GameHeader locale={locale} onExit={onExit} progress={progress} />
+      {phase === 'review' && reviewPair && (
+        <div className="english-review-banner" role="status">
+          <span className="english-review-banner-icon" aria-hidden="true">
+            !
+          </span>
+          <div className="english-review-banner-text">
+            <strong className="english-review-banner-title">{t('engReviewTitle', locale)}</strong>
+            <span className="english-review-banner-sub">
+              {reviewFailCount > 0
+                ? t('engReviewRetry', locale)
+                : t('engReviewSub', locale)
+                    .replace('{n}', String(reviewQueue.length))
+                    .replace('{i}', String(reviewIndex + 1))}
+            </span>
+          </div>
+        </div>
+      )}
       <Suspense fallback={<div className="screen-loading" aria-busy="true" />}>
         {phase === 'play' && step?.kind === 'listen' && (
           <ListenPickGame
@@ -392,6 +596,7 @@ export function EnglishLessonPlay({
         )}
         {phase === 'play' && step?.kind === 'type' && (
           <TypeGame
+            key={`eng-type-${lessonId}-${stepIndex}`}
             pairs={[step.focus]}
             locale={locale}
             maxItems={1}
@@ -407,7 +612,8 @@ export function EnglishLessonPlay({
         )}
         {phase === 'play' && step?.kind === 'image' && (
           <ImagePickGame
-            pairs={stepPool}
+            /* Focus word first: distractors come from Fluent catalog, not other lesson terms. */
+            pairs={[step.focus]}
             locale={locale}
             maxItems={1}
             embedded
@@ -447,31 +653,54 @@ export function EnglishLessonPlay({
               onExit={onExit}
             />
           )}
-        {phase === 'review' && reviewPairs.length > 0 && (
+        {phase === 'review' && reviewPair && reviewMode === 'type' && (
           <TypeGame
-            pairs={reviewPairs}
+            key={`eng-review-type-${lessonId}-${reviewNonce}`}
+            pairs={[reviewPair]}
             locale={locale}
-            maxItems={reviewPairs.length}
+            maxItems={1}
             embedded
             targetSide="term"
-            onAnswer={(pair, correct) => {
-              if (!correct) {
-                markWrong(pair);
-              } else {
-                markRight(pair);
-                weakRef.current = weakRef.current.filter(
-                  (p) => p.term.toLowerCase() !== pair.term.toLowerCase(),
-                );
-              }
+            onAnswer={onReviewAnswer}
+            onComplete={onReviewItemComplete}
+            onExit={onExit}
+          />
+        )}
+        {phase === 'review' && reviewPair && reviewMode === 'quiz' && (
+          <QuizGame
+            key={`eng-review-quiz-${lessonId}-${reviewNonce}`}
+            pairs={reviewPool}
+            focusPair={reviewPair}
+            locale={locale}
+            maxItems={1}
+            embedded
+            targetSide="term"
+            shuffleSeed={`eng-review-quiz-${lessonId}-${pairKey(reviewPair)}-${reviewNonce}`}
+            onAnswer={onReviewAnswer}
+            onComplete={onReviewItemComplete}
+            onExit={onExit}
+            onNotEnoughPairs={() => {
+              // Not enough distractors → fall through to listen format.
+              setReviewFails((prev) => ({
+                ...prev,
+                [pairKey(reviewPair)]: Math.max(prev[pairKey(reviewPair)] ?? 0, 2),
+              }));
+              setReviewNonce((n) => n + 1);
             }}
-            onComplete={() => {
-              if (weakRef.current.length === 0) {
-                finishLesson();
-                return;
-              }
-              setReviewPairs(uniqPairs(weakRef.current));
-              playSound('wrong');
-            }}
+          />
+        )}
+        {phase === 'review' && reviewPair && reviewMode === 'listen' && (
+          <ListenPickGame
+            key={`eng-review-listen-${lessonId}-${reviewNonce}`}
+            pairs={reviewPool}
+            focusPair={reviewPair}
+            locale={locale}
+            maxItems={1}
+            embedded
+            answerField="term"
+            deckId={`eng-review-listen-${lessonId}-${pairKey(reviewPair)}-${reviewNonce}`}
+            onAnswer={onReviewAnswer}
+            onComplete={onReviewItemComplete}
             onExit={onExit}
           />
         )}

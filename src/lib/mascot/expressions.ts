@@ -1,21 +1,32 @@
 import type { ExpressionConfig, MascotExpression } from './types';
 
-const SMILE: ExpressionConfig['mouth'] = { d: 'M 36 61 Q 50 71 64 61', strokeWidth: 2.5 };
-const BIG_SMILE: ExpressionConfig['mouth'] = { d: 'M 32 58 Q 50 76 68 58', strokeWidth: 2.5 };
-const NEUTRAL: ExpressionConfig['mouth'] = { d: 'M 40 64 L 60 64', strokeWidth: 2.5 };
-const FROWN: ExpressionConfig['mouth'] = { d: 'M 38 67 Q 50 58 62 67', strokeWidth: 2.5 };
-const OPEN: ExpressionConfig['mouth'] = { d: 'M 42 58 Q 50 70 58 58 Q 50 66 42 58 Z', fill: '#1e293b', strokeWidth: 0 };
-const O_MOUTH: ExpressionConfig['mouth'] = { d: 'M 50 64 m -5 0 a 5 6 0 1 0 10 0 a 5 6 0 1 0 -10 0', fill: '#1e293b', strokeWidth: 0 };
-const LAUGH: ExpressionConfig['mouth'] = { d: 'M 34 57 Q 50 78 66 57', strokeWidth: 2.5 };
+/* Mouth above play badge (eyes ~y48, mouth ~y64, play ~y85). */
+const SMILE: ExpressionConfig['mouth'] = { d: 'M 44 62 Q 60 74 76 62', strokeWidth: 3 };
+const BIG_SMILE: ExpressionConfig['mouth'] = { d: 'M 40 60 Q 60 80 80 60', strokeWidth: 3 };
+const NEUTRAL: ExpressionConfig['mouth'] = { d: 'M 48 66 L 72 66', strokeWidth: 3 };
+const FROWN: ExpressionConfig['mouth'] = { d: 'M 46 70 Q 60 60 74 70', strokeWidth: 3 };
+/** Soft encouraging pout for wrong (not a dramatic frown). */
+const SOFT_POUT: ExpressionConfig['mouth'] = { d: 'M 50 68 Q 60 72 70 68', strokeWidth: 2.6 };
+/** Open smile for correct (mascotReactCorrect → happy). */
+const OPEN_SMILE: ExpressionConfig['mouth'] = {
+  d: 'M 46 62 Q 60 78 74 62 Q 60 72 46 62 Z',
+  fill: '#0f172a',
+  strokeWidth: 0,
+};
+const OPEN: ExpressionConfig['mouth'] = { d: 'M 50 60 Q 60 76 70 60 Q 60 70 50 60 Z', fill: '#0f172a', strokeWidth: 0 };
+const O_MOUTH: ExpressionConfig['mouth'] = { d: 'M 60 66 m -5 0 a 5 6 0 1 0 10 0 a 5 6 0 1 0 -10 0', fill: '#0f172a', strokeWidth: 0 };
+const LAUGH: ExpressionConfig['mouth'] = { d: 'M 42 58 Q 60 82 78 58', strokeWidth: 3 };
 
 export const EXPRESSION_CONFIG: Record<MascotExpression, ExpressionConfig> = {
-  happy: { mouth: SMILE, eyes: 'open', armPose: 'wave', fx: 'none' },
+  /* correct reaction → happy: open smile + content eyes; arms raised via CSS anim */
+  happy: { mouth: OPEN_SMILE, eyes: 'happy-closed', armPose: 'neutral', fx: 'none' },
   excited: { mouth: OPEN, eyes: 'wide', armPose: 'up', fx: 'confetti', tilt: -4 },
   proud: { mouth: SMILE, eyes: 'happy-closed', armPose: 'hips', fx: 'sparkle' },
   surprised: { mouth: O_MOUTH, eyes: 'wide', brows: 'raised', fx: 'none', tilt: 2 },
   thinking: { mouth: NEUTRAL, eyes: 'open', armPose: 'chin', fx: 'question', tilt: 5 },
   confused: { mouth: FROWN, eyes: 'open', brows: 'worried', fx: 'question', tilt: -6 },
-  content: { mouth: SMILE, eyes: 'happy-closed', armPose: 'neutral', fx: 'none' },
+  /* Idle SVG uses content with open eyes; happy-closed reserved for correct. */
+  content: { mouth: SMILE, eyes: 'open', armPose: 'neutral', fx: 'none' },
   determined: { mouth: NEUTRAL, eyes: 'open', brows: 'angry', armPose: 'fists', fx: 'none' },
   tired: { mouth: FROWN, eyes: 'tired', armPose: 'neutral', fx: 'none', tilt: 8 },
   sad: { mouth: FROWN, eyes: 'open', brows: 'worried', armPose: 'neutral', fx: 'none', tilt: 5 },
@@ -35,7 +46,8 @@ export const EXPRESSION_CONFIG: Record<MascotExpression, ExpressionConfig> = {
   neutral: { mouth: NEUTRAL, eyes: 'open', armPose: 'neutral', fx: 'none' },
   curious: { mouth: NEUTRAL, eyes: 'open', armPose: 'chin', fx: 'question', tilt: -4 },
   focused: { mouth: NEUTRAL, eyes: 'open', brows: 'none', armPose: 'neutral', fx: 'glow' },
-  wrong: { mouth: FROWN, eyes: 'squint', armPose: 'neutral', fx: 'none', tilt: 4 },
+  /* wrong reaction: soft pout, raised brows; tilt via CSS anim (not container tilt) */
+  wrong: { mouth: SOFT_POUT, eyes: 'open', brows: 'worried', armPose: 'neutral', fx: 'none' },
   combo: { mouth: BIG_SMILE, eyes: 'wide', armPose: 'up', fx: 'confetti' },
   levelup: { mouth: OPEN, eyes: 'wide', armPose: 'up', fx: 'confetti', tilt: -10 },
   chest: { mouth: SMILE, eyes: 'wide', armPose: 'neutral', prop: 'chest', fx: 'sparkle' },

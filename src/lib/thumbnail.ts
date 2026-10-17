@@ -34,8 +34,9 @@ function resizeImageToDataUrl(file: File, maxSize: number, quality: number): Pro
   });
 }
 
-export function createThumbnail(file: File, maxSize = 80): Promise<string> {
-  return resizeImageToDataUrl(file, maxSize, 0.7);
+/** History / deck thumbs: sharp enough for 4:3 cards, still light in localStorage. */
+export function createThumbnail(file: File, maxSize = 280): Promise<string> {
+  return resizeImageToDataUrl(file, maxSize, 0.84);
 }
 
 /** Profile photo: accepts large files, stores a small optimized JPEG (~20–80 Ko). */

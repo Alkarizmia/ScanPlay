@@ -58,7 +58,14 @@ export function AnswerFeedback({
           )}
           {note != null && <span className="answer-feedback-note">{note}</span>}
         </div>
-        {xp > 0 && <span className="answer-feedback-xp">+{xp} XP</span>}
+        {xp !== 0 && (
+          <span
+            className={`answer-feedback-xp${xp < 0 ? ' answer-feedback-xp--loss' : ' answer-feedback-xp--gain'}`}
+          >
+            {xp > 0 ? '+' : ''}
+            {xp} XP
+          </span>
+        )}
       </div>
 
       {(onContinue || onReport) && (

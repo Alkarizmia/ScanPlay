@@ -15,6 +15,7 @@ interface MascotCornerProps {
 const DISMISS_DEFAULT_MS = 2400;
 const DISMISS_STREAK_MS = 3200;
 const DISMISS_BIG_MS = 2800;
+const EXIT_MS = 150;
 
 function dismissMsFor(type: MascotReactionType): number {
   if (type === 'streak') return DISMISS_STREAK_MS;
@@ -24,38 +25,60 @@ function dismissMsFor(type: MascotReactionType): number {
 
 export function MascotCorner({ locale, enabled = true }: MascotCornerProps) {
   const [visible, setVisible] = useState(false);
+  const [leaving, setLeaving] = useState(false);
   const [expression, setExpression] = useState<MascotExpression>('happy');
   const [reactionType, setReactionType] = useState<MascotReactionType | null>(null);
   const [message, setMessage] = useState('');
   const [burstKey, setBurstKey] = useState(0);
-  const timerRef = useRef<number | null>(null);
+  const dismissTimerRef = useRef<number | null>(null);
+  const exitTimerRef = useRef<number | null>(null);
   const level = getLevel(getGamification().xp);
 
-  const dismiss = useCallback(() => {
-    setVisible(false);
-    if (timerRef.current) window.clearTimeout(timerRef.current);
-    timerRef.current = null;
+  const clearTimers = useCallback(() => {
+    if (dismissTimerRef.current != null) {
+      window.clearTimeout(dismissTimerRef.current);
+      dismissTimerRef.current = null;
+    }
+    if (exitTimerRef.current != null) {
+      window.clearTimeout(exitTimerRef.current);
+      exitTimerRef.current = null;
+    }
   }, []);
+
+  const finishHide = useCallback(() => {
+    setVisible(false);
+    setLeaving(false);
+    exitTimerRef.current = null;
+  }, []);
+
+  const beginExit = useCallback(() => {
+    setLeaving(true);
+    if (exitTimerRef.current != null) window.clearTimeout(exitTimerRef.current);
+    exitTimerRef.current = window.setTimeout(finishHide, EXIT_MS);
+  }, [finishHide]);
 
   const show = useCallback(
     (expr: MascotExpression, msg: string, type: MascotReactionType) => {
       if (!enabled) return;
+      clearTimers();
+      setLeaving(false);
       setExpression(expr);
       setReactionType(type);
       setMessage(msg);
       setBurstKey((k) => k + 1);
       setVisible(true);
-      if (timerRef.current) window.clearTimeout(timerRef.current);
-      timerRef.current = window.setTimeout(dismiss, dismissMsFor(type));
+      dismissTimerRef.current = window.setTimeout(beginExit, dismissMsFor(type));
     },
-    [dismiss, enabled],
+    [beginExit, clearTimers, enabled],
   );
 
   useEffect(() => {
     if (!enabled) {
-      dismiss();
+      clearTimers();
+      setVisible(false);
+      setLeaving(false);
     }
-  }, [dismiss, enabled]);
+  }, [clearTimers, enabled]);
 
   useEffect(() => {
     if (!enabled) return;
@@ -79,16 +102,22 @@ export function MascotCorner({ locale, enabled = true }: MascotCornerProps) {
 
   useEffect(
     () => () => {
-      if (timerRef.current) window.clearTimeout(timerRef.current);
+      clearTimers();
     },
-    [],
+    [clearTimers],
   );
 
   if (!enabled || !visible) return null;
 
   return (
     <div
-      className={`mascot-corner${reactionType ? ` mascot-corner--${reactionType}` : ''}`}
+      className={[
+        'mascot-corner',
+        leaving ? 'mascot-corner--out' : 'mascot-corner--in',
+        reactionType ? `mascot-corner--${reactionType}` : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
       aria-live="polite"
     >
       <div className="mascot-corner-bubble">

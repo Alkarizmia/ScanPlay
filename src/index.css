@@ -833,6 +833,7 @@ body {
 }
 .game-header {
   display: flex;
+  flex-direction: row;
   align-items: center;
   gap: 12px;
   padding: 4px 0 12px;
@@ -840,6 +841,9 @@ body {
   position: relative;
   z-index: 8;
   background: var(--bg);
+  width: 100%;
+  box-sizing: border-box;
+  flex-shrink: 0;
 }
 .game-header-exit {
   flex-shrink: 0;
@@ -988,9 +992,6 @@ body {
 }
 .game-body::-webkit-scrollbar {
   display: none;
-}
-.game-header {
-  flex-shrink: 0;
 }
 .game-actions {
   display: flex;
@@ -2333,10 +2334,7 @@ html[data-device="desktop"] .flashcard.flipped .back {
   letter-spacing: -0.02em;
 }
 .history-hero-sub {
-  margin: 6px 0 0;
-  font-size: 0.88rem;
-  color: var(--text-muted);
-  line-height: 1.45;
+  display: none;
 }
 .history-stats-row {
   display: flex;
@@ -2467,20 +2465,40 @@ html[data-device="desktop"] .flashcard.flipped .back {
 
 .history-grid.history-grid--decks {
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  padding: 8px 6px 4px;
+  box-sizing: border-box;
 }
 
 .history-grid--flat {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 .history-grid-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
   border-radius: 18px;
   box-shadow: var(--shadow);
-  overflow: hidden;
+  overflow: visible;
   min-width: 0;
   width: 100%;
+  border-bottom: 3px solid color-mix(in srgb, var(--text) 8%, var(--surface-border, #e2e8f0));
+  animation: history-card-in 0.35s ease both;
+}
+@keyframes history-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .history-grid-card {
+    animation: none;
+  }
 }
 .history-grid-card--locked {
   opacity: 1;
@@ -2491,22 +2509,128 @@ html[data-device="desktop"] .flashcard.flipped .back {
   inset: 0;
   background: linear-gradient(180deg, rgba(15, 23, 42, 0.08), rgba(15, 23, 42, 0.28));
   pointer-events: none;
+  border-radius: 16px 16px 0 0;
 }
 .history-grid-visual {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 10;
+  aspect-ratio: 4 / 3;
   overflow: hidden;
   flex-shrink: 0;
   background: #0f172a;
+  border-radius: 16px 16px 0 0;
+}
+.history-subject-art {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+}
+.history-subject-art::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  opacity: 0.18;
+  background-image:
+    radial-gradient(circle at 20% 30%, var(--history-art-accent, #fff) 0 2px, transparent 3px),
+    radial-gradient(circle at 70% 60%, var(--history-art-accent, #fff) 0 1.5px, transparent 2.5px),
+    radial-gradient(circle at 40% 80%, var(--history-art-accent, #fff) 0 2px, transparent 3px);
+  background-size: 48px 48px;
+  pointer-events: none;
+}
+.history-subject-art--diagonal::before {
+  background-image: repeating-linear-gradient(
+    -32deg,
+    transparent 0 10px,
+    color-mix(in srgb, var(--history-art-accent, #fff) 35%, transparent) 10px 12px
+  );
+  background-size: auto;
+  opacity: 0.22;
+}
+.history-subject-art--waves::before {
+  background-image: repeating-radial-gradient(
+    circle at 0 50%,
+    transparent 0 14px,
+    color-mix(in srgb, var(--history-art-accent, #fff) 30%, transparent) 14px 16px
+  );
+  background-size: 100% 40px;
+  opacity: 0.2;
+}
+.history-subject-art--grid::before {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--history-art-accent, #fff) 28%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--history-art-accent, #fff) 28%, transparent) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.2;
+}
+.history-subject-art--rings::before {
+  background-image: repeating-radial-gradient(
+    circle at 70% 30%,
+    transparent 0 16px,
+    color-mix(in srgb, var(--history-art-accent, #fff) 32%, transparent) 16px 18px
+  );
+  opacity: 0.22;
+}
+.history-subject-art__emoji {
+  position: relative;
+  z-index: 1;
+  font-size: clamp(2rem, 8vw, 2.75rem);
+  line-height: 1;
+  filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.28));
+  transform: translateY(-2px);
+}
+.history-subject-art__play {
+  display: none;
+}
+.history-subject-art--exam .history-subject-art__emoji {
+  font-size: clamp(1.8rem, 7vw, 2.4rem);
+}
+.history-thumb-delete {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  z-index: 4;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  color: #b91c1c;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.22);
+  border-bottom: 2px solid #fecaca;
+}
+.history-thumb-delete:active {
+  transform: translateY(1px) scale(0.96);
+}
+.history-thumb-delete span {
+  margin-top: -1px;
 }
 .history-grid-thumb {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
+  border-radius: inherit;
   image-rendering: auto;
+  background: #0f172a;
+}
+.history-grid-thumb--pixel {
+  /* Légère adoucissement (plus net que nearest-neighbor) */
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  transform: translateZ(0);
 }
 .history-grid-thumb--fallback {
   display: flex;
@@ -2516,21 +2640,7 @@ html[data-device="desktop"] .flashcard.flipped .back {
   font-size: 2rem;
 }
 .history-score-badge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 6px 10px;
-  border-radius: 99px;
-  background: rgba(255, 255, 255, 0.92);
-  color: #111827;
-  font-size: 0.72rem;
-  font-weight: 900;
-  letter-spacing: 0.01em;
-  white-space: nowrap;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.12);
-}
-.history-score-badge--fail {
-  color: #b91c1c;
+  display: none;
 }
 .history-subject-badge {
   position: absolute;
@@ -2543,13 +2653,25 @@ html[data-device="desktop"] .flashcard.flipped .back {
   font-size: 0.68rem;
   font-weight: 800;
   backdrop-filter: blur(6px);
+  z-index: 2;
 }
 .history-grid-body {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  padding: 12px 12px 10px;
+  padding: 12px 12px 12px;
   flex: 1;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+}
+.history-grid-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.history-grid-synth {
+  margin-top: 2px;
 }
 .history-grid-title {
   margin: 0;
@@ -2573,7 +2695,7 @@ html[data-device="desktop"] .flashcard.flipped .back {
   color: #d97706;
 }
 .history-review-btn {
-  margin-top: auto;
+  margin-top: 4px;
   width: 100%;
   display: inline-flex;
   align-items: center;
@@ -2606,50 +2728,15 @@ html[data-device="desktop"] .flashcard.flipped .back {
   height: 16px;
 }
 .history-rescan-btn {
-  width: 100%;
-  margin-top: 6px;
-  padding: 8px 10px;
-  border: 1px solid color-mix(in srgb, var(--accent) 35%, var(--surface-border, #e2e8f0));
-  border-radius: 12px;
-  background: color-mix(in srgb, var(--accent) 10%, var(--bg-elevated));
-  color: var(--accent-deep, #15803d);
-  font-family: inherit;
-  font-size: 0.75rem;
-  font-weight: 700;
-  line-height: 1.25;
-  cursor: pointer;
-  text-align: center;
+  display: none;
 }
-.history-rescan-btn:active {
-  transform: translateY(1px);
-}
-.history-path-progress {
-  margin-top: 10px;
-}
-.history-path-progress-track {
-  height: 6px;
-  border-radius: 99px;
-  background: var(--bg-soft);
-  overflow: hidden;
-}
+.history-path-progress,
+.history-path-progress-track,
 .history-path-progress-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, #34d399, var(--accent));
-  transition: width 0.35s ease;
-  min-width: 0;
-}
-.history-path-progress-fill--complete {
-  background: linear-gradient(90deg, #22c55e, #16a34a);
+  display: none;
 }
 .history-grid-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  padding: 8px 10px 10px;
-  border-top: 1px solid var(--border);
-  background: var(--bg-soft);
+  display: none;
 }
 .history-load-more {
   width: 100%;
@@ -2734,15 +2821,23 @@ html[data-device="desktop"] .flashcard.flipped .back {
   padding: 4px 8px;
 }
 
-[data-device='mobile'] .history-grid-footer .synthesis-actions--compact {
+[data-device='mobile'] .history-grid-synth .synthesis-actions--compact {
   width: 100%;
 }
 
-[data-device='mobile'] .history-grid-footer .synthesis-actions--compact .synthesis-action-btn {
+[data-device='mobile'] .history-grid-synth .synthesis-actions--compact .synthesis-action-btn {
   width: 100%;
   justify-content: center;
   font-size: 0.66rem;
   padding: 6px 8px;
+}
+
+[data-device='mobile'] .history-thumb-delete {
+  width: 26px;
+  height: 26px;
+  top: -6px;
+  right: -6px;
+  font-size: 1.05rem;
 }
 
 [data-device='mobile'] .history-grid-card {
@@ -2860,12 +2955,7 @@ html[data-device="desktop"] .flashcard.flipped .back {
   background: rgba(100, 116, 139, 0.15);
 }
 .history-replay-hint {
-  font-size: 0.82rem;
-  color: var(--text-muted);
-  margin: 0 0 12px;
-  padding: 10px 12px;
-  background: var(--bg-soft);
-  border-radius: var(--radius);
+  display: none;
 }
 .history-exam-duration {
   display: flex;
@@ -4283,6 +4373,14 @@ html[data-device="desktop"] .flashcard.flipped .back {
 .synthesis-actions--compact .synthesis-action-btn {
   font-size: 0.72rem;
   padding: 6px 10px;
+  color: #14532d;
+  border-color: color-mix(in srgb, var(--sp-green-deep, #15803d) 55%, var(--surface-border, #e2e8f0));
+  background: color-mix(in srgb, var(--sp-green, #6bcf2e) 14%, var(--bg-card, #fff));
+  box-shadow: none;
+}
+.synthesis-actions--compact .sp-icon--synthesis-spark {
+  color: #16a34a;
+  flex-shrink: 0;
 }
 .synthesis-action-btn:disabled {
   opacity: 0.65;
@@ -5925,20 +6023,23 @@ button.idle-help-chip--skip:active {
 }
 .choice-list {
   overflow: visible;
-  padding-inline: 4px;
+  /* Room so nudge highlight never kisses the screen edge */
+  padding-inline: 6px;
 }
 .choice-card--nudge,
 .translate-tile--nudge {
   position: relative;
   z-index: 1;
+  /* Inset ring only — outer outline/scale gets clipped by overflow:hidden ancestors */
   border-color: var(--sp-green, #58cc02) !important;
-  outline: 2px solid color-mix(in srgb, var(--sp-green, #58cc02) 70%, transparent);
-  outline-offset: 2px;
-  animation: idle-help-pulse 0.85s ease-in-out infinite;
-  box-shadow: none;
+  outline: none;
+  background: color-mix(in srgb, var(--sp-green, #58cc02) 12%, var(--bg-card, #fff));
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sp-green, #58cc02) 65%, transparent);
+  animation: idle-help-nudge-pulse 0.85s ease-in-out infinite;
 }
 .translate-bank {
   overflow: visible;
+  padding-inline: 4px;
 }
 @keyframes idle-help-spin {
   to { transform: rotate(360deg); }
@@ -5955,6 +6056,18 @@ button.idle-help-chip--skip:active {
 @keyframes idle-help-pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.02); }
+}
+/* No scale — keeps the green hint fully inside the card bounds */
+@keyframes idle-help-nudge-pulse {
+  0%,
+  100% {
+    background: color-mix(in srgb, var(--sp-green, #58cc02) 10%, var(--bg-card, #fff));
+    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--sp-green, #58cc02) 55%, transparent);
+  }
+  50% {
+    background: color-mix(in srgb, var(--sp-green, #58cc02) 18%, var(--bg-card, #fff));
+    box-shadow: inset 0 0 0 3px color-mix(in srgb, var(--sp-green, #58cc02) 75%, transparent);
+  }
 }
 
 .type-game-input {
@@ -12265,11 +12378,59 @@ button.idle-help-chip--skip:active {
 .english-play--game {
   display: flex;
   flex-direction: column;
-  padding: 0;
+  /* Side inset for X, progress bar and choices (Univers play is otherwise edge-to-edge). */
+  padding: 8px max(16px, env(safe-area-inset-right, 0px)) max(8px, env(safe-area-inset-bottom, 0px))
+    max(16px, env(safe-area-inset-left, 0px));
   gap: 0;
   min-height: 0;
   flex: 1;
   overflow: hidden;
+  box-sizing: border-box;
+}
+/* Full-bleed only for the lesson-complete celebration. */
+.english-play--game:has(.english-lesson-done) {
+  padding: 0;
+}
+.english-review-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+  margin: 4px 0 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1.5px solid color-mix(in srgb, #ef4444 45%, transparent);
+  background: color-mix(in srgb, #ef4444 10%, var(--bg-card, #fff));
+}
+.english-review-banner-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #fff;
+  background: #ef4444;
+  box-shadow: 0 2px 0 #b91c1c;
+}
+.english-review-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.english-review-banner-title {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: #b91c1c;
+  letter-spacing: -0.01em;
+}
+.english-review-banner-sub {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: color-mix(in srgb, #b91c1c 70%, var(--text-muted, #64748b));
 }
 .english-play-xp {
   margin: 0;
@@ -12460,6 +12621,11 @@ button.idle-help-chip--skip:active {
 .english-hub-lesson.active {
   border-color: var(--sp-green, var(--accent));
   background: color-mix(in srgb, var(--sp-green, var(--accent)) 14%, transparent);
+}
+.english-level-chip:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--bg-soft, var(--surface));
 }
 .english-goal-list,
 .english-test-choices,
@@ -13407,9 +13573,10 @@ button.idle-help-chip--skip:active {
   overflow: hidden;
 }
 .pix-universe-screen--play .driving-play {
-  padding-inline: 12px;
+  padding-inline: max(16px, env(safe-area-inset-left, 0px)) max(16px, env(safe-area-inset-right, 0px));
   flex: 1;
   min-height: 0;
+  box-sizing: border-box;
 }
 .pix-universe-screen--play .driving-play--end {
   padding-inline: 0 !important;
@@ -13598,6 +13765,18 @@ button.idle-help-chip--skip:active {
   letter-spacing: -0.02em;
   text-shadow: 0 2px 0 rgba(134, 239, 172, 0.8);
 }
+.english-lesson-done-combo {
+  margin: -4px 0 2px;
+  font-size: 0.95rem;
+  padding: 6px 14px;
+}
+.english-lesson-done-xp--loss {
+  color: #dc2626;
+  text-shadow: 0 2px 0 rgba(254, 202, 202, 0.85);
+}
+.english-lesson-done--fail .english-lesson-done-xp--loss {
+  color: #b91c1c;
+}
 .english-lesson-done-title {
   margin: 0;
   font-size: 1.55rem;
@@ -13612,6 +13791,110 @@ button.idle-help-chip--skip:active {
   font-weight: 700;
   color: color-mix(in srgb, #14532d 70%, #64748b);
   line-height: 1.35;
+}
+.english-lesson-done-score-ring {
+  --score-pct: 100;
+  width: 118px;
+  height: 118px;
+  margin: 6px 0 2px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: conic-gradient(
+    #22c55e calc(var(--score-pct) * 1%),
+    rgba(21, 128, 61, 0.15) 0
+  );
+  box-shadow: inset 0 0 0 1px rgba(21, 128, 61, 0.12);
+}
+.english-lesson-done--close .english-lesson-done-score-ring {
+  background: conic-gradient(
+    #f59e0b calc(var(--score-pct) * 1%),
+    rgba(146, 64, 14, 0.12) 0
+  );
+}
+.english-lesson-done--fail .english-lesson-done-score-ring {
+  background: conic-gradient(
+    #ef4444 calc(var(--score-pct) * 1%),
+    rgba(127, 29, 29, 0.12) 0
+  );
+}
+.english-lesson-done--great .english-lesson-done-score-ring {
+  background: conic-gradient(
+    #16a34a calc(var(--score-pct) * 1%),
+    rgba(21, 128, 61, 0.12) 0
+  );
+}
+.english-lesson-done-score-inner {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+}
+.english-lesson-done-score-text {
+  margin: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 1px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  color: #14532d;
+}
+.english-lesson-done-score-num {
+  font-size: 1.85rem;
+  line-height: 1;
+}
+.english-lesson-done-score-den {
+  font-size: 1.05rem;
+  font-weight: 800;
+  opacity: 0.65;
+}
+.english-lesson-done-note {
+  margin: 2px 0 4px;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.35;
+}
+.english-lesson-done-note--great,
+.english-lesson-done-note--pass {
+  color: #15803d;
+}
+.english-lesson-done-note--close {
+  color: #b45309;
+}
+.english-lesson-done-note--fail {
+  color: #b91c1c;
+}
+.english-lesson-done--fail {
+  background: linear-gradient(165deg, #fef2f2 0%, #fecaca 45%, #fca5a5 100%);
+}
+.english-lesson-done--fail .english-lesson-done-bg {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 18%, rgba(252, 165, 165, 0.55), transparent 55%),
+    radial-gradient(ellipse 70% 50% at 10% 80%, rgba(248, 113, 113, 0.3), transparent 50%),
+    linear-gradient(165deg, #fef2f2 0%, #fecaca 45%, #fca5a5 100%);
+}
+.english-lesson-done--fail .english-lesson-done-title,
+.english-lesson-done--fail .english-lesson-done-score-text {
+  color: #7f1d1d;
+}
+.english-lesson-done--fail .english-lesson-done-xp {
+  color: #dc2626;
+  text-shadow: 0 2px 0 rgba(254, 202, 202, 0.85);
+}
+.english-lesson-done--close {
+  background: linear-gradient(165deg, #fffbeb 0%, #fde68a 45%, #fcd34d 100%);
+}
+.english-lesson-done--close .english-lesson-done-bg {
+  background:
+    radial-gradient(ellipse 90% 70% at 50% 18%, rgba(253, 224, 71, 0.5), transparent 55%),
+    linear-gradient(165deg, #fffbeb 0%, #fde68a 45%, #fcd34d 100%);
+}
+.english-lesson-done--close .english-lesson-done-title,
+.english-lesson-done--close .english-lesson-done-score-text {
+  color: #78350f;
 }
 .english-lesson-done-next-label {
   margin: 4px 0 2px;

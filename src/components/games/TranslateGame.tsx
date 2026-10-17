@@ -1,21 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { HearButton } from '../HearButton';
 import { ScanPlayMascot } from '../mascot/ScanPlayMascot';
-import { HintIcon } from '../icons/HintIcon';
 import { playSound } from '../../lib/sounds';
 import { registerAnswer } from '../../lib/gameFeedback';
 import { markCorrected, recordMistake } from '../../lib/mistakes';
 import { t } from '../../lib/i18n';
 import { coercePlayablePairs } from '../../lib/vocabulary';
 import {
-  applyTranslateHint,
   buildLocalTranslateRounds,
   gradeTranslateAnswer,
   highlightFocusParts,
   type TranslateGrade,
   type TranslateRound,
 } from '../../lib/translateRounds';
-import { consumeTranslateHint, getTranslateHints } from '../../lib/wallet';
 import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import type { Locale, WordPair } from '../../types';
 import { gameProgressPct } from './GameHeader';
@@ -64,8 +61,6 @@ export function TranslateGame({
   const [picked, setPicked] = useState<string[]>([]);
   const [feedback, setFeedback] = useState<Feedback>('idle');
   const [lastXp, setLastXp] = useState(0);
-  const [hintTick, setHintTick] = useState(0);
-  const [hintMsg, setHintMsg] = useState<string | null>(null);
 
   useEffect(() => {
     setRounds(buildLocalTranslateRounds(pool, want));
@@ -88,7 +83,6 @@ export function TranslateGame({
     setPicked([]);
     setFeedback('idle');
     setLastXp(0);
-    setHintMsg(null);
     if (index + 1 >= rounds.length) finish(nextScore);
     else setIndex((i) => i + 1);
   };
@@ -134,7 +128,12 @@ export function TranslateGame({
       setFeedback('ok');
       const nextScore = score + 1;
       setScore(nextScore);
-      setLastXp(registerAnswer('correct', { pathStep: stepIndex != null }));
+      setLastXp(
+        registerAnswer('correct', {
+          pathStep: stepIndex != null,
+          usedHint: idleHelped,
+        }),
+      );
       if (poolPair) markCorrected(poolPair);
       window.setTimeout(() => goNext(nextScore), 850);
       return;
@@ -146,24 +145,8 @@ export function TranslateGame({
       return;
     }
     setFeedback('fail');
-    registerAnswer('wrong', { pathStep: stepIndex != null });
+    setLastXp(registerAnswer('wrong', { pathStep: stepIndex != null }));
     if (poolPair) recordMistake(poolPair, 'translate', deckId ?? undefined, stepIndex ?? undefined);
-  };
-
-  const useHint = () => {
-    if (!round || examMode || feedback === 'ok' || feedback === 'fail') return;
-    const next = applyTranslateHint(picked, round);
-    const unchanged = next.length === picked.length && next.every((id, i) => id === picked[i]);
-    if (unchanged) return;
-    if (!consumeTranslateHint()) {
-      setHintMsg(t('translateNoHints', locale));
-      return;
-    }
-    playSound('tap');
-    setHintMsg(null);
-    setPicked(next);
-    setFeedback('idle');
-    setHintTick((n) => n + 1);
   };
 
   const emptySkipRef = useRef(false);
@@ -182,8 +165,6 @@ export function TranslateGame({
   }
 
   const sourceParts = round ? highlightFocusParts(round.source, round.focusWord) : [];
-  const hintsLeft = getTranslateHints();
-  void hintTick;
 
   return (
     <LessonGameShell
@@ -197,21 +178,7 @@ export function TranslateGame({
       <main className="game-main translate-main scroll-natural">
         <div className="translate-toolbar">
           <p className="game-instruction">{t('translateInstruction', locale)}</p>
-          {!examMode && (
-            <button
-              type="button"
-              className={`translate-hint-btn${hintsLeft <= 0 ? ' translate-hint-btn--empty' : ''}`}
-              onClick={useHint}
-              disabled={feedback === 'ok' || feedback === 'fail'}
-              aria-label={t('translateHint', locale)}
-            >
-              <HintIcon size={20} />
-              <span>{t('translateHint', locale)}</span>
-              <span className="translate-hint-count">{hintsLeft}</span>
-            </button>
-          )}
         </div>
-        {hintMsg && <p className="translate-hint-msg">{hintMsg}</p>}
 
         {idleEnabled && (
           <IdleHelpChip
@@ -233,7 +200,7 @@ export function TranslateGame({
             {round ? (
               <HearButton
                 text={round.source}
-                lang={round.termLang}
+                lang={round.sourceLang ?? round.termLang}
                 locale={locale}
                 iconOnly
                 autoPlay
@@ -312,7 +279,14 @@ export function TranslateGame({
         ) : null}
         {feedback === 'fail' ? (
           <div>
-            <p className="translate-banner-text">{t('translateFail', locale)}</p>
+            <p className="translate-banner-text">
+              {t('translateFail', locale)}
+              {lastXp !== 0 && (
+                <span className="answer-feedback-xp answer-feedback-xp--loss">
+                  {lastXp} XP
+                </span>
+              )}
+            </p>
             <p className="translate-correct">
               {t('translateCorrectShow', locale)} {round?.expected.join(' ')}
             </p>
@@ -321,7 +295,16 @@ export function TranslateGame({
         {feedback === 'ok' ? (
           <p className="translate-banner-text">
             {t('translateOk', locale)}
-            {lastXp > 0 && <span className="answer-feedback-xp">+{lastXp} XP</span>}
+            {lastXp !== 0 && (
+              <span
+                className={`answer-feedback-xp${
+                  lastXp < 0 ? ' answer-feedback-xp--loss' : ' answer-feedback-xp--gain'
+                }`}
+              >
+                {lastXp > 0 ? '+' : ''}
+                {lastXp} XP
+              </span>
+            )}
           </p>
         ) : null}
 

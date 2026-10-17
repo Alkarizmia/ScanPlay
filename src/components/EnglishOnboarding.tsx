@@ -6,7 +6,11 @@ import {
   type EnglishGoal,
   type EnglishNativeLang,
 } from '../lib/englishCurriculum';
-import { estimateLevelFromPlacement, saveUniverseEnglishOnboarding } from '../lib/universeEnglish';
+import {
+  clampLevelToGoal,
+  estimateLevelFromPlacement,
+  saveUniverseEnglishOnboarding,
+} from '../lib/universeEnglish';
 import { playSound } from '../lib/sounds';
 import { t } from '../lib/i18n';
 import type { Locale } from '../types';
@@ -173,6 +177,8 @@ export function EnglishOnboarding({ locale, onDone }: EnglishOnboardingProps) {
                   setGoal(g);
                   if (testLog.length > 0) {
                     setLevel(estimateLevelFromPlacement(testLog, g));
+                  } else {
+                    setLevel((lv) => clampLevelToGoal(g, lv));
                   }
                 }}
               >

@@ -209,6 +209,82 @@ export function addBonusXp(amount: number): void {
   save(state);
 }
 
+/**
+ * English Universe lesson XP from accuracy + account level.
+ * Early levels stay encouraging (even a weak run grants a little XP).
+ * Higher levels raise the stakes: perfect pays more, a flop can lose XP.
+ *
+ * Anchors (approx.):
+ * - Level 1:  0/10 → +5,  10/10 → +28
+ * - Level 100: 0/10 → -50, 10/10 → +100
+ */
+export function computeEnglishLessonXp(input: {
+  correct: number;
+  total: number;
+  level: number;
+}): number {
+  const total = Math.max(1, input.total);
+  const correct = Math.max(0, Math.min(total, input.correct));
+  const ratio = correct / total;
+  const level = Math.max(1, input.level);
+  /** Progress 0..1 from L1 → L100, then soft-caps. */
+  const t = Math.min(1, (level - 1) / 99);
+
+  const minXp = Math.round(5 + t * (-55)); // +5 → -50
+  const maxXp = Math.round(28 + t * 72); // +28 → +100
+
+  // Reward perfection a bit more than a linear midpoint.
+  const factor = Math.pow(ratio, 1.2);
+  let xp = Math.round(minXp + (maxXp - minXp) * factor);
+
+  // Soft floor so new players never feel punished.
+  if (level <= 3) xp = Math.max(3, xp);
+  else if (level <= 8) xp = Math.max(1, xp);
+
+  return xp;
+}
+
+export type ApplyXpDeltaResult = {
+  /** Delta actually applied (may be clamped). */
+  applied: number;
+  xp: number;
+  levelBefore: number;
+  levelAfter: number;
+  leveledUp: boolean;
+  leveledDown: boolean;
+};
+
+/**
+ * Apply a signed XP delta. Total XP never goes below 0.
+ * Losses are capped to ~35% of the current level span so one flop
+ * cannot wipe an entire level.
+ */
+export function applyXpDelta(delta: number): ApplyXpDeltaResult {
+  const state = load();
+  const levelBefore = getLevel(state.xp);
+  let nextDelta = Math.round(delta);
+
+  if (nextDelta < 0) {
+    const { needed } = xpForNextLevel(state.xp);
+    const maxLoss = Math.max(8, Math.floor(needed * 0.35));
+    nextDelta = Math.max(nextDelta, -maxLoss);
+  }
+
+  const nextXp = Math.max(0, state.xp + nextDelta);
+  const applied = nextXp - state.xp;
+  state.xp = nextXp;
+  save(state);
+  const levelAfter = getLevel(state.xp);
+  return {
+    applied,
+    xp: state.xp,
+    levelBefore,
+    levelAfter,
+    leveledUp: levelAfter > levelBefore,
+    leveledDown: levelAfter < levelBefore,
+  };
+}
+
 export function restoreStreakValue(streak: number): void {
   const state = load();
   state.streak = Math.max(1, streak);

@@ -1,5 +1,5 @@
 import type { WordPair } from '../types';
-import { CARTOON_ART, lookupCartoonArt, type CartoonArt } from './cartoonArt';
+import { FLUENT_EMOJI_ART, lookupFluentEmoji, type FluentEmojiArt } from './fluentEmojiArt';
 import { seededShuffle } from './seededRandom';
 import { coercePlayablePairs } from './vocabulary';
 
@@ -7,7 +7,7 @@ export interface ImagePickRound {
   pairIndex: number;
   prompt: string;
   targetId: string;
-  options: CartoonArt[];
+  options: FluentEmojiArt[];
 }
 
 export function buildImagePickRounds(
@@ -20,12 +20,12 @@ export function buildImagePickRounds(
 
   for (let i = 0; i < pool.length && rounds.length < maxRounds; i++) {
     const pair = pool[i]!;
-    const fromTerm = lookupCartoonArt(pair.term);
-    const fromDef = lookupCartoonArt(pair.definition);
+    const fromTerm = lookupFluentEmoji(pair.term);
+    const fromDef = lookupFluentEmoji(pair.definition);
     const target = fromTerm ?? fromDef;
     if (!target) continue;
 
-    const distractors = CARTOON_ART.filter((art) => art.id !== target.id);
+    const distractors = FLUENT_EMOJI_ART.filter((art) => art.id !== target.id);
     if (distractors.length < 3) continue;
 
     const picked = seededShuffle(distractors, `${seed}-${i}-d`).slice(0, 3);
@@ -42,6 +42,6 @@ export function buildImagePickRounds(
 }
 
 export function hasEnoughImagePickPairs(pairs: WordPair[]): boolean {
-  if (CARTOON_ART.length < 4) return false;
+  if (FLUENT_EMOJI_ART.length < 4) return false;
   return buildImagePickRounds(pairs, { maxRounds: 1 }).length >= 1;
 }

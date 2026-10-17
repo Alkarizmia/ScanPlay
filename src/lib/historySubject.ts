@@ -315,7 +315,10 @@ export function resolveHistoryEntryMeta(
   entry: { pairs: WordPair[]; sheetType?: SheetType; subject?: HistorySubject; title?: string },
   locale: Locale = getLocale(),
 ): { subject: HistorySubject; title: string } {
-  const subject = detectHistorySubject(entry.pairs, entry.sheetType);
-  const title = buildHistoryTitle(entry.pairs, subject, entry.sheetType, locale);
+  /* Prefer stored meta (saved at scan) — avoids re-scoring all pairs on every Historique open. */
+  const subject = entry.subject ?? detectHistorySubject(entry.pairs, entry.sheetType);
+  const title =
+    entry.title?.trim() ||
+    buildHistoryTitle(entry.pairs, subject, entry.sheetType, locale);
   return { subject, title };
 }

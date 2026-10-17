@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from 'react';
+import { FluentEmojiPreview } from './components/FluentEmojiPreview';
 import { LandingPage } from './components/landing/LandingPage';
 import { applyDeviceAttributes, detectDeviceProfile } from './lib/device';
 import { hasStoredAuthSession } from './lib/authSessionHint';
@@ -7,6 +8,14 @@ import { initialLandingLang, persistLandingLang, type LandingLang } from './lib/
 import type { Locale } from './types';
 
 const App = lazy(() => import('./App'));
+
+function isFluentPreviewQuery(): boolean {
+  try {
+    return new URLSearchParams(window.location.search).get('fluent') === 'preview';
+  } catch {
+    return false;
+  }
+}
 
 export function Root() {
   const [showApp, setShowApp] = useState(() => {
@@ -35,6 +44,10 @@ export function Root() {
     setBootIntent(intent);
     setShowApp(true);
   }, []);
+
+  if (isFluentPreviewQuery()) {
+    return <FluentEmojiPreview />;
+  }
 
   if (showApp) {
     return (

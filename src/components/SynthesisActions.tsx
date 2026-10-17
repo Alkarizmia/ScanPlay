@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { SynthesisIcon } from './icons/EconomyIcons';
+import { SynthesisIcon, SynthesisSparkIcon } from './icons/EconomyIcons';
 import { usePlan } from '../hooks/usePlan';
 import { isLoggedIn } from '../lib/auth';
 import { canUseSynthesis,
@@ -269,7 +269,8 @@ export function SynthesisActions({
           disabled={step === 'loading'}
           aria-busy={step === 'loading'}
         >
-          <SynthesisIcon size={16} /> {compact ? t('synthesisShort', locale) : t('synthesis', locale)}
+          {compact ? <SynthesisSparkIcon size={15} /> : <SynthesisIcon size={16} />}{' '}
+          {compact ? t('synthesisShort', locale) : t('synthesis', locale)}
           {quotaLabel !== '∞' && (
             <span className="synthesis-quota-pill">{quotaLabel}</span>
           )}

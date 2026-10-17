@@ -7,11 +7,13 @@ import {
 } from '../lib/englishCurriculum';
 import { chapterThumb } from '../lib/englishChapterMeta';
 import {
+  clampLevelToGoal,
   getCurrentEnglishLesson,
   getUniverseEnglish,
   isChapterFullyDone,
   isChapterUnlocked,
   listEnglishPathLessons,
+  maxLevelForGoal,
   updateUniverseEnglishProfile,
 } from '../lib/universeEnglish';
 import { playSound } from '../lib/sounds';
@@ -73,20 +75,23 @@ export function EnglishCourseHub({
   const doneCount = profile.completedLessonIds.filter((id) => path.some((l) => l.id === id)).length;
   const pct = path.length > 0 ? Math.round((doneCount / path.length) * 100) : 0;
   const currentChapter = chapters.find((c) => c.lessonIds.includes(current.id)) ?? chapters[0];
+  const draftMaxLevel = maxLevelForGoal(draftGoal);
+  const draftMaxRank = CEFR_LEVELS.indexOf(draftMaxLevel);
 
   const openEdit = () => {
-    setDraftLevel(profile.level);
+    setDraftLevel(clampLevelToGoal(profile.goal, profile.level));
     setDraftGoal(profile.goal);
     setEditOpen(true);
     playSound('tap');
   };
 
   const saveEdit = () => {
-    if (draftLevel === profile.level && draftGoal === profile.goal) {
+    const level = clampLevelToGoal(draftGoal, draftLevel);
+    if (level === profile.level && draftGoal === profile.goal) {
       setEditOpen(false);
       return;
     }
-    updateUniverseEnglishProfile({ level: draftLevel, goal: draftGoal });
+    updateUniverseEnglishProfile({ level, goal: draftGoal });
     playSound('levelUp');
     setEditOpen(false);
     setProfileRev((n) => n + 1);
@@ -130,20 +135,35 @@ export function EnglishCourseHub({
             <p className="english-edit-section-label">{t('engEditLevel', locale)}</p>
             <p className="english-onboard-sub">{t('engEditLevelSub', locale)}</p>
             <div className="english-level-grid">
-              {CEFR_LEVELS.map((lv) => (
-                <button
-                  key={lv}
-                  type="button"
-                  className={`english-level-chip${draftLevel === lv ? ' active' : ''}`}
-                  onClick={() => {
-                    playSound('tap');
-                    setDraftLevel(lv);
-                  }}
-                >
-                  {lv}
-                </button>
-              ))}
+              {CEFR_LEVELS.map((lv) => {
+                const unavailable = CEFR_LEVELS.indexOf(lv) > draftMaxRank;
+                return (
+                  <button
+                    key={lv}
+                    type="button"
+                    className={`english-level-chip${draftLevel === lv ? ' active' : ''}`}
+                    disabled={unavailable}
+                    title={
+                      unavailable
+                        ? t('engLevelMaxNote', locale).replace('{max}', draftMaxLevel)
+                        : undefined
+                    }
+                    onClick={() => {
+                      if (unavailable) return;
+                      playSound('tap');
+                      setDraftLevel(lv);
+                    }}
+                  >
+                    {lv}
+                  </button>
+                );
+              })}
             </div>
+            {draftMaxLevel !== 'C2' && (
+              <p className="english-onboard-sub">
+                {t('engLevelMaxNote', locale).replace('{max}', draftMaxLevel)}
+              </p>
+            )}
 
             <p className="english-edit-section-label">{t('engEditGoal', locale)}</p>
             <p className="english-onboard-sub">{t('engEditGoalSub', locale)}</p>
@@ -156,6 +176,7 @@ export function EnglishCourseHub({
                   onClick={() => {
                     playSound('tap');
                     setDraftGoal(g);
+                    setDraftLevel((lv) => clampLevelToGoal(g, lv));
                   }}
                 >
                   {t(`engGoal_${g}` as 'engGoal_travel', locale)}

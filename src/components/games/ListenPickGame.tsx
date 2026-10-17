@@ -25,6 +25,8 @@ interface ListenPickGameProps extends EmbeddedGameProps {
   onAnswer?: (pair: WordPair, correct: boolean) => void;
   onComplete: (score: number, total: number) => void;
   onExit: () => void;
+  /** Pin the spoken/question word (review). Other pairs are distractors only. */
+  focusPair?: WordPair;
 }
 
 /** Hear a word in one language, pick its match from the scanned list in the other. */
@@ -38,6 +40,7 @@ export function ListenPickGame({
   onAnswer,
   onComplete,
   onExit,
+  focusPair,
   embedded = false,
   onStepProgress,
   maxItems,
@@ -48,8 +51,9 @@ export function ListenPickGame({
         maxRounds: Math.max(1, maxItems ?? 4),
         seed: deckId ?? 'listenpick',
         answerField,
+        focusPair,
       }),
-    [pairs, maxItems, deckId, answerField],
+    [pairs, maxItems, deckId, answerField, focusPair],
   );
   const pool = useMemo(() => coercePlayablePairs(pairs), [pairs]);
 
@@ -112,7 +116,12 @@ export function ListenPickGame({
     const ok = option === round.target;
     const nextScore = score + (ok ? 1 : 0);
     setScore(nextScore);
-    setLastXp(registerAnswer(ok ? 'correct' : 'wrong', { pathStep: stepIndex != null }));
+    setLastXp(
+      registerAnswer(ok ? 'correct' : 'wrong', {
+        pathStep: stepIndex != null,
+        usedHint: ok && idleHelped,
+      }),
+    );
 
     const pair = pool[round.pairIndex];
     if (pair) {

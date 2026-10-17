@@ -305,21 +305,52 @@ export function isUniverseEnglishOnboarded(): boolean {
   return loadRaw().onboarded;
 }
 
+/**
+ * Cursor + gate for a CEFR placement: mark every lesson before the first
+ * on-level lesson as done/skipped so higher levels are actually playable.
+ */
+function buildPlacementState(
+  goal: EnglishGoal,
+  level: CefrLevel,
+): {
+  currentLessonId: string;
+  completedLessonIds: string[];
+  skippedChapterIds: string[];
+} {
+  const clamped = clampLevelToGoal(goal, level);
+  const path = pathFor(goal);
+  const currentLessonId = firstLessonId(goal, clamped);
+  const targetIdx = Math.max(
+    0,
+    path.findIndex((l) => l.id === currentLessonId),
+  );
+  const completedLessonIds = path.slice(0, targetIdx).map((l) => l.id);
+  const completedSet = new Set(completedLessonIds);
+  const skippedChapterIds = listChaptersForGoal(goal)
+    .filter(
+      (ch) =>
+        ch.lessonIds.length > 0 && ch.lessonIds.every((id) => completedSet.has(id)),
+    )
+    .map((ch) => ch.id);
+  return { currentLessonId, completedLessonIds, skippedChapterIds };
+}
+
 export function saveUniverseEnglishOnboarding(input: {
   level: CefrLevel;
   goal: EnglishGoal;
   nativeLang: EnglishNativeLang;
 }): UniverseEnglishProfile {
   const level = clampLevelToGoal(input.goal, input.level);
+  const placement = buildPlacementState(input.goal, level);
   const next: UniverseEnglishProfile = {
     onboarded: true,
     level,
     goal: input.goal,
     nativeLang: input.nativeLang,
-    currentLessonId: firstLessonId(input.goal, level),
+    currentLessonId: placement.currentLessonId,
     lessonStepIndex: 0,
-    completedLessonIds: [],
-    skippedChapterIds: [],
+    completedLessonIds: placement.completedLessonIds,
+    skippedChapterIds: placement.skippedChapterIds,
     weakWords: [],
     updatedAt: Date.now(),
   };
@@ -488,12 +519,13 @@ export function completeEnglishLesson(lessonId: string): UniverseEnglishProfile 
     : [...profile.completedLessonIds, lessonId];
   const idx = path.findIndex((l) => l.id === lessonId);
   const nextLesson = path[Math.min(idx + 1, path.length - 1)] ?? path[0]!;
+  // Keep the user's placement CEFR stable. Lesson labels must not rewrite it
+  // (otherwise finishing an unlocked A1 chapter snaps hub level back to A1).
   const next: UniverseEnglishProfile = {
     ...profile,
     completedLessonIds: completed,
     currentLessonId: nextLesson.id,
     lessonStepIndex: 0,
-    level: nextLesson.level,
     updatedAt: Date.now(),
   };
   save(next);
@@ -534,15 +566,16 @@ export function updateUniverseEnglishProfile(input: {
   const goal = input.goal ?? profile.goal;
   const level = clampLevelToGoal(goal, input.level ?? profile.level);
   const pathChanged = goal !== profile.goal || level !== profile.level;
+  const placement = pathChanged ? buildPlacementState(goal, level) : null;
   const next: UniverseEnglishProfile = {
     ...profile,
     level,
     goal,
-    currentLessonId: pathChanged ? firstLessonId(goal, level) : profile.currentLessonId,
+    currentLessonId: placement ? placement.currentLessonId : profile.currentLessonId,
     lessonStepIndex: pathChanged ? 0 : profile.lessonStepIndex,
-    completedLessonIds: pathChanged && goal !== profile.goal ? [] : profile.completedLessonIds,
-    skippedChapterIds: pathChanged && goal !== profile.goal ? [] : profile.skippedChapterIds,
-    weakWords: pathChanged && goal !== profile.goal ? [] : profile.weakWords,
+    completedLessonIds: placement ? placement.completedLessonIds : profile.completedLessonIds,
+    skippedChapterIds: placement ? placement.skippedChapterIds : profile.skippedChapterIds,
+    weakWords: goal !== profile.goal ? [] : profile.weakWords,
     updatedAt: Date.now(),
   };
   save(next);

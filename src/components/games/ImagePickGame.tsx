@@ -125,7 +125,12 @@ export function ImagePickGame({
     const ok = artId === round.targetId;
     const nextScore = score + (ok ? 1 : 0);
     setScore(nextScore);
-    setLastXp(registerAnswer(ok ? 'correct' : 'wrong', { pathStep: stepIndex != null }));
+    setLastXp(
+      registerAnswer(ok ? 'correct' : 'wrong', {
+        pathStep: stepIndex != null,
+        usedHint: ok && idleHelped,
+      }),
+    );
 
     const pair = pool[round.pairIndex];
     if (pair) {

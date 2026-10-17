@@ -491,6 +491,38 @@ function drawSubjectArt(
   drawPlayChip(ctx, w - 128, h - 128);
 }
 
+const SUBJECT_EMOJI: Record<HistorySubject, string> = {
+  law: '⚖️',
+  economics: '📈',
+  math: '🔢',
+  history: '🏺',
+  science: '🔬',
+  physics: '⚛️',
+  geography: '🌍',
+  literature: '📖',
+  languages: '🗣️',
+  general: '📗',
+};
+
+export interface SubjectThumbMeta {
+  emoji: string;
+  gradient: string;
+  pattern: ArtPattern;
+  accent: string;
+}
+
+/** Lightweight CSS thumb (Univers-style): no canvas, instant on Historique open. */
+export function getSubjectThumbMeta(subject: HistorySubject, seed: string = subject): SubjectThumbMeta {
+  const variant = pickVariant(subject, seed);
+  const [c0, c1, c2] = variant.colors;
+  return {
+    emoji: SUBJECT_EMOJI[subject] ?? '📗',
+    gradient: `linear-gradient(155deg, ${c0} 0%, ${c1} 48%, ${c2} 100%)`,
+    pattern: variant.pattern,
+    accent: variant.accent,
+  };
+}
+
 export function createSubjectThumbnailDataUrl(subject: HistorySubject, seed?: string): string {
   if (typeof document === 'undefined') return '';
 
@@ -500,8 +532,9 @@ export function createSubjectThumbnailDataUrl(subject: HistorySubject, seed?: st
   if (cached) return cached;
 
   const variant = pickVariant(subject, pickSeed);
-  const w = 960;
-  const h = 600;
+  /* Smaller than before (was 960×600) — only for rare canvas consumers. */
+  const w = 480;
+  const h = 300;
   const canvas = document.createElement('canvas');
   canvas.width = w;
   canvas.height = h;
@@ -509,7 +542,7 @@ export function createSubjectThumbnailDataUrl(subject: HistorySubject, seed?: st
   if (!ctx) return '';
 
   drawSubjectArt(ctx, subject, variant, w, h);
-  const url = canvas.toDataURL('image/jpeg', 0.92);
+  const url = canvas.toDataURL('image/jpeg', 0.82);
   cache.set(cacheKey, url);
   return url;
 }
@@ -519,6 +552,9 @@ export function getHistoryCardThumbnail(
   entryId: string,
   scanThumbnail?: string,
 ): string {
-  const generated = createSubjectThumbnailDataUrl(subject, entryId);
-  return generated || scanThumbnail || '';
+  /* Prefer scan photo if present; else empty (UI uses CSS subject art). */
+  if (scanThumbnail) return scanThumbnail;
+  void subject;
+  void entryId;
+  return '';
 }

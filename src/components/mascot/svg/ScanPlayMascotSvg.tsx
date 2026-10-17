@@ -4,13 +4,25 @@ import { getMascotAccessories } from '../../../lib/mascot/accessories';
 import { EXPRESSION_CONFIG, legacyMoodToExpression, resolveExpression } from '../../../lib/mascot/expressions';
 import type { MascotExpression } from '../../../lib/mascot/types';
 import {
+  ARM_LEFT_PATH,
+  ARM_RIGHT_PATH,
   BODY_PATH,
   BODY_SHINE_PATH,
+  EYE_HAPPY_LEFT,
+  EYE_HAPPY_RIGHT,
   EYE_LEFT,
   EYE_RIGHT,
   LEAF_VEIN_PATH,
-  PLAY_CIRCLE,
+  LEG_LEFT_PATH,
+  LEG_RIGHT_PATH,
+  PIX_BROW,
+  PIX_CHEEK,
+  PIX_GREEN,
+  PIX_GREEN_DARK,
+  PIX_GREEN_MID,
+  PIX_GREEN_SHADOW,
   PLAY_TRIANGLE,
+  TIP_FOLD_PATH,
   VIEWBOX,
 } from './paths';
 
@@ -24,7 +36,7 @@ export interface ScanPlayMascotSvgProps {
   label?: string;
 }
 
-/** Vector fallback — crisp at any size when PNG asset unavailable. */
+/** Vector Pix — anatomical groups for CSS idle (breathe / blink / arms). */
 export function ScanPlayMascotSvg({
   expression = 'happy',
   size = 72,
@@ -47,11 +59,15 @@ export function ScanPlayMascotSvg({
     ['streak', 'celebrating', 'levelup', 'combo', 'chest', 'badge', 'excited', 'jumping', 'applauding'].includes(
       resolvedExpr,
     );
+  /* Correct/wrong: part-level CSS only, no particle FX overlay. */
+  const showFx = reactive && resolvedExpr !== 'happy' && resolvedExpr !== 'wrong';
 
   const cls = [
     'scanplay-mascot',
     'scanplay-mascot--svg',
     `scanplay-mascot--${resolvedExpr}`,
+    `sp-eyes--${cfg.eyes}`,
+    cfg.brows && cfg.brows !== 'none' ? `sp-brows--${cfg.brows}` : '',
     idle ? 'scanplay-mascot--idle' : '',
     celebrate ? 'scanplay-mascot--celebrate' : '',
     reactive ? 'scanplay-mascot--reactive' : '',
@@ -65,12 +81,12 @@ export function ScanPlayMascotSvg({
       className={cls}
       style={{
         width: size,
-        height: size * 1.1,
+        height: size * 1.15,
         ['--sp-tilt' as string]: `${cfg.tilt ?? 0}deg`,
       }}
       aria-hidden={!label}
     >
-      {(reactive || celebrate) && (
+      {showFx && (
         <span className="sp-mascot-fx" aria-hidden="true">
           <i className="sp-fx-ring" />
           <i className="sp-fx-p sp-fx-p--1" />
@@ -83,13 +99,13 @@ export function ScanPlayMascotSvg({
       )}
       <svg viewBox={VIEWBOX} className="sp-svg" role="img" aria-label={label}>
         <defs>
-          <linearGradient id={`${uid}-body`} x1="22%" y1="0%" x2="78%" y2="100%">
-            <stop offset="0%" stopColor="#a3e635" />
-            <stop offset="40%" stopColor="#4ade80" />
-            <stop offset="100%" stopColor="#15803d" />
+          <linearGradient id={`${uid}-body`} x1="28%" y1="8%" x2="72%" y2="96%">
+            <stop offset="0%" stopColor="#9BE85A" />
+            <stop offset="45%" stopColor={PIX_GREEN} />
+            <stop offset="100%" stopColor={PIX_GREEN_DARK} />
           </linearGradient>
           <linearGradient id={`${uid}-shine`} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#fff" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="#fff" stopOpacity="0.35" />
             <stop offset="100%" stopColor="#fff" stopOpacity="0" />
           </linearGradient>
           <radialGradient id={`${uid}-flame`} cx="50%" cy="70%" r="60%">
@@ -115,56 +131,139 @@ export function ScanPlayMascotSvg({
           </g>
         )}
 
-        <g className="sp-body-group">
-          <path className="sp-body" d={BODY_PATH} fill={`url(#${uid}-body)`} stroke="#166534" strokeWidth="2" />
-          <path className="sp-body-shine" d={BODY_SHINE_PATH} fill={`url(#${uid}-shine)`} />
-          <path className="sp-leaf-vein" d={LEAF_VEIN_PATH} stroke="#22c55e" strokeWidth="1.2" opacity="0.35" fill="none" />
+        <g id="mascot-root" className="sp-mascot-root">
+          {/* Arms behind body so only the outer limb shows (idle hang). */}
+          <g id="mascot-arm-left" className={`sp-arm sp-arm--left sp-limbs--${cfg.armPose ?? 'neutral'}`}>
+            <path d={ARM_LEFT_PATH} fill={PIX_GREEN_MID} stroke={PIX_GREEN_SHADOW} strokeWidth="1" />
+          </g>
+          <g id="mascot-arm-right" className={`sp-arm sp-arm--right sp-limbs--${cfg.armPose ?? 'neutral'}`}>
+            <path d={ARM_RIGHT_PATH} fill={PIX_GREEN_MID} stroke={PIX_GREEN_SHADOW} strokeWidth="1" />
+          </g>
 
-          <circle cx={PLAY_CIRCLE.cx} cy={PLAY_CIRCLE.cy} r={PLAY_CIRCLE.r} fill="#fff" />
-          <polygon points={PLAY_TRIANGLE} fill="#16a34a" />
+          <g id="mascot-leg-left" className="sp-leg sp-leg--left">
+            <path d={LEG_LEFT_PATH} fill={PIX_GREEN_DARK} stroke={PIX_GREEN_SHADOW} strokeWidth="1" />
+          </g>
+          <g id="mascot-leg-right" className="sp-leg sp-leg--right">
+            <path d={LEG_RIGHT_PATH} fill={PIX_GREEN_DARK} stroke={PIX_GREEN_SHADOW} strokeWidth="1" />
+          </g>
 
-          <ellipse className="sp-eye sp-eye--left" cx={EYE_LEFT.cx} cy={EYE_LEFT.cy} rx="8" ry="10" fill="#fff" stroke="#1e293b" strokeWidth="2" />
-          <ellipse className="sp-eye sp-eye--right" cx={EYE_RIGHT.cx} cy={EYE_RIGHT.cy} rx="8" ry="10" fill="#fff" stroke="#1e293b" strokeWidth="2" />
-          <circle className="sp-pupil" cx={EYE_LEFT.cx + 1} cy={EYE_LEFT.cy + 1} r="3.5" fill="#1e293b" />
-          <circle className="sp-pupil" cx={EYE_RIGHT.cx - 1} cy={EYE_RIGHT.cy + 1} r="3.5" fill="#1e293b" />
-          <circle cx={EYE_LEFT.cx + 2} cy={EYE_LEFT.cy - 2} r="1.3" fill="#fff" />
-          <circle cx={EYE_RIGHT.cx + 2} cy={EYE_RIGHT.cy - 2} r="1.3" fill="#fff" />
+          {/* Breath wrapper: body + face move together; keeps existing .sp-body-group hook */}
+          <g className="sp-body-group">
+            <g id="mascot-body" className="sp-body">
+              <path d={BODY_PATH} fill={`url(#${uid}-body)`} stroke={PIX_GREEN_SHADOW} strokeWidth="1.5" />
+              <path d={TIP_FOLD_PATH} fill={PIX_GREEN_DARK} opacity="0.85" />
+              <path className="sp-body-shine" d={BODY_SHINE_PATH} fill={`url(#${uid}-shine)`} />
+              <path
+                className="sp-leaf-vein"
+                d={LEAF_VEIN_PATH}
+                stroke={PIX_GREEN_MID}
+                strokeWidth="1.4"
+                opacity="0.4"
+                fill="none"
+                strokeLinecap="round"
+              />
+            </g>
 
-          {mouth.fill ? (
-            <path className="sp-mouth" d={mouth.d} fill={mouth.fill} />
-          ) : (
-            <path
-              className="sp-mouth"
-              d={mouth.d}
-              fill="none"
-              stroke="#1e293b"
-              strokeWidth={mouth.strokeWidth ?? 2.5}
-              strokeLinecap="round"
-            />
+            <g id="mascot-head" className="sp-head">
+              <path
+                className="sp-brow sp-brow--left"
+                d="M 32 36 Q 38 30 46 36"
+                fill="none"
+                stroke={PIX_BROW}
+                strokeWidth="2.8"
+                strokeLinecap="round"
+              />
+              <path
+                className="sp-brow sp-brow--right"
+                d="M 74 36 Q 80 30 88 36"
+                fill="none"
+                stroke={PIX_BROW}
+                strokeWidth="2.8"
+                strokeLinecap="round"
+              />
+              <ellipse cx="30" cy="58" rx="8" ry="5" fill={PIX_CHEEK} opacity="0.55" />
+              <ellipse cx="90" cy="58" rx="8" ry="5" fill={PIX_CHEEK} opacity="0.55" />
+            </g>
+
+            {/* Glossy black eyes (happy.png). White sclera from the sheet is deferred for look-around. */}
+            <g id="mascot-eye-left" className="sp-eye sp-eye--left">
+              <circle cx={EYE_LEFT.cx} cy={EYE_LEFT.cy} r={EYE_LEFT.r} fill="#0f172a" />
+            </g>
+            <g id="mascot-eye-right" className="sp-eye sp-eye--right">
+              <circle cx={EYE_RIGHT.cx} cy={EYE_RIGHT.cy} r={EYE_RIGHT.r} fill="#0f172a" />
+            </g>
+
+            <g id="mascot-pupil-left" className="sp-pupil sp-pupil--left">
+              <circle cx={EYE_LEFT.cx - 3} cy={EYE_LEFT.cy - 3.5} r="3.2" fill="#fff" />
+              <circle cx={EYE_LEFT.cx + 3.5} cy={EYE_LEFT.cy + 3} r="1.4" fill="#fff" opacity="0.9" />
+            </g>
+            <g id="mascot-pupil-right" className="sp-pupil sp-pupil--right">
+              <circle cx={EYE_RIGHT.cx - 3} cy={EYE_RIGHT.cy - 3.5} r="3.2" fill="#fff" />
+              <circle cx={EYE_RIGHT.cx + 3.5} cy={EYE_RIGHT.cy + 3} r="1.4" fill="#fff" opacity="0.9" />
+            </g>
+
+            {/* Content ^ ^ arcs — shown via opacity during correct (happy-closed). */}
+            <g id="mascot-eye-happy-left" className="sp-eye-happy sp-eye-happy--left" aria-hidden="true">
+              <path
+                d={EYE_HAPPY_LEFT}
+                fill="none"
+                stroke="#0f172a"
+                strokeWidth="3.4"
+                strokeLinecap="round"
+              />
+            </g>
+            <g id="mascot-eye-happy-right" className="sp-eye-happy sp-eye-happy--right" aria-hidden="true">
+              <path
+                d={EYE_HAPPY_RIGHT}
+                fill="none"
+                stroke="#0f172a"
+                strokeWidth="3.4"
+                strokeLinecap="round"
+              />
+            </g>
+
+            {/* Green lids cover eyes on blink (scaleY from top). */}
+            <g id="mascot-eyelid-left" className="sp-eyelid sp-eyelid--left">
+              <ellipse cx={EYE_LEFT.cx} cy={EYE_LEFT.cy} rx={EYE_LEFT.r + 0.5} ry={EYE_LEFT.r + 0.5} fill={PIX_GREEN} />
+            </g>
+            <g id="mascot-eyelid-right" className="sp-eyelid sp-eyelid--right">
+              <ellipse cx={EYE_RIGHT.cx} cy={EYE_RIGHT.cy} rx={EYE_RIGHT.r + 0.5} ry={EYE_RIGHT.r + 0.5} fill={PIX_GREEN} />
+            </g>
+
+            <g id="mascot-mouth" className="sp-mouth-group">
+              {mouth.fill ? (
+                <path className="sp-mouth" d={mouth.d} fill={mouth.fill} />
+              ) : (
+                <path
+                  className="sp-mouth"
+                  d={mouth.d}
+                  fill="none"
+                  stroke="#0f172a"
+                  strokeWidth={mouth.strokeWidth ?? 2.8}
+                  strokeLinecap="round"
+                />
+              )}
+            </g>
+
+            <g id="mascot-accessory" className="sp-accessory">
+              <path d={PLAY_TRIANGLE} fill="#fff" fillOpacity="0.92" />
+              {accessories.includes('cap') && (
+                <path d="M 30 18 Q 60 2 90 18 L 92 24 Q 60 12 28 24 Z" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="1.5" />
+              )}
+              {accessories.includes('crown') && (
+                <path d="M 34 16 L 40 4 L 48 14 L 60 0 L 72 14 L 80 4 L 86 16 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="1.5" />
+              )}
+            </g>
+          </g>
+
+          {cfg.prop === 'torch' && (
+            <g className="sp-torch" aria-hidden="true">
+              <rect x="78" y="58" width="6" height="22" rx="2" fill="#92400e" stroke="#78350f" strokeWidth="1" />
+              <ellipse className="sp-torch-flame" cx="81" cy="50" rx="9" ry="14" fill={`url(#${uid}-flame)`} />
+              <ellipse className="sp-torch-flame sp-torch-flame--core" cx="81" cy="54" rx="4.5" ry="8" fill="#fef08a" opacity="0.9" />
+            </g>
           )}
         </g>
-
-        <g className={`sp-limbs sp-limbs--${cfg.armPose ?? 'neutral'}`}>
-          <path className="sp-arm sp-arm--left" d="M 22 62 Q 10 58 8 48" fill="none" stroke="#22c55e" strokeWidth="8" strokeLinecap="round" />
-          <path className="sp-arm sp-arm--right" d="M 98 62 Q 110 58 112 48" fill="none" stroke="#22c55e" strokeWidth="8" strokeLinecap="round" />
-          <path className="sp-leg sp-leg--left" d="M 46 112 Q 42 122 40 126" fill="none" stroke="#16a34a" strokeWidth="8" strokeLinecap="round" />
-          <path className="sp-leg sp-leg--right" d="M 74 112 Q 78 122 80 126" fill="none" stroke="#16a34a" strokeWidth="8" strokeLinecap="round" />
-        </g>
-
-        {cfg.prop === 'torch' && (
-          <g className="sp-torch" aria-hidden="true">
-            <rect x="78" y="58" width="6" height="22" rx="2" fill="#92400e" stroke="#78350f" strokeWidth="1" />
-            <ellipse className="sp-torch-flame" cx="81" cy="50" rx="9" ry="14" fill={`url(#${uid}-flame)`} />
-            <ellipse className="sp-torch-flame sp-torch-flame--core" cx="81" cy="54" rx="4.5" ry="8" fill="#fef08a" opacity="0.9" />
-          </g>
-        )}
-
-        {accessories.includes('cap') && (
-          <path d="M 30 26 Q 60 10 90 26 L 92 32 Q 60 20 28 32 Z" fill="#3b82f6" stroke="#1d4ed8" strokeWidth="1.5" />
-        )}
-        {accessories.includes('crown') && (
-          <path d="M 34 24 L 40 12 L 48 22 L 60 8 L 72 22 L 80 12 L 86 24 Z" fill="#fbbf24" stroke="#d97706" strokeWidth="1.5" />
-        )}
       </svg>
     </div>
   );

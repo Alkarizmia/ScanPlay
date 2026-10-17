@@ -138,28 +138,31 @@ function pickPool(all, themes, maxCefr) {
   return all.filter((v) => themes.includes(v.theme) && LEVEL_ORDER[v.cefr] <= max);
 }
 
-function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel) {
+function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel, preferOnLevel) {
   const LESSONS = 28;
   const NEW_PER = 4;
   const SIZE = 7;
   const lessons = [];
+  const minRank = LEVEL_ORDER[startLevel] ?? 0;
+  // Advanced chapters: fresh words stay on/above CEFR. Earlier chapters use full themed pool.
+  const primary = preferOnLevel ? pool.filter((v) => LEVEL_ORDER[v.cefr] >= minRank) : pool;
+  const below = preferOnLevel ? pool.filter((v) => LEVEL_ORDER[v.cefr] < minRank) : [];
   let cursor = 0;
   /** @type {Vocab[]} */
   const introduced = [];
 
   for (let i = 0; i < LESSONS; i += 1) {
     const fresh = [];
-    while (fresh.length < NEW_PER && cursor < pool.length) {
-      const next = pool[cursor++];
+    while (fresh.length < NEW_PER && cursor < primary.length) {
+      const next = primary[cursor++];
       if (!introduced.some((x) => x.en === next.en)) {
         fresh.push(next);
         introduced.push(next);
       }
     }
-    // Stop when the themed pool has no new words left (shorter chapters OK).
+    // Stop when the (on-level) themed pool has no new words left.
     if (fresh.length === 0) break;
 
-    // recycle earlier words (spaced)
     const review = [];
     if (introduced.length > fresh.length) {
       const older = introduced.slice(0, Math.max(0, introduced.length - fresh.length));
@@ -171,10 +174,15 @@ function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel) {
         }
       }
     }
+    for (let r = 0; review.length + fresh.length < SIZE && r < below.length; r += 1) {
+      const item = below[(i * 5 + r * 3) % below.length];
+      if (item && !fresh.some((f) => f.en === item.en) && !review.some((f) => f.en === item.en)) {
+        review.push(item);
+      }
+    }
     let items = [...fresh, ...review].slice(0, SIZE);
-    // pad from remaining themed pool only
-    while (items.length < Math.min(SIZE, pool.length) && cursor < pool.length) {
-      const next = pool[cursor++];
+    while (items.length < Math.min(SIZE, primary.length) && cursor < primary.length) {
+      const next = primary[cursor++];
       if (!items.some((x) => x.en === next.en)) {
         items.push(next);
         if (!introduced.some((x) => x.en === next.en)) introduced.push(next);
@@ -182,8 +190,13 @@ function buildLessonsForChapter(goal, chapter, chapterIndex, pool, startLevel) {
     }
     if (items.length < 4) break;
 
-    const levelHint = items.reduce((acc, it) => (LEVEL_ORDER[it.cefr] > LEVEL_ORDER[acc] ? it.cefr : acc), 'A1');
-    const level = CEFR[Math.min(LEVEL_ORDER[startLevel] + Math.floor(chapterIndex / 2), LEVEL_ORDER[levelHint], 5)];
+    const levelHint = fresh.reduce(
+      (acc, it) => (LEVEL_ORDER[it.cefr] > LEVEL_ORDER[acc] ? it.cefr : acc),
+      preferOnLevel ? startLevel : 'A1',
+    );
+    const level = preferOnLevel
+      ? CEFR[Math.min(LEVEL_ORDER[levelHint], 5)]
+      : CEFR[Math.min(LEVEL_ORDER[startLevel] + Math.floor(chapterIndex / 2), LEVEL_ORDER[levelHint], 5)];
 
     lessons.push({
       id: `${goal}-${chapter.id}-l${String(i + 1).padStart(2, '0')}`,
@@ -224,11 +237,20 @@ function buildAllLessons(all) {
   const lessons = [];
   for (const [goal, chapters] of Object.entries(CHAPTER_PLANS)) {
     chapters.forEach((ch, idx) => {
-      const startLevel = idx < 2 ? 'A1' : idx < 4 ? 'A2' : 'B1';
+      let startLevel = idx < 2 ? 'A1' : idx < 4 ? 'A2' : 'B1';
       const pool = pickPool(all, ch.themes, idx >= 5 ? 'C2' : idx >= 4 ? 'C1' : idx >= 3 ? 'B2' : 'B1');
-      // shuffle lightly but stable by theme order already
+      // Last chapter: prefer C1+ when the themed pool is rich enough, else step down.
+      const preferOnLevel = idx >= 5;
+      if (preferOnLevel) {
+        startLevel = 'C1';
+        while (LEVEL_ORDER[startLevel] > 0) {
+          const n = pool.filter((v) => LEVEL_ORDER[v.cefr] >= LEVEL_ORDER[startLevel]).length;
+          if (n >= 12) break;
+          startLevel = CEFR[LEVEL_ORDER[startLevel] - 1];
+        }
+      }
       const sorted = [...pool].sort((a, b) => LEVEL_ORDER[a.cefr] - LEVEL_ORDER[b.cefr] || a.en.localeCompare(b.en));
-      lessons.push(...buildLessonsForChapter(goal, ch, idx, sorted, startLevel));
+      lessons.push(...buildLessonsForChapter(goal, ch, idx, sorted, startLevel, preferOnLevel));
     });
   }
   return lessons;

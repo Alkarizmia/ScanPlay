@@ -15,6 +15,12 @@ export function canReplayHistoryEntry(entryId: string, plan?: Plan): boolean {
   return index >= 0 && index < slots;
 }
 
+/** Prefer this when the list is already loaded (avoids re-parsing localStorage per card). */
+export function canReplayHistoryAtIndex(index: number, plan?: Plan): boolean {
+  const slots = getHistoryReplaySlots(plan);
+  return index >= 0 && index < slots;
+}
+
 export function isHistoryEntryReplayLocked(entryId: string, plan?: Plan): boolean {
   return !canReplayHistoryEntry(entryId, plan);
 }

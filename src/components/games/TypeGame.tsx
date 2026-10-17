@@ -14,7 +14,7 @@ import {
   pickTypeGameOptions,
   type AnswerGrade,
 } from '../../lib/vocabulary';
-import { resolvePairCartoon } from '../../lib/cartoonArt';
+import { resolvePairFluentEmoji } from '../../lib/fluentEmojiArt';
 import { resolveSideLang } from '../../lib/speakLang';
 import { useGameIdleHelp } from '../../hooks/useGameIdleHelp';
 import type { Locale, SheetType, WordPair } from '../../types';
@@ -86,7 +86,7 @@ export function TypeGame({
   const mathLike =
     formulaSheet ||
     Boolean(current && (isMathLikeText(current.term) || isMathLikeText(current.definition)));
-  const cartoonRaw = current ? resolvePairCartoon(current.term, current.definition) : null;
+  const cartoonRaw = current ? resolvePairFluentEmoji(current.term, current.definition) : null;
   // Desk/office table art looks like a stool — prefer the desk emoji for those words.
   const deskLike =
     Boolean(current) &&
@@ -167,6 +167,20 @@ export function TypeGame({
     return () => clearInterval(timer);
   }, [examMode, timerSeconds, total, onComplete]);
 
+  // Reset when the question changes — including type→type step swaps where
+  // index stays 0 and the parent reuses this component instance.
+  const itemKey = current ? `${current.term}\0${current.definition}` : '';
+  const deckKey = deck.map((p) => `${p.term}\0${p.definition}`).join('|');
+  const deckKeyRef = useRef(deckKey);
+  useEffect(() => {
+    if (deckKeyRef.current !== deckKey) {
+      deckKeyRef.current = deckKey;
+      setIndex(0);
+      setScore(0);
+      scoreRef.current = 0;
+    }
+  }, [deckKey]);
+
   useEffect(() => {
     setInput('');
     setSelectedOption(null);
@@ -174,17 +188,31 @@ export function TypeGame({
     setGrade('wrong');
     setLastXp(0);
     if (!useChoiceMode && !mathLike) inputRef.current?.focus();
-  }, [index, useChoiceMode, mathLike]);
+  }, [index, itemKey, useChoiceMode, mathLike]);
+
+  const finishingRef = useRef(false);
+  useEffect(() => {
+    finishingRef.current = false;
+  }, [index, itemKey, deckKey]);
 
   const finish = useCallback(
-    (finalScore: number) => onComplete(finalScore, total),
+    (finalScore: number) => {
+      if (finishingRef.current) return;
+      finishingRef.current = true;
+      onComplete(finalScore, total);
+    },
     [onComplete, total],
   );
 
   const applyGrade = (g: AnswerGrade) => {
     setGrade(g);
     setRevealed(true);
-    setLastXp(registerAnswer(g, { pathStep: stepIndex != null }));
+    setLastXp(
+      registerAnswer(g, {
+        pathStep: stepIndex != null,
+        usedHint: g !== 'wrong' && idleHelped,
+      }),
+    );
     if (current) onAnswer?.(current, g === 'correct' || g === 'near');
 
     if (g === 'correct') {
@@ -214,10 +242,14 @@ export function TypeGame({
   };
 
   const next = () => {
+    if (!revealed || finishingRef.current) return;
+    // Whoosh on Continuer/Suivant — never replay the success chime.
+    // Last item: parent (e.g. advanceStep) plays the transition whoosh once.
     if (index >= total - 1) {
       finish(scoreRef.current);
       return;
     }
+    playSound('whoosh');
     setIndex((i) => i + 1);
   };
 

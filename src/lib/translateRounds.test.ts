@@ -270,6 +270,29 @@ describe('translateRounds', () => {
     ).toBe(true);
   });
 
+  it('reverse round shows native prompt and English answer tiles', () => {
+    const cc: WordPair = {
+      term: 'cc',
+      definition: 'copie',
+      faces: ['Please put your manager in cc.', "Mets ton manager en copie s'il te plaît"],
+      termLang: 'en',
+      defLang: 'fr',
+    };
+    const forward = buildLocalTranslateRound(cc, 0, [cc], false);
+    expect(forward).toBeTruthy();
+    expect(forward!.source).toBe('Please put your manager in cc.');
+    expect(forward!.sourceLang).toBe('en');
+    expect(forward!.expected.join(' ').toLowerCase()).toMatch(/mets|copie/);
+
+    const reverse = buildLocalTranslateRound(cc, 0, [cc], true);
+    expect(reverse).toBeTruthy();
+    expect(reverse!.reverse).toBe(true);
+    expect(reverse!.source).toMatch(/mets ton manager/i);
+    expect(reverse!.sourceLang).toBe('fr');
+    expect(reverse!.expected.join(' ').toLowerCase()).toMatch(/please|manager|cc/);
+    expect(reverse!.bank.some((tile) => /please|manager|cc/i.test(tile.text))).toBe(true);
+  });
+
   it('uses curated native face for bread (not a one-word wrap)', () => {
     const bread: WordPair = {
       term: 'bread',
@@ -347,6 +370,7 @@ describe('applyTranslateHint', () => {
       { id: 'd', text: 'toujours' },
     ],
     termLang: 'nl',
+    sourceLang: 'nl',
   };
 
   it('places the next expected word into an empty slot', () => {

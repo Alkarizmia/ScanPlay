@@ -134,6 +134,37 @@ export function SynthesisIcon({ size = 22, className = 'sp-icon sp-icon--synthes
   );
 }
 
+/** Compact Historique: soft sparkle mark (cleaner than the folded doc). */
+export function SynthesisSparkIcon({ size = 18, className = 'sp-icon sp-icon--synthesis-spark' }: IconProps) {
+  return (
+    <svg
+      className={className}
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <path
+        d="M12 3.2 13.4 8.6 18.8 10 13.4 11.4 12 16.8 10.6 11.4 5.2 10 10.6 8.6Z"
+        fill="currentColor"
+      />
+      <path
+        d="M18.2 14.2v3.2M16.6 15.8h3.2"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M6.2 15.5v2.2M5.1 16.6h2.2"
+        stroke="currentColor"
+        strokeWidth="1.7"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
 export function MedalIcon({
   size = 22,
   className,

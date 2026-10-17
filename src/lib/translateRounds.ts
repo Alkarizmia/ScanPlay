@@ -21,7 +21,12 @@ export interface TranslateRound {
   focusWord: string;
   expected: string[];
   bank: TranslateTile[];
+  /** @deprecated prefer sourceLang — kept for older callers */
   termLang: LangCode;
+  /** Language of the prompt sentence (TTS + highlight). */
+  sourceLang: LangCode;
+  /** true = prompt in native/definition, assemble term (usually English). */
+  reverse?: boolean;
 }
 
 const FILLERS: Record<string, string[]> = {
@@ -817,10 +822,15 @@ function makeTiles(tokens: string[], prefix: string, unique = false): TranslateT
   return tiles;
 }
 
+/**
+ * @param reverse false = show term sentence, assemble definition (EN → ta langue).
+ *                true  = show definition sentence, assemble term (ta langue → EN).
+ */
 export function buildLocalTranslateRound(
   pair: WordPair,
   pairIndex: number,
   pool: WordPair[],
+  reverse = false,
 ): TranslateRound | null {
   if (isMathLikeText(pair.term) || isMathLikeText(pair.definition)) return null;
 
@@ -899,22 +909,31 @@ export function buildLocalTranslateRound(
     }
   }
   if (!source || !target) return null;
-  const expected = expectedOverride ?? tokenizePhrase(target);
+
+  // Forward: EN (term) prompt → native tiles. Reverse: native prompt → EN tiles.
+  const prompt = reverse ? target : source;
+  const expected = reverse
+    ? tokenizePhrase(source)
+    : (expectedOverride ?? tokenizePhrase(target));
   if (expected.length === 0) return null;
+  const focusWord = reverse ? definition : term;
+  const sourceLang = reverse ? defLang : termLang;
+  const answerLang = reverse ? termLang : defLang;
 
   const distractors = pool
     .filter((p) => p !== pair)
     .flatMap((p) => {
-      const full = p.definition.trim();
+      const full = (reverse ? p.term : p.definition).trim();
       if (!full) return [];
       // Keep short phrases as one chip (e.g. "prends soin de toi", "je m'appelle").
       if (full.split(/\s+/).length <= 5) return [full];
       return tokenizePhrase(extractPlayableLemma(full));
     })
     .filter((tok) => tok.length > 1 && !/^\d+$/.test(tok));
-  const fillers = FILLERS[defLang] ?? [];
-  const answerTiles = makeTiles(expected, `a${pairIndex}`);
-  const extraTiles = makeTiles([...distractors, ...fillers], `x${pairIndex}`, true).filter(
+  const fillers = FILLERS[answerLang] ?? FILLERS.en ?? [];
+  const prefix = reverse ? `r${pairIndex}` : `a${pairIndex}`;
+  const answerTiles = makeTiles(expected, prefix);
+  const extraTiles = makeTiles([...distractors, ...fillers], `x${prefix}`, true).filter(
     (tile) => !answerTiles.some((a) => normalizeToken(a.text) === normalizeToken(tile.text)),
   );
   const bank = shuffle([...answerTiles, ...extraTiles]).slice(0, Math.max(expected.length + 3, 8));
@@ -924,19 +943,34 @@ export function buildLocalTranslateRound(
 
   return {
     pairIndex,
-    source,
-    focusWord: term,
+    source: prompt,
+    focusWord,
     expected,
     bank: shuffle(bank),
-    termLang,
+    termLang: sourceLang,
+    sourceLang,
+    reverse,
   };
 }
 
-export function buildLocalTranslateRounds(pairs: WordPair[], maxRounds: number): TranslateRound[] {
+export function buildLocalTranslateRounds(
+  pairs: WordPair[],
+  maxRounds: number,
+  options?: { reverse?: boolean | 'alternate' },
+): TranslateRound[] {
   const pool = coercePlayablePairs(pairs);
   const rounds: TranslateRound[] = [];
+  const mode = options?.reverse ?? 'alternate';
   for (let i = 0; i < pool.length && rounds.length < maxRounds; i++) {
-    const round = buildLocalTranslateRound(pool[i]!, i, pool);
+    const reverse =
+      mode === true
+        ? true
+        : mode === false
+          ? false
+          : maxRounds <= 1
+            ? hashSlot(`${pool[i]!.term}|tr-dir`, 2) === 1
+            : rounds.length % 2 === 1;
+    const round = buildLocalTranslateRound(pool[i]!, i, pool, reverse);
     if (round) rounds.push(round);
   }
   return rounds;
@@ -984,13 +1018,15 @@ export function parseAiTranslateRounds(
       ...makeTiles(expected, `ai${pairIndex}`),
       ...makeTiles(extra, `ax${pairIndex}`, true),
     ]);
+    const sourceLang = resolveLang(pair.term, pair.termLang);
     out.push({
       pairIndex,
       source,
       focusWord: termLemma,
       expected,
       bank,
-      termLang: resolveLang(pair.term, pair.termLang),
+      termLang: sourceLang,
+      sourceLang,
     });
   }
 

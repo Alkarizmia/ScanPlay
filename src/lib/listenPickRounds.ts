@@ -87,9 +87,11 @@ export function buildListenPickRounds(
     seed?: string;
     /** Force answers on this side (English Universe → `term`). */
     answerField?: 'term' | 'definition' | 'alternate';
+    /** Pin the round to this word (review). Distractors still use the full pool. */
+    focusPair?: WordPair;
   } = {},
 ): ListenPickRound[] {
-  const { maxRounds = 6, seed = 'listenpick', answerField = 'alternate' } = options;
+  const { maxRounds = 6, seed = 'listenpick', answerField = 'alternate', focusPair } = options;
   const playable = coercePlayablePairs(pairs);
   const pool = playable.filter(isPickable);
   if (pool.length < MIN_CANDIDATES) return [];
@@ -97,9 +99,22 @@ export function buildListenPickRounds(
   const termTokens = uniqueTokens(pool.map((p) => p.term));
   const defTokens = uniqueTokens(pool.map((p) => p.definition));
 
+  let ordered = pool;
+  if (focusPair) {
+    const key = focusPair.term.trim().toLowerCase();
+    const idx = pool.findIndex((p) => p.term.trim().toLowerCase() === key);
+    if (idx >= 0) {
+      ordered = [pool[idx]!, ...pool.filter((_, i) => i !== idx)];
+    } else if (isPickable(focusPair)) {
+      ordered = [focusPair, ...pool];
+    }
+  }
+
   const rounds: ListenPickRound[] = [];
-  for (let i = 0; i < pool.length && rounds.length < maxRounds; i++) {
-    const pair = pool[i]!;
+  for (let i = 0; i < ordered.length && rounds.length < maxRounds; i++) {
+    // Review: only attempt the focused word (never fall through to another lemma).
+    if (focusPair && i > 0) break;
+    const pair = ordered[i]!;
     const hearTerm =
       answerField === 'term' ? false : answerField === 'definition' ? true : i % 2 === 0;
     const spokenSide = hearTerm ? pair.term : pair.definition;

@@ -40,6 +40,11 @@ interface QuizGameProps extends EmbeddedGameProps {
   onExit: () => void;
   onNotEnoughPairs?: () => void;
   shuffleSeed?: string;
+  /**
+   * Pin the question to this pair (review / drill). Distractors still come from `pairs`.
+   * When set, only this word is asked (ignores question shuffle).
+   */
+  focusPair?: WordPair;
 }
 
 function shuffle<T>(arr: T[]): T[] {
@@ -64,6 +69,7 @@ export function QuizGame({
   onExit,
   onNotEnoughPairs,
   shuffleSeed,
+  focusPair,
   embedded = false,
   onStepProgress,
   maxItems,
@@ -71,12 +77,17 @@ export function QuizGame({
   const quizPool = useMemo(() => getQuizPool(pairs), [pairs]);
 
   const questions = useMemo(() => {
+    if (focusPair) {
+      const key = focusPair.term.trim().toLowerCase();
+      const hit = quizPool.find((p) => p.term.trim().toLowerCase() === key);
+      return [hit ?? focusPair];
+    }
     const ordered = shuffleSeed
       ? seededShuffle(quizPool, `${shuffleSeed}-questions`)
       : shuffle(quizPool);
     const cap = examMode ? Math.min(12, quizPool.length) : Math.min(maxItems ?? 6, quizPool.length);
     return ordered.slice(0, cap);
-  }, [quizPool, shuffleSeed, examMode, maxItems]);
+  }, [quizPool, shuffleSeed, examMode, maxItems, focusPair]);
 
   const [index, setIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -163,7 +174,12 @@ export function QuizGame({
     setScore(newScore);
     scoreRef.current = newScore;
     onAnswer?.(q, correct);
-    setLastXp(registerAnswer(correct ? 'correct' : 'wrong', { pathStep: stepIndex != null }));
+    setLastXp(
+      registerAnswer(correct ? 'correct' : 'wrong', {
+        pathStep: stepIndex != null,
+        usedHint: correct && idleHelped,
+      }),
+    );
 
     if (correct) {
       markCorrected(q);

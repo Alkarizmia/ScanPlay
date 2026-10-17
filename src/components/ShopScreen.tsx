@@ -10,7 +10,6 @@ import {
   buyMegaXpPotion,
   buyStreakFreeze,
   buyStreakRestore,
-  buyTranslateHint,
   buyXpPack,
   buyUniverseHeart,
   buyXpPotion,
@@ -30,7 +29,6 @@ import {
   SHOP_MEGA_POTION_MINUTES,
   SHOP_STREAK_FREEZE_PRICE,
   SHOP_STREAK_FREEZE_MAX,
-  SHOP_TRANSLATE_HINT_PRICE,
   SHOP_UNIVERSE_HEART_PRICE,
   EXTRA_SCAN_PRICE,
   type ChestReward,
@@ -38,7 +36,6 @@ import {
 } from '../lib/shop';
 import { getUniverseHeartCap, getUniverseHearts, hasInfiniteUniverseHearts } from '../lib/universeHearts';
 import {
-  getTranslateHints,
   getXpBoostMinutesLeft,
   isXpBoostActive,
   streakRestoreHoursLeft,
@@ -164,7 +161,6 @@ const SHOP_NOTIF_ICON: Record<string, string> = {
   xppack: 'xp',
   streak: 'streak',
   scan: 'scan',
-  hint: 'hint',
   freeze: 'freeze',
   heart: 'path',
 };
@@ -207,7 +203,6 @@ export function ShopScreen({
   const boostMin = getXpBoostMinutesLeft();
   const chestReady = canClaimDailyChest();
   const freezeCharges = getStreakFreezeCharges();
-  const translateHints = getTranslateHints();
   const extraScanOk = canBuyExtraScanInShop();
   const infiniteUniverseHearts = hasInfiniteUniverseHearts();
   const universeHearts = getUniverseHearts().hearts;
@@ -458,26 +453,6 @@ export function ShopScreen({
               onBuy={() => void run('scan', () => buyExtraScan(), 'shopExtraScanOk')}
             />
           )}
-
-          <ShopItemRow
-            locale={locale}
-            icon={<EconomyGlyph id="hint" size={44} />}
-            nameKey="shopTranslateHint"
-            desc={t('shopTranslateHintDesc', locale)}
-            price={SHOP_TRANSLATE_HINT_PRICE}
-            buyId="hint"
-            busy={busy}
-            popping={popId === 'hint'}
-            tone="hint"
-            onBuy={() => void run('hint', () => buyTranslateHint(), 'shopTranslateHintOk')}
-            extra={
-              translateHints > 0 ? (
-                <p className="shop-item-active">
-                  {t('shopTranslateHintOwned', locale).replace('{n}', String(translateHints))}
-                </p>
-              ) : undefined
-            }
-          />
 
           <ShopItemRow
             locale={locale}

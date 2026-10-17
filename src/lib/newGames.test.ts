@@ -180,7 +180,7 @@ describe('image pick rounds', () => {
     );
     expect(rounds[0]?.prompt.toLowerCase()).toBe('apple');
     expect(rounds[0]?.options).toHaveLength(4);
-    expect(rounds[0]?.options.some((art) => art.id === 'pomme')).toBe(true);
+    expect(rounds[0]?.options.some((art) => art.id === 'apple')).toBe(true);
   });
 
   it('keeps the scanned word, not the translation', () => {
@@ -189,7 +189,7 @@ describe('image pick rounds', () => {
       { maxRounds: 1, seed: 'scan' },
     );
     expect(rounds[0]?.prompt.toLowerCase()).toBe('laptop');
-    expect(rounds[0]?.targetId).toBe('ordinateur');
+    expect(rounds[0]?.targetId).toBe('laptop');
   });
 
   it('needs a known everyday word', () => {
@@ -201,19 +201,19 @@ describe('image pick rounds', () => {
 
   it('links scanned verbs to the matching picture', () => {
     expect(buildImagePickRounds([{ term: 'to read', definition: 'lire' }], { maxRounds: 1 })[0]?.targetId).toBe(
-      'livre',
+      'book',
     );
     expect(buildImagePickRounds([{ term: 'boire', definition: 'to drink' }], { maxRounds: 1 })[0]?.targetId).toBe(
-      'eau',
+      'cup',
     );
     expect(
       buildImagePickRounds([{ term: 'conduire', definition: 'to drive' }], { maxRounds: 1 })[0]?.targetId,
-    ).toBe('voiture');
+    ).toBe('car');
     expect(buildImagePickRounds([{ term: 'dog', definition: 'chien' }], { maxRounds: 1 })[0]?.targetId).toBe(
-      'chien',
+      'dog',
     );
     expect(buildImagePickRounds([{ term: 'avion', definition: 'plane' }], { maxRounds: 1 })[0]?.targetId).toBe(
-      'avion',
+      'plane',
     );
   });
 });
