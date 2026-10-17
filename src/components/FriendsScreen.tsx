@@ -23,6 +23,9 @@ interface FriendsScreenProps {
   isLoggedIn: boolean;
   onAuth: () => void;
   onSocialChange?: () => void;
+  /** Deep link `?profile=Name` → open that public profile preview once. */
+  openProfileName?: string | null;
+  onOpenProfileConsumed?: () => void;
 }
 
 function statusLabel(status: FriendStatus | undefined, locale: Locale): string {
@@ -44,6 +47,8 @@ export function FriendsScreen({
   isLoggedIn,
   onAuth,
   onSocialChange,
+  openProfileName = null,
+  onOpenProfileConsumed,
 }: FriendsScreenProps) {
   const [query, setQuery] = useState('');
   const [friends, setFriends] = useState<PublicPlayer[]>([]);
@@ -107,6 +112,32 @@ export function FriendsScreen({
       window.clearInterval(refreshId);
     };
   }, [loadFriends, refreshKey, isLoggedIn, socialOk]);
+
+  useEffect(() => {
+    const name = openProfileName?.trim();
+    if (!name || !isLoggedIn || !socialOk) return;
+    let cancelled = false;
+    void (async () => {
+      setQuery(name);
+      setLoading(true);
+      const found = await searchPlayers(name);
+      if (cancelled) return;
+      setResults(found);
+      setLoading(false);
+      const exact =
+        found.find((p) => p.displayName.trim().toLowerCase() === name.toLowerCase()) ?? found[0] ?? null;
+      if (exact) {
+        setPreviewPlayer(exact);
+        setError(null);
+      } else {
+        setError(t('friendsSearchEmpty', locale));
+      }
+      onOpenProfileConsumed?.();
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [openProfileName, isLoggedIn, socialOk, locale, onOpenProfileConsumed]);
 
   useEffect(() => {
     if (searchTimer.current) window.clearTimeout(searchTimer.current);

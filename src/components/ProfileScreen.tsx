@@ -13,6 +13,7 @@ interface ProfileScreenProps {
   onOpenAchievements?: () => void;
   onOpenSettings?: () => void;
   onOpenShop?: (cosmeticId?: string) => void;
+  onToast?: (message: string) => void;
 }
 
 export function ProfileScreen({
@@ -26,6 +27,7 @@ export function ProfileScreen({
   onOpenAchievements,
   onOpenSettings,
   onOpenShop,
+  onToast,
 }: ProfileScreenProps) {
   return (
     <div className="screen tab-screen profile-screen">
@@ -40,6 +42,7 @@ export function ProfileScreen({
             onOpenAchievements={onOpenAchievements}
             onOpenSettings={onOpenSettings}
             onOpenShop={onOpenShop}
+            onToast={onToast}
           />
         ) : (
           <div className="profile-guest-card">

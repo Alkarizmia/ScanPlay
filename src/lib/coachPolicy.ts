@@ -8,6 +8,60 @@ export const COACH_LIMITS = {
   max: { chatPerDay: 9999, maxChars: 4000, historyWindow: 40 },
 } as const;
 
+function normalizeCoachPlan(plan?: string): CoachPlan {
+  if (plan === 'plus' || plan === 'pro' || plan === 'max') return plan;
+  return 'free';
+}
+
+/** Univers hearts sentence from the user's plan (Free 3 / Plus 5 / Pro·Max ∞). */
+function universeHeartsForPlan(lang: 'en' | 'nl' | 'es' | 'ar' | 'fr', plan?: string): string {
+  const p = normalizeCoachPlan(plan);
+  if (p === 'pro' || p === 'max') {
+    const label = p === 'max' ? 'Max' : 'Pro';
+    if (lang === 'en') {
+      return `As a **${label}** perk, you have **unlimited hearts** in Universe: quiz mistakes don't cost a life.`;
+    }
+    if (lang === 'nl') {
+      return `Als **${label}**-voordeel heb je **oneindige harten** in Univers: quizfouten kosten geen leven.`;
+    }
+    if (lang === 'es') {
+      return `Como privilegio **${label}**, tienes **corazones infinitos** en Universo: los fallos del quiz no quitan vidas.`;
+    }
+    if (lang === 'ar') {
+      return `بامتياز **${label}** لديك **قلوب غير محدودة** في الكون: أخطاء الاختبار لا تخصم حياة.`;
+    }
+    return `Privilège **${label}** : tu as les **cœurs infinis** dans Univers. Une faute au quiz ne t'enlève pas de vie.`;
+  }
+  if (p === 'plus') {
+    if (lang === 'en') {
+      return `On **Plus**, you get **5 hearts**: a quiz mistake costs one, and each heart comes back in about 4 hours (or buy one in the Shop).`;
+    }
+    if (lang === 'nl') {
+      return `Op **Plus** heb je **5 harten**: een fout in de quiz kost er één, en elk hart komt terug in ongeveer 4 uur (of koop er één in de Shop).`;
+    }
+    if (lang === 'es') {
+      return `En **Plus** tienes **5 corazones**: un fallo en el quiz quita uno, y cada corazón vuelve en unas 4 h (o cómpralo en la Tienda).`;
+    }
+    if (lang === 'ar') {
+      return `على **Plus** لديك **5 قلوب**: خطأ في الاختبار يخصم قلباً، ويعود كل قلب خلال نحو 4 ساعات (أو اشترِ من المتجر).`;
+    }
+    return `Sur **Plus**, tu as **5 cœurs** : une faute au quiz en enlève un, et chaque cœur revient en environ 4 h (ou tu en rachètes un dans la Boutique).`;
+  }
+  if (lang === 'en') {
+    return `You get 3 hearts: a quiz mistake costs one, and each heart comes back in about 8 hours (or buy one in the Shop).`;
+  }
+  if (lang === 'nl') {
+    return `Je hebt 3 harten: een fout in de quiz kost er één, en elk hart komt terug in ongeveer 8 uur (of koop er één in de Shop).`;
+  }
+  if (lang === 'es') {
+    return `Tienes 3 corazones: un fallo en el quiz quita uno, y cada corazón vuelve en unas 8 h (o cómpralo en la Tienda).`;
+  }
+  if (lang === 'ar') {
+    return `لديك 3 قلوب؛ خطأ في الاختبار يخصم قلباً، ويعود كل قلب خلال نحو 8 ساعات (أو اشترِ من المتجر).`;
+  }
+  return `Tu as 3 cœurs : une faute au quiz en enlève un, et chaque cœur revient en environ 8 h (ou tu en rachètes un dans la Boutique).`;
+}
+
 const PII_TOPIC =
   /\b(e-?mails?|courriels?|t[eé]l[eé]phones?|num[eé]ros?|whatsapp|instagram|discord|passwords?|mots? de passe|adresses? (mail|e-?mail|postales?)|date of birth|date de naissance)\b/i;
 
@@ -359,19 +413,20 @@ export function localCoachReply(
   }
 
   if (looksLikeUniverseAsk(message)) {
+    const hearts = universeHeartsForPlan(lang, opts.plan);
     if (lang === 'en') {
-      return "In ScanPlay, **Universe** is Pix’s ready-made course store. No scan needed.\n\nRight now you can learn English (A1 to C2), with chapters based on your goal. You get 3 hearts; a quiz mistake costs one, and each heart comes back in about 8 hours (or buy one in the Shop).\n\nOpen it here 👇\n[[action:universe]]";
+      return `In ScanPlay, **Universe** is Pix’s ready-made course store. No scan needed.\n\nRight now you can learn English (A1 to C2), with chapters based on your goal. ${hearts}\n\nOpen it here 👇\n[[action:universe]]`;
     }
     if (lang === 'nl') {
-      return "In ScanPlay is **Univers** de store met kant-en-klare Pix-cursussen. Geen scan nodig.\n\nNu kun je Engels leren (A1 tot C2), met hoofdstukken volgens jouw doel. Je hebt 3 harten; een fout in de quiz kost er één, en elk hart komt terug in ongeveer 8 uur (of koop er één in de Shop).\n\nOpen hier 👇\n[[action:universe]]";
+      return `In ScanPlay is **Univers** de store met kant-en-klare Pix-cursussen. Geen scan nodig.\n\nNu kun je Engels leren (A1 tot C2), met hoofdstukken volgens jouw doel. ${hearts}\n\nOpen hier 👇\n[[action:universe]]`;
     }
     if (lang === 'es') {
-      return "En ScanPlay, **Universo** es la tienda de cursos listos de Pix. Sin escanear.\n\nAhora puedes aprender inglés (A1 a C2), con capítulos según tu objetivo. Tienes 3 corazones; un fallo en el quiz quita uno, y cada corazón vuelve en unas 8 h (o cómpralo en la Tienda).\n\nÁbrelo aquí 👇\n[[action:universe]]";
+      return `En ScanPlay, **Universo** es la tienda de cursos listos de Pix. Sin escanear.\n\nAhora puedes aprender inglés (A1 a C2), con capítulos según tu objetivo. ${hearts}\n\nÁbrelo aquí 👇\n[[action:universe]]`;
     }
     if (lang === 'ar') {
-      return 'في ScanPlay، **الكون (Univers)** هو متجر دورات جاهزة من Pix بلا مسح.\n\nحالياً يمكنك تعلّم الإنجليزية (A1 إلى C2) بفصول حسب هدفك. لديك 3 قلوب؛ خطأ في الاختبار يخصم قلباً، ويعود كل قلب خلال نحو 8 ساعات (أو اشترِ من المتجر).\n\nافتحه هنا 👇\n[[action:universe]]';
+      return `في ScanPlay، **الكون (Univers)** هو متجر دورات جاهزة من Pix بلا مسح.\n\nحالياً يمكنك تعلّم الإنجليزية (A1 إلى C2) بفصول حسب هدفك. ${hearts}\n\nافتحه هنا 👇\n[[action:universe]]`;
     }
-    return "Dans ScanPlay, **Univers** c'est le store de cours prêts par Pix. Pas besoin de scanner.\n\nTu peux y apprendre l'anglais (A1 à C2), avec des chapitres selon ton objectif. Tu as 3 cœurs : une faute au quiz en enlève un, et chaque cœur revient en environ 8 h (ou tu en rachètes un dans la Boutique).\n\nOuvre-le ici 👇\n[[action:universe]]";
+    return `Dans ScanPlay, **Univers** c'est le store de cours prêts par Pix. Pas besoin de scanner.\n\nTu peux y apprendre l'anglais (A1 à C2), avec des chapitres selon ton objectif. ${hearts}\n\nOuvre-le ici 👇\n[[action:universe]]`;
   }
 
   if (looksLikeScanHelp(message)) {

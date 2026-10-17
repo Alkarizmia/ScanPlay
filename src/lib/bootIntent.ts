@@ -2,6 +2,7 @@ export type BootIntent = 'scan' | 'auth';
 
 const KEY = 'scanplay-boot-intent';
 const PENDING_SCAN_KEY = 'scanplay-pending-scan-after-auth';
+const PENDING_PROFILE_KEY = 'scanplay-pending-profile';
 const LOCALE_BOOT_KEY = 'scanplay-boot-locale';
 
 /**
@@ -63,17 +64,61 @@ export function consumeBootIntent(): BootIntent | null {
   return null;
 }
 
-/** Read ?intent=scan|auth from the URL, clear it, and stash as boot intent. */
+export function setPendingProfileName(name: string): void {
+  const trimmed = name.trim();
+  if (!trimmed) return;
+  try {
+    sessionStorage.setItem(PENDING_PROFILE_KEY, trimmed);
+  } catch {
+    /* private mode */
+  }
+}
+
+export function consumePendingProfileName(): string | null {
+  try {
+    const value = sessionStorage.getItem(PENDING_PROFILE_KEY);
+    sessionStorage.removeItem(PENDING_PROFILE_KEY);
+    return value?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+export function peekPendingProfileName(): string | null {
+  try {
+    return sessionStorage.getItem(PENDING_PROFILE_KEY)?.trim() || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Read ?intent=scan|auth and/or ?profile=Name from the URL, clear them, and stash.
+ * Returns the boot intent if present (profile-only links still open the app via Root).
+ */
 export function applyUrlBootIntent(): BootIntent | null {
   try {
     const params = new URLSearchParams(window.location.search);
-    const intent = params.get('intent');
-    if (intent !== 'scan' && intent !== 'auth') return null;
-    params.delete('intent');
+    const intentRaw = params.get('intent');
+    const profile = params.get('profile');
+    let intent: BootIntent | null = null;
+
+    if (profile?.trim()) {
+      setPendingProfileName(profile);
+      params.delete('profile');
+    }
+
+    if (intentRaw === 'scan' || intentRaw === 'auth') {
+      intent = intentRaw;
+      params.delete('intent');
+      setBootIntent(intent);
+    }
+
+    if (!profile?.trim() && !intent) return null;
+
     const qs = params.toString();
     const next = `${window.location.pathname}${qs ? `?${qs}` : ''}${window.location.hash}`;
     window.history.replaceState({}, '', next || '/');
-    setBootIntent(intent);
     return intent;
   } catch {
     return null;

@@ -76,8 +76,6 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
   const heartCap = getUniverseHeartCap(plan);
   const locked = !canPlayUniverse();
   const guest = !isLoggedIn();
-  const driving = getUniverseDriving();
-  const drivingStarted = driving.countryId != null;
 
   useEffect(() => {
     if (resumeTarget === 'driving' && canPlayUniverse() && getUniverseDriving().countryId != null) {
@@ -311,8 +309,9 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
             className={`pix-universe-card${locked ? ' pix-universe-card--locked' : ''}`}
             disabled={locked}
             onClick={openEnglish}
+            aria-label={t('engCourseTitle', locale)}
           >
-            <div className="pix-universe-card-media" aria-hidden="true">
+            <div className="pix-universe-card-media">
               <img
                 src="/universe/english-cover.jpg"
                 alt=""
@@ -323,14 +322,9 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
                 decoding="async"
                 fetchPriority="high"
               />
-            </div>
-            <div className="pix-universe-card-body">
-              <span className="pix-universe-card-meta">{t('engCourseLevels', locale)}</span>
-              <span className="pix-universe-card-title">{t('engCourseTitle', locale)}</span>
-              <span className="pix-universe-card-sub">{t('engCourseCardSub', locale)}</span>
-              <span className="pix-universe-card-private">{t('engCoursePrivate', locale)}</span>
-              <span className="pix-universe-card-cta">
-                {isUniverseEnglishOnboarded() ? t('engOpenContinue', locale) : t('engOpenStart', locale)}
+              <span className="pix-universe-card-label">
+                <span className="pix-universe-card-label-meta">{t('engCourseLevels', locale)}</span>
+                <span className="pix-universe-card-label-title">{t('engCourseTitle', locale)}</span>
               </span>
             </div>
           </button>
@@ -340,8 +334,9 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
             className={`pix-universe-card${locked ? ' pix-universe-card--locked' : ''}`}
             disabled={locked}
             onClick={openDriving}
+            aria-label={t('driveCourseTitle', locale)}
           >
-            <div className="pix-universe-card-media" aria-hidden="true">
+            <div className="pix-universe-card-media">
               <img
                 src="/universe/driving-cover.jpg"
                 alt=""
@@ -351,14 +346,9 @@ export function PixUniverseScreen({ locale, onBack, resumeTarget = null }: PixUn
                 loading="eager"
                 decoding="async"
               />
-            </div>
-            <div className="pix-universe-card-body">
-              <span className="pix-universe-card-meta">{t('driveCourseMeta', locale)}</span>
-              <span className="pix-universe-card-title">{t('driveCourseTitle', locale)}</span>
-              <span className="pix-universe-card-sub">{t('driveCourseCardSub', locale)}</span>
-              <span className="pix-universe-card-private">{t('driveCoursePrivate', locale)}</span>
-              <span className="pix-universe-card-cta">
-                {drivingStarted ? t('driveOpenContinue', locale) : t('driveOpenStart', locale)}
+              <span className="pix-universe-card-label">
+                <span className="pix-universe-card-label-meta">{t('driveCourseMeta', locale)}</span>
+                <span className="pix-universe-card-label-title">{t('driveCourseTitle', locale)}</span>
               </span>
             </div>
           </button>

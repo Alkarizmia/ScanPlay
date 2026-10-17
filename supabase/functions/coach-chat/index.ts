@@ -34,8 +34,9 @@ INTERDIT d'inventer une liste de vocabulaire / cartes si l'élève n'a pas encor
 Produit ScanPlay (à connaître) :
 - Scan : photo d'un cours → fiches / jeux dans l'Historique.
 - **IA ScanPlay** : une seule barre d'usage (en % dans Paramètres). Free ≈ 0,15 €/semaine ; Plus/Pro/Max = 65 % du prix payé / mois. Scans, coach et synthèses partagent cette barre. Vers 90 % la qualité baisse un peu ; à 100 % les actions IA attendent le prochain cycle. Ce n'est PAS un quota de fiches ni de messages/jour.
-- **Univers** (aussi écrit Univer / Universe / Pix Univers) : store de cours prêts créés par Pix, SANS scanner. Accès : Accueil → Importer / Avec Pix → Univers. Première offre : **Apprendre l'anglais** (A1–C2), parcours selon l'objectif (voyage, travail…). Progression privée (pas dans l'Historique). **3 cœurs** : une faute système (quiz/type) enlève 1 cœur ; regen ~8 h ; refill possible dans la Boutique (~70 pièces). Les flashcards ne retirent pas de cœur (auto-éval). Ce n'est PAS "université".
-- Boutique : pièces, potions, boucliers, cœurs Univers, etc.
+- **Univers** (aussi écrit Univer / Universe / Pix Univers) : store de cours prêts créés par Pix, SANS scanner. Accès : Accueil → Importer / Avec Pix → Univers. Première offre : **Apprendre l'anglais** (A1–C2), parcours selon l'objectif (voyage, travail…). Progression privée (pas dans l'Historique). **Cœurs Univers selon le Plan du contexte** (pas une règle unique pour tous) : Free = 3 cœurs, regen ~8 h, refill Boutique ; Plus = 5 cœurs, regen ~4 h ; **Pro/Max = cœurs infinis (privilège du plan), une faute quiz n'enlève pas de vie**. Les flashcards ne retirent pas de cœur (auto-éval). Ce n'est PAS "université".
+- Boutique : pièces, potions, boucliers, cœurs Univers (surtout utile Free/Plus), etc.
+- Quand tu parles des cœurs Univers à CET élève : suis UNIQUEMENT la ligne "Cœurs Univers" du contexte (et son Plan). Sur Max/Pro, dis clairement que c'est un privilège du plan (cœurs infinis). N'explique PAS les 3 cœurs / 8 h à un Max ou Pro.
 
 Situations :
 - Compte neuf (pseudo du type ID-1234, 0 fiche, peu de succès, XP bas, ou il dit qu'il est nouveau) : accueille-le, explique en 3 phrases : photo d'un cours, ScanPlay en fait un jeu, tu l'aides ensuite. Pousse-le vers le bouton Accueil pour scanner. Ne fais pas un quiz. Tu peux aussi mentionner Univers s'il veut apprendre l'anglais sans scanner.
@@ -60,7 +61,7 @@ Style :
 - Raccourcis cliquables : si tu invites à scanner, ouvrir les paramètres, revenir à l'accueil, ouvrir Univers, continuer ici, lancer le jeu, créer des cartes depuis ta correction, ou créer un PDF/Word, ajoute à la FIN du message une balise seule sur sa ligne (l'app affiche un bouton) :
   [[action:scan]] ou [[action:settings]] ou [[action:home]] ou [[action:universe]] ou [[action:continue_chat]] ou [[action:continue_game]] ou [[action:create_cards]] ou [[action:export_pdf]] ou [[action:export_word]]
   N'invente aucune autre balise. N'ajoute [[action:universe]] que si la question porte sur Univers / anglais Pix / cœurs Univers, ou s'il veut y aller.
-- Quand tu corriges du vocab (liste numérotée **mot** + traduction), ajoute TOUJOURS [[action:create_cards]] (souvent à côté de [[action:continue_chat]]). Format strict par item, sur sa propre ligne : `1. **But** - Traduction : mais` puis une ligne vide avant la conclusion. Ne colle JAMAIS la phrase d'encouragement sur la même ligne que la traduction.
+- Quand tu corriges du vocab (liste numérotée **mot** + traduction), ajoute TOUJOURS [[action:create_cards]] (souvent à côté de [[action:continue_chat]]). Format strict par item, sur sa propre ligne : 1. **But** - Traduction : mais  puis une ligne vide avant la conclusion. Ne colle JAMAIS la phrase d'encouragement sur la même ligne que la traduction.
 
 Exemple de format (à imiter) :
 Pour bien progresser, revois ça 👇
@@ -292,9 +293,16 @@ Deno.serve(async (req) => {
       }));
 
     const envelopeEur = planTokenEnvelopeEur(plan);
+    const universeHeartsLine =
+      plan === 'max' || plan === 'pro'
+        ? `Cœurs Univers: illimités (∞). Privilège ${plan === 'max' ? 'Max' : 'Pro'}. Une faute quiz n'enlève pas de vie. N'explique PAS 3 cœurs / 8 h.`
+        : plan === 'plus'
+          ? 'Cœurs Univers: 5 cœurs (plan Plus), regen ~4 h, refill Boutique possible.'
+          : 'Cœurs Univers: 3 cœurs (plan Free), regen ~8 h, refill Boutique possible.';
     const contextBlock = [
       `Locale: ${locale}`,
       `Plan: ${plan}`,
+      universeHeartsLine,
       `Usage IA ScanPlay: ${aiUsagePercent}% (enveloppe ~${envelopeEur.toFixed(2)} € — ${plan === 'free' ? 'semaine' : 'mois'}). RÉPONSE OBLIGATOIRE si on parle de limite/% : ${aiUsagePercent}%. Interdit d'inventer 36% ou tout ratio fiches/total.`,
       `Compte neuf: ${isNewAccount ? 'oui' : 'non'}`,
       `Pseudo auto ID-xxxx: ${defaultName ? 'oui' : 'non'}`,

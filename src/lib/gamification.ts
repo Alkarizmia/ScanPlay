@@ -118,7 +118,10 @@ export function validateStreak(): { streak: number; justLost: boolean } {
   return { streak: 0, justLost: true };
 }
 
-/** After cloud pull: don't resurrect a streak already lost on another device. */
+/**
+ * After cloud pull: merge XP (never downgrade) and streaks carefully.
+ * XP is monotonic progress — a stale/zero cloud row must not wipe a higher local level.
+ */
 export function applyGamificationFromCloud(
   xp: number,
   streak: number,
@@ -136,6 +139,9 @@ export function applyGamificationFromCloud(
     wallet.lostStreakAt &&
     (!wallet.lostStreakAckAt || wallet.lostStreakAckAt < wallet.lostStreakAt);
 
+  const cloudXp = Number.isFinite(xp) ? Math.max(0, Math.floor(xp)) : 0;
+  const nextXp = Math.max(local.xp, cloudXp);
+
   let nextStreak = streak;
   let nextLastPlay = lastPlayDate;
   if (wallet.lostStreak > 0 && wallet.lostStreakAt && streak > 0) {
@@ -148,9 +154,12 @@ export function applyGamificationFromCloud(
   if (local.lastPlayDate === today) {
     nextStreak = Math.max(local.streak, nextStreak);
     nextLastPlay = today;
+  } else if (nextXp === local.xp && local.lastPlayDate && !nextLastPlay) {
+    // Keep local play date when cloud omitted it but XP stayed local-led.
+    nextLastPlay = local.lastPlayDate;
   }
 
-  save({ xp, streak: nextStreak, lastPlayDate: nextLastPlay });
+  save({ xp: nextXp, streak: nextStreak, lastPlayDate: nextLastPlay });
 }
 
 export function getLevel(xp: number): number {

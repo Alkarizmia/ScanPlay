@@ -5840,7 +5840,7 @@ html[data-device="desktop"] .flashcard.flipped .back {
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
   box-shadow: 0 8px 0 var(--accent-deep), var(--shadow);
-  margin-bottom: 20px;
+  margin-bottom: 10px;
   color: #fff;
 }
 
@@ -6202,8 +6202,56 @@ button.idle-help-chip--skip:active {
   flex-shrink: 0;
   margin-bottom: 8px;
   overflow: visible;
-  padding: 52px 16px;
+  padding: 8px 16px 28px;
   box-sizing: border-box;
+}
+
+.scanplay-path-recenter {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: 48px;
+  height: 48px;
+  border: none;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 6px 0 var(--accent-deep), 0 10px 24px rgba(15, 23, 42, 0.18);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.scanplay-path-recenter--up {
+  bottom: calc(env(safe-area-inset-bottom) + var(--nav-h, 64px) + 18px);
+}
+
+.scanplay-path-recenter--down {
+  top: calc(env(safe-area-inset-top) + 88px);
+}
+
+.scanplay-path-recenter:active {
+  transform: translateX(-50%) translateY(2px);
+  box-shadow: 0 3px 0 var(--accent-deep), 0 6px 16px rgba(15, 23, 42, 0.16);
+}
+
+.scanplay-path-recenter-icon {
+  width: 14px;
+  height: 14px;
+  border-right: 3px solid #fff;
+  border-bottom: 3px solid #fff;
+  display: block;
+}
+
+.scanplay-path-recenter--up .scanplay-path-recenter-icon {
+  transform: rotate(-135deg) translateY(-2px);
+}
+
+.scanplay-path-recenter--down .scanplay-path-recenter-icon {
+  transform: rotate(45deg) translateY(-2px);
 }
 
 .scanplay-path-line {
@@ -12139,6 +12187,7 @@ button.idle-help-chip--skip:active {
   cursor: not-allowed;
 }
 .pix-universe-card-media {
+  position: relative;
   display: block;
   width: 100%;
   flex: 0 0 auto;
@@ -12154,59 +12203,37 @@ button.idle-help-chip--skip:active {
   max-height: 200px;
   object-fit: cover;
   object-position: center;
-  /* Keep image in normal flow — absolute was covering titles on Android. */
   position: static;
 }
-.pix-universe-card-body {
-  position: relative;
+/* Short course name on the cover so the thumbnail stays readable without scrolling. */
+.pix-universe-card-label {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
   z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 6px;
-  padding: 14px 16px 16px;
-  min-width: 0;
-  width: 100%;
+  gap: 3px;
+  padding: 36px 14px 12px;
   box-sizing: border-box;
-  flex: 0 0 auto;
-  background: var(--bg-card);
+  background: linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.55) 42%, rgba(15, 23, 42, 0.88) 100%);
+  pointer-events: none;
+  line-height: 1.15;
 }
-.pix-universe-card-meta {
-  font-size: 0.72rem;
+.pix-universe-card-label-meta {
+  font-size: 0.68rem;
   font-weight: 850;
-  letter-spacing: 0.02em;
-  color: var(--sp-green, var(--accent));
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #bbf7d0;
 }
-.pix-universe-card-title {
-  font-size: 1.18rem;
+.pix-universe-card-label-title {
+  font-size: 1.12rem;
   font-weight: 900;
-  color: var(--text);
-  line-height: 1.2;
-}
-.pix-universe-card-sub {
-  font-size: 0.88rem;
-  line-height: 1.4;
-  color: var(--text-muted);
-  font-weight: 650;
-}
-.pix-universe-card-private {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-muted);
-  opacity: 0.9;
-}
-.pix-universe-card-cta {
-  margin-top: 8px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 14px;
-  border-radius: 12px;
-  font-size: 0.9rem;
-  font-weight: 850;
-  color: #14532d;
-  background: linear-gradient(180deg, #bbf7d0, #86efac);
-  box-shadow: 0 3px 0 #4ade80;
+  color: #fff;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
 }
 
 .english-onboard,

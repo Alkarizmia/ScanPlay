@@ -10,6 +10,7 @@ import {
 } from '../lib/universeEnglish';
 import { ENGLISH_LESSONS } from '../lib/englishCurriculum';
 import { hasDialogueForLesson } from '../lib/englishDialogues';
+import { pairHasFluentColorOrNumber } from '../lib/fluentEmojiArt';
 import { hasEnoughImagePickPairs } from '../lib/imagePickRounds';
 import { buildListenPickRounds } from '../lib/listenPickRounds';
 import { buildLocalTranslateRounds } from '../lib/translateRounds';
@@ -144,11 +145,16 @@ function buildMixedSteps(
 
   for (const focus of pairs) {
     const pictureable = hasEnoughImagePickPairs([focus]);
+    const colorOrNumber = pairHasFluentColorOrNumber(focus.term, focus.definition);
     let attempts = 0;
     let kind = rotation[rot % rotation.length]!;
 
-    /* Prefer Image Pick for ~half of pictureable words (Univers English). */
-    if (pictureable && pictureableSeen % 2 === 0 && steps[steps.length - 1]?.kind !== 'image') {
+    /* Colors / digits: always one Image Pick (Fluent square / keycap). Other pictureable words: ~half. */
+    if (
+      pictureable &&
+      steps[steps.length - 1]?.kind !== 'image' &&
+      (colorOrNumber || pictureableSeen % 2 === 0)
+    ) {
       kind = 'image';
     }
 

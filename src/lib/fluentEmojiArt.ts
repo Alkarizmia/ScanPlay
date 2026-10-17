@@ -11,7 +11,9 @@ export interface FluentEmojiArt {
   aliases: string[];
 }
 
-const src = (id: string) => `/fluent-emoji/${id}.png`;
+/** Cache-bust when the Fluent pack grows (colors, keycaps, …). */
+const FLUENT_ASSET_V = '2';
+const src = (id: string) => `/fluent-emoji/${id}.png?v=${FLUENT_ASSET_V}`;
 
 export const FLUENT_EMOJI_ART: FluentEmojiArt[] = [
   { id: 'tshirt', src: src('tshirt'), aliases: ['tshirt', 't-shirt', 'tee', 'shirt', 'chemise', 'maglietta', 'camiseta', 'hemd'] },
@@ -152,6 +154,41 @@ export const FLUENT_EMOJI_ART: FluentEmojiArt[] = [
   { id: 'child', src: src('child'), aliases: ['child', 'enfant', 'kind', 'nino', 'niño'] },
   { id: 'farmer', src: src('farmer'), aliases: ['farmer', 'fermier', 'boer', 'granjero', 'bauer'] },
   { id: 'guard', src: src('guard'), aliases: ['guard', 'garde', 'bewaker', 'guardia'] },
+
+  // Color squares (Fluent 3D) — référence: blue_square
+  { id: 'blue_square', src: src('blue_square'), aliases: ['blue', 'bleu', 'blauw', 'azul', 'blau', 'blue square', 'carre bleu', 'carré bleu'] },
+  { id: 'red_square', src: src('red_square'), aliases: ['red', 'rouge', 'rood', 'rojo', 'rot', 'red square', 'carre rouge', 'carré rouge'] },
+  { id: 'orange_square', src: src('orange_square'), aliases: ['orange square', 'couleur orange', 'oranje', 'naranja color'] },
+  { id: 'yellow_square', src: src('yellow_square'), aliases: ['yellow', 'jaune', 'geel', 'amarillo', 'gelb', 'yellow square', 'carre jaune', 'carré jaune'] },
+  { id: 'green_square', src: src('green_square'), aliases: ['green', 'vert', 'groen', 'verde', 'grun', 'grün', 'green square', 'carre vert', 'carré vert'] },
+  { id: 'purple_square', src: src('purple_square'), aliases: ['purple', 'violet', 'paars', 'morado', 'lila', 'purple square', 'carre violet', 'carré violet'] },
+  { id: 'brown_square', src: src('brown_square'), aliases: ['brown', 'marron', 'bruin', 'braun', 'brown square', 'carre marron', 'carré marron'] },
+  { id: 'black_square', src: src('black_square'), aliases: ['black', 'noir', 'zwart', 'negro', 'schwarz', 'black square', 'carre noir', 'carré noir'] },
+  { id: 'white_square', src: src('white_square'), aliases: ['white', 'blanc', 'wit', 'blanco', 'weiss', 'weiß', 'white square', 'carre blanc', 'carré blanc'] },
+
+  { id: 'blue_circle', src: src('blue_circle'), aliases: ['blue circle', 'cercle bleu'] },
+  { id: 'red_circle', src: src('red_circle'), aliases: ['red circle', 'cercle rouge'] },
+  { id: 'orange_circle', src: src('orange_circle'), aliases: ['orange circle', 'cercle orange'] },
+  { id: 'yellow_circle', src: src('yellow_circle'), aliases: ['yellow circle', 'cercle jaune'] },
+  { id: 'green_circle', src: src('green_circle'), aliases: ['green circle', 'cercle vert'] },
+  { id: 'purple_circle', src: src('purple_circle'), aliases: ['purple circle', 'cercle violet'] },
+  { id: 'brown_circle', src: src('brown_circle'), aliases: ['brown circle', 'cercle marron'] },
+  { id: 'black_circle', src: src('black_circle'), aliases: ['black circle', 'cercle noir'] },
+  { id: 'white_circle', src: src('white_circle'), aliases: ['white circle', 'cercle blanc'] },
+
+  // Keycap digits (Fluent 3D blue squares with number)
+  { id: 'keycap_0', src: src('keycap_0'), aliases: ['0', 'zero', 'zéro', 'nul'] },
+  // Avoid bare FR/NL articles "un"/"een" (false hits on glosses). Universe uses EN headwords.
+  { id: 'keycap_1', src: src('keycap_1'), aliases: ['1', 'one', 'uno', 'eins'] },
+  { id: 'keycap_2', src: src('keycap_2'), aliases: ['2', 'two', 'deux', 'twee', 'dos', 'zwei'] },
+  { id: 'keycap_3', src: src('keycap_3'), aliases: ['3', 'three', 'trois', 'drie', 'tres', 'drei'] },
+  { id: 'keycap_4', src: src('keycap_4'), aliases: ['4', 'four', 'quatre', 'vier', 'cuatro'] },
+  { id: 'keycap_5', src: src('keycap_5'), aliases: ['5', 'five', 'cinq', 'vijf', 'cinco', 'funf', 'fünf'] },
+  { id: 'keycap_6', src: src('keycap_6'), aliases: ['6', 'six', 'zes', 'seis'] },
+  { id: 'keycap_7', src: src('keycap_7'), aliases: ['7', 'seven', 'sept', 'zeven', 'siete', 'sieben'] },
+  { id: 'keycap_8', src: src('keycap_8'), aliases: ['8', 'eight', 'huit', 'acht', 'ocho'] },
+  { id: 'keycap_9', src: src('keycap_9'), aliases: ['9', 'nine', 'neuf', 'negen', 'nueve', 'neun'] },
+  { id: 'keycap_10', src: src('keycap_10'), aliases: ['10', 'ten', 'dix', 'tien', 'diez', 'zehn'] },
 ];
 
 function normalizeWord(raw: string): string {
@@ -197,6 +234,24 @@ export function lookupFluentEmoji(text: string): FluentEmojiArt | null {
   return null;
 }
 
+/** Color squares + keycap digits only (Univers accent, not every object emoji). */
+export function isFluentColorOrNumberArt(art: FluentEmojiArt | null | undefined): boolean {
+  if (!art) return false;
+  return art.id.endsWith('_square') || art.id.startsWith('keycap_');
+}
+
+export function lookupFluentColorOrNumber(text: string): FluentEmojiArt | null {
+  const hit = lookupFluentEmoji(text);
+  return isFluentColorOrNumberArt(hit) ? hit : null;
+}
+
 export function resolvePairFluentEmoji(term: string, definition: string): FluentEmojiArt | null {
   return lookupFluentEmoji(term) ?? lookupFluentEmoji(definition);
+}
+
+/** True when the English headword is a color square or keycap digit. */
+export function pairHasFluentColorOrNumber(term: string, definition?: string): boolean {
+  return Boolean(
+    lookupFluentColorOrNumber(term) ?? (definition ? lookupFluentColorOrNumber(definition) : null),
+  );
 }

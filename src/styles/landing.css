@@ -549,6 +549,54 @@ html[data-landing='true'] .screen.sp-landing {
   }
 }
 
+/* ES only: nav labels are longer ("Cómo funciona", "También en la app").
+   Keep clear air between logo, links, and right-side actions (FAQ vs ES). */
+@media (min-width: 768px) {
+  .sp-landing[lang='es'] .lp-header-inner {
+    column-gap: clamp(36px, 4vw, 72px);
+  }
+
+  .sp-landing[lang='es'] .lp-nav {
+    padding-inline-start: clamp(12px, 1.6vw, 24px);
+    /* Extra air before language / Entrar so "Preguntas" is not glued to ES. */
+    padding-inline-end: clamp(20px, 2.8vw, 40px);
+    gap: clamp(12px, 1.4vw, 20px);
+    justify-content: center;
+  }
+
+  .sp-landing[lang='es'] .lp-nav a {
+    font-size: clamp(0.72rem, 0.48rem + 0.38vw, 0.84rem);
+    letter-spacing: -0.015em;
+  }
+
+  .sp-landing[lang='es'] .lp-header-actions {
+    gap: 10px;
+    padding-inline-start: clamp(8px, 1.2vw, 16px);
+  }
+
+  .sp-landing[lang='es'] .lp-header-brand {
+    padding-inline-end: 4px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1180px) {
+  .sp-landing[lang='es'] .lp-header-actions .lp-btn--primary {
+    display: none;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1100px) {
+  .sp-landing[lang='es'] .lp-header-inner {
+    column-gap: clamp(32px, 3.4vw, 56px);
+  }
+
+  .sp-landing[lang='es'] .lp-nav {
+    gap: clamp(10px, 1.2vw, 16px);
+    padding-inline-start: clamp(10px, 1.4vw, 20px);
+    padding-inline-end: clamp(18px, 2.4vw, 32px);
+  }
+}
+
 .lp-header-actions .lp-btn--ghost {
   min-height: 40px;
   padding: 8px 12px 10px;

@@ -3,14 +3,17 @@ import {
   DISPLAY_NAME_MAX,
   DISPLAY_NAME_MIN,
   getProfile,
+  isDefaultDisplayName,
   setAvatar,
   trySetDisplayName,
 } from '../lib/profile';
+import { getUserId } from '../lib/auth';
 import { ACHIEVEMENTS, getUnlockedCount, isAchievementUnlocked } from '../lib/achievements';
 import { getAchievementDef, getRecentUnlocks } from '../lib/achievementUnlocks';
 import { xpForNextLevel } from '../lib/gamification';
 import { countFriends } from '../lib/social/friends';
 import { isSocialAvailable } from '../lib/social/publicProfile';
+import { sharePublicProfile } from '../lib/social/profileShare';
 import { getAppStats } from '../lib/stats';
 import { getMascotAssetUrl } from '../lib/mascot/catalog';
 import { t } from '../lib/i18n';
@@ -54,6 +57,7 @@ interface ProfileSectionProps {
   onOpenAchievements?: () => void;
   onOpenSettings?: () => void;
   onOpenShop?: (cosmeticId?: string) => void;
+  onToast?: (message: string) => void;
 }
 
 const DEFAULT_AVATAR_SRC = getMascotAssetUrl('happy') ?? '/mascot/emotions/happy.webp';
@@ -100,6 +104,7 @@ export function ProfileSection({
   onOpenAchievements,
   onOpenSettings,
   onOpenShop,
+  onToast,
 }: ProfileSectionProps) {
   const profile = getProfile();
   const [friendCount, setFriendCount] = useState(0);
@@ -334,6 +339,53 @@ export function ProfileSection({
                   <NavIcon tab="settings" className="sp-profile-edit-icon" />
                 </button>
               )}
+              {isSocialAvailable() && (
+                <button
+                  type="button"
+                  className="sp-profile-edit-btn"
+                  onClick={() => {
+                    void (async () => {
+                      playSound('tap');
+                      const name = profile.displayName;
+                      const userId = getUserId();
+                      if (userId && isDefaultDisplayName(name, userId)) {
+                        onToast?.(t('profileShareNeedName', locale));
+                        return;
+                      }
+                      const result = await sharePublicProfile(
+                        name,
+                        t('profileShareText', locale),
+                      );
+                      if (result === 'shared') {
+                        playSound('shareSuccess');
+                        onToast?.(t('profileShareDone', locale));
+                      } else if (result === 'copied') {
+                        playSound('shareSuccess');
+                        onToast?.(t('profileShareCopied', locale));
+                      } else if (result === 'need_name') {
+                        onToast?.(t('profileShareNeedName', locale));
+                      } else {
+                        onToast?.(t('profileShareFailed', locale));
+                      }
+                    })();
+                  }}
+                  aria-label={t('profileShare', locale)}
+                  title={t('profileShare', locale)}
+                >
+                  <svg viewBox="0 0 24 24" className="sp-profile-edit-icon" aria-hidden="true">
+                    <circle cx="18" cy="5" r="2.4" fill="currentColor" />
+                    <circle cx="6" cy="12" r="2.4" fill="currentColor" />
+                    <circle cx="18" cy="19" r="2.4" fill="currentColor" />
+                    <path
+                      d="M8.2 13.1 15.8 17.4M15.8 6.6 8.2 10.9"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
+              )}
               <button
                 type="button"
                 className="sp-profile-edit-btn"
@@ -444,6 +496,35 @@ export function ProfileSection({
           </span>
           {' · '}
           {t('profileSince', locale).replace('{year}', String(sinceYear))}
+          {isSocialAvailable() && !editing && (
+            <>
+              {' · '}
+              <button
+                type="button"
+                className="sp-profile-share-link"
+                onClick={() => {
+                  void (async () => {
+                    playSound('tap');
+                    const name = profile.displayName;
+                    const result = await sharePublicProfile(name, t('profileShareText', locale));
+                    if (result === 'shared') {
+                      playSound('shareSuccess');
+                      onToast?.(t('profileShareDone', locale));
+                    } else if (result === 'copied') {
+                      playSound('shareSuccess');
+                      onToast?.(t('profileShareCopied', locale));
+                    } else if (result === 'need_name') {
+                      onToast?.(t('profileShareNeedName', locale));
+                    } else {
+                      onToast?.(t('profileShareFailed', locale));
+                    }
+                  })();
+                }}
+              >
+                {t('profileShare', locale)}
+              </button>
+            </>
+          )}
         </p>
         <div className="sp-profile-plan">
           <PlanBadge plan={plan} locale={locale} />

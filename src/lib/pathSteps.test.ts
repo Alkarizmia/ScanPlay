@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { pathGameKind } from '../components/icons/PathGameIcons';
-import { buildPathSteps } from './pathSteps';
+import { buildPathSteps, pathAreaHeight } from './pathSteps';
 import type { WordPair } from '../types';
 
 const pairs: WordPair[] = [
@@ -41,5 +41,16 @@ describe('buildPathSteps', () => {
     expect(nodes[0]?.x).toBe(26);
     expect(nodes[1]?.x).toBe(74);
     expect(nodes[2]?.x).toBe(26);
+  });
+
+  it('keeps the first node near the top (no large empty band)', () => {
+    const nodes = buildPathSteps(40, pairs);
+    const first = nodes[0];
+    expect(first?.kind).toBe('game');
+    if (first?.kind !== 'game') return;
+    const height = pathAreaHeight(40);
+    const yPx = (first.y / 100) * height;
+    expect(yPx).toBeLessThan(80);
+    expect(first.y).toBeLessThan(12);
   });
 });

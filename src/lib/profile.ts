@@ -197,6 +197,118 @@ function isAvatarId(value: string | null | undefined): value is AvatarId {
   return value === 'avatar1' || value === 'avatar2' || value === 'avatar3' || value === 'avatar4' || value === 'custom';
 }
 
+function hasCustomAvatar(p: Pick<UserProfileData, 'avatar' | 'customAvatarData'>): boolean {
+  return p.avatar === 'custom' && Boolean(p.customAvatarData?.trim());
+}
+
+function isDefaultBanner(theme: string | null | undefined): boolean {
+  const t = (theme ?? '').trim();
+  return !t || t === 'green';
+}
+
+function frameOrNull(value: string | null | undefined): string | null {
+  if (value == null || value === '') return null;
+  return String(value);
+}
+
+/**
+ * Prefer richer cosmetics / identity so a default device never wipes a customized profile
+ * (used before push and when reconciling two snapshots).
+ */
+export function mergeProfilesPreferRicher(
+  a: UserProfileData,
+  b: UserProfileData,
+  userId: string,
+): UserProfileData {
+  const aTime = a.profileUpdatedAt ?? 0;
+  const bTime = b.profileUpdatedAt ?? 0;
+  const newer = bTime > aTime ? b : a;
+  const older = bTime > aTime ? a : b;
+
+  const aCustomName = !isDefaultDisplayName(a.displayName, userId);
+  const bCustomName = !isDefaultDisplayName(b.displayName, userId);
+  let displayName = newer.displayName;
+  if (aCustomName && !bCustomName) displayName = a.displayName;
+  else if (bCustomName && !aCustomName) displayName = b.displayName;
+  else if (aCustomName && bCustomName) displayName = newer.displayName;
+
+  let avatar: AvatarId = newer.avatar;
+  let customAvatarData = newer.customAvatarData;
+  if (hasCustomAvatar(a) && !hasCustomAvatar(b)) {
+    avatar = 'custom';
+    customAvatarData = a.customAvatarData;
+  } else if (hasCustomAvatar(b) && !hasCustomAvatar(a)) {
+    avatar = 'custom';
+    customAvatarData = b.customAvatarData;
+  } else if (hasCustomAvatar(a) && hasCustomAvatar(b)) {
+    avatar = 'custom';
+    customAvatarData = newer.customAvatarData;
+  } else if (!isAvatarId(newer.avatar) && isAvatarId(older.avatar)) {
+    avatar = older.avatar;
+  }
+
+  const aBanner = (a.bannerTheme ?? '').trim();
+  const bBanner = (b.bannerTheme ?? '').trim();
+  const looksBlank = (p: UserProfileData) =>
+    isDefaultDisplayName(p.displayName, userId) && !hasCustomAvatar(p);
+  let bannerTheme = (newer.bannerTheme ?? '').trim() || undefined;
+  if (!isDefaultBanner(aBanner) && isDefaultBanner(bBanner)) {
+    // Blank/default devices must not wipe a real fond; intentional green keeps if profile is customized.
+    bannerTheme = bTime > aTime && !looksBlank(b) ? bBanner || 'green' : aBanner;
+  } else if (!isDefaultBanner(bBanner) && isDefaultBanner(aBanner)) {
+    bannerTheme = aTime > bTime && !looksBlank(a) ? aBanner || 'green' : bBanner;
+  } else if (!isDefaultBanner(aBanner) && !isDefaultBanner(bBanner)) {
+    bannerTheme = ((newer.bannerTheme ?? older.bannerTheme) as string).trim();
+  }
+
+  const pickFrame = (
+    aVal: string | null | undefined,
+    bVal: string | null | undefined,
+  ): string | null => {
+    const af = frameOrNull(aVal);
+    const bf = frameOrNull(bVal);
+    if (af && bf) return aTime >= bTime ? af : bf;
+    // Newer blank device must not unequip; intentional unequip only from a customized profile.
+    if (af && !bf) return bTime > aTime && !looksBlank(b) ? null : af;
+    if (!af && bf) return aTime > bTime && !looksBlank(a) ? null : bf;
+    return null;
+  };
+  const avatarFrame = pickFrame(a.avatarFrame, b.avatarFrame);
+  const bannerFrame = pickFrame(a.bannerFrame, b.bannerFrame);
+
+  return {
+    ...newer,
+    displayName,
+    avatar,
+    customAvatarData: avatar === 'custom' ? customAvatarData : undefined,
+    bannerTheme,
+    avatarFrame,
+    bannerFrame,
+    profileUpdatedAt: Math.max(aTime, bTime, Date.now()),
+    displayNameChangedAt: Math.max(a.displayNameChangedAt ?? 0, b.displayNameChangedAt ?? 0) || undefined,
+    pseudoOnboardingDone: Boolean(a.pseudoOnboardingDone || b.pseudoOnboardingDone),
+  };
+}
+
+/** Apply richer cloud profile into localStorage before a stats push (anti wipe). */
+export function adoptRicherCloudProfile(cloud: UserProfileData | null | undefined): void {
+  if (!cloud || !isLoggedIn()) return;
+  const userId = getUserId();
+  if (!userId) return;
+  const local = loadProfileRaw() ?? ensureUserProfile(userId);
+  const merged = mergeProfilesPreferRicher(local, cloud, userId);
+  const same =
+    merged.displayName === local.displayName &&
+    merged.avatar === local.avatar &&
+    (merged.customAvatarData ?? '') === (local.customAvatarData ?? '') &&
+    (merged.bannerTheme ?? '') === (local.bannerTheme ?? '') &&
+    (merged.avatarFrame ?? null) === (local.avatarFrame ?? null) &&
+    (merged.bannerFrame ?? null) === (local.bannerFrame ?? null);
+  if (same) return;
+  saveProfileRaw(merged);
+  void import('./auth').then((m) => m.refreshProfileCacheFromProfile());
+}
+
 /** Merge avatar / name / cosmetics from cloud when newer than local, or when local field is empty. */
 export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
   if (!isLoggedIn()) return;
@@ -231,17 +343,28 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
       }
     }
 
-    if (patch.avatarId && isAvatarId(patch.avatarId) && patch.avatarId !== local.avatar) {
-      next.avatar = patch.avatarId;
-      if (patch.avatarId !== 'custom') {
-        next.customAvatarData = undefined;
-      }
-      changed = true;
-    }
+    const localCustomAvatar = hasCustomAvatar(local);
+    const cloudCustomAvatar = patch.avatarId === 'custom' && Boolean(patch.avatarUrl?.trim());
+    const cloudPreset =
+      patch.avatarId && isAvatarId(patch.avatarId) && patch.avatarId !== 'custom' ? patch.avatarId : null;
 
-    if (patch.avatarId === 'custom' && patch.avatarUrl) {
-      next.avatar = 'custom';
-      next.customAvatarData = patch.avatarUrl;
+    // Never replace a custom photo with a default preset from a stale device.
+    if (localCustomAvatar && cloudPreset && !cloudCustomAvatar) {
+      /* keep local custom */
+    } else if (cloudCustomAvatar) {
+      if (next.avatar !== 'custom' || next.customAvatarData !== patch.avatarUrl) {
+        next.avatar = 'custom';
+        next.customAvatarData = patch.avatarUrl!;
+        changed = true;
+      }
+    } else if (
+      cloudPreset &&
+      cloudPreset !== local.avatar &&
+      !localCustomAvatar &&
+      (cloudWins || !local.avatar)
+    ) {
+      next.avatar = cloudPreset;
+      next.customAvatarData = undefined;
       changed = true;
     } else if (patch.avatarUrl && next.avatar === 'custom' && patch.avatarUrl !== local.customAvatarData) {
       next.customAvatarData = patch.avatarUrl;
@@ -265,17 +388,24 @@ export function mergeProfileFromCloud(patch: CloudProfilePatch): void {
     }
   }
 
-  if ('avatarFrame' in patch && (cloudWins || local.avatarFrame == null || local.avatarFrame === '')) {
-    const frame = patch.avatarFrame == null || patch.avatarFrame === '' ? null : String(patch.avatarFrame);
-    if (frame !== (next.avatarFrame ?? local.avatarFrame ?? null)) {
+  // undefined = field omitted (do not clear). null = explicit unequip only if cloud wins.
+  if (patch.avatarFrame !== undefined) {
+    const frame = frameOrNull(patch.avatarFrame);
+    const current = frameOrNull(next.avatarFrame ?? local.avatarFrame);
+    if (frame === null && current && !cloudWins) {
+      /* keep local ring */
+    } else if (frame !== current && (cloudWins || !current)) {
       next.avatarFrame = frame;
       changed = true;
     }
   }
 
-  if ('bannerFrame' in patch && (cloudWins || local.bannerFrame == null || local.bannerFrame === '')) {
-    const frame = patch.bannerFrame == null || patch.bannerFrame === '' ? null : String(patch.bannerFrame);
-    if (frame !== (next.bannerFrame ?? local.bannerFrame ?? null)) {
+  if (patch.bannerFrame !== undefined) {
+    const frame = frameOrNull(patch.bannerFrame);
+    const current = frameOrNull(next.bannerFrame ?? local.bannerFrame);
+    if (frame === null && current && !cloudWins) {
+      /* keep local banner frame */
+    } else if (frame !== current && (cloudWins || !current)) {
       next.bannerFrame = frame;
       changed = true;
     }

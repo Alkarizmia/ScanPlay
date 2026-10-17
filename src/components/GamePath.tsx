@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 
 import { Logo } from './Logo';
 import { LockIcon } from './icons/LockIcon';
@@ -45,6 +45,21 @@ const TIER_CLASS: Record<StepTier, string> = {
   bronze: 'tier-bronze',
 };
 
+type RecenterDir = 'up' | 'down' | null;
+
+function findScrollParent(el: HTMLElement | null): HTMLElement | null {
+  let node: HTMLElement | null = el;
+  while (node && node !== document.body) {
+    const style = window.getComputedStyle(node);
+    const oy = style.overflowY;
+    if ((oy === 'auto' || oy === 'scroll' || oy === 'overlay') && node.scrollHeight > node.clientHeight + 4) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+  return null;
+}
+
 export function GamePath({
   locale,
   wordCount,
@@ -76,8 +91,54 @@ export function GamePath({
     : null;
 
   const [unlockIdx, setUnlockIdx] = useState<number | null>(null);
+  const [recenterDir, setRecenterDir] = useState<RecenterDir>(null);
   const prevActiveRef = useRef(firstActiveIdx);
   const pathRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  const getActiveButton = useCallback((): HTMLElement | null => {
+    return pathRef.current?.querySelector<HTMLElement>('.scanplay-node.active') ?? null;
+  }, []);
+
+  const scrollToActive = useCallback(
+    (behavior: ScrollBehavior = 'smooth') => {
+      const node = getActiveButton();
+      const scroller = findScrollParent(rootRef.current);
+      if (!node) return;
+      if (!scroller) {
+        node.scrollIntoView({ behavior, block: 'center' });
+        return;
+      }
+      const scrollerRect = scroller.getBoundingClientRect();
+      const nodeRect = node.getBoundingClientRect();
+      const nodeCenter = nodeRect.top + nodeRect.height / 2;
+      const viewCenter = scrollerRect.top + scroller.clientHeight / 2;
+      const nextTop = scroller.scrollTop + (nodeCenter - viewCenter);
+      scroller.scrollTo({ top: Math.max(0, nextTop), behavior });
+    },
+    [getActiveButton],
+  );
+
+  const updateRecenterHint = useCallback(() => {
+    const node = getActiveButton();
+    const scroller = findScrollParent(rootRef.current);
+    if (!node || !scroller) {
+      setRecenterDir(null);
+      return;
+    }
+    const sRect = scroller.getBoundingClientRect();
+    const nRect = node.getBoundingClientRect();
+    const margin = Math.min(120, scroller.clientHeight * 0.22);
+    if (nRect.bottom < sRect.top + margin) {
+      setRecenterDir('up');
+      return;
+    }
+    if (nRect.top > sRect.bottom - margin) {
+      setRecenterDir('down');
+      return;
+    }
+    setRecenterDir(null);
+  }, [getActiveButton]);
 
   useEffect(() => {
     if (firstActiveIdx > prevActiveRef.current && firstActiveIdx < pathStepCount) {
@@ -91,12 +152,36 @@ export function GamePath({
   }, [firstActiveIdx, pathStepCount]);
 
   useEffect(() => {
-    const node = pathRef.current?.querySelector('.scanplay-node.active');
-    node?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }, [firstActiveIdx]);
+    const id = window.requestAnimationFrame(() => {
+      scrollToActive('smooth');
+      window.setTimeout(updateRecenterHint, 320);
+    });
+    return () => window.cancelAnimationFrame(id);
+  }, [firstActiveIdx, areaHeight, scrollToActive, updateRecenterHint]);
+
+  useEffect(() => {
+    const scroller = findScrollParent(rootRef.current);
+    if (!scroller) return;
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      window.requestAnimationFrame(() => {
+        ticking = false;
+        updateRecenterHint();
+      });
+    };
+    scroller.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    updateRecenterHint();
+    return () => {
+      scroller.removeEventListener('scroll', onScroll);
+      window.removeEventListener('resize', onScroll);
+    };
+  }, [updateRecenterHint, areaHeight]);
 
   return (
-    <div className="scanplay-path">
+    <div className="scanplay-path" ref={rootRef}>
       <div className="scanplay-unit-banner">
         <div className="unit-banner-sheet" aria-hidden="true">
           {sheetThumbnail ? (
@@ -216,6 +301,20 @@ export function GamePath({
           );
         })}
       </div>
+
+      {recenterDir && (
+        <button
+          type="button"
+          className={`scanplay-path-recenter scanplay-path-recenter--${recenterDir}`}
+          onClick={() => {
+            scrollToActive('smooth');
+            window.setTimeout(updateRecenterHint, 380);
+          }}
+          aria-label={t('pathRecenterActive', locale)}
+        >
+          <span className="scanplay-path-recenter-icon" aria-hidden="true" />
+        </button>
+      )}
     </div>
   );
 }

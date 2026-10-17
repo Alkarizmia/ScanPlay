@@ -440,6 +440,15 @@ export async function pushUserData(): Promise<void> {
       );
     }
 
+    // Profile cosmetics: never let a default local snapshot replace a richer cloud profile.
+    if (cloudData.profile && typeof cloudData.profile === 'object') {
+      const { adoptRicherCloudProfile } = await import('./profile');
+      adoptRicherCloudProfile(cloudData.profile as import('./profile').UserProfileData);
+    }
+    if (cloudData.wallet && typeof cloudData.wallet === 'object') {
+      mergeWalletFromCloud(cloudData.wallet as Record<string, unknown>);
+    }
+
     await supabase.from('scanplay_user_stats').upsert({
       user_id: userId,
       data: collectStatsBlob(),
@@ -503,9 +512,8 @@ export async function pullUserData(options?: {
       applyPseudoOnboardingFromCloud(
         Boolean(profile.has_seen_pseudo_tuto) || Boolean(profile.pseudo_onboarding_done_at),
       );
-    } else {
-      applyGamification(0, 0, null);
     }
+    // No profile row yet: keep local XP/level (do not write zeros that then push-wipe the cloud).
 
     await applyPlanFromCloud(profile, options);
 
@@ -541,22 +549,40 @@ export async function pullUserData(options?: {
 
     const { mergeProfileFromCloud } = await import('./profile');
 
-    // Public first (name/avatar), then stats blob wins for cosmetics (banner / frames).
+    // Public first (name/avatar + non-default cosmetics), then stats blob for full cosmetics.
     const { data: publicProfile } = await supabase
       .from('scanplay_public_profiles')
-      .select('display_name, avatar_id, avatar_url, banner_theme, avatar_frame, banner_frame, updated_at')
+      .select('display_name, avatar_id, avatar_url, banner_theme, avatar_frame, banner_frame, updated_at, xp, streak')
       .eq('user_id', userId)
       .maybeSingle();
 
-    // Public = identité (nom / photo). Cosmétiques uniquement depuis le blob stats
-    // (banner_theme public est souvent resté à "green" et écrasait le vrai fond).
     if (publicProfile) {
+      const pubBanner =
+        typeof publicProfile.banner_theme === 'string' ? publicProfile.banner_theme.trim() : '';
       mergeProfileFromCloud({
         displayName: publicProfile.display_name as string | null,
         avatarId: publicProfile.avatar_id as string | null,
         avatarUrl: publicProfile.avatar_url as string | null,
+        // Only apply public fond/frames when non-default (avoids stale green wipe).
+        bannerTheme: pubBanner && pubBanner !== 'green' ? pubBanner : undefined,
+        avatarFrame:
+          typeof publicProfile.avatar_frame === 'string' && publicProfile.avatar_frame.trim()
+            ? publicProfile.avatar_frame
+            : undefined,
+        bannerFrame:
+          typeof publicProfile.banner_frame === 'string' && publicProfile.banner_frame.trim()
+            ? publicProfile.banner_frame
+            : undefined,
         updatedAt: publicProfile.updated_at as string | null,
       });
+      // Recover XP if private profile was wiped to 0 but public still has progress.
+      const pubXp = Number(publicProfile.xp);
+      if (Number.isFinite(pubXp) && pubXp > 0) {
+        const localGam = getGamification();
+        if (pubXp > localGam.xp) {
+          applyGamification(pubXp, Number(publicProfile.streak ?? localGam.streak), localGam.lastPlayDate);
+        }
+      }
     }
 
     if (statsRow?.data && typeof statsRow.data === 'object') {
@@ -612,6 +638,33 @@ export async function pullUserData(options?: {
   }
 }
 
+/** Keys that Home shows immediately (must not flash zeros during sync). */
+const ECONOMY_SNAPSHOT_KEYS = [
+  'scanplay-wallet',
+  'scanplay-gamification',
+  'scanplay-achievement-unlocks',
+  'scanplay-best',
+  'scanplay-plan',
+  'scanplay-billing',
+  'scanplay-plan-user',
+] as const;
+
+function snapshotEconomyLocal(): Record<string, string | null> {
+  const out: Record<string, string | null> = {};
+  for (const key of ECONOMY_SNAPSHOT_KEYS) {
+    out[key] = localStorage.getItem(key);
+  }
+  return out;
+}
+
+function restoreEconomyLocal(snapshot: Record<string, string | null>): void {
+  for (const key of ECONOMY_SNAPSHOT_KEYS) {
+    const value = snapshot[key];
+    if (value == null) localStorage.removeItem(key);
+    else localStorage.setItem(key, value);
+  }
+}
+
 async function adoptPendingGuestDeckThenPush(): Promise<void> {
   const { adoptPendingGuestDeckIntoHistory } = await import('./pendingGuestDeck');
   adoptPendingGuestDeckIntoHistory();
@@ -619,14 +672,23 @@ async function adoptPendingGuestDeckThenPush(): Promise<void> {
   notifySyncReady();
 }
 
-/** After login/signup: discard guest data, restore cloud, push full snapshot. */
+/**
+ * After login/signup: restore cloud, then push.
+ * Keep last-known XP/coins/badges on screen during pull (wipe would flash defaults
+ * for ~5s). Notify UI as soon as pull succeeds (do not wait for the slower push).
+ */
 export async function syncAfterLogin(): Promise<void> {
+  const economySnapshot = snapshotEconomyLocal();
   clearLocalUserData();
+  // Guest/history cleared, but keep economy visible until cloud arrives.
+  restoreEconomyLocal(economySnapshot);
+  notifySyncReady();
   const ok = await pullUserData();
   if (!ok) {
     notifySyncReady();
     return;
   }
+  notifySyncReady();
   validateStreak();
   await adoptPendingGuestDeckThenPush();
 }
@@ -638,6 +700,8 @@ export async function syncOnSessionRestore(): Promise<void> {
     notifySyncReady();
     return;
   }
+  // Refresh Home/HUD immediately; push can finish in the background.
+  notifySyncReady();
   validateStreak();
   await adoptPendingGuestDeckThenPush();
 }

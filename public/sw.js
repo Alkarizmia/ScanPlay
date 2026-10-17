@@ -1,5 +1,5 @@
 /* ScanPlay — PWA shell. Network-first for HTML/JS/Univers so deploys never leave a stale UI. */
-const CACHE = 'scanplay-shell-v9';
+const CACHE = 'scanplay-shell-v11';
 const STATIC = ['/manifest.json', '/icon-192.png', '/icon-512.png', '/icon-maskable-512.png', '/logo.png'];
 const NO_SPA_FALLBACK = new Set([
   '/avis',
@@ -13,6 +13,12 @@ const NO_SPA_FALLBACK = new Set([
   '/fr/questions-reponses/',
   '/en/questions-answers',
   '/en/questions-answers/',
+  '/fr/apprendre-anglais',
+  '/fr/apprendre-anglais/',
+  '/fr/apprendre-anglais/index.html',
+  '/fr/permis-theorique-belge',
+  '/fr/permis-theorique-belge/',
+  '/fr/permis-theorique-belge/index.html',
 ]);
 
 self.addEventListener('install', (event) => {
@@ -71,6 +77,12 @@ self.addEventListener('fetch', (event) => {
 
   // Never fall back review/legal pages to the SPA shell.
   if (NO_SPA_FALLBACK.has(pathname) || pathname.endsWith('.html')) {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Fluent emoji PNGs: always hit network (pack grows often; avoid stale 404 cache).
+  if (pathname.startsWith('/fluent-emoji/')) {
     event.respondWith(networkFirst(request));
     return;
   }

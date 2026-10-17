@@ -1,6 +1,7 @@
 import type { AuthChangeEvent, Session } from '@supabase/supabase-js';
 import type { UserProfile } from '../types';
 import { clearLocalUserData, clearUniverseLocalProgress } from './localData';
+import { hasStoredAuthSession } from './authSessionHint';
 import {
   completePseudoOnboarding,
   ensureUserProfile,
@@ -13,6 +14,7 @@ import { flushSync, syncAfterLogin, syncOnSessionRestore } from './sync';
 import { clearGuestTrial } from './guestTrial';
 import { getGoogleClientId, requestGoogleIdToken } from './googleAuth';
 import { readStoredSessionUser } from './authSessionHint';
+import { isLikelyNewAccount, trackCompteCreeOnce } from './analytics';
 
 export { hasStoredAuthSession } from './authSessionHint';
 
@@ -139,6 +141,23 @@ function isPasswordRecoveryUrl(): boolean {
 }
 
 /** Defer so signInWithPassword can release the auth lock first (avoids Supabase deadlock). */
+function authProviderOf(session: Session): 'email' | 'google' {
+  const meta = session.user.app_metadata?.provider;
+  if (meta === 'google') return 'google';
+  const identity = session.user.identities?.find((i) => i.provider === 'google');
+  if (identity) return 'google';
+  return 'email';
+}
+
+/** Emit compte_cree once when the Supabase user row is brand new (no PII). */
+function trackNewAccountIfNeeded(session: Session, confirmation: 'email' | 'direct' = 'direct'): void {
+  if (!isLikelyNewAccount(session.user.created_at)) return;
+  trackCompteCreeOnce(session.user.id, {
+    confirmation,
+    methode: authProviderOf(session),
+  });
+}
+
 function deferPostAuth(session: Session, freshLogin: boolean): void {
   setTimeout(() => runPostAuth(session, freshLogin), 100);
 }
@@ -213,9 +232,15 @@ export async function initAuth(onChange?: () => void): Promise<void> {
     }
 
     if (!data.session) {
-      clearLocalUserData();
+      // Do not wipe cached XP/coins/badges while a session token may still be on disk
+      // (slow getSession / brief offline) — that caused ~5s of zeros on Home.
+      if (!hasStoredAuthSession()) {
+        clearLocalUserData();
+      }
     } else {
       skipNextSignedInSync = true;
+      // OAuth return lands here: detect brand-new Google accounts once.
+      trackNewAccountIfNeeded(data.session, 'direct');
       deferPostAuth(data.session, false);
       if (passwordRecoveryPending) {
         notifyPasswordRecovery();
@@ -247,6 +272,7 @@ export async function initAuth(onChange?: () => void): Promise<void> {
         if (skipNextSignedInSync) {
           skipNextSignedInSync = false;
         } else {
+          trackNewAccountIfNeeded(session, 'direct');
           deferPostAuth(session, true);
         }
       }
@@ -266,6 +292,8 @@ export type AuthResult = {
   needsEmailConfirmation?: boolean;
   /** True when signInWithOAuth started a full-page redirect (no session yet). */
   redirecting?: boolean;
+  /** Supabase user id when a user row was created or a session opened. */
+  userId?: string;
 };
 
 function normalizeDisplayName(raw: string): string {
@@ -320,7 +348,7 @@ export async function signUp(
       skipNextSignedInSync = true;
       applySignupDisplayName(name);
       deferPostAuth(data.session, true);
-      return { error: null };
+      return { error: null, userId: data.user.id };
     }
 
     // Email confirmation required — stash name for first login.
@@ -330,7 +358,7 @@ export async function signUp(
       } catch {
         /* ignore */
       }
-      return { error: null, needsEmailConfirmation: true };
+      return { error: null, needsEmailConfirmation: true, userId: data.user.id };
     }
 
     return { error: 'authGenericError', errorDetail: 'No user returned' };
@@ -405,8 +433,9 @@ export async function signInWithGoogle(): Promise<AuthResult> {
       }
       setCache(data.session);
       skipNextSignedInSync = true;
+      trackNewAccountIfNeeded(data.session, 'direct');
       deferPostAuth(data.session, true);
-      return { error: null };
+      return { error: null, userId: data.session.user.id };
     }
 
     const { error } = await supabase.auth.signInWithOAuth({

@@ -1353,6 +1353,24 @@ html[dir='rtl'] .sp-profile-avatar-btn.sp-profile-hotspot > .sp-profile-hotspot-
   text-transform: uppercase;
   color: var(--text-muted);
 }
+.sp-profile-share-link {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  font: inherit;
+  font-weight: 850;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--sp-green, var(--accent));
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.sp-profile-share-link:active {
+  opacity: 0.75;
+}
 .sp-profile-plan {
   display: flex;
   align-items: center;

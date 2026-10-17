@@ -10,6 +10,20 @@ export interface ImagePickRound {
   options: FluentEmojiArt[];
 }
 
+function distractorPoolFor(target: FluentEmojiArt): FluentEmojiArt[] {
+  const others = FLUENT_EMOJI_ART.filter((art) => art.id !== target.id);
+  // Colors → other color squares; digits → other keycaps (clearer than random objects).
+  if (target.id.endsWith('_square')) {
+    const squares = others.filter((a) => a.id.endsWith('_square'));
+    if (squares.length >= 3) return squares;
+  }
+  if (target.id.startsWith('keycap_')) {
+    const caps = others.filter((a) => a.id.startsWith('keycap_'));
+    if (caps.length >= 3) return caps;
+  }
+  return others;
+}
+
 export function buildImagePickRounds(
   pairs: WordPair[],
   options: { maxRounds?: number; seed?: string } = {},
@@ -25,7 +39,7 @@ export function buildImagePickRounds(
     const target = fromTerm ?? fromDef;
     if (!target) continue;
 
-    const distractors = FLUENT_EMOJI_ART.filter((art) => art.id !== target.id);
+    const distractors = distractorPoolFor(target);
     if (distractors.length < 3) continue;
 
     const picked = seededShuffle(distractors, `${seed}-${i}-d`).slice(0, 3);

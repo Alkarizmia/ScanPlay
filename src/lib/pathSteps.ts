@@ -2,6 +2,12 @@ import type { GameMode, WordPair } from '../types';
 import { DEFAULT_PATH_STEP_COUNT } from './planLimits';
 import { pickPathStepGames } from './pathGamePlan';
 
+/** Vertical gap between successive path nodes (px). */
+const NODE_STEP_PX = 108;
+/** Space above the first node / below the last (px). */
+const PATH_TOP_PX = 28;
+const PATH_BOTTOM_PX = 64;
+
 /** @deprecated use DEFAULT_PATH_STEP_COUNT or getPathStepCount() */
 export const PATH_STEP_COUNT = DEFAULT_PATH_STEP_COUNT;
 
@@ -33,9 +39,12 @@ export function buildPathSteps(
   }
 
   const n = visual.length;
+  const heightPx = pathAreaHeight(n);
   visual.forEach((node, i) => {
     node.x = i % 2 === 0 ? 26 : 74;
-    node.y = n <= 1 ? 50 : 10 + (i / (n - 1)) * 80;
+    // Pixel-based spacing: first node near the top (no huge empty band).
+    const yPx = n <= 1 ? heightPx / 2 : PATH_TOP_PX + i * NODE_STEP_PX;
+    node.y = (yPx / heightPx) * 100;
   });
 
   return visual;
@@ -56,7 +65,8 @@ export function buildPathD(steps: { x: number; y: number }[]) {
 export const PATH_STEPS = buildPathSteps();
 
 export function pathAreaHeight(nodeCount: number = DEFAULT_PATH_STEP_COUNT) {
-  return Math.max(520, nodeCount * 92 + 120);
+  if (nodeCount <= 1) return PATH_TOP_PX + PATH_BOTTOM_PX + 120;
+  return PATH_TOP_PX + (nodeCount - 1) * NODE_STEP_PX + PATH_BOTTOM_PX;
 }
 
 export function getFirstActiveStep(completedSteps: number[], total = PATH_STEP_COUNT) {

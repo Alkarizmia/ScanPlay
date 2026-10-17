@@ -11,7 +11,7 @@ import {
 } from '../lib/auth';
 import { DISPLAY_NAME_MAX, DISPLAY_NAME_MIN } from '../lib/profile';
 import { t, type TranslationKey } from '../lib/i18n';
-import { trackEvent } from '../lib/analytics';
+import { trackCompteCreeOnce } from '../lib/analytics';
 import type { Locale } from '../types';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
@@ -120,12 +120,16 @@ export function AuthScreen({
         setInfoKey('authConfirmEmail');
         setMode('login');
         setIdentifier(email.trim());
-        if (mode === 'signup') trackEvent('compte_cree', { confirmation: 'email' });
+        if (mode === 'signup' && result.userId) {
+          trackCompteCreeOnce(result.userId, { confirmation: 'email', methode: 'email' });
+        }
         return;
       }
       if (mode === 'signup') {
         setInfoKey('authSignupSuccess');
-        trackEvent('compte_cree', { confirmation: 'direct' });
+        if (result.userId) {
+          trackCompteCreeOnce(result.userId, { confirmation: 'direct', methode: 'email' });
+        }
       }
       onSuccess();
     } catch (e) {

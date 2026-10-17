@@ -5,6 +5,7 @@ import {
   clearBootLocale,
   consumeBootIntent,
   consumeBootLocale,
+  consumePendingProfileName,
   consumePendingScanAfterAuth,
 } from './lib/bootIntent';
 import './index.css';
@@ -83,7 +84,7 @@ import { refreshFriendCount } from './lib/social/friendCountCache';
 import { notifyAchievementUnlock, notifyGoldStep, notifyStreakMilestone } from './lib/notifications';
 import { playSound, playStreakSound, stopAllMusic } from './lib/sounds';
 import { hapticAchievement, hapticLevelUp } from './lib/haptics';
-import { hasStoredAuthSession, initAuth, isAuthReady, isLoggedIn, onPasswordRecovery, consumePasswordRecoveryPending, setupSyncLifecycle, waitForAuth } from './lib/auth';
+import { getUserId, hasStoredAuthSession, initAuth, isAuthReady, isLoggedIn, onPasswordRecovery, consumePasswordRecoveryPending, setupSyncLifecycle, waitForAuth } from './lib/auth';
 import { addHistoryEntry, canAddHistory, getHistory, getHistoryEntry, peekLastHomeDeck, readDeckProgress, touchHistoryPlayed, updateHistoryDeckProgress, updateHistoryMode, updateHistorySessionStats } from './lib/history';
 import { onSyncReady, pullUserData } from './lib/sync';
 import { isStripeCheckoutEnabled } from './lib/stripeCheckout';
@@ -97,7 +98,16 @@ import {
 } from './lib/examEligibility';
 import { getExamPathBudgetSeconds } from './lib/examTimer';
 import { getPathStepCount } from './lib/planLimits';
-import { resolveAnalyticsScreen, trackEvent, trackScreen } from './lib/analytics';
+import {
+  isNaturalPartieCompletion,
+  resolveAnalyticsScreen,
+  syncAnalyticsUserId,
+  trackEvent,
+  trackPremierePartieDemarree,
+  trackPremierePartieTerminee,
+  trackScreen,
+} from './lib/analytics';
+import { AD_CONSENT_GRANTED_EVENT } from './lib/ads/consent';
 import { getLocale, setLocale, t } from './lib/i18n';
 import {
   resolveUniverseHomeResume,
@@ -335,6 +345,8 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
   const [upgradeReason, setUpgradeReason] = useState<UpgradeReason | null>(null);
   const [showConfetti, setShowConfetti] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
+  /** Deep link `?profile=Name` → Friends tab preview. */
+  const [openProfileName, setOpenProfileName] = useState<string | null>(null);
   const [passwordRecoveryHighlight, setPasswordRecoveryHighlight] = useState(false);
   const [historyId, setHistoryId] = useState<string | null>(null);
   const [historyReplayMode, setHistoryReplayMode] = useState(false);
@@ -534,6 +546,11 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
     if (bootIntent === 'scan') {
       // Guest + logged-in: open the scan funnel in the landing language (no forced login).
       startScanFlow();
+    }
+    const pendingProfile = consumePendingProfileName();
+    if (pendingProfile) {
+      setOpenProfileName(pendingProfile);
+      startTransition(() => setTab('friends'));
     }
     void initAuth(refresh);
     const unsubRecovery = onPasswordRecovery(() => {
@@ -1351,6 +1368,11 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
       playSound('quizStart');
       resetGameHud();
       if (hasResume) showToast(t('lessonResume', locale));
+      trackPremierePartieDemarree({
+        userId: getUserId(),
+        mode: resolved,
+        contexte: 'parcours',
+      });
       setFlow('lesson');
       return;
     }
@@ -1361,6 +1383,11 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
     sessionStart.current = Date.now();
     playSound('quizStart');
     resetGameHud();
+    trackPremierePartieDemarree({
+      userId: getUserId(),
+      mode: resolved,
+      contexte: examMode ? 'examen' : 'libre',
+    });
     setFlow('playing');
   };
 
@@ -1615,12 +1642,26 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
         updateHistorySessionStats(historyId, lessonPct, lessonXp);
       }
 
+      if (isNaturalPartieCompletion(meta) && activeMode) {
+        trackPremierePartieTerminee({
+          userId: getUserId(),
+          mode: activeMode,
+          contexte: 'parcours',
+        });
+      }
       setResult(session);
       setFlow('lessonComplete');
       refresh();
       return;
     }
 
+    if (isNaturalPartieCompletion(meta) && activeMode) {
+      trackPremierePartieTerminee({
+        userId: getUserId(),
+        mode: activeMode,
+        contexte: examMode ? 'examen' : 'libre',
+      });
+    }
     setResult(session);
     setFlow('results');
     refresh();
@@ -1758,6 +1799,23 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
   }, [isGuestShell]);
 
   const lastAnalyticsScreen = useRef<string | null>(null);
+  const lastAnalyticsUserId = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    if (!authReady) return;
+    const uid = isLoggedIn() ? getUserId() : null;
+    if (lastAnalyticsUserId.current === uid) return;
+    lastAnalyticsUserId.current = uid;
+    syncAnalyticsUserId(uid);
+  }, [authReady, refreshKey]);
+
+  useEffect(() => {
+    const onConsentGranted = () => {
+      syncAnalyticsUserId(isLoggedIn() ? getUserId() : null);
+    };
+    window.addEventListener(AD_CONSENT_GRANTED_EVENT, onConsentGranted);
+    return () => window.removeEventListener(AD_CONSENT_GRANTED_EVENT, onConsentGranted);
+  }, []);
+
   useEffect(() => {
     if (waitingForSession) return;
     const screen = resolveAnalyticsScreen({
@@ -2273,6 +2331,8 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
           isLoggedIn={isLoggedIn()}
           onAuth={() => setFlow('auth')}
           onSocialChange={handleSocialChange}
+          openProfileName={openProfileName}
+          onOpenProfileConsumed={() => setOpenProfileName(null)}
         />
       )}
       {flow === null && tab === 'shop' && (
@@ -2302,6 +2362,7 @@ export default function App({ initialLocale }: { initialLocale?: Locale } = {}) 
             if (cosmeticId) setShopFocusCosmeticId(cosmeticId);
             handleTabChange('shop');
           }}
+          onToast={showToast}
         />
       )}
       {flow === null && tab === 'mistakes' && !mistakeSession && (

@@ -216,6 +216,22 @@ describe('image pick rounds', () => {
       'plane',
     );
   });
+
+  it('uses Fluent color squares and keycaps with same-family distractors', () => {
+    const color = buildImagePickRounds([{ term: 'blue', definition: 'bleu' }], {
+      maxRounds: 1,
+      seed: 'color',
+    })[0];
+    expect(color?.targetId).toBe('blue_square');
+    expect(color?.options.every((a) => a.id.endsWith('_square'))).toBe(true);
+
+    const digit = buildImagePickRounds([{ term: 'one', definition: 'un' }], {
+      maxRounds: 1,
+      seed: 'digit',
+    })[0];
+    expect(digit?.targetId).toBe('keycap_1');
+    expect(digit?.options.every((a) => a.id.startsWith('keycap_'))).toBe(true);
+  });
 });
 
 describe('difficulty scale', () => {

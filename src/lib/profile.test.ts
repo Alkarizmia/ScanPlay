@@ -12,6 +12,7 @@ import {
   defaultDisplayName,
   isDefaultDisplayName,
   mergeProfileFromCloud,
+  mergeProfilesPreferRicher,
   saveProfileRaw,
   shouldShowPseudoOnboarding,
 } from './profile';
@@ -67,5 +68,79 @@ describe('display name merge', () => {
 
     applyPseudoOnboardingFromCloud(true);
     expect(shouldShowPseudoOnboarding()).toBe(false);
+  });
+
+  it('does not clear avatar frame when cloud omits the field', () => {
+    saveProfileRaw({
+      displayName: 'Bilal',
+      avatar: 'custom',
+      customAvatarData: 'data:image/png;base64,abc',
+      bannerTheme: 'aurora',
+      avatarFrame: 'frame_gold',
+      bannerFrame: 'bframe_gold',
+      profileUpdatedAt: Date.now(),
+    });
+
+    mergeProfileFromCloud({
+      displayName: 'Bilal',
+      avatarId: 'custom',
+      avatarUrl: 'data:image/png;base64,abc',
+      bannerTheme: 'aurora',
+      avatarFrame: undefined,
+      bannerFrame: undefined,
+      updatedAt: new Date(Date.now() + 60_000).toISOString(),
+    });
+
+    const p = JSON.parse(localStorage.getItem('scanplay-profile') ?? '{}');
+    expect(p.avatarFrame).toBe('frame_gold');
+    expect(p.bannerFrame).toBe('bframe_gold');
+  });
+
+  it('does not replace custom photo with default avatar1 from cloud', () => {
+    saveProfileRaw({
+      displayName: 'Bilal',
+      avatar: 'custom',
+      customAvatarData: 'data:image/png;base64,abc',
+      bannerTheme: 'aurora',
+      profileUpdatedAt: Date.now() - 60_000,
+    });
+
+    mergeProfileFromCloud({
+      displayName: 'Bilal',
+      avatarId: 'avatar1',
+      avatarUrl: null,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const p = JSON.parse(localStorage.getItem('scanplay-profile') ?? '{}');
+    expect(p.avatar).toBe('custom');
+    expect(p.customAvatarData).toBe('data:image/png;base64,abc');
+  });
+
+  it('mergeProfilesPreferRicher keeps custom name, photo, fond and frames over defaults', () => {
+    const rich = {
+      displayName: 'Bilal',
+      avatar: 'custom' as const,
+      customAvatarData: 'data:image/png;base64,abc',
+      bannerTheme: 'aurora',
+      avatarFrame: 'frame_gold',
+      bannerFrame: 'bframe_gold',
+      profileUpdatedAt: 1,
+    };
+    const def = {
+      displayName: defaultDisplayName(USER),
+      avatar: 'avatar1' as const,
+      bannerTheme: 'green',
+      avatarFrame: null,
+      bannerFrame: null,
+      profileUpdatedAt: 9_999_999,
+    };
+    const merged = mergeProfilesPreferRicher(def, rich, USER);
+    expect(merged.displayName).toBe('Bilal');
+    expect(merged.avatar).toBe('custom');
+    expect(merged.customAvatarData).toBe('data:image/png;base64,abc');
+    expect(merged.bannerTheme).toBe('aurora');
+    expect(merged.avatarFrame).toBe('frame_gold');
+    expect(merged.bannerFrame).toBe('bframe_gold');
   });
 });

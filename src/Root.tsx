@@ -3,7 +3,12 @@ import { FluentEmojiPreview } from './components/FluentEmojiPreview';
 import { LandingPage } from './components/landing/LandingPage';
 import { applyDeviceAttributes, detectDeviceProfile } from './lib/device';
 import { hasStoredAuthSession } from './lib/authSessionHint';
-import { applyUrlBootIntent, setBootIntent, setBootLocale } from './lib/bootIntent';
+import {
+  applyUrlBootIntent,
+  peekPendingProfileName,
+  setBootIntent,
+  setBootLocale,
+} from './lib/bootIntent';
 import { initialLandingLang, persistLandingLang, type LandingLang } from './lib/landingI18n';
 import type { Locale } from './types';
 
@@ -20,7 +25,8 @@ function isFluentPreviewQuery(): boolean {
 export function Root() {
   const [showApp, setShowApp] = useState(() => {
     const fromUrl = applyUrlBootIntent();
-    return Boolean(fromUrl) || hasStoredAuthSession();
+    const profileLink = Boolean(peekPendingProfileName());
+    return Boolean(fromUrl) || profileLink || hasStoredAuthSession();
   });
   const [device, setDevice] = useState(() => detectDeviceProfile());
   /** Locale chosen on the landing; passed into App so Strict Mode cannot drop it. */

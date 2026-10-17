@@ -335,6 +335,98 @@ function neverReturnedUser(u: User): boolean {
   );
 }
 
+/** Calendar-day gap (ymd - ymd), non-negative when b >= a. */
+function calendarDaysBetween(fromYmd: string, toYmd: string): number {
+  const [fy, fm, fd] = fromYmd.split('-').map(Number);
+  const [ty, tm, td] = toYmd.split('-').map(Number);
+  const a = Date.UTC(fy, fm - 1, fd);
+  const b = Date.UTC(ty, tm - 1, td);
+  return Math.floor((b - a) / MS_DAY);
+}
+
+/**
+ * Play retention: last_play_date (YYYY-MM-DD from gamification) is on or after
+ * signup calendar day (Europe/Brussels) + minDays.
+ */
+function retainedByPlay(
+  createdAt: string | null | undefined,
+  lastPlayDate: string | null | undefined,
+  minDays: number,
+): boolean {
+  if (!createdAt || !lastPlayDate) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(lastPlayDate)) return false;
+  const signupYmd = brusselsYmd(new Date(createdAt));
+  const threshold = addCalendarDays(signupYmd, minDays);
+  return lastPlayDate >= threshold;
+}
+
+function retainedBySignIn(
+  createdAt: string | null | undefined,
+  lastSignInAt: string | null | undefined,
+  minDays: number,
+): boolean {
+  if (!createdAt || !lastSignInAt) return false;
+  return new Date(lastSignInAt).getTime() - new Date(createdAt).getTime() >= minDays * MS_DAY;
+}
+
+type RetentionSlice = {
+  cohort: number;
+  retained: number;
+  rate: number | null;
+};
+
+function retentionSlice(cohortSize: number, retained: number): RetentionSlice {
+  return {
+    cohort: cohortSize,
+    retained,
+    rate: cohortSize ? Math.round((retained / cohortSize) * 1000) / 10 : null,
+  };
+}
+
+type Day7Cohort = {
+  date: string;
+  cohort: number;
+  retained_play: number;
+  retained_signin: number;
+  rate_play: number | null;
+  rate_signin: number | null;
+};
+
+/** Mature signup days (age ≥ 7d) over the last `windowDays` calendar days. */
+function buildPlayJ7Cohorts(
+  users: User[],
+  playByUser: Map<string, string | null>,
+  windowDays: number,
+): Day7Cohort[] {
+  const today = brusselsYmd();
+  const out: Day7Cohort[] = [];
+  for (let i = windowDays - 1; i >= 0; i -= 1) {
+    const date = addCalendarDays(today, -i);
+    const ageDays = calendarDaysBetween(date, today);
+    if (ageDays < 7) continue;
+
+    let cohort = 0;
+    let retainedPlay = 0;
+    let retainedSignin = 0;
+    for (const u of users) {
+      if (!u.created_at) continue;
+      if (brusselsYmd(new Date(u.created_at)) !== date) continue;
+      cohort += 1;
+      if (retainedByPlay(u.created_at, playByUser.get(u.id) ?? null, 7)) retainedPlay += 1;
+      if (retainedBySignIn(u.created_at, u.last_sign_in_at, 7)) retainedSignin += 1;
+    }
+    out.push({
+      date,
+      cohort,
+      retained_play: retainedPlay,
+      retained_signin: retainedSignin,
+      rate_play: cohort ? Math.round((retainedPlay / cohort) * 1000) / 10 : null,
+      rate_signin: cohort ? Math.round((retainedSignin / cohort) * 1000) / 10 : null,
+    });
+  }
+  return out;
+}
+
 function buildUserInsights(input: {
   neverReturned: boolean;
   scanCount: number;
@@ -468,21 +560,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const neverReturned = users.filter((u) => neverReturnedUser(u));
 
-    const cohort1d = users.filter(
-      (u) => u.created_at && now - new Date(u.created_at).getTime() >= MS_DAY,
+    const playByUser = new Map(
+      profiles.map((p) => [p.user_id, p.last_play_date ?? null] as const),
     );
-    const retained1d = cohort1d.filter((u) => {
-      if (!u.last_sign_in_at || !u.created_at) return false;
-      return new Date(u.last_sign_in_at).getTime() - new Date(u.created_at).getTime() >= MS_DAY;
+    const todayBeForRetention = brusselsYmd();
+
+    const cohort1d = users.filter(
+      (u) => u.created_at && calendarDaysBetween(brusselsYmd(new Date(u.created_at)), todayBeForRetention) >= 1,
+    );
+    const cohort7d = users.filter(
+      (u) => u.created_at && calendarDaysBetween(brusselsYmd(new Date(u.created_at)), todayBeForRetention) >= 7,
+    );
+
+    const approxJ1 = retentionSlice(
+      cohort1d.length,
+      cohort1d.filter((u) => retainedBySignIn(u.created_at, u.last_sign_in_at, 1)).length,
+    );
+    const approxJ7 = retentionSlice(
+      cohort7d.length,
+      cohort7d.filter((u) => retainedBySignIn(u.created_at, u.last_sign_in_at, 7)).length,
+    );
+    const playJ1 = retentionSlice(
+      cohort1d.length,
+      cohort1d.filter((u) => retainedByPlay(u.created_at, playByUser.get(u.id) ?? null, 1)).length,
+    );
+    const playJ7 = retentionSlice(
+      cohort7d.length,
+      cohort7d.filter((u) => retainedByPlay(u.created_at, playByUser.get(u.id) ?? null, 7)).length,
+    );
+
+    const playActive7d = profiles.filter((p) => {
+      if (!p.last_play_date) return false;
+      const age = calendarDaysBetween(p.last_play_date, todayBeForRetention);
+      return age >= 0 && age <= 6;
     }).length;
 
-    const cohort7d = users.filter(
-      (u) => u.created_at && now - new Date(u.created_at).getTime() >= 7 * MS_DAY,
-    );
-    const retained7d = cohort7d.filter((u) => {
-      if (!u.last_sign_in_at || !u.created_at) return false;
-      return new Date(u.last_sign_in_at).getTime() - new Date(u.created_at).getTime() >= 7 * MS_DAY;
-    }).length;
+    const j7Cohorts = buildPlayJ7Cohorts(users, playByUser, 21);
 
     const planCounts: Record<string, number> = { free: 0, plus: 0, pro: 0, max: 0 };
     for (const p of profiles) {
@@ -682,7 +795,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         acquisition_source:
           'Pas de colonne source marketing. provider = auth (email/google/...). Jours et listes en heure Belgique (Europe/Brussels).',
         retention:
-          'Approximation via last_sign_in_at vs created_at (pas d historique de sessions).',
+          'J+7 jeu: last_play_date >= jour inscription (Europe/Brussels) + 7. J+7 connexion: last_sign_in_at - created_at >= 7j. Pas d historique de sessions GA.',
         thin_deck_threshold: THIN_DECK_THRESHOLD,
         cost:
           'Estimation uniquement: ' +
@@ -711,6 +824,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         recent_sign_ins: recentSignIns,
       },
       retention: {
+        timezone: 'Europe/Brussels',
+        definition: {
+          play_j7:
+            'Compte créé il y a au moins 7 jours calendaires (BE). Retenu si last_play_date >= jour d inscription + 7.',
+          signin_j7:
+            'Meme cohorte. Retenu si last_sign_in_at - created_at >= 7 × 24h (approximation Auth).',
+        },
         never_returned_count: neverReturned.length,
         never_returned: neverReturned
           .sort(
@@ -723,17 +843,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             display_name: nameById.get(u.id) || null,
             created_at: u.created_at ?? null,
             last_sign_in_at: u.last_sign_in_at ?? null,
+            last_play_date: playByUser.get(u.id) ?? null,
           })),
-        approx_j1: {
-          cohort: cohort1d.length,
-          retained: retained1d,
-          rate: cohort1d.length ? Math.round((retained1d / cohort1d.length) * 1000) / 10 : null,
-        },
-        approx_j7: {
-          cohort: cohort7d.length,
-          retained: retained7d,
-          rate: cohort7d.length ? Math.round((retained7d / cohort7d.length) * 1000) / 10 : null,
-        },
+        play_active_7d: playActive7d,
+        play_j1: playJ1,
+        play_j7: playJ7,
+        approx_j1: approxJ1,
+        approx_j7: approxJ7,
+        j7_cohorts: j7Cohorts,
       },
       engagement: {
         top_by_xp: topByXp,

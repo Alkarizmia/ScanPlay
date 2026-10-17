@@ -460,6 +460,15 @@
           <h2>3. Rétention</h2>
           <div class="note" id="note-retention"></div>
           <div class="kpis" id="kpi-retention"></div>
+          <div class="charts" style="margin-top:14px">
+            <div class="chart-card">
+              <h3>Rétention J+7 (jeu) par jour d’inscription</h3>
+              <div id="chart-j7-play"></div>
+            </div>
+          </div>
+          <h3>Cohortes J+7 (jours matures, 21 j)</h3>
+          <div id="tbl-j7-cohorts" class="table-wrap"></div>
+          <div class="spacer"></div>
           <h3>Inscrits jamais revenus (échantillon)</h3>
           <div id="tbl-never" class="table-wrap"></div>
         </section>
@@ -638,6 +647,60 @@
           '<div class="chart-body"><div class="y-axis" aria-hidden="true"><span>' +
           esc(String(scale)) +
           '</span><span>' +
+          esc(String(mid)) +
+          '</span><span>0</span></div><div class="bars">' +
+          bars +
+          '</div></div>';
+      }
+
+      /** Bar chart for retention rates (0–100%). */
+      function renderRateChart(el, points) {
+        if (!points || !points.length) {
+          el.innerHTML = '<p class="empty">Aucune cohorte mature (J+7) sur la fenêtre</p>';
+          return;
+        }
+        const scale = 100;
+        const mid = 50;
+        const bars = points
+          .map((p) => {
+            const rate = p.rate == null ? 0 : Number(p.rate);
+            const h = rate <= 0 ? 2 : Math.max(8, Math.round((rate / scale) * 100));
+            const label = fmtDayLabel(p.date, 'dm');
+            const rateTxt = p.rate != null ? String(p.rate) : '';
+            const tip =
+              label +
+              ' : ' +
+              (p.rate != null ? p.rate + '%' : '—') +
+              ' (' +
+              (p.retained ?? 0) +
+              '/' +
+              (p.cohort ?? 0) +
+              ')';
+            return (
+              '<div class="bar-wrap" title="' +
+              esc(tip) +
+              '"><div class="bar-count">' +
+              esc(rateTxt) +
+              '</div><div class="bar" style="height:' +
+              h +
+              '%"></div><div class="bar-label">' +
+              esc(label) +
+              '</div></div>'
+            );
+          })
+          .join('');
+        const withRate = points.filter((p) => p.rate != null);
+        const avg =
+          withRate.length > 0
+            ? Math.round(
+                (withRate.reduce((s, p) => s + Number(p.rate), 0) / withRate.length) * 10,
+              ) / 10
+            : null;
+        el.innerHTML =
+          '<div class="chart-meta">Moyenne ' +
+          esc(avg != null ? avg + '%' : '—') +
+          ' · échelle 0–100% · heure Belgique</div>' +
+          '<div class="chart-body"><div class="y-axis" aria-hidden="true"><span>100</span><span>' +
           esc(String(mid)) +
           '</span><span>0</span></div><div class="bars">' +
           bars +
@@ -1042,6 +1105,7 @@
           'tbl-signups',
           'tbl-signins',
           'tbl-never',
+          'tbl-j7-cohorts',
           'tbl-xp',
           'tbl-streaks',
           'tbl-decks',
@@ -1062,7 +1126,6 @@
 
         document.getElementById('note-acquisition').textContent =
           data.notes?.acquisition_source || '';
-        document.getElementById('note-retention').textContent = data.notes?.retention || '';
         document.getElementById('note-thin').textContent =
           'Seuil sous-extraction : < ' +
           (data.product_quality?.thin_threshold ?? 10) +
@@ -1144,21 +1207,72 @@
           },
         ]);
 
-        const j1 = data.retention.approx_j1 || {};
-        const j7 = data.retention.approx_j7 || {};
+        const playJ1 = data.retention.play_j1 || {};
+        const playJ7 = data.retention.play_j7 || {};
+        const signJ1 = data.retention.approx_j1 || {};
+        const signJ7 = data.retention.approx_j7 || {};
+        document.getElementById('note-retention').textContent =
+          (data.notes?.retention || '') +
+          ' KPI principaux = jeu (last_play_date). Connexion Auth en second plan.';
         document.getElementById('kpi-retention').innerHTML = kpis([
+          {
+            label: 'Rétention J+7 (jeu)',
+            value: playJ7.rate != null ? playJ7.rate + '%' : '—',
+            hint: (playJ7.retained ?? 0) + ' / ' + (playJ7.cohort ?? 0),
+          },
+          {
+            label: 'Rétention J+1 (jeu)',
+            value: playJ1.rate != null ? playJ1.rate + '%' : '—',
+            hint: (playJ1.retained ?? 0) + ' / ' + (playJ1.cohort ?? 0),
+          },
+          {
+            label: 'Actifs jeu 7 j',
+            value: data.retention.play_active_7d ?? '—',
+            hint: 'last_play_date dans les 7 derniers jours BE',
+          },
           { label: 'Jamais revenus', value: data.retention.never_returned_count },
           {
-            label: 'Rétention J+1',
-            value: j1.rate != null ? j1.rate + '%' : '—',
-            hint: (j1.retained ?? 0) + ' / ' + (j1.cohort ?? 0),
+            label: 'J+7 connexion',
+            value: signJ7.rate != null ? signJ7.rate + '%' : '—',
+            hint: (signJ7.retained ?? 0) + ' / ' + (signJ7.cohort ?? 0) + ' (Auth)',
           },
           {
-            label: 'Rétention J+7',
-            value: j7.rate != null ? j7.rate + '%' : '—',
-            hint: (j7.retained ?? 0) + ' / ' + (j7.cohort ?? 0),
+            label: 'J+1 connexion',
+            value: signJ1.rate != null ? signJ1.rate + '%' : '—',
+            hint: (signJ1.retained ?? 0) + ' / ' + (signJ1.cohort ?? 0) + ' (Auth)',
           },
         ]);
+
+        const j7Cohorts = data.retention.j7_cohorts || [];
+        renderRateChart(
+          document.getElementById('chart-j7-play'),
+          j7Cohorts.map((c) => ({
+            date: c.date,
+            rate: c.rate_play,
+            retained: c.retained_play,
+            cohort: c.cohort,
+          })),
+        );
+        document.getElementById('tbl-j7-cohorts').innerHTML = sortableTable(
+          'tbl-j7-cohorts',
+          [
+            { label: 'Jour inscription', key: 'date' },
+            { label: 'Cohorte', key: 'cohort', numeric: true },
+            { label: 'Retenus jeu', key: 'retained_play', numeric: true },
+            { label: 'Taux jeu', key: 'rate_play', numeric: true },
+            { label: 'Retenus Auth', key: 'retained_signin', numeric: true },
+            { label: 'Taux Auth', key: 'rate_signin', numeric: true },
+          ],
+          j7Cohorts,
+          (c) => [
+            fmtDayLabel(c.date, 'dm'),
+            String(c.cohort),
+            String(c.retained_play),
+            c.rate_play != null ? c.rate_play + '%' : '—',
+            String(c.retained_signin),
+            c.rate_signin != null ? c.rate_signin + '%' : '—',
+          ],
+        );
 
         document.getElementById('kpi-costs').innerHTML = kpis([
           { label: 'Scans total', value: data.costs?.total_scans ?? 0 },
