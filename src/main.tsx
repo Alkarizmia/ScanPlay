@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AppErrorBoundary } from './components/AppErrorBoundary';
 import { applyDeviceAttributes, detectDeviceProfile } from './lib/device';
 import { registerServiceWorker } from './lib/pwa';
@@ -24,6 +25,7 @@ createRoot(document.getElementById('root')!).render(
       <Root />
     </AppErrorBoundary>
     <Analytics />
+    <SpeedInsights />
   </StrictMode>,
 );
 
