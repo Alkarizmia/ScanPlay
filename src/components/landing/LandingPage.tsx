@@ -132,6 +132,9 @@ const FAQ: { q: LandingCopyKey; a: LandingCopyKey }[] = [
   { q: 'lpFaq4Q', a: 'lpFaq4A' },
   { q: 'lpFaq5Q', a: 'lpFaq5A' },
   { q: 'lpFaq6Q', a: 'lpFaq6A' },
+  { q: 'lpFaq7Q', a: 'lpFaq7A' },
+  { q: 'lpFaq8Q', a: 'lpFaq8A' },
+  { q: 'lpFaq9Q', a: 'lpFaq9A' },
 ];
 
 const GAME_TAGS: LandingCopyKey[] = [
@@ -759,6 +762,8 @@ export function LandingPage({
               <a href={locale === 'en' ? '/en/questions-answers/' : '/fr/questions-reponses/'}>
                 {lt('lpQaGuide', locale)}
               </a>
+              <a href="/fr/apprendre-anglais/">{lt('lpFooterEnglish', locale)}</a>
+              <a href="/fr/permis-theorique-belge/">{lt('lpFooterDrivingBe', locale)}</a>
               <a href="/privacy.html">{lt('lpPrivacy', locale)}</a>
               <a href="/terms.html">{lt('lpTerms', locale)}</a>
             </div>

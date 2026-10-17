@@ -6,32 +6,52 @@
 
 - Website: https://scanplay.org
 - Free to start: one trial scan without an account.
-- That guest trial scan is free and does **not** consume the ScanPlay AI envelope. After creating a free account, AI usage starts at **0%**.
-- Guest trial limit: **1 scan per device/browser**. Refreshing, quitting, or reopening the site does not grant another free guest scan.
+- That guest trial scan is free and does **not** consume the ScanPlay AI envelope. After creating a free account, AI usage starts empty.
+- Guest trial is limited per device/browser. Refreshing, quitting, or reopening the site does not grant another free guest scan.
 - After the trial scan, a free account is required to play steps and save progress.
-- **There is no daily scan quota** (the old "2 scans a day" limit no longer exists).
-- Free accounts include a weekly **ScanPlay AI** envelope of **€0.15/week**. Scans, coach, and summaries share the same usage %.
+- Free accounts include a **ScanPlay AI** envelope. Scans, coach, and summaries share the same usage percentage.
 - Paid plans enlarge the ScanPlay AI envelope; nothing forces a paid upgrade.
 - Supported input: images (photo of a sheet, textbook page, screenshot). PDFs not yet supported.
 - Privacy: sheets are tied to the user account and are not public.
 
+## Pix Universe: English course
+
+- Ready English path inside the app (no photo scan required).
+- Levels A1 to C2 (CEFR), 700+ lessons across dozens of chapters.
+- Goals at onboarding: travel, work, school, exam, fun, or other.
+- Lessons use vocabulary and example sentences; practice uses the same game styles as scanned paths.
+- Hearts pace play (default cap on free; regenerates over time).
+- Landing page (FR): https://scanplay.org/fr/apprendre-anglais/
+
+## Pix Universe: Belgian driving theory
+
+- Revision module for **Belgian** driving theory only (other countries are not available).
+- Over 100 road signs with titles and meanings; 80+ multiple-choice questions; short practice sets and a 50-question mock exam.
+- Independent study tool: **not** affiliated with official Belgian exam bodies; does **not** guarantee passing the official exam.
+- Landing page (FR): https://scanplay.org/fr/permis-theorique-belge/
+
 ## FAQ (short)
 
 Q: Is ScanPlay really free?
-A: Yes. The first trial scan needs no account and does not use ScanPlay AI (usage stays at 0% after signup). There is no daily scan quota. Free accounts then get a ScanPlay AI envelope of €0.15/week.
+A: Yes. The first trial scan needs no account and does not use ScanPlay AI. Free accounts then get a ScanPlay AI envelope. Scans, coach, and summaries share the same usage percentage.
 
 Q: Do I need an account?
-A: Not for the first trial scan. An account is required to launch games and save progress. Only one guest scan per device.
+A: Not for the first trial scan. An account is required to launch games and save progress. Guest trial is limited per device.
 
-Q: Does the guest scan use my AI quota?
+Q: Does the guest scan use the ScanPlay AI envelope?
 A: No. The no-account trial scan does not bill the ScanPlay AI envelope.
 
-Q: Is there a 2 scans/day limit?
-A: No. That old daily scan quota was removed. Limits are expressed as a ScanPlay AI usage % on a weekly (Free) or monthly (Plus/Pro/Max) envelope.
+Q: Can I learn English without scanning notes?
+A: Yes. Pix Universe includes a ready English course (A1-C2). See https://scanplay.org/fr/apprendre-anglais/
+
+Q: Is Belgian driving theory available?
+A: Yes, Belgium only, in Pix Universe. See https://scanplay.org/fr/permis-theorique-belge/
 
 ## Links
 
 - Home: https://scanplay.org/
+- Learn English (FR): https://scanplay.org/fr/apprendre-anglais/
+- Belgian driving theory (FR): https://scanplay.org/fr/permis-theorique-belge/
 - Study Q&A (FR): https://scanplay.org/fr/questions-reponses/
 - Study Q&A (EN): https://scanplay.org/en/questions-answers/
 - Privacy: https://scanplay.org/privacy.html
